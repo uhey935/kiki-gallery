@@ -1,0 +1,56 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const artists = [
+  {
+    name: "Hiroshi Goseki",
+    slug: "hiroshi-goseki",
+    image: "/images/artists/goseki.jpg",
+  },
+  {
+    name: "Shintaro Uchimura",
+    slug: "shintaro-uchimura",
+    image: "/images/artists/uchimura.jpg",
+  },
+].sort((a, b) => a.name.localeCompare(b.name));
+---
+
+<Layout>
+  <main class="container">
+    <h1>Artists</h1>
+
+    <div class="grid">
+      {artists.map((artist) => (
+        <a href={`/artists/${artist.slug}`} class="card">
+          <img src={artist.image} alt={artist.name} />
+          <h2>{artist.name}</h2>
+        </a>
+      ))}
+    </div>
+  </main>
+</Layout>
+
+<style>
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.card h2 {
+  margin-top: 10px;
+  font-size: 1.2rem;
+}
+</style>

@@ -1,0 +1,28 @@
+---
+import ExhibitionCard from '../../components/exhibition/ExhibitionCard.astro';
+
+const exhibitions = [
+  {
+    title: "Hiroshi Goseki Exhibition",
+    slug: "hiroshi-goseki",
+    image: "/images/goseki.jpg",
+    startDate: "2026-03-10",
+    endDate: "2026-03-25"
+  },
+  {
+    title: "Group Exhibition",
+    slug: "group-exhibition",
+    image: "/images/group.jpg",
+    startDate: "2025-11-02",
+    endDate: "2025-11-10"
+  }
+];
+---
+
+<h1>Exhibitions</h1>
+
+<section class="exhibition-list">
+  {exhibitions.map((exhibition) => (
+    <ExhibitionCard exhibition={exhibition} />
+  ))}
+</section>

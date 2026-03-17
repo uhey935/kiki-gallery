@@ -1,0 +1,18 @@
+---
+import { formatDateRange, getExhibitionStatus } from '../../utils/date';
+
+const { exhibition } = Astro.props;
+
+const formattedDate = formatDateRange(exhibition.startDate, exhibition.endDate);
+const status = getExhibitionStatus(exhibition.startDate, exhibition.endDate);
+---
+
+<a href={`/exhibitions/${exhibition.slug}`} class="card">
+  <img src={exhibition.image} alt={exhibition.title} />
+
+  <p class="date">{formattedDate}</p>
+
+  <h3>{exhibition.title}</h3>
+
+  <p>{status}</p>
+</a>

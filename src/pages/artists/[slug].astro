@@ -1,0 +1,132 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const { slug } = Astro.params;
+
+// 仮データ（後でCMS化）
+const artists = [
+  {
+    name: "Hiroshi Goseki",
+    slug: "hiroshi-goseki",
+    image: "/images/artists/goseki.jpg",
+    bio_short: "A ceramic artist based in Hiyama, Ōmiya.",
+    bio: "Full biography will go here. This section contains detailed information about the artist.",
+    works: [
+      {
+        title: "Work 1",
+        image: "/images/works/sample-1.jpg",
+      },
+      {
+        title: "Work 2",
+        image: "/images/works/sample-2.jpg",
+      },
+      {
+        title: "Work 3",
+        image: "/images/works/sample-3.jpg",
+      },
+    ],
+    exhibitions: [],
+    shop_url: "https://www.kiki-shop.jp"
+  },
+];
+
+const artist = artists.find((a) => a.slug === slug);
+
+if (!artist) {
+  return Astro.redirect("/artists");
+}
+---
+
+<Layout title={artist.name}>
+
+<article class="artist">
+
+  <!-- =====================
+  Header
+  ====================== -->
+  <header class="artist-header">
+    <h1>{artist.name}</h1>
+
+    <p>
+      {artist.bio_short}
+      <a href="#bio">Learn More</a>
+    </p>
+  </header>
+
+  <!-- =====================
+  Works
+  ====================== -->
+  <section class="artist-works">
+    <h2>Works</h2>
+
+    <ul>
+      {artist.works.map((work) => (
+        <li class="work-card">
+          <button
+            class="work-trigger"
+            data-image={work.image}
+            data-title={work.title}
+          >
+            <figure>
+              <img src={work.image} alt={work.title} />
+              <figcaption>{work.title}</figcaption>
+            </figure>
+          </button>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <!-- =====================
+  Online Shop
+  ====================== -->
+  {artist.shop_url && (
+    <section class="artist-shop">
+      <a href={artist.shop_url} target="_blank" rel="noopener noreferrer">
+        Explore the online shop
+      </a>
+    </section>
+  )}
+
+  <!-- =====================
+  Biography（詳細）
+  ====================== -->
+  <section id="bio" class="artist-bio">
+    <h2>Biography</h2>
+
+    {artist.image && (
+      <figure>
+        <img src={artist.image} alt={artist.name} />
+      </figure>
+    )}
+
+    <p>{artist.bio}</p>
+  </section>
+
+  <!-- =====================
+  Exhibitions
+  ====================== -->
+  <section class="artist-exhibitions">
+    <h2>Exhibitions</h2>
+    <p>Exhibitions will be listed here.</p>
+  </section>
+
+</article>
+
+<!-- =====================
+Modal（構造のみ）
+===================== -->
+<div class="modal" hidden>
+  <div class="modal-overlay"></div>
+
+  <div class="modal-content">
+    <button class="modal-close">Close</button>
+
+    <figure>
+      <img src="" alt="" />
+      <figcaption></figcaption>
+    </figure>
+  </div>
+</div>
+
+</Layout>
