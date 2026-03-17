@@ -8,11 +8,9 @@ const status = getExhibitionStatus(exhibition.startDate, exhibition.endDate);
 ---
 
 <a href={`/exhibitions/${exhibition.slug}`} class="card">
-  <img src={exhibition.image} alt={exhibition.title} />
-
-  <p class="date">{formattedDate}</p>
+  <img src={exhibition.image} alt="" />
 
   <h3>{exhibition.title}</h3>
 
-  <p>{status}</p>
+  <p class="date">{formattedDate}</p>
 </a>

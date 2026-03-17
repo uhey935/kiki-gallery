@@ -1,5 +1,6 @@
 ---
 import ExhibitionCard from '../../components/exhibition/ExhibitionCard.astro';
+import { getExhibitionStatus } from '../../utils/date';
 
 const exhibitions = [
   {
@@ -17,12 +18,26 @@ const exhibitions = [
     endDate: "2025-11-10"
   }
 ];
+
+// 🔥 ここ追加
+const sortedExhibitions = exhibitions.sort((a, b) => {
+  const statusOrder = {
+    upcoming: 0,
+    ongoing: 1,
+    past: 2
+  };
+
+  const statusA = getExhibitionStatus(a.startDate, a.endDate);
+  const statusB = getExhibitionStatus(b.startDate, b.endDate);
+
+  return statusOrder[statusA] - statusOrder[statusB];
+});
 ---
 
 <h1>Exhibitions</h1>
 
 <section class="exhibition-list">
-  {exhibitions.map((exhibition) => (
+  {sortedExhibitions.map((exhibition) => (
     <ExhibitionCard exhibition={exhibition} />
   ))}
 </section>
