@@ -1,4 +1,4 @@
 ---
 name: Hiroshi Goseki
-slug: hiroshi-goseki ← 必須
+slug: hiroshi-goseki
 ---
