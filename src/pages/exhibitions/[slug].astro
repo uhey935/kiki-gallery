@@ -5,7 +5,7 @@ export async function getStaticPaths() {
   const exhibitions = await getCollection("exhibitions");
 
   return exhibitions.map((exh) => ({
-    params: { slug: exh.data.slug },
+    params: { slug: exh.id },
     props: { exh },
   }));
 }
@@ -14,4 +14,18 @@ const { exh } = Astro.props;
 ---
 
 <h1>{exh.data.title}</h1>
-<p>Date: {exh.data.date}</p>
+<p>
+  <a href={`/artists/${exh.data.artist}`}>
+    View Artist
+  </a>
+</p>
+<p>
+  {new Date(exh.data.startDate).toLocaleDateString("en-CA")} - {new Date(exh.data.endDate).toLocaleDateString("en-CA")}
+</p>
+{exh.data.image && (
+  <img
+  src={exh.data.image}
+  alt={exh.data.title}
+  style="max-width: 100%; height: auto;"
+/>
+)}

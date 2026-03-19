@@ -1,143 +1,37 @@
 ---
 import { getCollection } from "astro:content";
-import type { CollectionEntry } from "astro:content";
 
-// ======================
-// 型定義
-// ======================
-type Exhibition = CollectionEntry<"exhibitions">;
-
-// ======================
-// getStaticPaths
-// ======================
 export async function getStaticPaths() {
   const artists = await getCollection("artists");
 
   return artists.map((artist) => ({
-    params: { slug: artist.data.slug },
+    params: { slug: artist.id },
     props: { artist },
   }));
 }
 
-// ======================
-// props
-// ======================
 const { artist } = Astro.props;
-
-// ======================
-// collections取得（並列）
-// ======================
-const [allExhibitions, journals] = await Promise.all([
-  getCollection("exhibitions"),
-  getCollection("journal"),
-]);
-
-// ======================
-// artistに紐づくexhibitions
-// ======================
-const relatedExhibitions = allExhibitions
+const allExhibitions = await getCollection("exhibitions");
+const exhibitions = allExhibitions
   .filter((exh) => exh.data.artist === artist.data.slug)
   .sort(
     (a, b) =>
-      new Date(b.data.date ?? 0).getTime() -
-      new Date(a.data.date ?? 0).getTime()
+      new Date(b.data.startDate).getTime() -
+      new Date(a.data.startDate).getTime()
   );
-
-// ======================
-// ongoing / past 分岐
-// ======================
-const today = new Date();
-
-const ongoingExhibitions = relatedExhibitions.filter(
-  (exh) => new Date(exh.data.date) >= today
-);
-
-const pastExhibitions = relatedExhibitions.filter(
-  (exh) => new Date(exh.data.date) < today
-);
-
-// ======================
-// 表示用ヘルパー
-// ======================
-const getExhibitionProps = (exh: Exhibition) => {
-  const report = journals.find(
-    (j) => j.data.related_exhibition === exh.data.slug
-  );
-
-  return {
-    href: report
-      ? `/journal/${report.data.slug}`
-      : `/exhibitions/${exh.data.slug}`,
-
-    displayDate: report
-      ? report.data.date
-      : exh.data.date,
-
-    image: exh.data.image,
-    title: exh.data.title,
-  };
-};
 ---
 
-<!-- ======================
-     Artist
-====================== -->
 <h1>{artist.data.name}</h1>
-
-<!-- ======================
-     Exhibitions
-====================== -->
-<section>
-  <h2>Exhibitions</h2>
-
-  <div class="grid">
-
-    {/* ongoing */}
-    {ongoingExhibitions.map((exh) => {
-      const { href, displayDate, image, title } =
-        getExhibitionProps(exh);
-
-      return (
-        <a href={href} class="card">
-          <img src={image} alt={title} />
-          <p>{title}</p>
-          <p>{displayDate}</p>
-        </a>
-      );
-    })}
-
-    {/* past */}
-    {pastExhibitions.map((exh) => {
-      const { href, displayDate, image, title } =
-        getExhibitionProps(exh);
-
-      return (
-        <a href={href} class="card">
-          <img src={image} alt={title} />
-          <p>{title}</p>
-          <p>{displayDate}</p>
-        </a>
-      );
-    })}
-
-  </div>
-</section>
-
-<style>
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-  }
-
-  .card img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  .card p {
-    margin-top: 6px;
-    font-size: 14px;
-  }
-</style>
+ <h2>Exhibitions</h2>
+<ul>
+  {exhibitions.map((exh) => (
+    <li>
+      <a href={`/exhibitions/${exh.id}`}>
+        {exh.data.title}
+      </a>
+      <div>
+        {new Date(exh.data.startDate).toLocaleDateString("en-CA")} - {new Date(exh.data.endDate).toLocaleDateString("en-CA")}
+      </div>
+    </li>
+  ))}
+</ul> 

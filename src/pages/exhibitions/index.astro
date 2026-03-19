@@ -1,43 +1,25 @@
 ---
-import ExhibitionCard from '../../components/exhibition/ExhibitionCard.astro';
-import { getExhibitionStatus } from '../../utils/date';
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
 
-const exhibitions = [
-  {
-    title: "Hiroshi Goseki Exhibition",
-    slug: "hiroshi-goseki",
-    image: "/images/goseki.jpg",
-    startDate: "2026-03-10",
-    endDate: "2026-03-25"
-  },
-  {
-    title: "Group Exhibition",
-    slug: "group-exhibition",
-    image: "/images/group.jpg",
-    startDate: "2025-11-02",
-    endDate: "2025-11-10"
-  }
-];
-
-// 🔥 ここ追加
-const sortedExhibitions = exhibitions.sort((a, b) => {
-  const statusOrder = {
-    upcoming: 0,
-    ongoing: 1,
-    past: 2
-  };
-
-  const statusA = getExhibitionStatus(a.startDate, a.endDate);
-  const statusB = getExhibitionStatus(b.startDate, b.endDate);
-
-  return statusOrder[statusA] - statusOrder[statusB];
-});
+const exhibitions = (await getCollection("exhibitions"))
+  .filter((exh) => exh.id !== "test")
+  .sort(
+    (a, b) =>
+      new Date(b.data.startDate).getTime() -
+      new Date(a.data.startDate).getTime()
+  );
 ---
 
-<h1>Exhibitions</h1>
+<Layout>
+  <h1>Exhibitions</h1>
 
-<section class="exhibition-list">
-  {sortedExhibitions.map((exhibition) => (
-    <ExhibitionCard exhibition={exhibition} />
+  {exhibitions.map((exh) => (
+    <div>
+      <a href={`/exhibitions/${exh.id}`}>
+        <p>{exh.data.title}</p>
+        <p>{new Date(exh.data.startDate).toLocaleDateString("en-CA")} - {new Date(exh.data.endDate).toLocaleDateString("en-CA")}</p>
+      </a>
+    </div>
   ))}
-</section>
+</Layout>

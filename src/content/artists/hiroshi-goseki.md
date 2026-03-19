@@ -1,4 +1,4 @@
 ---
-name: Hiroshi Goseki
-slug: hiroshi-goseki
+name: "Hiroshi Goseki"
+slug: "hiroshi-goseki"
 ---
