@@ -1,5 +1,7 @@
 ---
+import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import Breadcrumb from "../../components/Breadcrumb.astro";
 
 export async function getStaticPaths() {
   const artists = await getCollection("artists");
@@ -11,27 +13,72 @@ export async function getStaticPaths() {
 }
 
 const { artist } = Astro.props;
+const allWorks = await getCollection("works");
+const works = allWorks.filter((work) => work.data.artist === artist.id);
 const allExhibitions = await getCollection("exhibitions");
 const exhibitions = allExhibitions
-  .filter((exh) => exh.data.artist === artist.data.slug)
+  .filter((exh) => exh.data.artist === artist.id)
   .sort(
     (a, b) =>
       new Date(b.data.startDate).getTime() -
-      new Date(a.data.startDate).getTime()
+      new Date(a.data.startDate).getTime(),
   );
 ---
 
-<h1>{artist.data.name}</h1>
- <h2>Exhibitions</h2>
-<ul>
-  {exhibitions.map((exh) => (
-    <li>
-      <a href={`/exhibitions/${exh.id}`}>
-        {exh.data.title}
-      </a>
-      <div>
-        {new Date(exh.data.startDate).toLocaleDateString("en-CA")} - {new Date(exh.data.endDate).toLocaleDateString("en-CA")}
-      </div>
-    </li>
-  ))}
-</ul> 
+<Layout
+  breadcrumb={[
+    { label: "Home", href: "/" },
+    { label: "Artists", href: "/artists" },
+    { label: artist.data.name },
+  ]}
+>
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name: artist.data.name,
+      description: artist.data.bio,
+      url: `${Astro.site}/artists/${artist.id}`,
+    })}
+  </script>
+
+  <h1>{artist.data.name}</h1>
+  <p>{artist.data.shortBio}</p>
+  <p>
+    <a href="#bio">Learn more</a>
+  </p>
+  <h2>Works</h2>
+  <ul>
+    {
+      works.map((work) => (
+        <li>
+          <img src={work.data.image} alt={work.data.title} />
+          <p>{work.data.title}</p>
+        </li>
+      ))
+    }
+  </ul>
+  {
+    artist.data.shop_url && (
+      <p>
+        <a href={artist.data.shop_url}>Explore available works</a>
+      </p>
+    )
+  }
+  <h2 id="bio">Biography</h2>
+  <p>{artist.data.bio}</p>
+  <h2>Exhibitions</h2>
+  <ul>
+    {
+      exhibitions.map((exh) => (
+        <li>
+          <a href={`/exhibitions/${exh.id}`}>{exh.data.title}</a>
+          <div>
+            {new Date(exh.data.startDate).toLocaleDateString("en-CA")}-
+            {new Date(exh.data.endDate).toLocaleDateString("en-CA")}
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>

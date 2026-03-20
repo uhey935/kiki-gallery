@@ -6,6 +6,19 @@ const artists = defineCollection({
   schema: z.object({
     name: z.string(),
     slug: z.string(),
+
+    shortBio: z.string(),
+    bio: z.string(),
+    shop_url: z.string().optional(),
+  }),
+});
+
+const works = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "src/content/works" }),
+  schema: z.object({
+    title: z.string(),
+    artist: z.string(),
+    image: z.string(),
   }),
 });
 
@@ -16,4 +29,5 @@ const exhibitions = defineCollection({
 export const collections = {
   artists,
   exhibitions,
+  works,
 };
