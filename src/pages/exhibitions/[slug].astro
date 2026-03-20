@@ -18,7 +18,7 @@ const { exh } = Astro.props;
   breadcrumb={[
     { label: "Home", href: "/" },
     { label: "Exhibitions", href: "/exhibitions" },
-    { label: exh.data.title },
+    { label: exh.data.artist, href: "#" },
   ]}
 >
   <h1>{exh.data.title}</h1>
