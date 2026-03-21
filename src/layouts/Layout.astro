@@ -3,9 +3,12 @@ import Breadcrumb from "../components/Breadcrumb.astro";
 
 interface Props {
   breadcrumb?: { label: string; href: string }[];
+  title?: string;
+  description?: string;
+  image?: string;
 }
 
-const { breadcrumb } = Astro.props;
+const { breadcrumb, title, description, image } = Astro.props;
 
 const navItems = [
   { label: "Artists", href: "/artists" },
@@ -13,8 +16,24 @@ const navItems = [
   { label: "News", href: "/news" },
   { label: "About", href: "/about" },
   { label: "Visit", href: "/visit" },
-  { label: "Online Shop", href: "https://your-shop-url.com", external: true },
+  { label: "Shop", href: "https://your-shop-url.com", external: true },
 ];
+
+const siteUrl = Astro.site ?? "https://your-domain.com";
+
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement:
+    breadcrumb?.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.label,
+      item: new URL(item.href, siteUrl).toString(),
+    })) ?? [],
+};
+
+import Footer from "../components/Footer.astro";
 ---
 
 <!doctype html>
@@ -24,35 +43,45 @@ const navItems = [
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
+    <title>{title ?? "KiKi Gallery"}</title>
+    <meta name="description" content={description ?? "KiKi Gallery"} />
+    <link
+      rel="canonical"
+      href={new URL(Astro.url.pathname, siteUrl).toString()}
+    />
+    <meta property="og:title" content={title ?? "KiKi Gallery"} />
+    <meta property="og:description" content={description ?? "KiKi Gallery"} />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content={new URL(Astro.url.pathname, siteUrl).toString()}
+    />
+    <meta property="og:image" content={image ?? "/default-og.jpg"} />
+    <meta property="og:site_name" content="KiKi Gallery" />
+
+    {
+      breadcrumb && breadcrumb.length > 0 && (
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify(breadcrumbJsonLd)}
+        />
+      )
+    }
   </head>
   <body>
     <header>
-      <!-- ハンバーガーボタン -->
-      <button id="menu-toggle" aria-label="Menu" aria-expanded="false">
+      <a href="/" aria-label="Home">KiKi</a>
+      <button
+        id="menu-toggle"
+        aria-label="メニューを開閉する"
+        aria-expanded="false"
+      >
         ☰
       </button>
-      <!-- PCナビ -->
-      <nav class="desktop-nav" aria-label="Primary">
+      <nav class="desktop-nav" aria-label="主要ナビゲーション">
         <ul>
-          {navItems.map((item) => (
-            <li>
-              <a
-                href={item.href}
-                target={item.external ? "_blank" : undefined}
-                rel={item.external ? "noopener noreferrer" : undefined}
-              >
-                {item.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <!-- モバイルメニュー -->
-      <div id="mobile-menu" class="mobile-menu" aria-hidden="true">
-        <nav aria-label="Mobile">
-          <ul>
-            {navItems.map((item) => (
+          {
+            navItems.map((item) => (
               <li>
                 <a
                   href={item.href}
@@ -62,15 +91,38 @@ const navItems = [
                   {item.label}
                 </a>
               </li>
-            ))}
+            ))
+          }
+        </ul>
+      </nav>
+      <div id="mobile-menu" class="mobile-menu" aria-hidden="true">
+        <nav aria-label="モバイルナビゲーション">
+          <ul>
+            {
+              navItems.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    target={item.external ? "_blank" : undefined}
+                    rel={item.external ? "noopener noreferrer" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
           </ul>
         </nav>
       </div>
     </header>
+
     {breadcrumb && <Breadcrumb items={breadcrumb} />}
+
     <main>
       <slot />
     </main>
+    <Footer />
+
     <script>
       const initMenu = () => {
         const button = document.getElementById("menu-toggle");
@@ -78,17 +130,11 @@ const navItems = [
 
         if (button && menu) {
           button.onclick = () => {
-            const expanded =
-              button.getAttribute("aria-expanded") === "true";
+            const isExpanded = button.getAttribute("aria-expanded") === "true";
 
-            button.setAttribute(
-              "aria-expanded",
-              (!expanded).toString()
-            );
-
+            button.setAttribute("aria-expanded", (!isExpanded).toString());
             menu.classList.toggle("is-open");
-
-            menu.setAttribute("aria-hidden", expanded.toString());
+            menu.setAttribute("aria-hidden", isExpanded.toString());
           };
         }
       };

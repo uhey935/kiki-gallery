@@ -12,24 +12,147 @@ export async function getStaticPaths() {
 }
 
 const { exh } = Astro.props;
+
+// =========================
+// artist取得（IDベース）
+// =========================
+const artists = await getCollection("artists");
+const artist = artists.find((a) => a.id === exh.data.artist);
+
+// =========================
+// 日付フォーマット（軽く整形）
+// =========================
+const formatDate = (date: string) =>
+  new Date(date).toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Tokyo",
+  });
+
+const formatDateText = (date: string) =>
+  new Date(date).toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "Asia/Tokyo",
+  });
+
+// =========================
+// eventStatus 自動判定
+// =========================
+const today = new Date();
+const start = new Date(exh.data.startDate);
+const end = new Date(exh.data.endDate);
+
+let eventStatus = "https://schema.org/EventScheduled";
+
+if (today > end) {
+  eventStatus = "https://schema.org/EventCompleted";
+}
+
+// =========================
+// URL
+// =========================
+const siteUrl = Astro.site ?? "https://your-domain.com";
+const pageUrl = new URL(`/exhibitions/${exh.id}`, siteUrl).toString();
+
+// =========================
+// JSON-LD（Event）
+// =========================
+const exhibitionJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Event",
+  name: exh.data.title,
+  startDate: exh.data.startDate,
+  endDate: exh.data.endDate,
+  eventStatus,
+  eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+  location: {
+    "@type": "Place",
+    name: exh.data.venue?.name ?? "KiKi Gallery",
+    ...(exh.data.venue?.address && {
+      address: exh.data.venue.address,
+    }),
+  },
+  performer: {
+    "@type": "Person",
+    name: artist?.data.name ?? exh.data.artist,
+    ...(artist && {
+      url: new URL(`/artists/${artist.id}`, siteUrl).toString(),
+    }),
+  },
+  url: pageUrl,
+};
+
 ---
 
 <Layout
+  title={`${exh.data.title} | KiKi Gallery`}
+  description={`${artist?.data.name ?? ""} の展示。${exh.data.startDate}〜${exh.data.endDate}`}
+  image={exh.data.image}
   breadcrumb={[
     { label: "Home", href: "/" },
     { label: "Exhibitions", href: "/exhibitions" },
-    { label: exh.data.artist, href: "#" },
+    { label: exh.data.title, href: `/exhibitions/${exh.id}` },
   ]}
 >
-  <h1>{exh.data.title}</h1>
 
-  <a href={`/artists/${exh.data.artist}`}>View Artist</a>
+  <!-- JSON-LD -->
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify(exhibitionJsonLd)}
+  />
 
+  <!-- =========================
+       Hero Image
+  ========================= -->
+  {exh.data.image && (
+    <img src={exh.data.image} alt={exh.data.title} />
+  )}
+
+  <!-- =========================
+       Artist
+  ========================= -->
   <p>
-    {new Date(exh.data.startDate).toLocaleDateString("en-CA")}
-    -
-    {new Date(exh.data.endDate).toLocaleDateString("en-CA")}
+      {artist?.data.name ?? exh.data.artist}
   </p>
 
-  {exh.data.image && <img src={exh.data.image} alt={exh.data.title} />}
+  <!-- =========================
+       Title（H1）
+  ========================= -->
+  <h1>{exh.data.title}</h1>
+
+  <!-- =========================
+       Date
+  ========================= -->
+  <p>
+    {formatDate(exh.data.startDate)}
+    {exh.data.endDate && ` - ${formatDate(exh.data.endDate)}`}
+  </p>
+
+  <!-- =========================
+       Venue
+  ========================= -->
+  <p>{exh.data.venue?.name}</p>
+
+  <!-- =========================
+       Body（.md本文）
+  ========================= -->
+  <article>
+    <slot />
+  </article>
+
+  <!-- =========================
+       Artist Section
+  ========================= -->
+  <section>
+    <h2>ARTIST</h2>
+    <p>
+      <a href={`/artists/${exh.data.artist}`}>
+        {artist?.data.name ?? exh.data.artist}
+      </a>
+    </p>
+  </section>
+
 </Layout>
