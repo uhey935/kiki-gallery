@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
+import { formatDateRangeJa } from "../../utils/date";
 
 const exhibitions = (await getCollection("exhibitions"))
   .filter((exh) => exh.id !== "test")
@@ -11,14 +12,20 @@ const exhibitions = (await getCollection("exhibitions"))
   );
 ---
 
-<Layout>
+<Layout title="Exhibitions | KiKi Gallery">
   <h1>Exhibitions</h1>
 
   {exhibitions.map((exh) => (
     <div>
       <a href={`/exhibitions/${exh.id}`}>
         <p>{exh.data.title}</p>
-        <p>{new Date(exh.data.startDate).toLocaleDateString("en-CA")} - {new Date(exh.data.endDate).toLocaleDateString("en-CA")}</p>
+
+        <p>
+          {formatDateRangeJa(
+            exh.data.startDate,
+            exh.data.endDate
+          )}
+        </p>
       </a>
     </div>
   ))}
