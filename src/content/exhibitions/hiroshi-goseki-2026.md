@@ -1,6 +1,6 @@
 ---
 title: absence
-artist: goseki-yuji
+artist: hiroshi-goseki
 startDate: 2026-08-15
 endDate: 2026-08-20
 

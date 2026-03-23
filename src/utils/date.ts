@@ -1,26 +1,12 @@
-export function formatDateRange(start: string, end: string) {
+export function formatDateRangeJa(start: string, end: string) {
   const startDate = new Date(start);
   const endDate = new Date(end);
 
-  const options: Intl.DateTimeFormatOptions = {
-    month: 'short',
-    day: 'numeric',
-  };
+  const sameYear = startDate.getFullYear() === endDate.getFullYear();
 
-  const startFormatted = startDate.toLocaleDateString('en-US', options);
-  const endFormatted = endDate.toLocaleDateString('en-US', options);
+  if (sameYear) {
+    return `${startDate.getFullYear()}年${startDate.getMonth() + 1}月${startDate.getDate()}日 - ${endDate.getMonth() + 1}月${endDate.getDate()}日`;
+  }
 
-  const year = endDate.getFullYear();
-
-  return `${startFormatted} - ${endFormatted}, ${year}`;
-}
-
-export function getExhibitionStatus(start: string, end: string) {
-  const now = new Date();
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-
-  if (now < startDate) return 'upcoming';
-  if (now > endDate) return 'past';
-  return 'ongoing';
+  return `${startDate.getFullYear()}年${startDate.getMonth() + 1}月${startDate.getDate()}日 - ${endDate.getFullYear()}年${endDate.getMonth() + 1}月${endDate.getDate()}日`;
 }

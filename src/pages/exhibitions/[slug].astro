@@ -1,158 +1,84 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import { formatDateRangeJa } from "../../utils/date";
 
 export async function getStaticPaths() {
   const exhibitions = await getCollection("exhibitions");
+  const artists = await getCollection("artists");
 
-  return exhibitions.map((exh) => ({
-    params: { slug: exh.id },
-    props: { exh },
-  }));
+  return exhibitions.map((exh) => {
+    const artist = artists.find((a) => a.data.slug === exh.data.artist);
+
+    return {
+      params: { slug: exh.id },
+      props: { exh, artist },
+    };
+  });
 }
 
-const { exh } = Astro.props;
+const { exh, artist } = Astro.props;
 
-// =========================
-// artist取得（IDベース）
-// =========================
-const artists = await getCollection("artists");
-const artist = artists.find((a) => a.id === exh.data.artist);
-
-// =========================
-// 日付フォーマット（軽く整形）
-// =========================
-const formatDate = (date: string) =>
-  new Date(date).toLocaleDateString("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    timeZone: "Asia/Tokyo",
-  });
-
-const formatDateText = (date: string) =>
-  new Date(date).toLocaleDateString("ja-JP", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "Asia/Tokyo",
-  });
-
-// =========================
-// eventStatus 自動判定
-// =========================
-const today = new Date();
-const start = new Date(exh.data.startDate);
-const end = new Date(exh.data.endDate);
-
-let eventStatus = "https://schema.org/EventScheduled";
-
-if (today > end) {
-  eventStatus = "https://schema.org/EventCompleted";
-}
-
-// =========================
-// URL
-// =========================
-const siteUrl = Astro.site ?? "https://your-domain.com";
-const pageUrl = new URL(`/exhibitions/${exh.id}`, siteUrl).toString();
-
-// =========================
-// JSON-LD（Event）
-// =========================
-const exhibitionJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Event",
-  name: exh.data.title,
-  startDate: exh.data.startDate,
-  endDate: exh.data.endDate,
-  eventStatus,
-  eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-  location: {
-    "@type": "Place",
-    name: exh.data.venue?.name ?? "KiKi Gallery",
-    ...(exh.data.venue?.address && {
-      address: exh.data.venue.address,
-    }),
-  },
-  performer: {
-    "@type": "Person",
-    name: artist?.data.name ?? exh.data.artist,
-    ...(artist && {
-      url: new URL(`/artists/${artist.id}`, siteUrl).toString(),
-    }),
-  },
-  url: pageUrl,
-};
-
+const artistName = artist?.data.nameJa ?? artist?.data.name ?? "";
+const dateRange = formatDateRangeJa(
+  exh.data.startDate,
+  exh.data.endDate
+);
 ---
 
 <Layout
   title={`${exh.data.title} | KiKi Gallery`}
-  description={`${artist?.data.name ?? ""} の展示。${exh.data.startDate}〜${exh.data.endDate}`}
+  description={`${artistName} の展示。${dateRange}`}
   image={exh.data.image}
-  breadcrumb={[
-    { label: "Home", href: "/" },
-    { label: "Exhibitions", href: "/exhibitions" },
-    { label: exh.data.title, href: `/exhibitions/${exh.id}` },
-  ]}
 >
+  <!-- 作家名 -->
+  <p>{artistName}</p>
 
-  <!-- JSON-LD -->
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify(exhibitionJsonLd)}
-  />
-
-  <!-- =========================
-       Hero Image
-  ========================= -->
-  {exh.data.image && (
-    <img src={exh.data.image} alt={exh.data.title} />
-  )}
-
-  <!-- =========================
-       Artist
-  ========================= -->
-  <p>
-      {artist?.data.name ?? exh.data.artist}
-  </p>
-
-  <!-- =========================
-       Title（H1）
-  ========================= -->
+  <!-- タイトル -->
   <h1>{exh.data.title}</h1>
 
-  <!-- =========================
-       Date
-  ========================= -->
+  <!-- 開催日程 -->
   <p>
-    {formatDate(exh.data.startDate)}
-    {exh.data.endDate && ` - ${formatDate(exh.data.endDate)}`}
+    開催日程：{dateRange} {exh.data.openTime}
   </p>
 
-  <!-- =========================
-       Venue
-  ========================= -->
-  <p>{exh.data.venue?.name}</p>
+  <!-- 休廊日 -->
+  {exh.data.closedDays && (
+    <p>休廊日： {exh.data.closedDays}</p>
+  )}
 
-  <!-- =========================
-       Body（.md本文）
-  ========================= -->
-  <article>
-    <slot />
-  </article>
-
-  <!-- =========================
-       Artist Section
-  ========================= -->
-  <section>
-    <h2>ARTIST</h2>
+  <!-- 在廊日 -->
+  {exh.data.attendance && (
     <p>
-      <a href={`/artists/${exh.data.artist}`}>
-        {artist?.data.name ?? exh.data.artist}
-      </a>
+      作家在廊予定日： {exh.data.attendance}
+      <small>（※変更となる場合があります）</small>
     </p>
-  </section>
+  )}
 
+  <!-- 会場 -->
+  <p>
+    会場：
+    <a
+      href={exh.data.venue.map}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {exh.data.venue.name}
+    </a>
+  </p>
+
+  <!-- 本文 -->
+  <article set:html={exh.body} />
+
+  <!-- アーティスト導線 -->
+  {artist && (
+    <section>
+      <h2>Artist</h2>
+      <p>
+        <a href={`/artists/${artist.id}`}>
+          {artistName}
+        </a>
+      </p>
+    </section>
+  )}
 </Layout>

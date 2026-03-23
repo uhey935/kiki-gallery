@@ -5,8 +5,8 @@ const artists = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "src/content/artists" }),
   schema: z.object({
     name: z.string(),
+    nameJa: z.string().optional(), 
     slug: z.string(),
-
     shortBio: z.string(),
     bio: z.string(),
     shop_url: z.string().optional(),
