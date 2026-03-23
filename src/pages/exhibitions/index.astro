@@ -8,25 +8,25 @@ const exhibitions = (await getCollection("exhibitions"))
   .sort(
     (a, b) =>
       new Date(b.data.startDate).getTime() -
-      new Date(a.data.startDate).getTime()
+      new Date(a.data.startDate).getTime(),
   );
 ---
 
-<Layout title="Exhibitions | KiKi Gallery">
+<Layout
+  title="Exhibitions | KiKi Gallery"
+  breadcrumb={[{ label: "Exhibitions", href: "/exhibitions" }]}
+>
   <h1>Exhibitions</h1>
 
-  {exhibitions.map((exh) => (
-    <div>
-      <a href={`/exhibitions/${exh.id}`}>
-        <p>{exh.data.title}</p>
+  {
+    exhibitions.map((exh) => (
+      <div>
+        <a href={`/exhibitions/${exh.id}`}>
+          <p>{exh.data.title}</p>
 
-        <p>
-          {formatDateRangeJa(
-            exh.data.startDate,
-            exh.data.endDate
-          )}
-        </p>
-      </a>
-    </div>
-  ))}
+          <p>{formatDateRangeJa(exh.data.startDate, exh.data.endDate)}</p>
+        </a>
+      </div>
+    ))
+  }
 </Layout>

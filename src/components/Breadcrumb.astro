@@ -1,16 +1,18 @@
 ---
-const { items } = Astro.props;
+const { items = [] } = Astro.props as {
+  items: { label: string; href: string }[];
+};
 ---
 
-<nav aria-label="Breadcrumb">
+<nav aria-label="breadcrumb">
   {items.map((item, index) => (
-    <>
-      {index !== 0 && <span> / </span>}
+    <span>
+      {index !== 0 && " / "}
       {item.href ? (
         <a href={item.href}>{item.label}</a>
       ) : (
-        <span>{item.label}</span>
+        item.label
       )}
-    </>
+    </span>
   ))}
 </nav>

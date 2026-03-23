@@ -27,9 +27,10 @@ const dateRange = formatDateRangeJa(
 ---
 
 <Layout
-  title={`${exh.data.title} | KiKi Gallery`}
-  description={`${artistName} の展示。${dateRange}`}
-  image={exh.data.image}
+  breadcrumb={[
+    { label: "Exhibitions", href: "/exhibitions" },
+    { label: exh.data.title, href: "#" },
+  ]}
 >
   <!-- 作家名 -->
   <p>{artistName}</p>

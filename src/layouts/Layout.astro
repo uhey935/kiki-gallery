@@ -1,5 +1,6 @@
 ---
 import Breadcrumb from "../components/Breadcrumb.astro";
+import Footer from "../components/Footer.astro";
 
 interface Props {
   breadcrumb?: { label: string; href: string }[];
@@ -19,21 +20,31 @@ const navItems = [
   { label: "Shop", href: "https://your-shop-url.com", external: true },
 ];
 
-const siteUrl = Astro.site ?? "https://your-domain.com";
+const siteUrl = Astro.site?.origin ?? "https://your-domain.com";
 
+// OGP画像
+const ogImageUrl = new URL(image ?? "/default-og.jpg", siteUrl).toString();
+
+// breadcrumb（Home付き）
+const breadcrumbList = [
+  { label: "Home", href: "/" },
+  ...(breadcrumb ?? []),
+];
+
+// JSON-LD
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
-  itemListElement:
-    breadcrumb?.map((item, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      name: item.label,
-      item: new URL(item.href, siteUrl).toString(),
-    })) ?? [],
+  itemListElement: breadcrumbList.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: item.label,
+    item:
+      item.href === "#"
+        ? siteUrl
+        : new URL(item.href, siteUrl).toString(),
+  })),
 };
-
-import Footer from "../components/Footer.astro";
 ---
 
 <!doctype html>
@@ -43,45 +54,59 @@ import Footer from "../components/Footer.astro";
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>{title ?? "KiKi Gallery"}</title>
+
+    <title>{title ? `${title} | KiKi Gallery` : "KiKi Gallery"}</title>
     <meta name="description" content={description ?? "KiKi Gallery"} />
-    <link
-      rel="canonical"
-      href={new URL(Astro.url.pathname, siteUrl).toString()}
-    />
+    <link rel="canonical" href={new URL(Astro.url.pathname, siteUrl).toString()} />
+
     <meta property="og:title" content={title ?? "KiKi Gallery"} />
     <meta property="og:description" content={description ?? "KiKi Gallery"} />
     <meta property="og:type" content="website" />
-    <meta
-      property="og:url"
-      content={new URL(Astro.url.pathname, siteUrl).toString()}
-    />
-    <meta property="og:image" content={image ?? "/default-og.jpg"} />
+    <meta property="og:url" content={new URL(Astro.url.pathname, siteUrl).toString()} />
+    <meta property="og:image" content={ogImageUrl} />
     <meta property="og:site_name" content="KiKi Gallery" />
 
-    {
-      breadcrumb && breadcrumb.length > 0 && (
-        <script
-          type="application/ld+json"
-          set:html={JSON.stringify(breadcrumbJsonLd)}
-        />
-      )
-    }
+    {breadcrumbList.length > 0 && (
+      <script
+        type="application/ld+json"
+        set:html={JSON.stringify(breadcrumbJsonLd)}
+      />
+    )}
   </head>
+
   <body>
     <header>
       <a href="/" aria-label="Home">KiKi</a>
+
       <button
         id="menu-toggle"
         aria-label="メニューを開閉する"
         aria-expanded="false"
+        aria-controls="mobile-menu"
       >
         ☰
       </button>
+
       <nav class="desktop-nav" aria-label="主要ナビゲーション">
         <ul>
-          {
-            navItems.map((item) => (
+          {navItems.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                target={item.external ? "_blank" : undefined}
+                rel={item.external ? "noopener noreferrer" : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div id="mobile-menu" class="mobile-menu" aria-hidden="true">
+        <nav aria-label="モバイルナビゲーション">
+          <ul>
+            {navItems.map((item) => (
               <li>
                 <a
                   href={item.href}
@@ -91,36 +116,18 @@ import Footer from "../components/Footer.astro";
                   {item.label}
                 </a>
               </li>
-            ))
-          }
-        </ul>
-      </nav>
-      <div id="mobile-menu" class="mobile-menu" aria-hidden="true">
-        <nav aria-label="モバイルナビゲーション">
-          <ul>
-            {
-              navItems.map((item) => (
-                <li>
-                  <a
-                    href={item.href}
-                    target={item.external ? "_blank" : undefined}
-                    rel={item.external ? "noopener noreferrer" : undefined}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))
-            }
+            ))}
           </ul>
         </nav>
       </div>
     </header>
 
-    {breadcrumb && <Breadcrumb items={breadcrumb} />}
+    {breadcrumbList.length > 1 && <Breadcrumb items={breadcrumbList} />}
 
     <main>
       <slot />
     </main>
+
     <Footer />
 
     <script>
@@ -129,13 +136,14 @@ import Footer from "../components/Footer.astro";
         const menu = document.getElementById("mobile-menu");
 
         if (button && menu) {
-          button.onclick = () => {
+          const toggleMenu = () => {
             const isExpanded = button.getAttribute("aria-expanded") === "true";
-
             button.setAttribute("aria-expanded", (!isExpanded).toString());
             menu.classList.toggle("is-open");
             menu.setAttribute("aria-hidden", isExpanded.toString());
           };
+
+          button.addEventListener("click", toggleMenu);
         }
       };
 

@@ -27,9 +27,8 @@ const exhibitions = allExhibitions
 
 <Layout
   breadcrumb={[
-  { label: "Home", href: "/" },
   { label: "Artists", href: "/artists" },
-  { label: artist.data.name, href: "#" }
+  { label: artist.data.nameJa ?? artist.data.name, href: "#" }
 ]}
 >
   <script type="application/ld+json">
