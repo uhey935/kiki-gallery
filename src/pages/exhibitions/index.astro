@@ -3,7 +3,10 @@ import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import { formatDateRangeJa } from "../../utils/date";
 
-const allExhibitions = await getCollection("exhibitions", ({ id }) => id !== "test");
+const allExhibitions = await getCollection(
+  "exhibitions",
+  ({ id }) => id !== "test",
+);
 
 const now = new Date();
 // 時刻を00:00:00にリセットして日付単位で比較しやすくする
@@ -15,7 +18,7 @@ const exhibitions = allExhibitions
   .map((exh) => {
     const start = new Date(exh.data.startDate);
     const end = exh.data.endDate ? new Date(exh.data.endDate) : start;
-    
+
     // 終了日の23:59:59までを当日として扱うための調整
     const compareEnd = new Date(end);
     compareEnd.setHours(23, 59, 59, 999);
@@ -35,7 +38,10 @@ const exhibitions = allExhibitions
       return statusOrder[a.status] - statusOrder[b.status];
     }
     // 2. 同じステータス内では開始日が新しい順
-    return new Date(b.data.startDate).getTime() - new Date(a.data.startDate).getTime();
+    return (
+      new Date(b.data.startDate).getTime() -
+      new Date(a.data.startDate).getTime()
+    );
   });
 ---
 
@@ -48,16 +54,21 @@ const exhibitions = allExhibitions
 
     <div class="exhibition-list">
       {
-        exhibitions.map((exh) => (
-          <article class={`exhibition-item ${exh.status}`}>
-            <a href={`/exhibitions/${exh.id}`}>
-              <h2>{exh.data.title}</h2>
-              <p class="date">
-                {formatDateRangeJa(exh.data.startDate, exh.data.endDate)}
-              </p>
-            </a>
-          </article>
-        ))
+        exhibitions
+          .filter((exh) => exh.status !== "past") // ← ここ追加
+          .map((exh) => (
+            <article class={`exhibition-item ${exh.status}`}>
+              <a href={`/exhibitions/${exh.id}`}>
+                <span class={`status ${exh.status}`}>
+                  {exh.status.toUpperCase()}
+                </span>
+                <h2>{exh.data.title}</h2>
+                <p class="date">
+                  {formatDateRangeJa(exh.data.startDate, exh.data.endDate)}
+                </p>
+              </a>
+            </article>
+          ))
       }
     </div>
   </main>
