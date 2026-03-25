@@ -3,30 +3,62 @@ import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import { formatDateRangeJa } from "../../utils/date";
 
-const exhibitions = (await getCollection("exhibitions"))
-  .filter((exh) => exh.id !== "test")
-  .sort(
-    (a, b) =>
-      new Date(b.data.startDate).getTime() -
-      new Date(a.data.startDate).getTime(),
-  );
+const allExhibitions = await getCollection("exhibitions", ({ id }) => id !== "test");
+
+const now = new Date();
+// 時刻を00:00:00にリセットして日付単位で比較しやすくする
+now.setHours(0, 0, 0, 0);
+
+const statusOrder = { ongoing: 0, upcoming: 1, past: 2 };
+
+const exhibitions = allExhibitions
+  .map((exh) => {
+    const start = new Date(exh.data.startDate);
+    const end = exh.data.endDate ? new Date(exh.data.endDate) : start;
+    
+    // 終了日の23:59:59までを当日として扱うための調整
+    const compareEnd = new Date(end);
+    compareEnd.setHours(23, 59, 59, 999);
+
+    let status: keyof typeof statusOrder = "past";
+    if (start > now) {
+      status = "upcoming";
+    } else if (compareEnd >= now) {
+      status = "ongoing";
+    }
+
+    return { ...exh, status };
+  })
+  .sort((a, b) => {
+    // 1. ステータス順（開催中 > 予定 > 過去）
+    if (statusOrder[a.status] !== statusOrder[b.status]) {
+      return statusOrder[a.status] - statusOrder[b.status];
+    }
+    // 2. 同じステータス内では開始日が新しい順
+    return new Date(b.data.startDate).getTime() - new Date(a.data.startDate).getTime();
+  });
 ---
 
 <Layout
   title="Exhibitions | KiKi Gallery"
   breadcrumb={[{ label: "Exhibitions", href: "/exhibitions" }]}
 >
-  <h1>Exhibitions</h1>
+  <main class="container">
+    <h1>Exhibitions</h1>
 
-  {
-    exhibitions.map((exh) => (
-      <div>
-        <a href={`/exhibitions/${exh.id}`}>
-          <p>{exh.data.title}</p>
-
-          <p>{formatDateRangeJa(exh.data.startDate, exh.data.endDate)}</p>
-        </a>
-      </div>
-    ))
-  }
+    <div class="exhibition-list">
+      {
+        exhibitions.map((exh) => (
+          <article class={`exhibition-item ${exh.status}`}>
+            <a href={`/exhibitions/${exh.id}`}>
+              <h2>{exh.data.title}</h2>
+              <p class="date">
+                {formatDateRangeJa(exh.data.startDate, exh.data.endDate)}
+              </p>
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </main>
 </Layout>

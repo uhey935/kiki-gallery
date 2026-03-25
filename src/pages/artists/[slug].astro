@@ -1,11 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
-import Breadcrumb from "../../components/Breadcrumb.astro";
 
 export async function getStaticPaths() {
   const artists = await getCollection("artists");
-
   return artists.map((artist) => ({
     params: { slug: artist.id },
     props: { artist },
@@ -13,71 +11,113 @@ export async function getStaticPaths() {
 }
 
 const { artist } = Astro.props;
-const allWorks = await getCollection("works");
+const artistName = artist.data.nameJa || artist.data.name;
+
+// データ取得（並列）
+const [allWorks, allExhibitions] = await Promise.all([
+  getCollection("works"),
+  getCollection("exhibitions"),
+]);
+
 const works = allWorks.filter((work) => work.data.artist === artist.id);
-const allExhibitions = await getCollection("exhibitions");
+
 const exhibitions = allExhibitions
   .filter((exh) => exh.data.artist === artist.id)
   .sort(
     (a, b) =>
       new Date(b.data.startDate).getTime() -
-      new Date(a.data.startDate).getTime(),
+      new Date(a.data.startDate).getTime()
   );
+
+// statusロジック（内部用）
+const now = new Date();
+now.setHours(0, 0, 0, 0);
+
+const exhibitionsWithStatus = exhibitions.map((exh) => {
+  const start = new Date(exh.data.startDate);
+  const end = exh.data.endDate ? new Date(exh.data.endDate) : new Date(start);
+
+  const compareEnd = new Date(end);
+  compareEnd.setHours(23, 59, 59, 999);
+
+  let status = "past";
+  if (start > now) {
+    status = "upcoming";
+  } else if (compareEnd >= now) {
+    status = "ongoing";
+  }
+
+  return { ...exh, status };
+});
+
+const hasOngoing = exhibitionsWithStatus.some((exh) => exh.status === "ongoing");
+const hasUpcoming = exhibitionsWithStatus.some((exh) => exh.status === "upcoming");
+
+let artistStatus = "past";
+if (hasOngoing) {
+  artistStatus = "ongoing";
+} else if (hasUpcoming) {
+  artistStatus = "upcoming";
+}
+
+// JSON-LD
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: artistName,
+  description: artist.data.bio,
+  url: `/artists/${artist.id}`,
+};
 ---
 
 <Layout
+  title={artistName}
   breadcrumb={[
-  { label: "Artists", href: "/artists" },
-  { label: artist.data.nameJa ?? artist.data.name, href: "#" }
-]}
+    { label: "Artists", href: "/artists" },
+    { label: artistName, href: `/artists/${artist.id}` }
+  ]}
 >
-  <script type="application/ld+json">
-    {JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Person",
-      name: artist.data.name,
-      description: artist.data.bio,
-      url: `${Astro.site}/artists/${artist.id}`,
-    })}
-  </script>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-  <h1>{artist.data.name}</h1>
-  <p>{artist.data.shortBio}</p>
-  <p>
-    <a href="#bio">Learn more</a>
-  </p>
-  <h2>Works</h2>
-  <ul>
-    {
-      works.map((work) => (
-        <li>
-          <img src={work.data.image} alt={work.data.title} />
-          <p>{work.data.title}</p>
-        </li>
-      ))
-    }
-  </ul>
-  {
-    artist.data.shop_url && (
+  <article>
+    <h1>{artistName}</h1>
+    <p>{artist.data.shortBio}</p>
+    <p><a href="#bio">Learn more</a></p>
+
+    <section>
+      <h2>Works</h2>
+      <div class="works-grid">
+        {works.map((work) => (
+          <figure>
+            <img src={work.data.image} alt={work.data.title} loading="lazy" />
+            <figcaption>{work.data.title}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    {artist.data.shop_url && (
       <p>
-        <a href={artist.data.shop_url}>Explore available works</a>
+        <a href={artist.data.shop_url} target="_blank" rel="noopener noreferrer">
+          Explore available works
+        </a>
       </p>
-    )
-  }
-  <h2 id="bio">Biography</h2>
-  <p>{artist.data.bio}</p>
-  <h2>Exhibitions</h2>
-  <ul>
-    {
-      exhibitions.map((exh) => (
-        <li>
-          <a href={`/exhibitions/${exh.id}`}>{exh.data.title}</a>
-          <div>
-            {new Date(exh.data.startDate).toLocaleDateString("en-CA")}-
-            {new Date(exh.data.endDate).toLocaleDateString("en-CA")}
-          </div>
-        </li>
-      ))
-    }
-  </ul>
+    )}
+
+    <section id="bio">
+      <h2>Biography</h2>
+      <p>{artist.data.bio}</p>
+    </section>
+
+    <section>
+      <h2>Exhibitions</h2>
+      <ul>
+        {exhibitions.map((exh) => (
+          <li>
+            <a href={`/exhibitions/${exh.id}`}>{exh.data.title}</a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </article>
 </Layout>

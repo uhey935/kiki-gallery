@@ -8,7 +8,7 @@ export async function getStaticPaths() {
   const artists = await getCollection("artists");
 
   return exhibitions.map((exh) => {
-    const artist = artists.find((a) => a.data.slug === exh.data.artist);
+    const artist = artists.find((a) => a.id === exh.data.artist);
 
     return {
       params: { slug: exh.id },
@@ -18,12 +18,21 @@ export async function getStaticPaths() {
 }
 
 const { exh, artist } = Astro.props;
-
-const artistName = artist?.data.nameJa ?? artist?.data.name ?? "";
+if (!artist) throw new Error("Artist not found");
+const artistName = artist.data.nameJa || artist.data.name;
 const dateRange = formatDateRangeJa(
   exh.data.startDate,
   exh.data.endDate
 );
+
+const now = new Date();
+
+const status =
+  new Date(exh.data.startDate) > now
+    ? "upcoming"
+    : new Date(exh.data.endDate || exh.data.startDate) >= now
+    ? "ongoing"
+    : "past";
 ---
 
 <Layout
@@ -32,6 +41,31 @@ const dateRange = formatDateRangeJa(
     { label: exh.data.title, href: "#" },
   ]}
 >
+<script type="application/ld+json">
+  {JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: exh.data.title,
+    startDate: exh.data.startDate,
+    endDate: exh.data.endDate || exh.data.startDate,
+    eventStatus:
+      status === "upcoming"
+        ? "https://schema.org/EventScheduled"
+        : status === "ongoing"
+        ? "https://schema.org/EventInProgress"
+        : "https://schema.org/EventCompleted",
+    location: {
+      "@type": "Place",
+      name: exh.data.venue.name,
+      url: exh.data.venue.map,
+    },
+    performer: {
+      "@type": "Person",
+      name: artistName,
+    },
+    url: `${Astro.site}/exhibitions/${exh.id}`,
+  })}
+</script>
   <!-- 作家名 -->
   <p>{artistName}</p>
 
