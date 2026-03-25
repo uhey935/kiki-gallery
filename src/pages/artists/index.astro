@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { getCollection, type CollectionEntry } from "astro:content";
 import { groupExhibitionsByArtist } from "../../utils/groupExhibitionsByArtist";
 import { getFeaturedExhibitions } from "../../utils/getFeaturedExhibitions";
+import { getArtistStatusMap } from "../../utils/getArtistStatusMap";
 
 // 型定義
 type Artist = CollectionEntry<"artists">;
@@ -26,7 +27,13 @@ const displayExhibitions = [
   ...featuredExhibitions.filter((e) => e.status === "upcoming"),
 ].slice(0, 4);
 
-// ⑤ artists一覧（アルファベット順）
+// ⑤ artist status map（将来用）
+const artistStatusMap = getArtistStatusMap(
+  allArtists,
+  exhibitionsByArtist
+);
+
+// ⑥ artists一覧（アルファベット順）
 const artistsSorted = [...allArtists].sort((a, b) =>
   (a.data.name ?? "").localeCompare(b.data.name ?? "", "en", {
     sensitivity: "base",
@@ -37,18 +44,17 @@ const artistsSorted = [...allArtists].sort((a, b) =>
 <Layout title="Artists" breadcrumb={[{ label: "Artists", href: "/artists" }]}>
   <h1>Artists</h1>
 
-  {/* EXHセクション */}
   {displayExhibitions.length > 0 && (
     <section>
       {displayExhibitions.map(({ artist, exhibition, status }) => (
         <article>
           <a href={`/exhibitions/${exhibition.id}`}>
+            
             {artist.data.image && (
               <img
                 src={artist.data.image}
                 alt={artist.data.nameJa ?? artist.data.name}
                 loading="lazy"
-                style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover;"
               />
             )}
 
@@ -56,16 +62,14 @@ const artistsSorted = [...allArtists].sort((a, b) =>
               {status === "ongoing" ? "Current" : "Upcoming"}
             </p>
 
-            <h2>
-              {artist.data.nameJa ?? artist.data.name}
-            </h2>
+            <h2>{artist.data.nameJa ?? artist.data.name}</h2>
+
           </a>
         </article>
       ))}
     </section>
   )}
 
-  {/* Artists一覧 */}
   <section>
     {artistsSorted.map((artist) => (
       <article>
