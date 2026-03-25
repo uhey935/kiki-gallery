@@ -1,28 +1,76 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection } from "astro:content";
+import { getCollection, type CollectionEntry } from "astro:content";
+import { groupExhibitionsByArtist } from "../../utils/groupExhibitionsByArtist";
+import { getFeaturedExhibitions } from "../../utils/getFeaturedExhibitions";
 
-const artists = await getCollection("artists");
+// 型定義
+type Artist = CollectionEntry<"artists">;
+
+// ① データ取得
+const allArtists = await getCollection("artists");
+const allExhibitions = await getCollection("exhibitions");
+
+// ② exhibitionsをartistごとにグループ化（＋status付与）
+const exhibitionsByArtist = groupExhibitionsByArtist(allExhibitions);
+
+// ③ EXH抽出（1アーティスト1件）
+const featuredExhibitions = getFeaturedExhibitions(
+  allArtists,
+  exhibitionsByArtist
+);
+
+// ④ 表示用EXH（ongoing → upcoming / 上限4件）
+const displayExhibitions = [
+  ...featuredExhibitions.filter((e) => e.status === "ongoing"),
+  ...featuredExhibitions.filter((e) => e.status === "upcoming"),
+].slice(0, 4);
+
+// ⑤ artists一覧（アルファベット順）
+const artistsSorted = [...allArtists].sort((a, b) =>
+  (a.data.name ?? "").localeCompare(b.data.name ?? "", "en", {
+    sensitivity: "base",
+  })
+);
 ---
 
-<Layout
-  title="Artists"
-  breadcrumb={[
-    { label: "Artists", href: "/artists" }
-  ]}
->
+<Layout title="Artists" breadcrumb={[{ label: "Artists", href: "/artists" }]}>
   <h1>Artists</h1>
 
-  <div class="grid">
-    {
-      artists.map((artist) => (
-        <a href={`/artists/${artist.id}`} class="card">
-          {artist.data.image && (
-            <img src={artist.data.image} alt={artist.data.name} />
-          )}
-          <h2>{artist.data.name}</h2>
-        </a>
-      ))
-    }
-  </div>
+  {/* EXHセクション */}
+  {displayExhibitions.length > 0 && (
+    <section>
+      {displayExhibitions.map(({ artist, exhibition, status }) => (
+        <article>
+          <a href={`/exhibitions/${exhibition.id}`}>
+            {artist.data.image && (
+              <img
+                src={artist.data.image}
+                alt={artist.data.nameJa ?? artist.data.name}
+                loading="lazy"
+                style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover;"
+              />
+            )}
+
+            <p>
+              {status === "ongoing" ? "Current" : "Upcoming"}
+            </p>
+
+            <h2>
+              {artist.data.nameJa ?? artist.data.name}
+            </h2>
+          </a>
+        </article>
+      ))}
+    </section>
+  )}
+
+  {/* Artists一覧 */}
+  <section>
+    {artistsSorted.map((artist) => (
+      <article>
+        <h2>{artist.data.nameJa ?? artist.data.name}</h2>
+      </article>
+    ))}
+  </section>
 </Layout>

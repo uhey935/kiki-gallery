@@ -1,8 +1,8 @@
 ---
 title: absence
 artist: hiroshi-goseki
-startDate: 2026-08-15
-endDate: 2026-08-20
+startDate: "2026-03-25"
+endDate: "2026-04-10"
 
 venue:
   name: KiKi Gallery

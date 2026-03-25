@@ -19,9 +19,11 @@ const [allWorks, allExhibitions] = await Promise.all([
   getCollection("exhibitions"),
 ]);
 
+// works
 const works = allWorks.filter((work) => work.data.artist === artist.id);
 
-const exhibitions = allExhibitions
+// exhibitions（まず日付順で取得）
+const rawExhibitions = allExhibitions
   .filter((exh) => exh.data.artist === artist.id)
   .sort(
     (a, b) =>
@@ -29,11 +31,11 @@ const exhibitions = allExhibitions
       new Date(a.data.startDate).getTime()
   );
 
-// statusロジック（内部用）
+// statusロジック
 const now = new Date();
 now.setHours(0, 0, 0, 0);
 
-const exhibitionsWithStatus = exhibitions.map((exh) => {
+const exhibitionsWithStatus = rawExhibitions.map((exh) => {
   const start = new Date(exh.data.startDate);
   const end = exh.data.endDate ? new Date(exh.data.endDate) : new Date(start);
 
@@ -50,8 +52,12 @@ const exhibitionsWithStatus = exhibitions.map((exh) => {
   return { ...exh, status };
 });
 
-const hasOngoing = exhibitionsWithStatus.some((exh) => exh.status === "ongoing");
-const hasUpcoming = exhibitionsWithStatus.some((exh) => exh.status === "upcoming");
+// ← ここが重要（exhibitionsにstatusを乗せる）
+const exhibitions = exhibitionsWithStatus;
+
+// artist全体の状態
+const hasOngoing = exhibitions.some((exh) => exh.status === "ongoing");
+const hasUpcoming = exhibitions.some((exh) => exh.status === "upcoming");
 
 let artistStatus = "past";
 if (hasOngoing) {
@@ -66,7 +72,7 @@ const jsonLd = {
   "@type": "Person",
   name: artistName,
   description: artist.data.bio,
-  url: `/artists/${artist.id}`,
+  url: new URL(`/artists/${artist.id}`, Astro.site).toString(),
 };
 ---
 

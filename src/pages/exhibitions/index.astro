@@ -51,24 +51,24 @@ const exhibitions = allExhibitions
 >
   <main class="container">
     <h1>Exhibitions</h1>
-
     <div class="exhibition-list">
       {
-        exhibitions
-          .filter((exh) => exh.status !== "past") // ← ここ追加
-          .map((exh) => (
-            <article class={`exhibition-item ${exh.status}`}>
-              <a href={`/exhibitions/${exh.id}`}>
+        exhibitions.map((exh) => (
+          <article class={`exhibition-item ${exh.status}`}>
+            <a href={`/exhibitions/${exh.id}`}>
+              {/* pastはラベルだけ非表示 */}
+              {exh.status !== "past" && (
                 <span class={`status ${exh.status}`}>
                   {exh.status.toUpperCase()}
                 </span>
-                <h2>{exh.data.title}</h2>
-                <p class="date">
-                  {formatDateRangeJa(exh.data.startDate, exh.data.endDate)}
-                </p>
-              </a>
-            </article>
-          ))
+              )}
+              <h2>{exh.data.title}</h2>
+              <p class="date">
+                {formatDateRangeJa(exh.data.startDate, exh.data.endDate)}
+              </p>
+            </a>
+          </article>
+        ))
       }
     </div>
   </main>
