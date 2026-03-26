@@ -30,8 +30,8 @@ const status =
   new Date(exh.data.date) > now
     ? "upcoming"
     : new Date(exh.data.end_date || exh.data.date) >= now
-    ? "ongoing"
-    : "past";
+      ? "ongoing"
+      : "past";
 
 const siteUrl = Astro.site
   ? new URL(`/exhibitions/${exh.id}`, Astro.site).href
@@ -48,8 +48,8 @@ const jsonLd = {
     status === "upcoming"
       ? "https://schema.org/EventScheduled"
       : status === "ongoing"
-      ? "https://schema.org/EventInProgress"
-      : "https://schema.org/EventCompleted",
+        ? "https://schema.org/EventInProgress"
+        : "https://schema.org/EventCompleted",
   ...(exh.data.venue && {
     location: {
       "@type": "Place",
@@ -71,42 +71,64 @@ const jsonLd = {
     { label: exh.data.title, href: "#" },
   ]}
 >
-  {siteUrl && (
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-  )}
+  {
+    siteUrl && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )
+  }
 
   <article>
+    <!-- 追加ここ -->
+    <figure>
+      <img src={exh.data.image} alt={exh.data.title} loading="lazy" />
+    </figure>
     <p>{artistName}</p>
 
     <h1>{exh.data.title}</h1>
 
     <p>
-      開催日程：{dateRange} {exh.data.open_time}
+      開催日程：
+      <time datetime={exh.data.date}>
+        {formatDateRangeJa(exh.data.date, exh.data.date)}
+      </time>
+      {" - "}
+      <time datetime={exh.data.end_date || exh.data.date}>
+        {
+          formatDateRangeJa(
+            exh.data.end_date || exh.data.date,
+            exh.data.end_date || exh.data.date,
+          )
+        }
+      </time>
+      {" "}
+      {exh.data.open_time}
     </p>
 
-    {exh.data.closed_days && (
-      <p>休廊日：{exh.data.closed_days}</p>
-    )}
+    {exh.data.closed_days && <p>休廊日：{exh.data.closed_days}</p>}
 
-    {exh.data.attendance && (
-      <p>
-        作家在廊予定日：{exh.data.attendance}
-        <small>（※変更となる場合があります）</small>
-      </p>
-    )}
+    {
+      exh.data.attendance && (
+        <p>
+          作家在廊予定日：{exh.data.attendance}
+          <small>（※変更となる場合があります）</small>
+        </p>
+      )
+    }
 
-    {exh.data.venue && (
-      <p>
-        会場：
-        <a
-          href={exh.data.venue.map}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {exh.data.venue.name}
-        </a>
-      </p>
-    )}
+    {
+      exh.data.venue && (
+        <p>
+          会場：
+          <a
+            href={exh.data.venue.map}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {exh.data.venue.name}
+          </a>
+        </p>
+      )
+    }
 
     <div class="prose">
       <Content />

@@ -26,11 +26,12 @@ const works = defineCollection({
 });
 
 const exhibitions = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "src/content/exhibitions" }),
+  loader: glob({ pattern: "**/*.md", base: "./src/content/exhibitions" }),
+  schema: z.object({
+    title: z.string(),
+    artist: z.string(),
+    date: z.string(),
+    end_date: z.string().optional(),
+    image: z.string(),
+  }),
 });
-
-export const collections = {
-  artists,
-  exhibitions,
-  works,
-};
