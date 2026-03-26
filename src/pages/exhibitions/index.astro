@@ -16,8 +16,8 @@ const statusOrder = { ongoing: 0, upcoming: 1, past: 2 };
 
 const exhibitions = allExhibitions
   .map((exh) => {
-    const start = new Date(exh.data.startDate);
-    const end = exh.data.endDate ? new Date(exh.data.endDate) : start;
+    const start = new Date(exh.data.date);
+    const end = exh.data.end_date ? new Date(exh.data.end_date) : start;
 
     // 終了日の23:59:59までを当日として扱うための調整
     const compareEnd = new Date(end);
@@ -39,8 +39,8 @@ const exhibitions = allExhibitions
     }
     // 2. 同じステータス内では開始日が新しい順
     return (
-      new Date(b.data.startDate).getTime() -
-      new Date(a.data.startDate).getTime()
+      new Date(b.data.date).getTime() -
+      new Date(a.data.date).getTime()
     );
   });
 ---
@@ -64,7 +64,7 @@ const exhibitions = allExhibitions
               )}
               <h2>{exh.data.title}</h2>
               <p class="date">
-                {formatDateRangeJa(exh.data.startDate, exh.data.endDate)}
+                {formatDateRangeJa(exh.data.date, exh.data.end_date)}
               </p>
             </a>
           </article>

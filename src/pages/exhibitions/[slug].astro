@@ -1,6 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content"; // renderをインポート
 import { formatDateRangeJa } from "../../utils/date";
 
 export async function getStaticPaths() {
@@ -9,7 +9,6 @@ export async function getStaticPaths() {
 
   return exhibitions.map((exh) => {
     const artist = artists.find((a) => a.id === exh.data.artist);
-
     return {
       params: { slug: exh.id },
       props: { exh, artist },
@@ -19,20 +18,51 @@ export async function getStaticPaths() {
 
 const { exh, artist } = Astro.props;
 if (!artist) throw new Error("Artist not found");
+
+// MarkdownをHTMLコンポーネントに変換
+const { Content } = await render(exh);
+
 const artistName = artist.data.nameJa || artist.data.name;
-const dateRange = formatDateRangeJa(
-  exh.data.startDate,
-  exh.data.endDate
-);
+const dateRange = formatDateRangeJa(exh.data.date, exh.data.end_date);
 
 const now = new Date();
-
 const status =
-  new Date(exh.data.startDate) > now
+  new Date(exh.data.date) > now
     ? "upcoming"
-    : new Date(exh.data.endDate || exh.data.startDate) >= now
+    : new Date(exh.data.end_date || exh.data.date) >= now
     ? "ongoing"
     : "past";
+
+const siteUrl = Astro.site
+  ? new URL(`/exhibitions/${exh.id}`, Astro.site).href
+  : null;
+
+// JSON-LD 用のデータ準備
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Event",
+  name: exh.data.title,
+  startDate: exh.data.date,
+  endDate: exh.data.end_date || exh.data.date,
+  eventStatus:
+    status === "upcoming"
+      ? "https://schema.org/EventScheduled"
+      : status === "ongoing"
+      ? "https://schema.org/EventInProgress"
+      : "https://schema.org/EventCompleted",
+  ...(exh.data.venue && {
+    location: {
+      "@type": "Place",
+      name: exh.data.venue.name,
+      url: exh.data.venue.map,
+    },
+  }),
+  performer: {
+    "@type": "Person",
+    name: artistName,
+  },
+  ...(siteUrl && { url: siteUrl }),
+};
 ---
 
 <Layout
@@ -41,79 +71,54 @@ const status =
     { label: exh.data.title, href: "#" },
   ]}
 >
-<script type="application/ld+json">
-  {JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "Event",
-    name: exh.data.title,
-    startDate: exh.data.startDate,
-    endDate: exh.data.endDate || exh.data.startDate,
-    eventStatus:
-      status === "upcoming"
-        ? "https://schema.org/EventScheduled"
-        : status === "ongoing"
-        ? "https://schema.org/EventInProgress"
-        : "https://schema.org/EventCompleted",
-    location: {
-      "@type": "Place",
-      name: exh.data.venue.name,
-      url: exh.data.venue.map,
-    },
-    performer: {
-      "@type": "Person",
-      name: artistName,
-    },
-    url: `${Astro.site}/exhibitions/${exh.id}`,
-  })}
-</script>
-  <!-- 作家名 -->
-  <p>{artistName}</p>
-
-  <!-- タイトル -->
-  <h1>{exh.data.title}</h1>
-
-  <!-- 開催日程 -->
-  <p>
-    開催日程：{dateRange} {exh.data.openTime}
-  </p>
-
-  <!-- 休廊日 -->
-  {exh.data.closedDays && (
-    <p>休廊日： {exh.data.closedDays}</p>
+  {siteUrl && (
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   )}
 
-  <!-- 在廊日 -->
-  {exh.data.attendance && (
+  <article>
+    <p>{artistName}</p>
+
+    <h1>{exh.data.title}</h1>
+
     <p>
-      作家在廊予定日： {exh.data.attendance}
-      <small>（※変更となる場合があります）</small>
+      開催日程：{dateRange} {exh.data.open_time}
     </p>
-  )}
 
-  <!-- 会場 -->
-  <p>
-    会場：
-    <a
-      href={exh.data.venue.map}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      {exh.data.venue.name}
-    </a>
-  </p>
+    {exh.data.closed_days && (
+      <p>休廊日：{exh.data.closed_days}</p>
+    )}
 
-  <!-- 本文 -->
-  <article set:html={exh.body} />
-
-  <!-- アーティスト導線 -->
-  {artist && (
-    <section>
-      <h2>Artist</h2>
+    {exh.data.attendance && (
       <p>
-        <a href={`/artists/${artist.id}`}>
-          {artistName}
+        作家在廊予定日：{exh.data.attendance}
+        <small>（※変更となる場合があります）</small>
+      </p>
+    )}
+
+    {exh.data.venue && (
+      <p>
+        会場：
+        <a
+          href={exh.data.venue.map}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {exh.data.venue.name}
         </a>
       </p>
-    </section>
-  )}
+    )}
+
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+
+  <section>
+    <h2>Artist</h2>
+    <p>
+      <a href={`/artists/${artist.id}`}>
+        {artistName}
+      </a>
+    </p>
+  </section>
 </Layout>

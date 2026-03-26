@@ -14,11 +14,14 @@ const artists = defineCollection({
 });
 
 const works = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "src/content/works" }),
+  loader: glob({ pattern: "**/*.md", base: "./src/content/works" }),
   schema: z.object({
     title: z.string(),
     artist: z.string(),
     image: z.string(),
+    size: z.string().optional(),
+    material: z.string().optional(),
+    alt: z.string().optional(),
   }),
 });
 

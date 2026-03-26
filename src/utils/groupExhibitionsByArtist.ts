@@ -14,8 +14,8 @@ export function groupExhibitionsByArtist(
 
   exhibitions.forEach((exh) => {
     const status = getExhibitionStatus(
-      exh.data.startDate,
-      exh.data.endDate
+      exh.data.date,
+      exh.data.end_date
     );
 
     const withStatus: ExhibitionWithStatus = {

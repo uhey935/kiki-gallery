@@ -2,11 +2,6 @@
 name: Reiko Kinoshita
 nameJa: 木下令子
 image: /images/artists/reiko-kinoshita.png
-works:
-  - title: Untitled 1
-    image: /images/works/reiko-kinoshita-01.png
-  - title: Untitled 2
-    image: /images/works/reiko-kinoshita-02.png
 
 bio: |
   武蔵野美術大学大学院 造形研究科美術専攻油絵コース修了。木下の絵画は、筆を使わず塗装用スプレーガンから霧状に拡散されたアクリル絵具を吹き付けることで描かれる。

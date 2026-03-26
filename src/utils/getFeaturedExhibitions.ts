@@ -16,10 +16,10 @@ export function getFeaturedExhibitions(
         .filter((e) => e.status === "ongoing")
         .sort((a, b) => {
           const endA = new Date(
-            (a.data.endDate ?? a.data.startDate) + "T23:59:59"
+            (a.data.end_date ?? a.data.date) + "T23:59:59"
           ).getTime();
           const endB = new Date(
-            (b.data.endDate ?? b.data.startDate) + "T23:59:59"
+            (b.data.end_date ?? b.data.date) + "T23:59:59"
           ).getTime();
           return endA - endB;
         })[0];
@@ -37,10 +37,10 @@ export function getFeaturedExhibitions(
         .filter((e) => e.status === "upcoming")
         .sort((a, b) => {
           const startA = new Date(
-            a.data.startDate + "T00:00:00"
+            a.data.date + "T00:00:00"
           ).getTime();
           const startB = new Date(
-            b.data.startDate + "T00:00:00"
+            b.data.date + "T00:00:00"
           ).getTime();
           return startA - startB;
         })[0];

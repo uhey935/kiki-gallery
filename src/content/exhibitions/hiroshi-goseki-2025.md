@@ -1,10 +1,10 @@
 ---
 title: うつろいのきこえ
 artist: hiroshi-goseki
-startDate: "2025-03-25"
-endDate: "2025-04-10"
-openTime: "13:00-17:00"
-closedDays: "水曜・木曜"
+date: "2025-03-25"
+end_date: "2025-04-10"
+open_time: "13:00-17:00"
+closed_days: "水曜・木曜"
 attendance: "8月17、18日"
 venue:
   name: KiKi Gallery
