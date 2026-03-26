@@ -7,7 +7,7 @@ const artists = defineCollection({
     name: z.string(),
     nameJa: z.string().optional(),
     bio: z.string().optional(),
-    shortBio: z.string().optional(),
+    bio_short: z.string().optional(),
     image: z.string().optional(),
     shop_url: z.string().optional(),
   }),

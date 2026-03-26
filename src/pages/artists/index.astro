@@ -18,7 +18,7 @@ const exhibitionsByArtist = groupExhibitionsByArtist(allExhibitions);
 // ③ EXH抽出（1アーティスト1件）
 const featuredExhibitions = getFeaturedExhibitions(
   allArtists,
-  exhibitionsByArtist
+  exhibitionsByArtist,
 );
 
 // ④ 表示用EXH（ongoing → upcoming / 上限4件）
@@ -28,53 +28,52 @@ const displayExhibitions = [
 ].slice(0, 4);
 
 // ⑤ artist status map（将来用）
-const artistStatusMap = getArtistStatusMap(
-  allArtists,
-  exhibitionsByArtist
-);
+const artistStatusMap = getArtistStatusMap(allArtists, exhibitionsByArtist);
 
 // ⑥ artists一覧（アルファベット順）
 const artistsSorted = [...allArtists].sort((a, b) =>
   (a.data.name ?? "").localeCompare(b.data.name ?? "", "en", {
     sensitivity: "base",
-  })
+  }),
 );
 ---
 
 <Layout title="Artists" breadcrumb={[{ label: "Artists", href: "/artists" }]}>
   <h1>Artists</h1>
 
-  {displayExhibitions.length > 0 && (
-    <section>
-      {displayExhibitions.map(({ artist, exhibition, status }) => (
-        <article>
-          <a href={`/exhibitions/${exhibition.id}`}>
-            
-            {artist.data.image && (
-              <img
-                src={artist.data.image}
-                alt={artist.data.nameJa ?? artist.data.name}
-                loading="lazy"
-              />
-            )}
+  {
+    displayExhibitions.length > 0 && (
+      <section>
+        {displayExhibitions.map(({ artist, exhibition, status }) => (
+          <article>
+            <a href={`/exhibitions/${exhibition.id}`}>
+              {artist.data.image && (
+                <img
+                  src={artist.data.image}
+                  alt={artist.data.nameJa ?? artist.data.name}
+                  loading="lazy"
+                />
+              )}
 
-            <p>
-              {status === "ongoing" ? "Current" : "Upcoming"}
-            </p>
+              <p>{status === "ongoing" ? "Current" : "Upcoming"}</p>
 
-            <h2>{artist.data.nameJa ?? artist.data.name}</h2>
-
-          </a>
-        </article>
-      ))}
-    </section>
-  )}
+              <h2>{artist.data.nameJa ?? artist.data.name}</h2>
+            </a>
+          </article>
+        ))}
+      </section>
+    )
+  }
 
   <section>
-    {artistsSorted.map((artist) => (
-      <article>
-        <h2>{artist.data.nameJa ?? artist.data.name}</h2>
-      </article>
-    ))}
+    {
+      artistsSorted.map((artist) => (
+        <article>
+          <a href={`/artists/${artist.id}`}>
+            <h2>{artist.data.nameJa ?? artist.data.name}</h2>
+          </a>
+        </article>
+      ))
+    }
   </section>
 </Layout>

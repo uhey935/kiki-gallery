@@ -28,7 +28,7 @@ const rawExhibitions = allExhibitions
   .sort(
     (a, b) =>
       new Date(b.data.startDate).getTime() -
-      new Date(a.data.startDate).getTime()
+      new Date(a.data.startDate).getTime(),
   );
 
 // statusロジック
@@ -52,7 +52,6 @@ const exhibitionsWithStatus = rawExhibitions.map((exh) => {
   return { ...exh, status };
 });
 
-// ← ここが重要（exhibitionsにstatusを乗せる）
 const exhibitions = exhibitionsWithStatus;
 
 // artist全体の状態
@@ -80,50 +79,60 @@ const jsonLd = {
   title={artistName}
   breadcrumb={[
     { label: "Artists", href: "/artists" },
-    { label: artistName, href: `/artists/${artist.id}` }
+    { label: artistName, href: `/artists/${artist.id}` },
   ]}
 >
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
   <article>
     <h1>{artistName}</h1>
-    <p>{artist.data.shortBio}</p>
+
+    <p>{artist.data.bio_short}</p>
     <p><a href="#bio">Learn more</a></p>
 
     <section>
       <h2>Works</h2>
       <div class="works-grid">
-        {works.map((work) => (
-          <figure>
-            <img src={work.data.image} alt={work.data.title} loading="lazy" />
-            <figcaption>{work.data.title}</figcaption>
-          </figure>
-        ))}
+        {
+          works.map((work) => (
+            <figure>
+              <img src={work.data.image} alt={work.data.title} loading="lazy" />
+              <figcaption>{work.data.title}</figcaption>
+            </figure>
+          ))
+        }
       </div>
     </section>
 
-    {artist.data.shop_url && (
-      <p>
-        <a href={artist.data.shop_url} target="_blank" rel="noopener noreferrer">
-          Explore available works
-        </a>
-      </p>
-    )}
+    {
+      artist.data.shop_url && (
+        <p>
+          <a
+            href={artist.data.shop_url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Explore available works
+          </a>
+        </p>
+      )
+    }
 
     <section id="bio">
       <h2>Biography</h2>
-      <p>{artist.data.bio}</p>
+      <p style="white-space: pre-line;">
+        {artist.data.bio}
+      </p>
     </section>
 
-    <section>
-      <h2>Exhibitions</h2>
-      <ul>
-        {exhibitions.map((exh) => (
-          <li>
-            <a href={`/exhibitions/${exh.id}`}>{exh.data.title}</a>
-          </li>
-        ))}
-      </ul>
+    <section id="bio">
+      <h2>Biography</h2>
+
+      {artist.data.image && <img src={artist.data.image} alt={artistName} />}
+
+      <p style="white-space: pre-line;">
+        {artist.data.bio}
+      </p>
     </section>
   </article>
 </Layout>
