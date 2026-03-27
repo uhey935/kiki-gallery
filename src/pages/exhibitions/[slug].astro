@@ -7,95 +7,97 @@ export async function getStaticPaths() {
   const exhibitions = await getCollection("exhibitions");
   const allArtists = await getCollection("artists");
 
-  return exhibitions.map((exh) => ({
-    params: { slug: exh.id },
-    props: { exh, allArtists },
-  }));
+  return exhibitions.map((exh) => {
+    const rawIds = Array.isArray(exh.data.artist)
+      ? exh.data.artist
+      : [exh.data.artist].filter(Boolean);
+
+    const relatedArtists = allArtists.filter((a) =>
+      rawIds.includes(a.id)
+    );
+
+    return {
+      params: { slug: exh.id },
+      props: { exh, artists: relatedArtists },
+    };
+  });
 }
 
-const { exh, allArtists = [] } = Astro.props;
+const { exh, artists = [] } = Astro.props;
 
-// ▼ artistIds（安全対応）
-const artistIds = Array.isArray(exh.data.artist)
-  ? exh.data.artist
-  : exh.data.artist
-    ? [exh.data.artist]
-    : [];
+// ▼ artistNames
+const artistNames = artists
+  .slice()
+  .sort((a, b) => a.id.localeCompare(b.id))
+  .map((a) => a.data.nameJa || a.data.name || a.id)
+  .join(", ");
 
-// ▼ artists（undefined除去）
-const artists = artistIds
-  .map((id) => allArtists.find((a) => a.id === id))
-  .filter((a): a is NonNullable<typeof a> => a !== undefined);
-
-// ▼ artistNames（表示用）
-const artistNames =
-  artists.length > 0
-    ? artists
-        .slice()
-        .sort((a, b) => a.id.localeCompare(b.id))
-        .map((a) => a.data.nameJa || a.data.name || a.id)
-        .join(", ")
-    : "";
-
-// ▼ title（安全生成）
+// ▼ title
 const displayTitle =
-  exh.data.title && exh.data.title !== ""
-    ? exh.data.title
-    : artistNames
-      ? artists.length > 1
-        ? `${artistNames} 合同展`
-        : artistNames
-      : "Exhibition";
+  exh.data.title ||
+  (artistNames
+    ? artists.length > 1
+      ? `${artistNames} 合同展`
+      : artistNames
+    : "Exhibition");
 
-const description =
-  artistNames && exh.data.date
-    ? `${artistNames}の展覧会｜${formatDateRangeJa(exh.data.date, exh.data.end_date)}`
-    : displayTitle;
+// ▼ description
+const dateString = formatDateRangeJa(
+  exh.data.date,
+  exh.data.end_date
+);
+
+const description = artistNames
+  ? `${artistNames}の展覧会｜${dateString}`
+  : displayTitle;
+
+// ▼ status（最終日含める）
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const start = new Date(exh.data.date);
+const end = exh.data.end_date
+  ? new Date(exh.data.end_date + "T23:59:59")
+  : start;
+
+let status = "past";
+if (start > today) status = "upcoming";
+else if (end >= today) status = "ongoing";
+
+// ▼ URL
+const siteUrl = Astro.site
+  ? new URL(`/exhibitions/${exh.id}`, Astro.site).href
+  : undefined;
 
 // ▼ Markdown
 const { Content } = await render(exh);
 ---
 
-<Layout
-  title={displayTitle}
-  description={description}
-  breadcrumb={[
-    { label: "Exhibitions", href: "/exhibitions" },
-    { label: displayTitle, href: "" },
-  ]}
->
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "ExhibitionEvent",
-      name: displayTitle,
-      startDate: exh.data.date,
-      endDate: exh.data.end_date ?? exh.data.date,
-      eventStatus: "https://schema.org/EventScheduled",
-      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-      location: {
-        "@type": "Place",
-        name: "KiKi Gallery",
-      },
-      performer: artists.map((artist) => ({
-        "@type": "Person",
-        name: artist.data.nameJa || artist.data.name || artist.id,
-        url: new URL(`/artists/${artist.id}`, Astro.site).toString(),
-      })),
-    })}
-  />
-  <h1>{displayTitle}</h1>
+<script
+  type="application/ld+json"
+  set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Event",
 
-  <p>
-    {artistNames}
-  </p>
+    name: displayTitle,
+    description: description,
+    startDate: exh.data.date,
+    endDate: exh.data.end_date ?? exh.data.date,
 
-  <p>
-    {formatDateRangeJa(exh.data.date, exh.data.end_date)}
-  </p>
+    eventStatus:
+      status === "upcoming"
+        ? "https://schema.org/EventScheduled"
+        : status === "ongoing"
+        ? "https://schema.org/EventInProgress"
+        : "https://schema.org/EventCompleted",
 
-  <div>
-    <Content />
-  </div>
-</Layout>
+    eventAttendanceMode:
+      "https://schema.org/OfflineEventAttendanceMode",
+
+    ...(siteUrl && { url: siteUrl }),
+
+    location: {
+      "@type": "Place",
+      name: "KiKi Gallery",
+      address: {
+        "@type
