@@ -47,17 +47,44 @@ const displayTitle =
         : artistNames
       : "Exhibition";
 
+const description =
+  artistNames && exh.data.date
+    ? `${artistNames}の展覧会｜${formatDateRangeJa(exh.data.date, exh.data.end_date)}`
+    : displayTitle;
+
 // ▼ Markdown
 const { Content } = await render(exh);
 ---
 
 <Layout
   title={displayTitle}
+  description={description}
   breadcrumb={[
     { label: "Exhibitions", href: "/exhibitions" },
     { label: displayTitle, href: "" },
   ]}
 >
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ExhibitionEvent",
+      name: displayTitle,
+      startDate: exh.data.date,
+      endDate: exh.data.end_date ?? exh.data.date,
+      eventStatus: "https://schema.org/EventScheduled",
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      location: {
+        "@type": "Place",
+        name: "KiKi Gallery",
+      },
+      performer: artists.map((artist) => ({
+        "@type": "Person",
+        name: artist.data.nameJa || artist.data.name || artist.id,
+        url: new URL(`/artists/${artist.id}`, Astro.site).toString(),
+      })),
+    })}
+  />
   <h1>{displayTitle}</h1>
 
   <p>

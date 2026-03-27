@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import { formatDateRangeJa } from "../../utils/date";
 
 export async function getStaticPaths() {
   const artists = await getCollection("artists");
@@ -13,28 +14,37 @@ export async function getStaticPaths() {
 const { artist } = Astro.props;
 const artistName = artist.data.nameJa || artist.data.name;
 
-// 改善点1: Promise.all による並列データ取得（フィルタ済み）
-const [works, rawExhibitions] = await Promise.all([
-  getCollection("works", ({ data }) => data.artist === artist.id),
-  getCollection("exhibitions", ({ data }) => data.artist === artist.id),
-]);
+const description = artist.data.bio_short
+  ? `${artistName}の作品・経歴を紹介｜KiKi Gallery`
+  : artistName;
 
-// 日付ソート
-rawExhibitions.sort(
-  (a, b) =>
-    new Date(b.data.date).getTime() -
-    new Date(a.data.date).getTime(),
+// ▼ works（まず全部取得 → 後でfilter）
+const allWorks = await getCollection("works");
+
+// ▼ filter（安全）
+const works = allWorks.filter((work) => {
+  return work.data.artist === artist.id;
+});
+
+// ▼ exhibitions
+const rawExhibitions = await getCollection("exhibitions", ({ data }) =>
+  Array.isArray(data.artist)
+    ? data.artist.includes(artist.id)
+    : data.artist === artist.id
 );
 
-// ステータス判定
+// ▼ 日付ソート
+rawExhibitions.sort(
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+);
+
+// ▼ ステータス判定
 const now = new Date();
 now.setHours(0, 0, 0, 0);
 
 const exhibitions = rawExhibitions.map((exh) => {
   const start = new Date(exh.data.date);
-  const end = exh.data.end_date
-    ? new Date(exh.data.end_date)
-    : start;
+  const end = exh.data.end_date ? new Date(exh.data.end_date) : start;
 
   const compareEnd = new Date(end);
   compareEnd.setHours(23, 59, 59, 999);
@@ -46,83 +56,141 @@ const exhibitions = rawExhibitions.map((exh) => {
   return { ...exh, status };
 });
 
+// ▼ URL
 const siteUrl = Astro.site
   ? new URL(`/artists/${artist.id}`, Astro.site).href
   : null;
 
+// ▼ Person JSON-LD
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
   name: artistName,
   description: artist.data.bio_short,
-  // siteUrl が null の場合は url プロパティ自体が追加されない
   ...(siteUrl && { url: siteUrl }),
 };
 ---
 
+<!-- ▼ Breadcrumb -->
+<script type="application/ld+json">
+  {JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Artists",
+        item: `${Astro.site}/artists`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: artistName,
+        item: `${Astro.site}/artists/${artist.id}`,
+      },
+    ],
+  })}
+</script>
+
+<!-- ▼ Person -->
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
 <Layout
   title={artistName}
+  description={description}
   breadcrumb={[
     { label: "Artists", href: "/artists" },
     { label: artistName, href: `/artists/${artist.id}` },
   ]}
 >
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify(jsonLd)}
-  />
-
   <article>
     <h1>{artistName}</h1>
 
     <p>{artist.data.bio_short}</p>
     <p><a href="#bio">Learn more</a></p>
 
+    <!-- ▼ DEBUG（消してOK） -->
+    <p>works count: {works.length}</p>
+
+    <!-- ▼ Works -->
     <section>
       <h2>Works</h2>
-      <div class="works-grid">
-        {works.map((work) => (
-          <figure>
-            <img
-              src={work.data.image}
-              alt={work.data.alt || work.data.title}
-              loading="lazy"
-            />
-            <figcaption>
-              {work.data.title}
-              {[work.data.size, work.data.material].filter(Boolean).join(" / ")}
-            </figcaption>
-          </figure>
-        ))}
-      </div>
+
+      {works.length > 0 ? (
+        <div class="works-grid">
+          {works.map((work) => (
+            <figure>
+              <img
+                src={work.data.image}
+                alt={work.data.alt || work.data.title}
+                loading="lazy"
+              />
+              <figcaption>
+                {work.data.title}
+                {[work.data.size, work.data.material]
+                  .filter(Boolean)
+                  .join(" / ")}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      ) : (
+        <p>No works available.</p>
+      )}
     </section>
 
-    {artist.data.shop_url && (
-      <p class="shop-link">
-        <a
-          href={artist.data.shop_url}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Explore available works
-        </a>
-      </p>
-    )}
+    <!-- ▼ Shop -->
+    {
+      artist.data.shop_url && (
+        <p class="shop-link">
+          <a
+            href={artist.data.shop_url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Explore available works
+          </a>
+        </p>
+      )
+    }
 
+    <!-- ▼ Bio -->
     <section id="bio">
       <h2>Biography</h2>
 
-      {artist.data.image && (
-        <img
-          src={artist.data.image}
-          alt={artistName}
-          width="400"
-        />
-      )}
+      {
+        artist.data.image && (
+          <img src={artist.data.image} alt={artistName} width="400" />
+        )
+      }
 
       <p style="white-space: pre-line;">
         {artist.data.bio}
       </p>
+    </section>
+
+    <!-- ▼ Exhibitions -->
+    <section>
+      <h2>Exhibitions</h2>
+
+      {exhibitions.length > 0 ? (
+        <ul>
+          {exhibitions.map((exh) => (
+            <li>
+              <a href={`/exhibitions/${exh.id}`}>
+                {exh.data.title || artistName}
+              </a>
+              <span>
+                {" "}
+                ({formatDateRangeJa(exh.data.date, exh.data.end_date)})
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No exhibitions available.</p>
+      )}
     </section>
   </article>
 </Layout>
