@@ -8,8 +8,9 @@ const allExhibitions = await getCollection(
   ({ id }) => id !== "test",
 );
 
+const artists = await getCollection("artists");
+
 const now = new Date();
-// 時刻を00:00:00にリセットして日付単位で比較しやすくする
 now.setHours(0, 0, 0, 0);
 
 const statusOrder = { ongoing: 0, upcoming: 1, past: 2 };
@@ -19,7 +20,6 @@ const exhibitions = allExhibitions
     const start = new Date(exh.data.date);
     const end = exh.data.end_date ? new Date(exh.data.end_date) : start;
 
-    // 終了日の23:59:59までを当日として扱うための調整
     const compareEnd = new Date(end);
     compareEnd.setHours(23, 59, 59, 999);
 
@@ -30,14 +30,37 @@ const exhibitions = allExhibitions
       status = "ongoing";
     }
 
-    return { ...exh, status };
+    // --- 👇 ここから追加（artist処理） ---
+
+    const artistSlugs = Array.isArray(exh.data.artist)
+      ? exh.data.artist
+      : [exh.data.artist];
+
+    const sortedSlugs = [...artistSlugs].sort();
+
+    const artistNames = sortedSlugs.map((slug) => {
+      const artist = artists.find((a) => a.id === slug);
+      return artist?.data.nameJa || artist?.data.name || slug;
+    });
+
+    const displayTitle =
+      exh.data.title && exh.data.title !== ""
+        ? exh.data.title
+        : `${artistNames.join(", ")} 合同展`;
+
+    // --- 👆 ここまで追加 ---
+
+    return {
+      ...exh,
+      status,
+      artistNames,
+      displayTitle,
+    };
   })
   .sort((a, b) => {
-    // 1. ステータス順（開催中 > 予定 > 過去）
     if (statusOrder[a.status] !== statusOrder[b.status]) {
       return statusOrder[a.status] - statusOrder[b.status];
     }
-    // 2. 同じステータス内では開始日が新しい順
     return (
       new Date(b.data.date).getTime() -
       new Date(a.data.date).getTime()
@@ -51,20 +74,43 @@ const exhibitions = allExhibitions
 >
   <main class="container">
     <h1>Exhibitions</h1>
+
     <div class="exhibition-list">
       {
         exhibitions.map((exh) => (
           <article class={`exhibition-item ${exh.status}`}>
             <a href={`/exhibitions/${exh.id}`}>
-              {/* pastはラベルだけ非表示 */}
+              
+              {/* 画像 */}
+              {exh.data.image && (
+                <img
+                  src={exh.data.image}
+                  alt={exh.displayTitle}
+                  class="exhibition-image"
+                />
+              )}
+
+              {/* ステータス */}
               {exh.status !== "past" && (
                 <span class={`status ${exh.status}`}>
                   {exh.status.toUpperCase()}
                 </span>
               )}
-              <h2>{exh.data.title}</h2>
+
+              {/* artist */}
+              <p class="artist">
+                {exh.artistNames.join(", ")}
+              </p>
+
+              {/* title */}
+              <h2>{exh.displayTitle}</h2>
+
+              {/* 日付 */}
               <p class="date">
-                {formatDateRangeJa(exh.data.date, exh.data.end_date)}
+                {formatDateRangeJa(
+                  exh.data.date,
+                  exh.data.end_date
+                )}
               </p>
             </a>
           </article>

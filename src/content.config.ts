@@ -10,6 +10,10 @@ const artists = defineCollection({
     bio_short: z.string().optional(),
     image: z.string().optional(),
     shop_url: z.string().optional(),
+    awards: z.array(z.string()).optional(),
+    exhibitions: z.array(z.string()).optional(),
+    medium: z.string().optional(),
+    region: z.string().optional(),
   }),
 });
 
@@ -29,10 +33,13 @@ const exhibitions = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/exhibitions" }),
   schema: z.object({
     title: z.string(),
-    artist: z.string(),
+    artist: z.union([
+  z.string(),
+  z.array(z.string())
+]),
     date: z.string(),
     end_date: z.string().optional(),
-    image: z.string(),
+    image: z.string().optional(),
 
     open_time: z.string().optional(),
     closed_days: z.string().optional(),
