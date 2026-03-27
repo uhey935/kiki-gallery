@@ -33,5 +33,22 @@ const exhibitions = defineCollection({
     date: z.string(),
     end_date: z.string().optional(),
     image: z.string(),
+
+    open_time: z.string().optional(),
+    closed_days: z.string().optional(),
+    attendance: z.string().optional(),
+
+    venue: z
+      .object({
+        name: z.string(),
+        map: z.string().optional(),
+      })
+      .optional(),
   }),
 });
+
+export const collections = {
+  artists,
+  works,
+  exhibitions,
+};
