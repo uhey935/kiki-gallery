@@ -2,128 +2,91 @@
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 
-// 型
-type NewsType = "exhibition" | "journal" | "news";
-
-// コレクション取得
+/* =========================
+   データ取得
+========================= */
 const exhibitions = await getCollection("exhibitions");
-const journals = await getCollection("journal");
-const news = await getCollection("news");
 const artists = await getCollection("artists");
 
-// 文字制限
-const truncate = (text: string, length = 100) => {
-  return text.length > length ? text.slice(0, length) + "..." : text;
-};
-
-// Markdown除去
-const stripMarkdown = (text: string) => {
-  return text
-    .replace(/[#_*>\-]/g, "")
-    .replace(/\n+/g, " ")
-    .trim();
-};
-
-// exhibition整形
+/* =========================
+   exhibition整形
+========================= */
 const exhibitionItems = exhibitions.map((item) => {
+
   const artistIds = Array.isArray(item.data.artist)
     ? item.data.artist
     : [item.data.artist];
 
-const artistNamesFallback = [].concat(item.data.artist_name || []);
+  const artistNames = artistIds
+    .map((id) => {
+      const artist = artists.find((a) => a.id === id);
 
-const artistNames = artistIds
-  .map((id, index) => {
-    const artist = artists.find((a) => a.id === id);
-
-    return artist
-      ? artist.data.nameJa || artist.data.name
-      : artistNamesFallback[index] || id;
-  })
-  .filter(Boolean)
-  .join(", ");
+      return artist
+        ? artist.data.nameJa || artist.data.name
+        : id;
+    })
+    .filter(Boolean)
+    .join(", ");
 
   const displayTitle =
     item.data.title && item.data.title !== ""
       ? item.data.title
       : artistNames
-        ? artistIds.length > 1
-          ? `${artistNames} 合同展`
-          : `${artistNames} 個展`
+        ? (artistIds.length > 1
+            ? `${artistNames} 合同展`
+            : `${artistNames} 個展`)
         : "Exhibition";
 
+  const artistNamesFallback = Array.isArray(item.data.artist_name)
+    ? item.data.artist_name
+    : item.data.artist_name
+      ? [item.data.artist_name]
+      : [displayTitle];
+
   return {
-    type: "exhibition" as NewsType,
-    title: item.data.news_title || `${displayTitle}を開催します。`,
-    publishedAt: item.data.published_at || item.data.date!,
-    date: item.data.date!,
-    href: `/exhibitions/${item.id}`,
-    body: item.body || "",
+    id: item.id,
+    href: `/exhibitions/${item.id}`, // ← 明示的に追加
+    title: displayTitle,
+    artistNames: artistNamesFallback.join(", "),
+    date: item.data.published_at || item.data.date || "",
+    type: "exhibition", // ← 仮固定
   };
 });
 
-// journal整形
-const journalItems = journals.map((item) => ({
-  type: "journal" as NewsType,
-  title: item.data.news_title || item.data.title,
-  publishedAt: item.data.date!,
-  date: item.data.date!,
-  href: `/journal/${item.id}`,
-  body: item.body || "",
-}));
-
-// news整形
-const newsItems = news.map((item) => ({
-  type: "news" as NewsType,
-  title: item.data.news_title || item.data.title,
-  publishedAt: item.data.date!,
-  date: item.data.date!,
-  href: null,
-  body: item.body || "",
-}));
-
-// 統合
-const allItems = [...exhibitionItems, ...journalItems, ...newsItems];
-
-// ソート（公開日ベース）
-allItems.sort((a, b) => {
-  return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+/* =========================
+   sort（新しい順）
+========================= */
+const newsItems = exhibitionItems.sort((a, b) => {
+  return new Date(b.date).getTime() - new Date(a.date).getTime();
 });
-
-// type表示
-const typeLabelMap: Record<NewsType, string> = {
-  exhibition: "Exhibition",
-  journal: "Journal",
-  news: "News",
-};
 ---
 
 <Layout
   title="News"
-  description="最新情報"
-  breadcrumb={[{ label: "News", href: "/news" }]}
+  breadcrumb={[
+    { label: "News", href: "/news" }
+  ]}
 >
-  <h1>News</h1>
+  <section>
+    <h1>News</h1>
 
-  <ul>
-    {
-      allItems.map((item) => (
+    <ul>
+      {newsItems.map((item) => (
         <li>
-          <h2>
-            {item.href ? (
-              <a href={item.href}>{item.title}</a>
-            ) : (
-              <span>{item.title}</span>
-            )}
-          </h2>
+          <a href={item.href}>
+            <strong>{item.title}</strong>
+          </a>
 
-          {item.body && <p>{truncate(stripMarkdown(item.body))}</p>}
+          <div>
+            {item.artistNames}
+          </div>
 
-          <p>
-            {typeLabelMap[item.type]} | {item.publishedAt}
-          </p>
+          <div>
+            {item.date}
+          </div>
         </li>
-      ))
-    }
-  </ul>
+      ))}
+    </ul>
+
+  </section>
 </Layout>
