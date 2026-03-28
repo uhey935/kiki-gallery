@@ -14,6 +14,7 @@ const artists = defineCollection({
     exhibitions: z.array(z.string()).optional(),
     medium: z.string().optional(),
     region: z.string().optional(),
+  news_title: z.string().optional(),
   }),
 });
 
@@ -26,6 +27,8 @@ const works = defineCollection({
     size: z.string().optional(),
     material: z.string().optional(),
     alt: z.string().optional(),
+    date: z.string().optional(),
+    news_title: z.string().optional(),
   }),
 });
 
@@ -37,7 +40,7 @@ const exhibitions = defineCollection({
   z.string(),
   z.array(z.string())
 ]),
-    date: z.string(),
+    date: z.string().optional(),
     end_date: z.string().optional(),
     image: z.string().optional(),
 
@@ -51,6 +54,25 @@ const exhibitions = defineCollection({
         map: z.string().optional(),
       })
       .optional(),
+  news_title: z.string().optional(),
+  }),
+});
+
+const journal = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/journal" }),
+  schema: z.object({
+    title: z.string(),
+    date: z.string().optional(),
+    news_title: z.string().optional(),
+  }),
+});
+
+const news = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/news" }),
+  schema: z.object({
+    title: z.string(),
+    date: z.string().optional(),
+    news_title: z.string().optional(),
   }),
 });
 
@@ -58,4 +80,6 @@ export const collections = {
   artists,
   works,
   exhibitions,
+  journal,
+  news,
 };

@@ -1,0 +1,113 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import { formatDateRangeJa } from "../../utils/date";
+
+// 型定義
+type NewsType = "exhibition" | "journal" | "news";
+
+// ① 各コレクション取得
+const artists = await getCollection("artists");
+const exhibitions = await getCollection("exhibitions");
+const journals = await getCollection("journal");
+const news = await getCollection("news");
+
+// ② 正規化
+const exhibitionItems = exhibitions.map((item) => {
+  // artist id配列化
+  const artistIds = Array.isArray(item.data.artist)
+    ? item.data.artist
+    : [item.data.artist];
+
+  // artist名取得（日本語優先）
+  const artistNames = artistIds
+    .map((id) => {
+      const artist = artists.find((a) => a.id === id);
+      return artist ? artist.data.nameJa || artist.data.name : null;
+    })
+    .filter(Boolean)
+    .join(", ");
+
+  // displayTitleロジック（ここ重要）
+  const displayTitle =
+    item.data.title && item.data.title !== ""
+      ? item.data.title
+      : artistNames
+        ? (artistIds.length > 1
+            ? `${artistNames} 合同展`
+            : `${artistNames} 個展`)
+        : "Exhibition";
+
+  return {
+    type: "exhibition" as NewsType,
+    title: item.data.news_title || displayTitle,
+    date: item.data.date!,
+    href: `/exhibitions/${item.id}`,
+  };
+});
+
+const journalItems = journals.map((item) => ({
+  type: "journal" as NewsType,
+  title: item.data.news_title || item.data.title,
+  date: item.data.date!,
+  href: `/journal/${item.id}`,
+}));
+
+const newsItems = news.map((item) => ({
+  type: "news" as NewsType,
+  title: item.data.news_title || item.data.title,
+  date: item.data.date!,
+  href: null,
+}));
+
+// ③ 統合（型指定）
+const allItems: {
+  type: NewsType;
+  title: string;
+  date: string;
+  href: string | null;
+}[] = [
+  ...exhibitionItems,
+  ...journalItems,
+  ...newsItems,
+];
+
+// ④ ソート（降順）
+allItems.sort((a, b) => {
+  return new Date(b.date).getTime() - new Date(a.date).getTime();
+});
+
+// ⑤ type表示用
+const typeLabelMap: Record<NewsType, string> = {
+  exhibition: "exhibition",
+  journal: "journal",
+  news: "news",
+};
+---
+
+<Layout
+  title="News"
+  description="最新情報"
+  breadcrumb={[
+    { label: "News", href: "/news" },
+  ]}
+>
+  <h1>News</h1>
+
+  <ul>
+    {allItems.map((item) => (
+      <li>
+        [{typeLabelMap[item.type]}]{" "}
+        
+        {item.href ? (
+          <a href={item.href}>{item.title}</a>
+        ) : (
+          <span>{item.title}</span>
+        )}
+
+        {" "}
+        <small>{formatDateRangeJa(item.date)}</small>
+      </li>
+    ))}
+  </ul>
+</Layout>
