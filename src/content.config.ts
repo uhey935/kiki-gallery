@@ -100,6 +100,10 @@ const news = defineCollection({
     title: z.string(),
     date: z.string().optional(),
     news_title: z.string().optional(),
+    has_page: z.boolean().optional(),
+    excerpt: z.string().optional(),
+    link: z.string().optional(),
+    link_label: z.string().optional(), 
   }),
 });
 

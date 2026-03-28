@@ -2,91 +2,129 @@
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 
-/* =========================
-   データ取得
-========================= */
-const exhibitions = await getCollection("exhibitions");
-const artists = await getCollection("artists");
+// 1. 型定義
+type NewsItem = {
+  id: string;
+  href: string | null;
+  title: string;
+  date: Date | null;
+  type: "News" | "Exhibition";
+  excerpt: string;
+};
 
-/* =========================
-   exhibition整形
-========================= */
-const exhibitionItems = exhibitions.map((item) => {
+// 2. データ取得
+const [news, exhibitions, artists] = await Promise.all([
+  getCollection("news"),
+  getCollection("exhibitions"),
+  getCollection("artists"),
+]);
 
-  const artistIds = Array.isArray(item.data.artist)
-    ? item.data.artist
-    : [item.data.artist];
+// Artist lookup map
+const artistMap = new Map(artists.map(a => [a.id, a.data]));
+
+// ヘルパー: テキスト丸め
+const truncate = (text: string, limit: number) => {
+  const cleanText = text.replace(/\n/g, "");
+  return cleanText.length > limit ? cleanText.slice(0, limit) + "..." : cleanText;
+};
+
+// 3. Newsの整形
+const newsItems: NewsItem[] = news.map((item) => ({
+  id: item.id,
+  // 外部リンク(link)があれば優先、なければ詳細ページ、それもなければnull
+  href: item.data.link || (item.data.has_page !== false ? `/news/${item.id}` : null),
+  title: item.data.title,
+  date: item.data.date ? new Date(item.data.date) : null,
+  type: "News",
+  excerpt: item.data.excerpt || truncate(item.body || "", 80),
+}));
+
+// 4. Exhibitionの整形
+const exhibitionItems: NewsItem[] = exhibitions.map((item) => {
+  const artistIds = Array.isArray(item.data.artist) ? item.data.artist : [item.data.artist];
 
   const artistNames = artistIds
     .map((id) => {
-      const artist = artists.find((a) => a.id === id);
-
-      return artist
-        ? artist.data.nameJa || artist.data.name
-        : id;
+      const data = artistMap.get(id);
+      return data ? (data.nameJa || data.name) : null;
     })
-    .filter(Boolean)
-    .join(", ");
+    .filter((name): name is string => !!name);
 
-  const displayTitle =
-    item.data.title && item.data.title !== ""
-      ? item.data.title
-      : artistNames
-        ? (artistIds.length > 1
-            ? `${artistNames} 合同展`
-            : `${artistNames} 個展`)
-        : "Exhibition";
-
-  const artistNamesFallback = Array.isArray(item.data.artist_name)
-    ? item.data.artist_name
-    : item.data.artist_name
-      ? [item.data.artist_name]
-      : [displayTitle];
+  // タイトル決定ロジック
+  let displayTitle = item.data.news_title || item.data.title;
+  if (!displayTitle && artistNames.length > 0) {
+    displayTitle = artistNames.join(", ") + (artistIds.length > 1 ? " 合同展" : " 個展");
+  }
 
   return {
     id: item.id,
-    href: `/exhibitions/${item.id}`, // ← 明示的に追加
-    title: displayTitle,
-    artistNames: artistNamesFallback.join(", "),
-    date: item.data.published_at || item.data.date || "",
-    type: "exhibition", // ← 仮固定
+    href: `/exhibitions/${item.id}`,
+    title: displayTitle || "Exhibition",
+    date: item.data.date ? new Date(item.data.date) : null,
+    type: "Exhibition",
+    excerpt: truncate(item.body || "", 80),
   };
 });
 
-/* =========================
-   sort（新しい順）
-========================= */
-const newsItems = exhibitionItems.sort((a, b) => {
-  return new Date(b.date).getTime() - new Date(a.date).getTime();
-});
+// 5. 統合 + ソート
+const sortedItems: NewsItem[] = [...newsItems, ...exhibitionItems].sort(
+  (a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0)
+);
+
+// 日付フォーマット
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
 ---
 
-<Layout
-  title="News"
-  breadcrumb={[
-    { label: "News", href: "/news" }
-  ]}
->
+<Layout title="News" breadcrumb={[{ label: "News", href: "/news" }]}>
   <section>
     <h1>News</h1>
 
     <ul>
-      {newsItems.map((item) => (
-        <li>
-          <a href={item.href}>
-            <strong>{item.title}</strong>
-          </a>
+      {
+        sortedItems.map((item) => {
+          const targetHref = item.href;
+          // 案3: シンプルな外部リンク判定
+          const isExternal = 
+            targetHref?.startsWith('http') || 
+            targetHref?.startsWith('//');
 
-          <div>
-            {item.artistNames}
-          </div>
+          return (
+            <li>
+              <h2>
+                {targetHref ? (
+                  <a 
+                    href={targetHref}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
+                  >
+                    {item.title}
+                  </a>
+                ) : (
+                  item.title
+                )}
+              </h2>
 
-          <div>
-            {item.date}
-          </div>
-        </li>
-      ))}
+              <p>{item.excerpt}</p>
+
+              <div>
+                <span>{item.type}</span>
+                {item.date && (
+                  <time datetime={item.date.toISOString()}>
+                    | {formatDate(item.date)}
+                  </time>
+                )}
+              </div>
+            </li>
+          );
+        })
+      }
     </ul>
 
+    {sortedItems.length === 0 && <p>現在、お知らせはありません。</p>}
   </section>
 </Layout>

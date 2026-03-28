@@ -1,0 +1,44 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const news = await getCollection("news");
+
+  return news
+    .filter((item) => item.data.has_page !== false)
+    .map((item) => ({
+      params: { slug: item.id },
+      props: { item },
+    }));
+}
+
+const { item } = Astro.props;
+
+// Markdown → コンポーネント
+const { Content } = await render(item);
+---
+
+<Layout
+  title={item.data.title}
+  breadcrumb={[
+    { label: "News", href: "/news" },
+    { label: String(item.data.title), href: `/news/${item.id}` },
+  ]}
+>
+  <article>
+    <h1>{item.data.title}</h1>
+
+    {
+      item.data.date && (
+        <p>
+          <time datetime={item.data.date}>{item.data.date}</time>
+        </p>
+      )
+    }
+
+    <div>
+      <Content />
+    </div>
+  </article>
+</Layout>
