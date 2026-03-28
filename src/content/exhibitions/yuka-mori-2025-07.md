@@ -1,13 +1,14 @@
 ---
 title: Intertwined ー 戯れるメッシュ
 artist: yuka-mori
-
+artist_name: 森夕香
 date: "2025-07-02"
 end_date: "2025-07-26"
 open_time: "13:00-17:00"
 closed_days: "水曜・木曜"
 attendance: ""
 image: /images/exhibitions/yuka-mori-2025-07.png
+published_at: "2025-06-20"
 venue:
   name: KiKi Gallery
   map: "https://maps.google.com"

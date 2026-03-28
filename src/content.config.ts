@@ -1,6 +1,9 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
+/* =========================
+   artists
+========================= */
 const artists = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/artists" }),
   schema: z.object({
@@ -14,10 +17,13 @@ const artists = defineCollection({
     exhibitions: z.array(z.string()).optional(),
     medium: z.string().optional(),
     region: z.string().optional(),
-  news_title: z.string().optional(),
+    news_title: z.string().optional(),
   }),
 });
 
+/* =========================
+   works
+========================= */
 const works = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/works" }),
   schema: z.object({
@@ -32,32 +38,50 @@ const works = defineCollection({
   }),
 });
 
+/* =========================
+   exhibitions
+========================= */
 const exhibitions = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/exhibitions" }),
   schema: z.object({
     title: z.string(),
+
+    // ID（リンク用）
     artist: z.union([
-  z.string(),
-  z.array(z.string())
-]),
+      z.string(),
+      z.array(z.string())
+    ]),
+
+    // 表示用（fallback）
+    artist_name: z.union([
+      z.string(),
+      z.array(z.string())
+    ]).optional(),
+
     date: z.string().optional(),
     end_date: z.string().optional(),
+
     image: z.string().optional(),
 
     open_time: z.string().optional(),
     closed_days: z.string().optional(),
     attendance: z.string().optional(),
 
-    venue: z
-      .object({
-        name: z.string(),
-        map: z.string().optional(),
-      })
-      .optional(),
-  news_title: z.string().optional(),
+    venue: z.object({
+      name: z.string(),
+      map: z.string().optional(),
+    }).optional(),
+
+    news_title: z.string().optional(),
+
+    // News用
+    published_at: z.string().optional(),
   }),
 });
 
+/* =========================
+   journal
+========================= */
 const journal = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/journal" }),
   schema: z.object({
@@ -67,6 +91,9 @@ const journal = defineCollection({
   }),
 });
 
+/* =========================
+   news
+========================= */
 const news = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/news" }),
   schema: z.object({
@@ -76,6 +103,9 @@ const news = defineCollection({
   }),
 });
 
+/* =========================
+   export
+========================= */
 export const collections = {
   artists,
   works,

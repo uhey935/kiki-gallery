@@ -1,13 +1,14 @@
 ---
 title: Undulation
 artist: keisuke-matsuda
-
+artist_name: 松田啓佑
 date: "2024-07-05"
 end_date: "2024-07-09"
 open_time: "13:00-17:00"
 closed_days: "水曜・木曜"
 attendance: ""
 image: /images/exhibitions/keisuke-matsuda-2024-07.png
+published_at: "2024-06-11"
 venue:
   name: KiKi Gallery
   map: "https://maps.google.com"
