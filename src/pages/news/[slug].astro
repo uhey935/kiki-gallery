@@ -14,6 +14,7 @@ export async function getStaticPaths() {
 }
 
 const { item } = Astro.props;
+const date = item.data.date ? new Date(item.data.date) : null;
 
 // Markdown → コンポーネント
 const { Content } = await render(item);
@@ -30,9 +31,15 @@ const { Content } = await render(item);
     <h1>{item.data.title}</h1>
 
     {
-      item.data.date && (
+      date && (
         <p>
-          <time datetime={item.data.date}>{item.data.date}</time>
+          <time datetime={date.toISOString()}>
+            {date.toLocaleDateString("ja-JP", {
+              year: "numeric",
+              month: "numeric",
+              day: "numeric",
+            })}
+          </time>
         </p>
       )
     }

@@ -1,0 +1,87 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+/* =========================
+   データ取得
+========================= */
+const journal = await getCollection("journal");
+
+/* =========================
+   ヘルパー
+========================= */
+const stripHtml = (text: string) =>
+  text.replace(/<[^>]*>?/gm, "");
+
+const truncate = (text: string, limit: number) => {
+  const clean = stripHtml(text).replace(/\n/g, "").trim();
+  return clean.length > limit ? clean.slice(0, limit) + "..." : clean;
+};
+
+/* =========================
+   整形
+========================= */
+const items = journal
+  .map((item) => ({
+    id: item.id,
+    href: item.data.link || (item.data.has_page !== false ? `/journal/${item.id}` : null),
+    title: item.data.title,
+    date: item.data.date ? new Date(item.data.date) : null,
+    excerpt: item.data.excerpt || truncate(item.body || "", 80),
+  }))
+  .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
+
+/* =========================
+   日付フォーマット
+========================= */
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+---
+
+<Layout title="Journal" breadcrumb={[{ label: "Journal", href: "/journal" }]}>
+  <section>
+    <h1>Journal</h1>
+
+    <ul>
+      {
+        items.map((item) => {
+          const isExternal =
+            item.href?.startsWith("http") ||
+            item.href?.startsWith("//");
+
+          return (
+            <li>
+              <h2>
+                {item.href ? (
+                  <a
+                    href={item.href}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
+                  >
+                    {item.title}
+                  </a>
+                ) : (
+                  item.title
+                )}
+              </h2>
+
+              <p>{item.excerpt}</p>
+
+              {item.date && (
+                <time datetime={item.date.toISOString()}>
+                  {formatDate(item.date)}
+                </time>
+              )}
+            </li>
+          );
+        })
+      }
+    </ul>
+
+    {items.length === 0 && <p>記事はまだありません。</p>}
+  </section>
+</Layout>

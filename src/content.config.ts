@@ -87,7 +87,9 @@ const journal = defineCollection({
   schema: z.object({
     title: z.string(),
     date: z.string().optional(),
-    news_title: z.string().optional(),
+    excerpt: z.string().optional(),
+    has_page: z.boolean().optional(),
+    link: z.string().optional(),
   }),
 });
 
@@ -99,11 +101,9 @@ const news = defineCollection({
   schema: z.object({
     title: z.string(),
     date: z.string().optional(),
-    news_title: z.string().optional(),
-    has_page: z.boolean().optional(),
     excerpt: z.string().optional(),
+    has_page: z.boolean().optional(),
     link: z.string().optional(),
-    link_label: z.string().optional(), 
   }),
 });
 

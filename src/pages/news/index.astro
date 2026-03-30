@@ -8,31 +8,36 @@ type NewsItem = {
   href: string | null;
   title: string;
   date: Date | null;
-  type: "News" | "Exhibition";
+  type: "News" | "Exhibition" | "Journal";
   excerpt: string;
 };
 
 // 2. データ取得
-const [news, exhibitions, artists] = await Promise.all([
+const [news, exhibitions, artists, journal] = await Promise.all([
   getCollection("news"),
   getCollection("exhibitions"),
   getCollection("artists"),
+  getCollection("journal"),
 ]);
 
 // Artist lookup map
-const artistMap = new Map(artists.map(a => [a.id, a.data]));
+const artistMap = new Map(artists.map((a) => [a.id, a.data]));
 
 // ヘルパー: テキスト丸め
 const truncate = (text: string, limit: number) => {
   const cleanText = text.replace(/\n/g, "");
-  return cleanText.length > limit ? cleanText.slice(0, limit) + "..." : cleanText;
+  return cleanText.length > limit
+    ? cleanText.slice(0, limit) + "..."
+    : cleanText;
 };
 
 // 3. Newsの整形
 const newsItems: NewsItem[] = news.map((item) => ({
   id: item.id,
   // 外部リンク(link)があれば優先、なければ詳細ページ、それもなければnull
-  href: item.data.link || (item.data.has_page !== false ? `/news/${item.id}` : null),
+  href:
+    item.data.link ||
+    (item.data.has_page !== false ? `/news/${item.id}` : null),
   title: item.data.title,
   date: item.data.date ? new Date(item.data.date) : null,
   type: "News",
@@ -41,19 +46,22 @@ const newsItems: NewsItem[] = news.map((item) => ({
 
 // 4. Exhibitionの整形
 const exhibitionItems: NewsItem[] = exhibitions.map((item) => {
-  const artistIds = Array.isArray(item.data.artist) ? item.data.artist : [item.data.artist];
+  const artistIds = Array.isArray(item.data.artist)
+    ? item.data.artist
+    : [item.data.artist];
 
   const artistNames = artistIds
     .map((id) => {
       const data = artistMap.get(id);
-      return data ? (data.nameJa || data.name) : null;
+      return data ? data.nameJa || data.name : null;
     })
     .filter((name): name is string => !!name);
 
   // タイトル決定ロジック
   let displayTitle = item.data.news_title || item.data.title;
   if (!displayTitle && artistNames.length > 0) {
-    displayTitle = artistNames.join(", ") + (artistIds.length > 1 ? " 合同展" : " 個展");
+    displayTitle =
+      artistNames.join(", ") + (artistIds.length > 1 ? " 合同展" : " 個展");
   }
 
   return {
@@ -66,10 +74,22 @@ const exhibitionItems: NewsItem[] = exhibitions.map((item) => {
   };
 });
 
+const journalItems: NewsItem[] = journal.map((item) => ({
+  id: item.id,
+  href:
+    item.data.link ||
+    (item.data.has_page !== false ? `/journal/${item.id}` : null),
+  title: item.data.title,
+  date: item.data.date ? new Date(item.data.date) : null,
+  type: "Journal",
+  excerpt: item.data.excerpt || truncate(item.body || "", 80),
+}));
 // 5. 統合 + ソート
-const sortedItems: NewsItem[] = [...newsItems, ...exhibitionItems].sort(
-  (a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0)
-);
+const sortedItems: NewsItem[] = [
+  ...newsItems,
+  ...journalItems,
+  ...exhibitionItems,
+].sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
 
 // 日付フォーマット
 const formatDate = (date: Date) =>
@@ -89,15 +109,14 @@ const formatDate = (date: Date) =>
         sortedItems.map((item) => {
           const targetHref = item.href;
           // 案3: シンプルな外部リンク判定
-          const isExternal = 
-            targetHref?.startsWith('http') || 
-            targetHref?.startsWith('//');
+          const isExternal =
+            targetHref?.startsWith("http") || targetHref?.startsWith("//");
 
           return (
             <li>
               <h2>
                 {targetHref ? (
-                  <a 
+                  <a
                     href={targetHref}
                     target={isExternal ? "_blank" : undefined}
                     rel={isExternal ? "noopener noreferrer" : undefined}
