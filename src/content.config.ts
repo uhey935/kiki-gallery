@@ -90,6 +90,9 @@ const journal = defineCollection({
     excerpt: z.string().optional(),
     has_page: z.boolean().optional(),
     link: z.string().optional(),
+    categories: z.array(z.string()),
+    hero_image: z.string().optional(), 
+    hero_caption: z.string().optional(),
   }),
 });
 

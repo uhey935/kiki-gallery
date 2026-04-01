@@ -10,8 +10,7 @@ const journal = await getCollection("journal");
 /* =========================
    ヘルパー
 ========================= */
-const stripHtml = (text: string) =>
-  text.replace(/<[^>]*>?/gm, "");
+const stripHtml = (text: string) => text.replace(/<[^>]*>?/gm, "");
 
 const truncate = (text: string, limit: number) => {
   const clean = stripHtml(text).replace(/\n/g, "").trim();
@@ -24,10 +23,14 @@ const truncate = (text: string, limit: number) => {
 const items = journal
   .map((item) => ({
     id: item.id,
-    href: item.data.link || (item.data.has_page !== false ? `/journal/${item.id}` : null),
+    href:
+      item.data.link ||
+      (item.data.has_page !== false ? `/journal/${item.id}` : null),
     title: item.data.title,
     date: item.data.date ? new Date(item.data.date) : null,
     excerpt: item.data.excerpt || truncate(item.body || "", 80),
+    type: item.data.categories[0],
+    hero_image: item.data.hero_image,
   }))
   .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
 
@@ -35,9 +38,10 @@ const items = journal
    日付フォーマット
 ========================= */
 const formatDate = (date: Date) =>
-  date.toLocaleDateString("ja-JP", {
+  date.toLocaleDateString("en-US", {
+    weekday: "long",
     year: "numeric",
-    month: "numeric",
+    month: "short",
     day: "numeric",
   });
 ---
@@ -50,11 +54,11 @@ const formatDate = (date: Date) =>
       {
         items.map((item) => {
           const isExternal =
-            item.href?.startsWith("http") ||
-            item.href?.startsWith("//");
+            item.href?.startsWith("http") || item.href?.startsWith("//");
 
           return (
             <li>
+              {/* title */}
               <h2>
                 {item.href ? (
                   <a
@@ -69,8 +73,18 @@ const formatDate = (date: Date) =>
                 )}
               </h2>
 
+              {/* hero image（essayのみ） */}
+              {item.hero_image && (
+                <img src={item.hero_image} alt="" />
+              )}
+
+              {/* type */}
+              <p>{item.type}</p>
+
+              {/* excerpt */}
               <p>{item.excerpt}</p>
 
+              {/* date */}
               {item.date && (
                 <time datetime={item.date.toISOString()}>
                   {formatDate(item.date)}

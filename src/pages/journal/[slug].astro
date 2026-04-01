@@ -27,32 +27,63 @@ const { item } = Astro.props;
 const { Content } = await render(item);
 
 /* =========================
-   日付フォーマット
+   type（categoriesの先頭）
 ========================= */
-const formatDate = (date: Date) =>
-  date.toLocaleDateString("ja-JP", {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-  });
-
-const date = item.data.date ? new Date(item.data.date) : null;
+const type = item.data.categories[0];
 ---
 
 <Layout
   title={item.data.title}
   breadcrumb={[
     { label: "Journal", href: "/journal" },
-    { label: item.data.title, href: `/journal/${item.id}` },
+    { label: type, href: `/journal/${item.id}` },
   ]}
 >
   <article>
+
+    {/* interview → Heroが上 */}
+    {type === "interview" && item.data.hero_image && (
+      <figure>
+        <img src={item.data.hero_image} alt="" />
+        {item.data.hero_caption && (
+          <figcaption>{item.data.hero_caption}</figcaption>
+        )}
+      </figure>
+    )}
+
     <h1>{item.data.title}</h1>
 
-    {date && <time datetime={date.toISOString()}>{formatDate(date)}</time>}
+    {item.data.date && (
+      <time datetime={item.data.date}>
+        Published{" "}
+        {new Date(item.data.date).toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })}
+      </time>
+    )}
 
+    {/* essay → H1の下にHero */}
+    {type === "essay" && item.data.hero_image && (
+      <figure>
+        <img src={item.data.hero_image} alt="" />
+        {item.data.hero_caption && (
+          <figcaption>{item.data.hero_caption}</figcaption>
+        )}
+      </figure>
+    )}
+
+    {/* 本文（共通） */}
     <div>
       <Content />
     </div>
+
+    {/* interviewだけRelated */}
+    {type === "interview" && (
+      <h2>Related Articles</h2>
+    )}
+
   </article>
 </Layout>
