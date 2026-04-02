@@ -1,4 +1,6 @@
 ---
+import "../styles/base.css";
+import Header from "../components/Header.astro";
 import Breadcrumb from "../components/Breadcrumb.astro";
 import Footer from "../components/Footer.astro";
 
@@ -10,15 +12,6 @@ interface Props {
 }
 
 const { breadcrumb, title, description, image } = Astro.props;
-
-const navItems = [
-  { label: "Artists", href: "/artists" },
-  { label: "Exhibitions", href: "/exhibitions" },
-  { label: "News", href: "/news" },
-  { label: "About", href: "/about" },
-  { label: "Visit", href: "/visit" },
-  { label: "Shop", href: "https://your-shop-url.com", external: true },
-];
 
 const siteUrl = Astro.site?.origin ?? "https://your-domain.com";
 
@@ -75,79 +68,14 @@ const breadcrumbJsonLd = {
   </head>
 
   <body>
-    <header>
-      <a href="/" aria-label="Home">KiKi</a>
-
-      <button
-        id="menu-toggle"
-        aria-label="メニューを開閉する"
-        aria-expanded="false"
-        aria-controls="mobile-menu"
-      >
-        ☰
-      </button>
-
-      <nav class="desktop-nav" aria-label="主要ナビゲーション">
-        <ul>
-          {navItems.map((item) => (
-            <li>
-              <a
-                href={item.href}
-                target={item.external ? "_blank" : undefined}
-                rel={item.external ? "noopener noreferrer" : undefined}
-              >
-                {item.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      <div id="mobile-menu" class="mobile-menu" aria-hidden="true">
-        <nav aria-label="モバイルナビゲーション">
-          <ul>
-            {navItems.map((item) => (
-              <li>
-                <a
-                  href={item.href}
-                  target={item.external ? "_blank" : undefined}
-                  rel={item.external ? "noopener noreferrer" : undefined}
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-    </header>
+    <Header />
 
     {breadcrumbList.length > 1 && <Breadcrumb items={breadcrumbList} />}
 
-    <main>
+    <main class="main">
       <slot />
     </main>
 
     <Footer />
-
-    <script>
-      const initMenu = () => {
-        const button = document.getElementById("menu-toggle");
-        const menu = document.getElementById("mobile-menu");
-
-        if (button && menu) {
-          const toggleMenu = () => {
-            const isExpanded = button.getAttribute("aria-expanded") === "true";
-            button.setAttribute("aria-expanded", (!isExpanded).toString());
-            menu.classList.toggle("is-open");
-            menu.setAttribute("aria-hidden", isExpanded.toString());
-          };
-
-          button.addEventListener("click", toggleMenu);
-        }
-      };
-
-      document.addEventListener("astro:page-load", initMenu);
-    </script>
   </body>
 </html>

@@ -1,0 +1,240 @@
+/* =========================
+   Reset
+========================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* =========================
+   Base
+========================= */
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  color: #111;
+  background: #fff;
+}
+
+.main {
+  padding: 40px 0 80px;
+}
+
+.wrapper {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* =========================
+   Header
+========================= */
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-logo a {
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.header-nav ul {
+  display: flex;
+  gap: 24px;
+}
+
+.header-nav a {
+  display: block;
+  font-size: 0.875rem;
+  padding: 8px 0;
+}
+
+/* =========================
+   Breadcrumb
+========================= */
+.breadcrumb {
+  margin: 28px 0 28px;
+}
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+}
+.breadcrumb li + li::before {
+  content: "/";
+  margin: 0 0.5em 0 0.8em;
+  font-weight: 400;
+}
+.breadcrumb li:last-child {
+  font-weight: 600;
+}
+
+/* =========================
+   Exhibition
+========================= */
+
+.exhibition-featured {
+  display: flex;
+  gap: 40px;
+}
+
+.exhibition-featured a {
+  display: flex;
+  width: 100%;
+  gap: 40px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.featured-image {
+  flex: 1;
+}
+
+.featured-info {
+  flex: 1;
+}
+
+/* =========================
+   Article
+========================= */
+.article {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.article-body {
+  font-size: 1rem;
+  line-height: 1.9;
+}
+
+/* Hero */
+.article-hero {
+  position: relative;
+  margin-bottom: 58px; /* 画像下の余白 */
+}
+.article-hero figcaption {
+  position: absolute;
+  right: -31px;
+  bottom: 0;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.4;
+  transform: rotate(180deg);
+}
+
+.article-title {
+  font-size: 1.75rem;
+  line-height: 1.4;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.article-date {
+  display: block;
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 73px;
+  text-align: center;
+}
+
+.article-body h2 {
+  font-size: 1.25rem;
+  margin: 40px 0 16px;
+}
+
+.article-body p {
+  margin-bottom: 1.2em;
+}
+
+.article-body p + p {
+  margin-top: 2.4em;
+}
+
+.article-related-title {
+  font-size: 1.125rem;
+  margin-top: 64px;
+}
+
+/* =========================
+   Article Body Image
+========================= */
+
+/* caption */
+.article-body figure figcaption {
+  margin-top: 18px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #666;
+}
+
+/* figureの余白リセット */
+.article-body figure {
+  margin: 0;
+}
+/* text → image */
+.article-body p + figure {
+  margin-top: 116px;
+}
+/* image → text */
+.article-body figure + p {
+  margin-top: 48px;
+}
+
+/* =========================
+   Footer
+========================= */
+
+.footer {
+  background-color: #000;
+  color: #fff;
+  padding: 17px 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+.footer-nav ul {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-nav a {
+  color: #fff;
+}

@@ -4,15 +4,18 @@ const { items = [] } = Astro.props as {
 };
 ---
 
-<nav aria-label="breadcrumb">
-  {items.map((item, index) => (
-    <span>
-      {index !== 0 && " / "}
-      {item.href ? (
-        <a href={item.href}>{item.label}</a>
-      ) : (
-        item.label
-      )}
-    </span>
-  ))}
+<nav class="breadcrumb" aria-label="breadcrumb">
+  <div class="wrapper">
+    <ol>
+      {items.map((item, index) => (
+        <li>
+          {index < items.length - 1 ? (
+            <a href={item.href}>{item.label}</a>
+          ) : (
+            <span>{item.label}</span>
+          )}
+        </li>
+      ))}
+    </ol>
+  </div>
 </nav>

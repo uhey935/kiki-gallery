@@ -1,121 +1,175 @@
 ---
-import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
-import { formatDateRangeJa } from "../../utils/date";
+import { getCollection } from "astro:content";
 
-const allExhibitions = await getCollection(
-  "exhibitions",
-  ({ id }) => id !== "test",
-);
-
+// データ取得
+const exhibitions = await getCollection("exhibitions");
 const artists = await getCollection("artists");
 
-const now = new Date();
-now.setHours(0, 0, 0, 0);
+// 日付パース（undefined対策）
+const parseDate = (value: string | undefined) => {
+  return value ? new Date(value) : null;
+};
 
-const statusOrder = { ongoing: 0, upcoming: 1, past: 2 };
+// 今日
+const today = new Date();
 
-const exhibitions = allExhibitions
-  .map((exh) => {
-    const start = new Date(exh.data.date);
-    const end = exh.data.end_date ? new Date(exh.data.end_date) : start;
+// ステータス判定
+const getStatus = (start: Date | null, end: Date | null) => {
+  if (!start) return "past";
 
-    const compareEnd = new Date(end);
-    compareEnd.setHours(23, 59, 59, 999);
+  const compareEnd = end ? new Date(end) : new Date(start);
+  compareEnd.setHours(23, 59, 59, 999);
 
-    let status: keyof typeof statusOrder = "past";
-    if (start > now) {
-      status = "upcoming";
-    } else if (compareEnd >= now) {
-      status = "ongoing";
-    }
+  if (start > today) return "upcoming";
+  if (compareEnd >= today) return "ongoing";
+  return "past";
+};
 
-    // --- 👇 ここから追加（artist処理） ---
+// ソート（新しい順）
+const sorted = exhibitions.sort((a, b) => {
+  const dateA = parseDate(a.data.date);
+  const dateB = parseDate(b.data.date);
 
-    const artistSlugs = Array.isArray(exh.data.artist)
-      ? exh.data.artist
-      : [exh.data.artist];
+  if (!dateA || !dateB) return 0;
+  return dateB.getTime() - dateA.getTime();
+});
 
-    const sortedSlugs = [...artistSlugs].sort();
-
-    const artistNames = sortedSlugs.map((slug) => {
-      const artist = artists.find((a) => a.id === slug);
-      return artist?.data.nameJa || artist?.data.name || slug;
-    });
-
-    const displayTitle =
-      exh.data.title && exh.data.title !== ""
-        ? exh.data.title
-        : `${artistNames.join(", ")} 合同展`;
-
-    // --- 👆 ここまで追加 ---
-
-    return {
-      ...exh,
-      status,
-      artistNames,
-      displayTitle,
-    };
-  })
-  .sort((a, b) => {
-    if (statusOrder[a.status] !== statusOrder[b.status]) {
-      return statusOrder[a.status] - statusOrder[b.status];
-    }
-    return (
-      new Date(b.data.date).getTime() -
-      new Date(a.data.date).getTime()
-    );
-  });
+// featured（先頭1件）
+const featured = sorted[0];
 ---
 
 <Layout
-  title="Exhibitions | KiKi Gallery"
-  breadcrumb={[{ label: "Exhibitions", href: "/exhibitions" }]}
+  breadcrumb={[
+    { label: "Exhibitions", href: "/exhibitions" }
+  ]}
 >
-  <main class="container">
-    <h1>Exhibitions</h1>
+  <h1>Exhibitions</h1>
 
-    <div class="exhibition-list">
-      {
-        exhibitions.map((exh) => (
-          <article class={`exhibition-item ${exh.status}`}>
+  {/* ===== Featured ===== */}
+  {
+    featured &&
+      (() => {
+        const start = parseDate(featured.data.date);
+        const end = parseDate(featured.data.end_date);
+        const status = getStatus(start, end);
+
+        // --- artist取得 ---
+        const artistIds = Array.isArray(featured.data.artist)
+          ? featured.data.artist
+          : [featured.data.artist];
+
+        const artistNames = artistIds
+          .map((id) => {
+            const artist = artists.find((a) => a.id === id);
+            return artist?.data.nameJa || artist?.data.name;
+          })
+          .filter(Boolean)
+          .join(", ");
+
+        // --- タイトル生成 ---
+        const displayTitle =
+          featured.data.title && featured.data.title !== ""
+            ? featured.data.title
+            : artistNames
+              ? (artistIds.length > 1
+                  ? `${artistNames} 合同展`
+                  : artistNames)
+              : "Exhibition";
+
+        return (
+          <section class="exhibition-featured">
+            <a href={`/exhibitions/${featured.id}`}>
+              
+              <div>
+                {featured.data.image && (
+                  <img src={featured.data.image} alt={displayTitle} />
+                )}
+              </div>
+
+              <div>
+                <p>{artistNames}</p>
+
+                <h2>{displayTitle}</h2>
+
+                {status !== "past" && (
+                  <p>
+                    {status === "ongoing" && "Ongoing"}
+                    {status === "upcoming" && "Upcoming"}
+                  </p>
+                )}
+
+                <p>
+                  {featured.data.date}
+                  {featured.data.end_date && ` - ${featured.data.end_date}`}
+                </p>
+
+                <p>{featured.data.venue?.name}</p>
+              </div>
+            </a>
+          </section>
+        );
+      })()
+  }
+
+  {/* ===== List ===== */}
+  <ul>
+    {
+      sorted.slice(1).map((exh) => {
+        const start = parseDate(exh.data.date);
+        const end = parseDate(exh.data.end_date);
+        const status = getStatus(start, end);
+
+        // --- artist取得 ---
+        const artistIds = Array.isArray(exh.data.artist)
+          ? exh.data.artist
+          : [exh.data.artist];
+
+        const artistNames = artistIds
+          .map((id) => {
+            const artist = artists.find((a) => a.id === id);
+            return artist?.data.nameJa || artist?.data.name;
+          })
+          .filter(Boolean)
+          .join(", ");
+
+        // --- タイトル生成 ---
+        const displayTitle =
+          exh.data.title && exh.data.title !== ""
+            ? exh.data.title
+            : artistNames
+              ? (artistIds.length > 1
+                  ? `${artistNames} 合同展`
+                  : artistNames)
+              : "Exhibition";
+
+        return (
+          <li>
             <a href={`/exhibitions/${exh.id}`}>
               
-              {/* 画像 */}
               {exh.data.image && (
-                <img
-                  src={exh.data.image}
-                  alt={exh.displayTitle}
-                  class="exhibition-image"
-                />
+                <img src={exh.data.image} alt={displayTitle} />
               )}
 
-              {/* ステータス */}
-              {exh.status !== "past" && (
-                <span class={`status ${exh.status}`}>
-                  {exh.status.toUpperCase()}
-                </span>
+              <p>{artistNames}</p>
+
+              <h2>{displayTitle}</h2>
+
+              <p>
+                {exh.data.date}
+                {exh.data.end_date && ` - ${exh.data.end_date}`}
+              </p>
+
+              {status !== "past" && (
+                <p>
+                  {status === "ongoing" && "Ongoing"}
+                  {status === "upcoming" && "Upcoming"}
+                </p>
               )}
-
-              {/* artist */}
-              <p class="artist">
-                {exh.artistNames.join(", ")}
-              </p>
-
-              {/* title */}
-              <h2>{exh.displayTitle}</h2>
-
-              {/* 日付 */}
-              <p class="date">
-                {formatDateRangeJa(
-                  exh.data.date,
-                  exh.data.end_date
-                )}
-              </p>
             </a>
-          </article>
-        ))
-      }
-    </div>
-  </main>
+          </li>
+        );
+      })
+    }
+  </ul>
 </Layout>
