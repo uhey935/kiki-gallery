@@ -1,49 +1,29 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
-import { formatDateRangeJa, formatDateRangeEn } from "../../utils/date";
+import { formatDateRangeJa } from "../../utils/date";
 
+// =====================
 // データ取得
+// =====================
+
 const exhibitions = await getCollection("exhibitions");
 const artists = await getCollection("artists");
 
-// ソート（新しい順）
-const sorted = exhibitions.sort((a, b) => {
-  const dateA = new Date(a.data.date || 0);
-  const dateB = new Date(b.data.date || 0);
-  return dateB.getTime() - dateA.getTime();
-});
+// =====================
+// 日付パース（安全化）
+// =====================
 
-// 分割
-const hero = sorted[0];
-const secondRow = sorted.slice(1, 3);
-const rest = sorted.slice(3);
-
-// ===== hero artist（複数対応に修正）=====
-const heroArtistNames = hero
-  ? (() => {
-      const ids = Array.isArray(hero.data.artist)
-        ? hero.data.artist
-        : [hero.data.artist];
-
-      return ids
-        .map((id) => {
-          const a = artists.find((artist) => artist.id === id);
-          return a?.data.nameJa || a?.data.name || "";
-        })
-        .filter(Boolean);
-    })()
-  : [];
-
-// 日付パース
 const parseDate = (value: string | undefined) => {
   return value ? new Date(value) : null;
 };
 
-// 今日
+// =====================
+// ステータス判定
+// =====================
+
 const today = new Date();
 
-// ステータス判定
 const getStatus = (start: Date | null, end: Date | null) => {
   if (!start) return "past";
 
@@ -55,10 +35,52 @@ const getStatus = (start: Date | null, end: Date | null) => {
   return "past";
 };
 
-// hero status
+// =====================
+// 作家名取得（複数対応）
+// =====================
+
+const getArtistNames = (exh: any) => {
+  const ids = Array.isArray(exh.data.artist)
+    ? exh.data.artist
+    : [exh.data.artist];
+
+  return ids
+    .map((id: string) => {
+      const artist = artists.find((a) => a.id === id);
+      return artist?.data?.nameJa || artist?.data?.name || "";
+    })
+    .filter(Boolean);
+};
+
+// =====================
+// ソート（新しい順）
+// =====================
+
+const sorted = exhibitions.sort((a, b) => {
+  const dateA = parseDate(a.data.date);
+  const dateB = parseDate(b.data.date);
+
+  return (dateB?.getTime() ?? 0) - (dateA?.getTime() ?? 0);
+});
+
+// =====================
+// hero（先頭1件）
+// =====================
+
+const hero = sorted[0];
+
+// hero用データ
+const heroArtistNames = hero ? getArtistNames(hero) : [];
+
 const heroStatus = hero
   ? getStatus(parseDate(hero.data.date), parseDate(hero.data.end_date))
-  : null;
+  : "";
+
+// =====================
+// grid（hero除外）
+// =====================
+
+const gridExhibitions = sorted.filter((exh) => exh.id !== hero?.id);
 ---
 
 <Layout
@@ -69,95 +91,99 @@ const heroStatus = hero
     <div class="exhibitions-inner">
       <h1 class="page-title">Exhibitions</h1>
 
-      <!-- =========================
-           1段目（hero）
-      ========================= -->
-      {
-        hero && (
-          <div class="hero">
-            <div class="exhibition-card">
-              <a href={`/exhibitions/${hero.id}`}>
-                <div class="exhibition-image">
-                  {hero.data.image && <img src={hero.data.image} alt="" />}
-                </div>
+      {/* =====================
+          hero（完全分離）
+      ===================== */}
+      {hero && (
+        <div class="hero">
+          <div class="hero__card">
+            <a href={`/exhibitions/${hero.id}`} class="hero__link">
+              
+              <div class="hero__image">
+                {hero.data.image && <img src={hero.data.image} alt="" />}
+              </div>
 
-                <div class="exhibition-content">
-                  <p class="exhibition-status">{heroStatus}</p>
+              <div class="hero__content">
+                <p class="hero__status">{heroStatus}</p>
 
-                  <p class="exhibition-artist">{heroArtistNames.join("・")}</p>
+                <p class="hero__artist">
+                  {heroArtistNames.join("・")}
+                </p>
 
-                  <h2 class="exhibition-title">
-                    {hero.data.title && hero.data.title !== ""
-                      ? hero.data.title
-                      : heroArtistNames.length > 0
-                        ? heroArtistNames.length > 1
-                          ? `${heroArtistNames.join("・")} 合同展`
-                          : `${heroArtistNames[0]} 個展`
-                        : "Exhibition"}
-                  </h2>
+                <h2 class="hero__title">
+                  {hero.data.title && hero.data.title !== ""
+                    ? hero.data.title
+                    : heroArtistNames.length > 0
+                      ? heroArtistNames.length > 1
+                        ? `${heroArtistNames.join("・")} 合同展`
+                        : `${heroArtistNames[0]} 個展`
+                      : "Exhibition"}
+                </h2>
 
-                  <p class="date">
-                    {hero.data.date
-                      ? formatDateRangeJa(hero.data.date, hero.data.end_date)
-                      : ""}
+                <p class="hero__date">
+                  {hero.data.date
+                    ? formatDateRangeJa(hero.data.date, hero.data.end_date)
+                    : ""}
+                </p>
+
+                {hero.data.venue?.name && (
+                  <p class="hero__venue">
+                    {hero.data.venue.name}
                   </p>
+                )}
+              </div>
 
-                  {hero.data.venue?.name && (
-                    <p class="exhibition-venue">{hero.data.venue.name}</p>
-                  )}
-                </div>
-              </a>
-            </div>
+            </a>
           </div>
-        )
+        </div>
+      )}
+
+      {
+        /* =====================
+          grid（完全分離）
+      ===================== */
       }
-
-      <!-- =========================
-           grid（統一）
-      ========================= -->
-      <div class="exhibitions-grid">
+      <div class="grid">
         {
-          sorted.slice(1).map((item, index) => {
-            const artistNames = (() => {
-              const ids = Array.isArray(item.data.artist)
-                ? item.data.artist
-                : [item.data.artist];
+          gridExhibitions.map((exh, index) => {
+            const artistNames = Array.isArray(exh.data.artist)
+              ? exh.data.artist
+              : [exh.data.artist];
 
-              return ids
-                .map((id) => {
-                  const a = artists.find((artist) => artist.id === id);
-                  return a?.data.nameJa || a?.data.name || "";
-                })
-                .filter(Boolean);
-            })();
+            const displayTitle =
+              exh.data.title && exh.data.title !== ""
+                ? exh.data.title
+                : artistNames.length > 0
+                  ? artistNames.length > 1
+                    ? `${artistNames.join("・")} 合同展`
+                    : `${artistNames[0]} 個展`
+                  : "Exhibition";
 
             return (
               <div
-                class={`card ${index === 0 ? "card--middle" : "card--small"}`}
+                class={`grid__card ${index === 0 ? "grid__card--middle" : "grid__card--small"}`}
               >
-                <a href={`/exhibitions/${item.id}`}>
-                  <div class="exhibition-image-simple">
-                    {item.data.image && <img src={item.data.image} alt="" />}
+                <a href={`/exhibitions/${exh.id}`} class="grid__link">
+                  <div class="grid__image">
+                    {exh.data.image && <img src={exh.data.image} alt="" />}
                   </div>
 
-                  <div class="exhibition-meta">
-                    <div class="meta-left">
-                      <p class="exhibition-artist">{artistNames.join("・")}</p>
-
-                      <p class="exhibition-title">
-                        {item.data.title && item.data.title !== ""
-                          ? item.data.title
-                          : artistNames.length > 0
-                            ? artistNames.length > 1
-                              ? `${artistNames.join("・")} 合同展`
-                              : `${artistNames[0]} 個展`
-                            : "Exhibition"}
-                      </p>
+                  <div class="grid__meta">
+                    <div class="grid__meta-left">
+                      <p class="grid__artist">{artistNames.join("・")}</p>
+                      <p class="grid__title">{displayTitle}</p>
                     </div>
 
-                    <p class="exhibition-date">
-                      {item.data.date
-                        ? formatDateRangeEn(item.data.date, item.data.end_date)
+                    <p class="grid__date">
+                      {exh.data.date
+                        ? new Date(exh.data.date)
+                            .toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "2-digit",
+                              year: "numeric",
+                            })
+                            .replace(",", "")
+                            .toUpperCase()
                         : ""}
                     </p>
                   </div>
@@ -169,4 +195,5 @@ const heroStatus = hero
       </div>
     </div>
   </section>
-</Layout>
+  </Layout
+>
