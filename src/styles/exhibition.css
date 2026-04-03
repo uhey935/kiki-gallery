@@ -1,0 +1,196 @@
+/* =========================
+   Layout
+========================= */
+
+.exhibitions-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  line-height: 1.4;
+  margin-bottom: 32px;
+}
+
+/* =========================
+   hero
+========================= */
+
+.hero {
+  display: grid;
+  gap: 120px;
+  margin-bottom: 24px;
+}
+
+.hero .exhibition-card a {
+  display: grid;
+  grid-template-columns: 1.24fr 0.6fr;
+  gap: 80px;
+  align-items: start;
+}
+
+.hero .exhibition-image {
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1.19;
+}
+
+.hero .exhibition-image img {
+  max-width: 60%;
+  max-height: 60%;
+  object-fit: contain;
+}
+
+.hero .exhibition-content {
+  display: flex;
+  flex-direction: column;
+  margin-top: 126px;
+}
+
+.hero .exhibition-status {
+  background: #000;
+  color: #fff;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  margin-bottom: 33px;
+  width: fit-content;
+}
+
+.hero .exhibition-artist {
+  font-size: 1rem;
+  margin-bottom: 9px;
+}
+
+.hero .exhibition-title {
+  font-size: 2.1rem;
+  margin-bottom: 32px;
+}
+
+.hero .exhibition-date,
+.hero .exhibition-venue {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* =========================
+   grid（コア）
+========================= */
+
+.exhibitions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+/* カード */
+
+.card {
+  position: relative;
+  background: #f5f5f5;
+  width: 100%;
+}
+
+.card--small {
+  aspect-ratio: 1 / 1.19;
+}
+
+.card--middle {
+  grid-column: span 2;
+  aspect-ratio: 2 / 1.19;
+}
+
+/* 内部 */
+
+.card a {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 24px;
+}
+
+/* 画像 */
+
+.exhibition-image-simple {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.exhibition-image-simple img {
+  max-width: 60%;
+  max-height: 60%;
+  object-fit: contain;
+}
+
+/* メタ */
+
+.exhibition-meta {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.meta-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* テキスト */
+
+.exhibition-artist {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.exhibition-title {
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.exhibition-date {
+  position: absolute;
+  right: 0;
+  top: 2.2em;
+  font-size: 0.85rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+/* =========================
+   SP
+========================= */
+
+@media (max-width: 768px) {
+
+  .hero .exhibition-card a {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .hero .exhibition-content {
+    margin-top: 0;
+  }
+
+  .exhibitions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .card--middle {
+    grid-column: span 2;
+    aspect-ratio: 1 / 1.19;
+  }
+
+  .exhibition-date {
+    position: static;
+    margin-top: 8px;
+  }
+}
