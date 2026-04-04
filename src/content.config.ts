@@ -72,6 +72,7 @@ const exhibitions = defineCollection({
       map: z.string().optional(),
     }).optional(),
 
+    lead: z.string().optional(),
     news_title: z.string().optional(),
 
     // News用

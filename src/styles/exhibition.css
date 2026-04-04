@@ -1,5 +1,5 @@
 /* =========================
-   Layout（共通OK：レイアウトのみ）
+   Exhibiton
 ========================= */
 
 .exhibitions-inner {
@@ -16,13 +16,13 @@
 }
 
 /* =========================
-   HERO（完全独立）
+   HERO
 ========================= */
 
 .hero {
   display: grid;
   gap: 120px;
-  margin-bottom: 24px;
+  margin-bottom: 100px;
 }
 
 .hero__card {
@@ -32,13 +32,13 @@
 
 .hero__link {
   display: grid;
-  grid-template-columns: 1.24fr 0.6fr;
-  gap: 80px;
+  grid-template-columns: 1.2fr 0.62fr;
+  gap: 70px;
   align-items: start;
 }
 
 .hero__image {
-  background: #f5f5f5;
+  background: #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,15 +46,16 @@
 }
 
 .hero__image img {
-  max-width: 60%;
-  max-height: 60%;
+  max-width: 70%;
+  max-height: 70%;
   object-fit: contain;
 }
 
 .hero__content {
   display: flex;
   flex-direction: column;
-  margin-top: 126px;
+  justify-content: center;
+  padding-top: 120px;
 }
 
 .hero__status {
@@ -62,13 +63,13 @@
   color: #fff;
   font-size: 0.9rem;
   padding: 4px 8px;
-  margin-bottom: 33px;
+  margin-bottom: 38px;
   width: fit-content;
 }
 
 .hero__artist {
   font-size: 1rem;
-  margin-bottom: 9px;
+  margin-bottom: 8px;
 }
 
 .hero__title {
@@ -76,10 +77,55 @@
   margin-bottom: 32px;
 }
 
-.hero__date,
+.hero__date {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 7px;
+}
+
 .hero__venue {
   font-size: 1rem;
   color: #555;
+  margin-bottom: 33px;
+}
+
+.hero__lead {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.9;
+  margin-bottom: 24px;
+}
+
+.hero__more {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* 右寄せ */
+  gap: 8px;
+
+  font-weight: 700; /* bold */
+}
+.hero__arrow {
+  display: inline-block;
+  width: 60px;
+  height: 20px;
+}
+
+.hero__arrow svg {
+  width: 100%;
+  height: 100%;
+}
+
+.hero__arrow polyline {
+  fill: none;
+  stroke: #111;
+  stroke-width: 1;
+}
+
+@media (max-width: 768px) {
+  .hero__link {
+    grid-template-columns: 1fr;
+    gap: 24px; /* 好みでOK（16〜32くらい） */
+  }
 }
 
 /* =========================
@@ -89,7 +135,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 13px;
   align-items: start;
 }
 
@@ -97,7 +143,7 @@
 
 .grid__card {
   position: relative;
-  background: #f5f5f5;
+  background: #f0f0f0;
   width: 100%;
   height: 100%;
 }
@@ -131,8 +177,8 @@
 }
 
 .grid__image img {
-  max-width: 60%;
-  max-height: 60%;
+  max-width: 70%;
+  max-height: 70%;
   object-fit: contain;
 }
 
@@ -160,7 +206,7 @@
 }
 
 .grid__title {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   line-height: 1.4;
 }
 
