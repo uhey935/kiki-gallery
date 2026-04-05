@@ -2,11 +2,9 @@
    Exhibiton
 ========================= */
 
-.exhibitions-inner {
-  max-width: 1440px;
+.exhibitions {
   width: 100%;
-  padding: 0 clamp(16px, 4vw, 32px);
-  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 80px);
 }
 
 .page-title {
@@ -32,8 +30,8 @@
 
 .hero__link {
   display: grid;
-  grid-template-columns: 1.2fr 0.62fr;
-  gap: 70px;
+  grid-template-columns: 1.2fr 0.64fr;
+  gap: 68px;
   align-items: start;
 }
 

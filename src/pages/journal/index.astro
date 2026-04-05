@@ -17,6 +17,12 @@ const truncate = (text: string, limit: number) => {
   return clean.length > limit ? clean.slice(0, limit) + "..." : clean;
 };
 
+const parseDate = (value?: string) => {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+};
+
 /* =========================
    整形
 ========================= */
@@ -27,12 +33,16 @@ const items = journal
       item.data.link ||
       (item.data.has_page !== false ? `/journal/${item.id}` : null),
     title: item.data.title,
-    date: item.data.date ? new Date(item.data.date) : null,
+    date: parseDate(item.data.date),
     excerpt: item.data.excerpt || truncate(item.body || "", 80),
-    type: item.data.categories[0],
+    type: item.data.categories?.[0] ?? null,
     hero_image: item.data.hero_image,
   }))
   .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
+
+const hero = items[0];
+const topItems = items.slice(1, 5);
+const restItems = items.slice(5);
 
 /* =========================
    日付フォーマット
@@ -47,55 +57,89 @@ const formatDate = (date: Date) =>
 ---
 
 <Layout title="Journal" breadcrumb={[{ label: "Journal", href: "/journal" }]}>
-  <section>
-    <h1>Journal</h1>
+  <section class="journal">
+    <h1 class="page-title">Journal</h1>
 
-    <ul>
-      {
-        items.map((item) => {
-          const isExternal =
-            item.href?.startsWith("http") || item.href?.startsWith("//");
+    {/* =========================
+        上段（hero + 4card）
+    ========================= */}
+    <div class="journal-grid">
+      {/* HERO */}
+      {hero && hero.href && (
+        <article class="journal-card journal-card--hero">
+          <a href={hero.href}>
+            {hero.hero_image && (
+              <div class="journal-image">
+                <img src={hero.hero_image} alt="" />
+              </div>
+            )}
 
-          return (
-            <li>
-              {/* title */}
-              <h2>
-                {item.href ? (
-                  <a
-                    href={item.href}
-                    target={isExternal ? "_blank" : undefined}
-                    rel={isExternal ? "noopener noreferrer" : undefined}
-                  >
-                    {item.title}
-                  </a>
-                ) : (
-                  item.title
-                )}
-              </h2>
-
-              {/* hero image（essayのみ） */}
-              {item.hero_image && (
-                <img src={item.hero_image} alt="" />
-              )}
-
-              {/* type */}
-              <p>{item.type}</p>
-
-              {/* excerpt */}
-              <p>{item.excerpt}</p>
-
-              {/* date */}
-              {item.date && (
-                <time datetime={item.date.toISOString()}>
-                  {formatDate(item.date)}
+            <div class="journal-meta">
+              {hero.type && <p>{hero.type}</p>}
+              <h2 class="journal-title">{hero.title}</h2>
+              {hero.date && (
+                <time datetime={hero.date.toISOString()}>
+                  {formatDate(hero.date)}
                 </time>
               )}
-            </li>
-          );
-        })
-      }
-    </ul>
+            </div>
+          </a>
+        </article>
+      )}
 
-    {items.length === 0 && <p>記事はまだありません。</p>}
+      {/* 4カード */}
+      {topItems.map((item) =>
+        item.href ? (
+          <article class="journal-card">
+            <a href={item.href}>
+              {item.hero_image && (
+                <div class="journal-image">
+                  <img src={item.hero_image} alt="" />
+                </div>
+              )}
+
+              <div class="journal-meta">
+                {item.type && <p>{item.type}</p>}
+                <h2 class="journal-card-title">{item.title}</h2>
+                {item.date && (
+                  <time datetime={item.date.toISOString()}>
+                    {formatDate(item.date)}
+                  </time>
+                )}
+              </div>
+            </a>
+          </article>
+        ) : null
+      )}
+    </div>
+
+    {/* =========================
+        下段（通常grid）
+    ========================= */}
+    <div class="journal-grid--list">
+      {restItems.map((item) =>
+        item.href ? (
+          <article class="journal-card">
+            <a href={item.href}>
+              {item.hero_image && (
+                <div class="journal-image">
+                  <img src={item.hero_image} alt="" />
+                </div>
+              )}
+
+              <div class="journal-meta">
+                {item.type && <p>{item.type}</p>}
+                <h2 class="journal-card-title">{item.title}</h2>
+                {item.date && (
+                  <time datetime={item.date.toISOString()}>
+                    {formatDate(item.date)}
+                  </time>
+                )}
+              </div>
+            </a>
+          </article>
+        ) : null
+      )}
+    </div>
   </section>
 </Layout>
