@@ -138,21 +138,21 @@ const gridExhibitions = formattedExhibitions.slice(1);
     )}
 
     {/* ===================== grid ===================== */}
-    <div class="grid">
+    <div class="exhibitions-grid">
       {gridExhibitions.map((exh, index) => (
         <div
           class={`grid__card ${
             index === 0 ? "grid__card--middle" : "grid__card--small"
           }`}
         >
-          <a href={`/exhibitions/${exh.id}`} class="grid__link card-link">
-            <div class="grid__image">
+          <a href={`/exhibitions/${exh.id}`} class="card-link">
+            <div class="grid__image card-image">
               {exh.data.image && (
                 <img src={exh.data.image} alt={exh.displayTitle} />
               )}
             </div>
 
-            <div class="grid__meta">
+            <div class="grid__meta card-meta">
               <div class="grid__meta-left">
                 <p class="grid__artist">
                   {exh.artistNames.join("・")}

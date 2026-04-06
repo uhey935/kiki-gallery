@@ -1,79 +1,37 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection, type CollectionEntry } from "astro:content";
-import { groupExhibitionsByArtist } from "../../utils/groupExhibitionsByArtist";
-import { getFeaturedExhibitions } from "../../utils/getFeaturedExhibitions";
-import { getArtistStatusMap } from "../../utils/getArtistStatusMap";
+import { getCollection } from "astro:content";
 
-// 型定義
-type Artist = CollectionEntry<"artists">;
-
-// ① データ取得
-const allArtists = await getCollection("artists");
-const allExhibitions = await getCollection("exhibitions");
-
-// ② exhibitionsをartistごとにグループ化（＋status付与）
-const exhibitionsByArtist = groupExhibitionsByArtist(allExhibitions);
-
-// ③ EXH抽出（1アーティスト1件）
-const featuredExhibitions = getFeaturedExhibitions(
-  allArtists,
-  exhibitionsByArtist,
-);
-
-// ④ 表示用EXH（ongoing → upcoming / 上限4件）
-const displayExhibitions = [
-  ...featuredExhibitions.filter((e) => e.status === "ongoing"),
-  ...featuredExhibitions.filter((e) => e.status === "upcoming"),
-].slice(0, 4);
-
-// ⑤ artist status map（将来用）
-const artistStatusMap = getArtistStatusMap(allArtists, exhibitionsByArtist);
-
-// ⑥ artists一覧（アルファベット順）
-const artistsSorted = [...allArtists].sort((a, b) =>
-  (a.data.name ?? "").localeCompare(b.data.name ?? "", "en", {
-    sensitivity: "base",
-  }),
-);
+const artists = await getCollection("artists");
 ---
 
-<Layout title="Artists" breadcrumb={[{ label: "Artists", href: "/artists" }]}>
-  <h1>Artists</h1>
+<Layout
+  title="Artists"
+  breadcrumb={[{ label: "Artists", href: "/artists" }]}
+>
+  <section class="section artists">
+    <h1 class="page-title">Artists</h1>
 
-  {
-    displayExhibitions.length > 0 && (
-      <section>
-        {displayExhibitions.map(({ artist, exhibition, status }) => (
-          <article>
-            <a href={`/exhibitions/${exhibition.id}`}>
-              {artist.data.image && (
-                <img
-                  src={artist.data.image}
-                  alt={artist.data.nameJa ?? artist.data.name}
-                  loading="lazy"
-                />
-              )}
+    <div class="grid artists-grid">
+      {artists.map((artist) => (
+        <article class="card">
+          <a href={`/artists/${artist.id}`} class="card-link">
+            
+            {artist.data.image && (
+              <div class="grid__image card-image">
+                <img src={artist.data.image} alt={artist.data.name} />
+              </div>
+            )}
 
-              <p>{status === "ongoing" ? "Current" : "Upcoming"}</p>
+            <div class="grid__meta card-meta">
+              <h2 class="artist-name">
+                {artist.data.nameJa ?? artist.data.name}
+              </h2>
+            </div>
 
-              <h2>{artist.data.nameJa ?? artist.data.name}</h2>
-            </a>
-          </article>
-        ))}
-      </section>
-    )
-  }
-
-  <section>
-    {
-      artistsSorted.map((artist) => (
-        <article>
-          <a href={`/artists/${artist.id}`}>
-            <h2>{artist.data.nameJa ?? artist.data.name}</h2>
           </a>
         </article>
-      ))
-    }
+      ))}
+    </div>
   </section>
 </Layout>

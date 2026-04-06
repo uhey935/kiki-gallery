@@ -116,7 +116,7 @@
    GRID（完全独立）
 ========================= */
 
-.grid {
+.exhibitions-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 13px;
@@ -124,7 +124,6 @@
 }
 
 /* カード */
-
 .grid__card {
   position: relative;
   background: #f0f0f0;
@@ -143,7 +142,7 @@
 
 /* 内部 */
 
-.grid__link {
+.card-link {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -158,6 +157,12 @@
   align-items: center;
   justify-content: center;
   flex: 1;
+}
+
+.card-image img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .grid__image img {

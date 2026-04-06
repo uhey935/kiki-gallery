@@ -1,0 +1,12 @@
+/* =========================
+   Artists
+========================= */
+
+.artists-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.card-link {
+  display: flex;
+  flex-direction: column;
+}

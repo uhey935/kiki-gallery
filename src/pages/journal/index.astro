@@ -73,7 +73,7 @@ const restItems = items.slice(5);
       {/* HERO */}
       {hero && (
         <article class="card journal-card journal-card--hero">
-          <a href={hero.href}>
+          <a href={hero.href} class="card-link">
             {hero.hero_image && (
               <div class="card-image journal-image">
                 <img src={hero.hero_image} alt={hero.title} />
@@ -91,8 +91,6 @@ const restItems = items.slice(5);
                   {formatDate(hero.date)}
                 </time>
               )}
-              
-              <p class="excerpt">{hero.excerpt}</p>
             </div>
           </a>
         </article>
@@ -101,7 +99,7 @@ const restItems = items.slice(5);
       {/* 4カード（Grid部分） */}
       {topItems.map((item) => (
         <article class="card journal-card">
-          <a href={item.href}>
+          <a href={item.href} class="card-link">
             {item.hero_image && (
               <div class="card-image journal-image">
                 <img src={item.hero_image} alt={item.title} />
@@ -126,7 +124,7 @@ const restItems = items.slice(5);
       <div class="journal-grid--list">
         {restItems.map((item) => (
           <article class="card journal-card">
-            <a href={item.href}>
+            <a href={item.href} class="card-link">
               {item.hero_image && (
                 <div class="card-image journal-image">
                   <img src={item.hero_image} alt={item.title} />
