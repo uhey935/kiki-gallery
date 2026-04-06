@@ -26,13 +26,6 @@
   display: block;
 }
 
-.journal-card a,
-.journal-card--hero a {
-  display: block;
-  color: inherit;
-  text-decoration: none;
-}
-
 /* =========================
    Hero
 ========================= */

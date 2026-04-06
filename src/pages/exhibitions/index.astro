@@ -4,84 +4,80 @@ import { getCollection } from "astro:content";
 import { formatDateRangeJa } from "../../utils/date";
 
 // =====================
-// データ取得
+// 1. データ取得
 // =====================
-
-const SEPARATOR = "、";
 const exhibitions = await getCollection("exhibitions");
 const artists = await getCollection("artists");
 
-// =====================
-// 日付パース（安全化）
-// =====================
-
-const parseDate = (value: string | undefined) => {
-  return value ? new Date(value) : null;
-};
+// 作家データを ID キーの Map に変換（計算量 O(N) に抑制）
+const artistMap = new Map(artists.map((a) => [a.id, a.data]));
 
 // =====================
-// ステータス判定
+// 2. ヘルパー関数（ロジックの共通化）
 // =====================
+const SEPARATOR = "、";
 
-const today = new Date();
-
-const getStatus = (start: Date | null, end: Date | null) => {
-  if (!start) return "past";
-
-  const compareEnd = end ? new Date(end) : new Date(start);
-  compareEnd.setHours(23, 59, 59, 999);
-
-  if (start > today) return "upcoming";
-  if (compareEnd >= today) return "ongoing";
-  return "past";
-};
-
-// =====================
-// 作家名取得（複数対応）
-// =====================
-
-const getArtistNames = (exh: any) => {
-  const ids = Array.isArray(exh.data.artist)
-    ? exh.data.artist
-    : [exh.data.artist];
-
+// 作家名の配列を取得
+const getArtistDisplayNames = (artistIds: string[] | string | undefined) => {
+  const ids = Array.isArray(artistIds) ? artistIds : artistIds ? [artistIds] : [];
   return ids
-    .map((id: string) => {
-      const artist = artists.find((a) => a.id === id);
-      return artist?.data?.nameJa || artist?.data?.name || "";
+    .map((id) => {
+      const data = artistMap.get(id);
+      return data?.nameJa || data?.name || id;
     })
     .filter(Boolean);
 };
 
-// =====================
-// ソート（新しい順）
-// =====================
+// 表示用タイトルの生成
+const getDisplayTitle = (title: string | undefined, names: string[]) => {
+  if (title && title.trim() !== "") return title;
+  if (names.length === 0) return "Exhibition";
+  return names.length > 1
+    ? `${names.join(SEPARATOR)} 合同展`
+    : `${names[0]} 個展`;
+};
 
+// ステータス判定（ビルド時の時刻基準）
+const getStatus = (start: Date | null, end: Date | null) => {
+  const today = new Date();
+  if (!start) return "past";
+
+  // 終了日の23:59:59と比較（endがなければstartを基準にする）
+  const compare = new Date(end ?? start);
+  compare.setHours(23, 59, 59, 999);
+
+  if (start > today) return "upcoming";
+  if (compare >= today) return "ongoing";
+  return "past";
+};
+
+// =====================
+// 3. データ加工（一括処理）
+// =====================
 const sorted = [...exhibitions].sort((a, b) => {
-  const dateA = parseDate(a.data.date);
-  const dateB = parseDate(b.data.date);
-
-  return (dateB?.getTime() ?? 0) - (dateA?.getTime() ?? 0);
+  const dateA = a.data.date ? new Date(a.data.date).getTime() : 0;
+  const dateB = b.data.date ? new Date(b.data.date).getTime() : 0;
+  return dateB - dateA;
 });
 
-// =====================
-// hero（先頭1件）
-// =====================
+const formattedExhibitions = sorted.map((exh) => {
+  const names = getArtistDisplayNames(exh.data.artist);
+  const startDate = exh.data.date ? new Date(exh.data.date) : null;
+  const endDate = exh.data.end_date ? new Date(exh.data.end_date) : null;
 
-const hero = sorted[0];
+  return {
+    ...exh,
+    artistNames: names,
+    displayTitle: getDisplayTitle(exh.data.title, names),
+    status: getStatus(startDate, endDate),
+    startDate,
+    endDate,
+  };
+});
 
-// hero用データ
-const heroArtistNames = hero ? getArtistNames(hero) : [];
-
-const heroStatus = hero
-  ? getStatus(parseDate(hero.data.date), parseDate(hero.data.end_date))
-  : "";
-
-// =====================
-// grid（hero除外）
-// =====================
-
-const gridExhibitions = sorted.filter((exh) => exh.id !== hero?.id);
+// hero（先頭）と grid（残り）に分離
+const hero = formattedExhibitions[0];
+const gridExhibitions = formattedExhibitions.slice(1);
 ---
 
 <Layout
@@ -89,131 +85,96 @@ const gridExhibitions = sorted.filter((exh) => exh.id !== hero?.id);
   breadcrumb={[{ label: "Exhibitions", href: "/exhibitions" }]}
 >
   <section class="section exhibitions">
-      <h1 class="page-title">Exhibitions</h1>
+    <h1 class="page-title">Exhibitions</h1>
 
-      {/* =====================
-          hero（完全分離）
-      ===================== */}
+    {/* ===================== hero ===================== */}
+    {hero && (
+      <div class="hero">
+        <div class="hero__card">
+          <div class="hero__link">
+            <a href={`/exhibitions/${hero.id}`} class="hero__image">
+              {hero.data.image && (
+                <img src={hero.data.image} alt={hero.displayTitle} />
+              )}
+            </a>
 
-      {hero && (
-        <div class="hero">
-          <div class="hero__card">
-            <div class="hero__link">
+            <div class="hero__content">
+              <p class="hero__status">{hero.status}</p>
 
-              <!-- 画像（リンク） -->
-              <a href={`/exhibitions/${hero.id}`} class="hero__image">
-                {hero.data.image && <img src={hero.data.image} alt="" />}
-              </a>
+              <p class="hero__artist">
+                {hero.artistNames.join(SEPARATOR)}
+              </p>
 
-              <!-- テキスト -->
-              <div class="hero__content">
-                <p class="hero__status">{heroStatus}</p>
-
-                <p class="hero__artist">
-                  {heroArtistNames.join(SEPARATOR)}
-                </p>
-
-                <h2 class="hero__title">
-                  <a href={`/exhibitions/${hero.id}`}>
-                    {hero.data.title && hero.data.title !== ""
-                      ? hero.data.title
-                      : heroArtistNames.length > 0
-                        ? heroArtistNames.length > 1
-                          ? `${heroArtistNames.join(SEPARATOR)} 合同展`
-                          : `${heroArtistNames[0]} 個展`
-                        : "Exhibition"}
-                  </a>
-                </h2>
-
-                <p class="hero__date">
-                  {hero.data.date
-                    ? formatDateRangeJa(hero.data.date, hero.data.end_date)
-                    : ""}
-                </p>
-
-                {hero.data.venue?.name && (
-                  <p class="hero__venue">{hero.data.venue.name}</p>
-                )}
-
-                {hero.data.lead ? (
-                  <p class="hero__lead">{hero.data.lead}</p>
-                ) : null}
-
-                <a href={`/exhibitions/${hero.id}`} class="hero__more">
-                  Learn more
-                  <span class="hero__arrow">
-                    <svg viewBox="0 0 100 20">
-                      <polyline points="0,18 70,18 58,6" />
-                    </svg>
-                  </span>
+              <h2 class="hero__title">
+                <a href={`/exhibitions/${hero.id}`}>
+                  {hero.displayTitle}
                 </a>
-              </div>
+              </h2>
+
+              <p class="hero__date">
+                {hero.data.date
+                  ? formatDateRangeJa(hero.data.date, hero.data.end_date)
+                  : ""}
+              </p>
+
+              {hero.data.venue?.name && (
+                <p class="hero__venue">{hero.data.venue.name}</p>
+              )}
+
+              {hero.data.lead && <p class="hero__lead">{hero.data.lead}</p>}
+
+              <a href={`/exhibitions/${hero.id}`} class="hero__more">
+                Learn more
+                <span class="hero__arrow">
+                  <svg viewBox="0 0 100 20">
+                    <polyline points="0,18 70,18 58,6" />
+                  </svg>
+                </span>
+              </a>
             </div>
           </div>
         </div>
-      )}
-
-      {/* =====================
-          grid（完全分離）
-      ===================== */}
-
-      <div class="grid">
-        {gridExhibitions.map((exh, index) => {
-          const artistIds = Array.isArray(exh.data.artist)
-            ? exh.data.artist
-            : [exh.data.artist];
-
-          const artistNames = artistIds.map((id) => {
-            const artist = artists.find((a) => a.id === id);
-            return artist?.data.nameJa || artist?.data.name || id;
-          });
-
-          const displayTitle =
-            exh.data.title && exh.data.title !== ""
-              ? exh.data.title
-              : artistNames.length > 0
-                ? artistNames.length > 1
-                  ? `${artistNames.join("・")} 合同展`
-                  : `${artistNames[0]} 個展`
-                : "Exhibition";
-
-          return (
-            <div
-              class={`grid__card ${
-                index === 0
-                  ? "grid__card--middle"
-                  : "grid__card--small"
-              }`}
-            >
-              <a href={`/exhibitions/${exh.id}`} class="grid__link">
-                <div class="grid__image">
-                  {exh.data.image && <img src={exh.data.image} alt="" />}
-                </div>
-
-                <div class="grid__meta">
-                  <div class="grid__meta-left">
-                    <p class="grid__artist">
-                      {artistNames.join("・")}
-                    </p>
-                    <p class="grid__title">{displayTitle}</p>
-                  </div>
-
-                  <p class="grid__date">
-                    {exh.data.date
-                      ? new Date(exh.data.date)
-                          .toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "2-digit",
-                            year: "numeric",
-                          })
-                          .toUpperCase()
-                      : ""}
-                  </p>
-                </div>
-              </a>
-            </div>
-          );
-        })}
       </div>
+    )}
+
+    {/* ===================== grid ===================== */}
+    <div class="grid">
+      {gridExhibitions.map((exh, index) => (
+        <div
+          class={`grid__card ${
+            index === 0 ? "grid__card--middle" : "grid__card--small"
+          }`}
+        >
+          <a href={`/exhibitions/${exh.id}`} class="grid__link card-link">
+            <div class="grid__image">
+              {exh.data.image && (
+                <img src={exh.data.image} alt={exh.displayTitle} />
+              )}
+            </div>
+
+            <div class="grid__meta">
+              <div class="grid__meta-left">
+                <p class="grid__artist">
+                  {exh.artistNames.join("・")}
+                </p>
+                <p class="grid__title">{exh.displayTitle}</p>
+              </div>
+
+              <p class="grid__date">
+                {exh.startDate
+                  ? exh.startDate
+                      .toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "2-digit",
+                        year: "numeric",
+                      })
+                      .toUpperCase()
+                  : ""}
+              </p>
+            </div>
+          </a>
+        </div>
+      ))}
+    </div>
   </section>
 </Layout>

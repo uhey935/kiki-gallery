@@ -3,50 +3,23 @@ import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 
 /* =========================
-   データ取得
+   1. データ取得
 ========================= */
 const journal = await getCollection("journal");
 
 /* =========================
-   ヘルパー
+   2. ヘルパー関数（将来のutils候補）
 ========================= */
-const stripHtml = (text: string) => text.replace(/<[^>]*>?/gm, "");
+// HTMLタグを除去
+const stripHtml = (text: string) => text.replace(/<[^>]+>/g, "");
 
+// 文字列を丸める
 const truncate = (text: string, limit: number) => {
   const clean = stripHtml(text).replace(/\n/g, "").trim();
   return clean.length > limit ? clean.slice(0, limit) + "..." : clean;
 };
 
-const parseDate = (value?: string) => {
-  if (!value) return null;
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? null : d;
-};
-
-/* =========================
-   整形
-========================= */
-const items = journal
-  .map((item) => ({
-    id: item.id,
-    href:
-      item.data.link ||
-      (item.data.has_page !== false ? `/journal/${item.id}` : null),
-    title: item.data.title,
-    date: parseDate(item.data.date),
-    excerpt: item.data.excerpt || truncate(item.body || "", 80),
-    type: item.data.categories?.[0] ?? null,
-    hero_image: item.data.hero_image,
-  }))
-  .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
-
-const hero = items[0];
-const topItems = items.slice(1, 5);
-const restItems = items.slice(5);
-
-/* =========================
-   日付フォーマット
-========================= */
+// 日付の表示用フォーマット（Template側で使用）
 const formatDate = (date: Date) =>
   date.toLocaleDateString("en-US", {
     weekday: "long",
@@ -54,52 +27,113 @@ const formatDate = (date: Date) =>
     month: "short",
     day: "numeric",
   });
+
+/* =========================
+   3. データ整形（Mapping）
+========================= */
+const items = journal
+  .map((item) => {
+    // 日付オブジェクトの生成（不正な日付はnull）
+    const date = item.data.date ? new Date(item.data.date) : null;
+    
+    // hrefの判定
+    const href = item.data.link || (item.data.has_page !== false ? `/journal/${item.id}` : null);
+    
+    // 抜粋文の生成（生テキストを安全に確保してから処理）
+    const rawText = item.body ?? "";
+    const excerpt = item.data.excerpt || truncate(rawText, 80);
+
+    return {
+      id: item.id,
+      href,
+      title: item.data.title,
+      date, // 派生データ（ISO文字列等）は持たせずDateオブジェクトのみ
+      excerpt,
+      categories: item.data.categories ?? [], // 配列として保持
+      hero_image: item.data.hero_image,
+    };
+  })
+  // リンクがない記事は一覧に出さない
+  .filter((item) => item.href !== null)
+  // 新しい順にソート
+  .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
+
+// 表示エリアごとに分割
+const hero = items[0];
+const topItems = items.slice(1, 5);
+const restItems = items.slice(5);
 ---
 
 <Layout title="Journal" breadcrumb={[{ label: "Journal", href: "/journal" }]}>
   <section class="section journal">
     <h1 class="page-title">Journal</h1>
 
-    {/* =========================
-        上段（hero + 4card）
-    ========================= */}
+    {/* ========================= 上段：Hero + Grid ========================= */}
     <div class="journal-grid">
       {/* HERO */}
-      {hero && hero.href && (
-        <article class="journal-card journal-card--hero">
+      {hero && (
+        <article class="card journal-card journal-card--hero">
           <a href={hero.href}>
             {hero.hero_image && (
-              <div class="journal-image">
-                <img src={hero.hero_image} alt="" />
+              <div class="card-image journal-image">
+                <img src={hero.hero_image} alt={hero.title} />
               </div>
             )}
-
-            <div class="journal-meta">
-              {hero.type && <p>{hero.type}</p>}
+            <div class="card-meta journal-meta">
+              {/* カテゴリ判定（配列の1番目がある場合のみ） */}
+              {hero.categories[0] && <p class="category">{hero.categories[0]}</p>}
+              
               <h2 class="journal-title">{hero.title}</h2>
+              
+              {/* 日付表示（Template側でメソッドを呼び出し） */}
               {hero.date && (
                 <time datetime={hero.date.toISOString()}>
                   {formatDate(hero.date)}
                 </time>
               )}
+              
+              <p class="excerpt">{hero.excerpt}</p>
             </div>
           </a>
         </article>
       )}
 
-      {/* 4カード */}
-      {topItems.map((item) =>
-        item.href ? (
-          <article class="journal-card">
+      {/* 4カード（Grid部分） */}
+      {topItems.map((item) => (
+        <article class="card journal-card">
+          <a href={item.href}>
+            {item.hero_image && (
+              <div class="card-image journal-image">
+                <img src={item.hero_image} alt={item.title} />
+              </div>
+            )}
+            <div class="card-meta journal-meta">
+              {item.categories[0] && <p class="category">{item.categories[0]}</p>}
+              <h2 class="journal-card-title">{item.title}</h2>
+              {item.date && (
+                <time datetime={item.date.toISOString()}>
+                  {formatDate(item.date)}
+                </time>
+              )}
+            </div>
+          </a>
+        </article>
+      ))}
+    </div>
+
+    {/* ========================= 下段：通常リスト ========================= */}
+    {restItems.length > 0 && (
+      <div class="journal-grid--list">
+        {restItems.map((item) => (
+          <article class="card journal-card">
             <a href={item.href}>
               {item.hero_image && (
-                <div class="journal-image">
-                  <img src={item.hero_image} alt="" />
+                <div class="card-image journal-image">
+                  <img src={item.hero_image} alt={item.title} />
                 </div>
               )}
-
-              <div class="journal-meta">
-                {item.type && <p>{item.type}</p>}
+              <div class="card-meta journal-meta">
+                {item.categories[0] && <p class="category">{item.categories[0]}</p>}
                 <h2 class="journal-card-title">{item.title}</h2>
                 {item.date && (
                   <time datetime={item.date.toISOString()}>
@@ -109,37 +143,8 @@ const formatDate = (date: Date) =>
               </div>
             </a>
           </article>
-        ) : null
-      )}
-    </div>
-
-    {/* =========================
-        下段（通常grid）
-    ========================= */}
-    <div class="journal-grid--list">
-      {restItems.map((item) =>
-        item.href ? (
-          <article class="journal-card">
-            <a href={item.href}>
-              {item.hero_image && (
-                <div class="journal-image">
-                  <img src={item.hero_image} alt="" />
-                </div>
-              )}
-
-              <div class="journal-meta">
-                {item.type && <p>{item.type}</p>}
-                <h2 class="journal-card-title">{item.title}</h2>
-                {item.date && (
-                  <time datetime={item.date.toISOString()}>
-                    {formatDate(item.date)}
-                  </time>
-                )}
-              </div>
-            </a>
-          </article>
-        ) : null
-      )}
-    </div>
+        ))}
+      </div>
+    )}
   </section>
 </Layout>
