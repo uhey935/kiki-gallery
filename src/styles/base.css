@@ -104,6 +104,26 @@ body {
 }
 
 /* =========================
+   Common
+========================= */
+.section {
+  width: 100%;
+  padding: 0 clamp(16px, 4vw, 80px);
+}
+
+.page-title {
+  font-size: 1.75rem;
+  line-height: 1.4;
+  margin-bottom: 32px;
+}
+
+.grid {
+  display: grid;
+  gap: 24px;
+}
+
+
+/* =========================
    Exhibition
 ========================= */
 

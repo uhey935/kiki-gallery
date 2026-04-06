@@ -2,11 +2,6 @@
    Journal
 ========================= */
 
-.journal {
-  width: 100%;
-  padding: 0 clamp(16px, 4vw, 80px);
-}
-
 /* 上段：hero + 4card */
 .journal-grid {
   display: grid;
@@ -74,13 +69,6 @@
 /* =========================
    Typography（最小設計）
 ========================= */
-
-/* journalタイトル */
-.page-title {
-  font-size: 1.75rem;
-  line-height: 1.4;
-  margin-bottom: 32px;
-}
 
 /* HEROタイトル */
 .journal-title {
