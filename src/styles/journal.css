@@ -2,15 +2,12 @@
    Journal
 ========================= */
 
-/* 上段：hero + 4card */
 .journal-grid {
   display: grid;
-  grid-template-columns: 2.25fr 1fr 1fr; /* ギャップ調整 */
+  grid-template-columns: 2.25fr 1fr 1fr;
   gap: 68px;
-  align-items: start;
 }
 
-/* 下段：通常4card */
 .journal-grid--list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -18,71 +15,35 @@
   margin-top: 48px;
 }
 
-/* =========================
-   Card
-========================= */
-
-.journal-card {
-  display: block;
-}
-
-/* =========================
-   Hero
-========================= */
-
 .journal-card--hero {
   grid-row: span 2;
 }
 
-/* =========================
-   Image
-========================= */
-
 .journal-image img {
   width: 100%;
-  height: auto;
-  display: block;
 }
-
-/* =========================
-   Meta
-========================= */
 
 .journal-meta {
   margin-top: 12px;
 }
 
-@media (max-width: 1023px) {
-  .journal-grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-}
-
 /* =========================
-   Typography（最小設計）
+   TEXT（統一）
 ========================= */
 
-/* HEROタイトル */
 .journal-title {
   font-size: clamp(1.25rem, 2.2vw, 1.5rem);
   font-weight: 800;
-  letter-spacing: 0.02em;
-  line-height: 1.7;
-  margin: 23px 0 23px;
+  margin: 23px 0;
 }
 
-/* カードタイトル */
 .journal-card-title {
-  font-size: clamp(1.1rem, 2.2vw,  1.3rem);
+  font-size: clamp(1.1rem, 2.2vw, 1.3rem);
   font-weight: 800;
-  letter-spacing: 0.025em;
-  line-height: 1.6;
   margin: 18px 0 20px;
 }
 
-/* カテゴリ（interview / report など） */
-.journal-meta p:first-child {
+.journal-category {
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -90,9 +51,18 @@
   margin-top: 19px;
 }
 
-/* 日付 */
-.journal-meta time {
+.journal-date {
   font-size: 0.8rem;
   color: #888;
-  display: block;
+}
+
+/* =========================
+   SP
+========================= */
+
+@media (max-width: 1023px) {
+  .journal-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
 }

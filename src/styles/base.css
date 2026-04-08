@@ -46,7 +46,7 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.6;
   color: #111;
-    background: #f7f7f7;
+  background: #f7f7f7;
 }
 
 .main {
@@ -90,50 +90,58 @@ body {
 .breadcrumb {
   margin: 28px 0 28px;
 }
+
 .breadcrumb ol {
   display: flex;
   flex-wrap: wrap;
 }
+
 .breadcrumb li + li::before {
   content: "/";
   margin: 0 0.5em 0 0.8em;
   font-weight: 400;
 }
+
 .breadcrumb li:last-child {
   font-weight: 600;
 }
 
 /* =========================
-   Common
+   Common Layout
 ========================= */
 .section {
   width: 100%;
   padding: 0 clamp(16px, 4vw, 80px);
 }
 
+/* ページタイトル（共通） */
 .page-title {
   font-size: 1.75rem;
   line-height: 1.4;
   margin-bottom: 32px;
 }
 
-.grid {
-  display: grid;
-}
-
-.card-link {
-  display: flex;
-  flex-direction: column;
-}
-
 /* =========================
-   Exhibition
+   Meta（共通）
 ========================= */
 
+/* カテゴリ（interview / report など） */
+.meta-category {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #666;
+}
 
+/* 日付 */
+.meta-date {
+  font-size: 0.8rem;
+  color: #888;
+  display: block;
+}
 
 /* =========================
-   Article
+   Article（共通）
 ========================= */
 .article {
   max-width: 800px;
@@ -149,8 +157,9 @@ body {
 /* Hero */
 .article-hero {
   position: relative;
-  margin-bottom: 58px; /* 画像下の余白 */
+  margin-bottom: 58px;
 }
+
 .article-hero figcaption {
   position: absolute;
   right: -31px;
@@ -200,6 +209,11 @@ body {
    Article Body Image
 ========================= */
 
+/* figureリセット */
+.article-body figure {
+  margin: 0;
+}
+
 /* caption */
 .article-body figure figcaption {
   margin-top: 18px;
@@ -208,14 +222,11 @@ body {
   color: #666;
 }
 
-/* figureの余白リセット */
-.article-body figure {
-  margin: 0;
-}
 /* text → image */
 .article-body p + figure {
   margin-top: 116px;
 }
+
 /* image → text */
 .article-body figure + p {
   margin-top: 48px;
@@ -224,7 +235,6 @@ body {
 /* =========================
    Footer
 ========================= */
-
 .footer {
   background-color: #000;
   color: #fff;
@@ -235,6 +245,7 @@ body {
   align-items: center;
   gap: 24px;
 }
+
 .footer-nav ul {
   display: flex;
   gap: 24px;

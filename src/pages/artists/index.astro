@@ -5,33 +5,30 @@ import { getCollection } from "astro:content";
 const artists = await getCollection("artists");
 ---
 
-<Layout
-  title="Artists"
-  breadcrumb={[{ label: "Artists", href: "/artists" }]}
->
+<Layout title="Artists" breadcrumb={[{ label: "Artists", href: "/artists" }]}>
   <section class="section artists">
     <h1 class="page-title">Artists</h1>
 
-    <div class="grid artists-grid">
-      {artists.map((artist) => (
-        <article class="card">
-          <a href={`/artists/${artist.id}`} class="card-link">
-            
-            {artist.data.image && (
-              <div class="grid__image card-image">
-                <img src={artist.data.image} alt={artist.data.name} />
+    <div class="artists-grid">
+      {
+        artists.map((artist) => (
+          <article class="artists-card">
+            <a href={`/artists/${artist.id}`} class="artists-link">
+              {artist.data.image && (
+                <div class="artists-image">
+                  <img src={artist.data.image} alt={artist.data.name} />
+                </div>
+              )}
+
+              <div class="artists-meta">
+                <h2 class="artists-name">
+                  {artist.data.nameJa ?? artist.data.name}
+                </h2>
               </div>
-            )}
-
-            <div class="grid__meta card-meta">
-              <h2 class="artist-name">
-                {artist.data.nameJa ?? artist.data.name}
-              </h2>
-            </div>
-
-          </a>
-        </article>
-      ))}
+            </a>
+          </article>
+        ))
+      }
     </div>
   </section>
 </Layout>

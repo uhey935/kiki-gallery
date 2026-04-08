@@ -89,43 +89,53 @@ const gridExhibitions = formattedExhibitions.slice(1);
 
     {/* ===================== hero ===================== */}
     {hero && (
-      <div class="hero">
-        <div class="hero__card">
-          <div class="hero__link">
-            <a href={`/exhibitions/${hero.id}`} class="hero__image">
+      <div class="exhibitions-hero">
+        <div class="exhibitions-hero__card">
+          <div class="exhibitions-hero__link">
+            <a
+              href={`/exhibitions/${hero.id}`}
+              class="exhibitions-hero__image"
+            >
               {hero.data.image && (
                 <img src={hero.data.image} alt={hero.displayTitle} />
               )}
             </a>
 
-            <div class="hero__content">
-              <p class="hero__status">{hero.status}</p>
+            <div class="exhibitions-hero__content">
+              <p class="exhibitions-status">{hero.status}</p>
 
-              <p class="hero__artist">
+              <p class="exhibitions-artist">
                 {hero.artistNames.join(SEPARATOR)}
               </p>
 
-              <h2 class="hero__title">
+              <h2 class="exhibitions-title">
                 <a href={`/exhibitions/${hero.id}`}>
                   {hero.displayTitle}
                 </a>
               </h2>
 
-              <p class="hero__date">
+              <p class="exhibitions-date">
                 {hero.data.date
                   ? formatDateRangeJa(hero.data.date, hero.data.end_date)
                   : ""}
               </p>
 
               {hero.data.venue?.name && (
-                <p class="hero__venue">{hero.data.venue.name}</p>
+                <p class="exhibitions-venue">
+                  {hero.data.venue.name}
+                </p>
               )}
 
-              {hero.data.lead && <p class="hero__lead">{hero.data.lead}</p>}
+              {hero.data.lead && (
+                <p class="exhibitions-lead">{hero.data.lead}</p>
+              )}
 
-              <a href={`/exhibitions/${hero.id}`} class="hero__more">
+              <a
+                href={`/exhibitions/${hero.id}`}
+                class="exhibitions-more"
+              >
                 Learn more
-                <span class="hero__arrow">
+                <span class="exhibitions-arrow">
                   <svg viewBox="0 0 100 20">
                     <polyline points="0,18 70,18 58,6" />
                   </svg>
@@ -141,26 +151,34 @@ const gridExhibitions = formattedExhibitions.slice(1);
     <div class="exhibitions-grid">
       {gridExhibitions.map((exh, index) => (
         <div
-          class={`grid__card ${
-            index === 0 ? "grid__card--middle" : "grid__card--small"
+          class={`exhibitions-card ${
+            index === 0
+              ? "exhibitions-card--middle"
+              : "exhibitions-card--small"
           }`}
         >
-          <a href={`/exhibitions/${exh.id}`} class="card-link">
-            <div class="grid__image card-image">
+          <a
+            href={`/exhibitions/${exh.id}`}
+            class="exhibitions-card__link"
+          >
+            <div class="exhibitions-card__image">
               {exh.data.image && (
                 <img src={exh.data.image} alt={exh.displayTitle} />
               )}
             </div>
 
-            <div class="grid__meta card-meta">
-              <div class="grid__meta-left">
-                <p class="grid__artist">
+            <div class="exhibitions-card__meta">
+              <div>
+                <p class="exhibitions-artist">
                   {exh.artistNames.join("・")}
                 </p>
-                <p class="grid__title">{exh.displayTitle}</p>
+
+                <p class="exhibitions-title">
+                  {exh.displayTitle}
+                </p>
               </div>
 
-              <p class="grid__date">
+              <p class="exhibitions-date exhibitions-card__date">
                 {exh.startDate
                   ? exh.startDate
                       .toLocaleDateString("en-US", {

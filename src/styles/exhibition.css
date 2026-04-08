@@ -1,27 +1,21 @@
-
 /* =========================
    HERO
 ========================= */
 
-.hero {
+.exhibitions-hero {
   display: grid;
   gap: 120px;
   margin-bottom: 100px;
 }
 
-.hero__card {
-  width: 100%;
-  height: 100%;
-}
-
-.hero__link {
+.exhibitions-hero__link {
   display: grid;
   grid-template-columns: 1.2fr 0.64fr;
   gap: 68px;
   align-items: start;
 }
 
-.hero__image {
+.exhibitions-hero__image {
   background: #f0f0f0;
   display: flex;
   align-items: center;
@@ -29,20 +23,24 @@
   aspect-ratio: 1 / 1.19;
 }
 
-.hero__image img {
+.exhibitions-hero__image img {
   max-width: 70%;
   max-height: 70%;
   object-fit: contain;
 }
 
-.hero__content {
+.exhibitions-hero__content {
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding-top: 120px;
 }
 
-.hero__status {
+/* =========================
+   HERO TEXT
+========================= */
+
+.exhibitions-hero .exhibitions-status {
   background: #000;
   color: #fff;
   font-size: 0.9rem;
@@ -51,160 +49,131 @@
   width: fit-content;
 }
 
-.hero__artist {
+.exhibitions-hero .exhibitions-artist {
   font-size: 1rem;
   margin-bottom: 8px;
 }
 
-.hero__title {
+.exhibitions-hero .exhibitions-title {
   font-size: 2.1rem;
   margin-bottom: 32px;
 }
 
-.hero__date {
+.exhibitions-hero .exhibitions-date {
   font-size: 1rem;
   color: #555;
   margin-bottom: 7px;
 }
 
-.hero__venue {
+.exhibitions-hero .exhibitions-venue {
   font-size: 1rem;
   color: #555;
   margin-bottom: 33px;
 }
 
-.hero__lead {
+.exhibitions-hero .exhibitions-lead {
   font-size: 1rem;
   color: #555;
   line-height: 1.9;
   margin-bottom: 24px;
 }
 
-.hero__more {
+.exhibitions-hero .exhibitions-more {
   display: flex;
-  align-items: center;
-  justify-content: flex-end; /* 右寄せ */
+  justify-content: flex-end;
   gap: 8px;
-
-  font-weight: 700; /* bold */
+  font-weight: 700;
 }
-.hero__arrow {
-  display: inline-block;
+
+.exhibitions-arrow {
   width: 60px;
   height: 20px;
 }
 
-.hero__arrow svg {
+.exhibitions-arrow svg {
   width: 100%;
   height: 100%;
 }
 
-.hero__arrow polyline {
+.exhibitions-arrow polyline {
   fill: none;
   stroke: #111;
   stroke-width: 1;
 }
 
-@media (max-width: 768px) {
-  .hero__link {
-    grid-template-columns: 1fr;
-    gap: 24px; /* 好みでOK（16〜32くらい） */
-  }
-}
-
 /* =========================
-   GRID（完全独立）
+   GRID
 ========================= */
 
 .exhibitions-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 13px;
-  align-items: start;
 }
 
-/* カード */
-.grid__card {
-  position: relative;
+.exhibitions-card {
   background: #f0f0f0;
-  width: 100%;
-  height: 100%;
 }
 
-.grid__card--small {
+.exhibitions-card--small {
   aspect-ratio: 1 / 1.19;
 }
 
-.grid__card--middle {
+.exhibitions-card--middle {
   grid-column: span 2;
   aspect-ratio: 2 / 1.19;
 }
 
-/* 内部 */
-
-.card-link {
+.exhibitions-card__link {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   height: 100%;
   padding: 24px;
 }
 
-/* 画像 */
-
-.grid__image {
+.exhibitions-card__image {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 1;
 }
 
-.card-image img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.grid__image img {
+.exhibitions-card__image img {
   max-width: 70%;
   max-height: 70%;
   object-fit: contain;
 }
 
-/* メタ */
-
-.grid__meta {
+.exhibitions-card__meta {
   position: relative;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
 }
 
-.grid__meta-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+/* =========================
+   GRID TEXT
+========================= */
 
-/* テキスト */
-
-.grid__artist {
+.exhibitions-card .exhibitions-artist {
   font-size: 0.85rem;
   color: #666;
 }
 
-.grid__title {
+.exhibitions-card .exhibitions-title {
   font-size: 1.1rem;
   line-height: 1.4;
 }
 
-.grid__date {
+.exhibitions-card .exhibitions-date {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* 位置 */
+.exhibitions-card__date {
   position: absolute;
   right: 0;
   top: 2.2em;
-  font-size: 0.85rem;
-  color: #666;
   white-space: nowrap;
 }
 
@@ -213,22 +182,17 @@
 ========================= */
 
 @media (max-width: 768px) {
+  .exhibitions-hero__link {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
 
-  .grid {
+  .exhibitions-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
 
-  .grid__card {
-    height: auto;
-  }
-
-  .grid__card--middle {
-    grid-column: span 2;
-    aspect-ratio: 1 / 1.19;
-  }
-
-  .grid__date {
+  .exhibitions-card__date {
     position: static;
     margin-top: 8px;
   }
