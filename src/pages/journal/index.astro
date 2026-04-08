@@ -35,10 +35,12 @@ const items = journal
   .map((item) => {
     // 日付オブジェクトの生成（不正な日付はnull）
     const date = item.data.date ? new Date(item.data.date) : null;
-    
+
     // hrefの判定
-    const href = item.data.link || (item.data.has_page !== false ? `/journal/${item.id}` : null);
-    
+    const href =
+      item.data.link ||
+      (item.data.has_page !== false ? `/journal/${item.id}` : null);
+
     // 抜粋文の生成（生テキストを安全に確保してから処理）
     const rawText = item.body ?? "";
     const excerpt = item.data.excerpt || truncate(rawText, 80);
@@ -68,61 +70,43 @@ const restItems = items.slice(5);
   <section class="section journal">
     <h1 class="page-title">Journal</h1>
 
-    {/* ========================= 上段：Hero + Grid ========================= */}
+    {
+      /* ========================= 上段：Hero + Grid ========================= */
+    }
     <div class="journal-grid">
       {/* HERO */}
-      {hero && (
-        <article class="card journal-card journal-card--hero">
-          <a href={hero.href} class="card-link">
-            {hero.hero_image && (
-              <div class="card-image journal-image">
-                <img src={hero.hero_image} alt={hero.title} />
-              </div>
-            )}
-            <div class="card-meta journal-meta">
-              {/* カテゴリ判定（配列の1番目がある場合のみ） */}
-              {hero.categories[0] && <p class="category">{hero.categories[0]}</p>}
-              
-              <h2 class="journal-title">{hero.title}</h2>
-              
-              {/* 日付表示（Template側でメソッドを呼び出し） */}
-              {hero.date && (
-                <time datetime={hero.date.toISOString()}>
-                  {formatDate(hero.date)}
-                </time>
+      {
+        hero && (
+          <article class="card journal-card journal-card--hero">
+            <a href={hero.href} class="card-link">
+              {hero.hero_image && (
+                <div class="card-image journal-image">
+                  <img src={hero.hero_image} alt={hero.title} />
+                </div>
               )}
-            </div>
-          </a>
-        </article>
-      )}
+              <div class="card-meta journal-meta">
+                {/* カテゴリ判定（配列の1番目がある場合のみ） */}
+                {hero.categories[0] && (
+                  <p class="journal-category">{hero.categories[0]}</p>
+                )}
+
+                <h2 class="journal-title">{hero.title}</h2>
+
+                {/* 日付表示（Template側でメソッドを呼び出し） */}
+                {hero.date && (
+                  <time class="journal-date" datetime={hero.date.toISOString()}>
+                    {formatDate(hero.date)}
+                  </time>
+                )}
+              </div>
+            </a>
+          </article>
+        )
+      }
 
       {/* 4カード（Grid部分） */}
-      {topItems.map((item) => (
-        <article class="card journal-card">
-          <a href={item.href} class="card-link">
-            {item.hero_image && (
-              <div class="card-image journal-image">
-                <img src={item.hero_image} alt={item.title} />
-              </div>
-            )}
-            <div class="card-meta journal-meta">
-              {item.categories[0] && <p class="category">{item.categories[0]}</p>}
-              <h2 class="journal-card-title">{item.title}</h2>
-              {item.date && (
-                <time datetime={item.date.toISOString()}>
-                  {formatDate(item.date)}
-                </time>
-              )}
-            </div>
-          </a>
-        </article>
-      ))}
-    </div>
-
-    {/* ========================= 下段：通常リスト ========================= */}
-    {restItems.length > 0 && (
-      <div class="journal-grid--list">
-        {restItems.map((item) => (
+      {
+        topItems.map((item) => (
           <article class="card journal-card">
             <a href={item.href} class="card-link">
               {item.hero_image && (
@@ -131,18 +115,53 @@ const restItems = items.slice(5);
                 </div>
               )}
               <div class="card-meta journal-meta">
-                {item.categories[0] && <p class="category">{item.categories[0]}</p>}
+                {item.categories[0] && (
+                  <p class="journal-category">{item.categories[0]}</p>
+                )}
                 <h2 class="journal-card-title">{item.title}</h2>
                 {item.date && (
-                  <time datetime={item.date.toISOString()}>
+                  <time class="journal-date" datetime={item.date.toISOString()}>
                     {formatDate(item.date)}
                   </time>
                 )}
               </div>
             </a>
           </article>
-        ))}
-      </div>
-    )}
+        ))
+      }
+    </div>
+
+    {/* ========================= 下段：通常リスト ========================= */}
+    {
+      restItems.length > 0 && (
+        <div class="journal-grid--list">
+          {restItems.map((item) => (
+            <article class="card journal-card">
+              <a href={item.href} class="card-link">
+                {item.hero_image && (
+                  <div class="card-image journal-image">
+                    <img src={item.hero_image} alt={item.title} />
+                  </div>
+                )}
+                <div class="card-meta journal-meta">
+                  {item.categories[0] && (
+                    <p class="journal-category">{item.categories[0]}</p>
+                  )}
+                  <h2 class="journal-card-title">{item.title}</h2>
+                  {item.date && (
+                    <time
+                      class="journal-date"
+                      datetime={item.date.toISOString()}
+                    >
+                      {formatDate(item.date)}
+                    </time>
+                  )}
+                </div>
+              </a>
+            </article>
+          ))}
+        </div>
+      )
+    }
   </section>
 </Layout>

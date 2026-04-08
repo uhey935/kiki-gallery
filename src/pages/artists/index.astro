@@ -1,8 +1,26 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
 
 const artists = await getCollection("artists");
+
+/* =========================
+   英語（姓）ベースでソート
+========================= */
+const sortedArtists = artists
+  .filter(artist => artist.data.name) // nameがないデータを除外して安全性を確保
+  .sort((a, b) => {
+    const getLastName = (name: string = "") => {
+      const parts = name.trim().split(/\s+/);
+      return parts.length > 0 ? parts[parts.length - 1] : "";
+    };
+
+    const lastA = getLastName(a.data.name || "");
+    const lastB = getLastName(b.data.name || "");
+
+    return lastA.localeCompare(lastB, "en", { sensitivity: "base" });
+  });
 ---
 
 <Layout title="Artists" breadcrumb={[{ label: "Artists", href: "/artists" }]}>
@@ -11,12 +29,17 @@ const artists = await getCollection("artists");
 
     <div class="artists-grid">
       {
-        artists.map((artist) => (
+        sortedArtists.map((artist) => (
           <article class="artists-card">
             <a href={`/artists/${artist.id}`} class="artists-link">
               {artist.data.image && (
                 <div class="artists-image">
-                  <img src={artist.data.image} alt={artist.data.name} />
+                  <Image 
+                    src={artist.data.image} 
+                    alt={artist.data.name || "Artist photo"}
+                    width={600} 
+                    height={600} 
+                  />
                 </div>
               )}
 
@@ -24,6 +47,12 @@ const artists = await getCollection("artists");
                 <h2 class="artists-name">
                   {artist.data.nameJa ?? artist.data.name}
                 </h2>
+
+                <p class="artists-medium">
+                  {Array.isArray(artist.data.medium)
+                    ? artist.data.medium.join(" / ")
+                    : artist.data.medium}
+                </p>
               </div>
             </a>
           </article>

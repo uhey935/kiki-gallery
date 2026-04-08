@@ -24,7 +24,7 @@
 }
 
 .journal-meta {
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 /* =========================
@@ -34,13 +34,13 @@
 .journal-title {
   font-size: clamp(1.25rem, 2.2vw, 1.5rem);
   font-weight: 800;
-  margin: 23px 0;
+  margin: 10px 0 23px;
 }
 
 .journal-card-title {
   font-size: clamp(1.1rem, 2.2vw, 1.3rem);
   font-weight: 800;
-  margin: 18px 0 20px;
+  margin: 10px 0 18px;
 }
 
 .journal-category {
