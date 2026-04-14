@@ -3,8 +3,12 @@ import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import { formatDateRangeJa } from "../../utils/date";
 
+/* =========================
+   getStaticPaths
+========================= */
 export async function getStaticPaths() {
   const artists = await getCollection("artists");
+
   return artists.map((artist) => ({
     params: { slug: artist.id },
     props: { artist },
@@ -14,39 +18,62 @@ export async function getStaticPaths() {
 const { artist } = Astro.props;
 const artistName = artist.data.nameJa || artist.data.name;
 
+/* =========================
+   description
+========================= */
 const description = artist.data.bio_short
   ? `${artistName}の作品・経歴を紹介｜KiKi Gallery`
   : artistName;
 
-// ▼ works（まず全部取得 → 後でfilter）
+/* =========================
+   Date安全処理（←追加）
+========================= */
+const parseDate = (value: string | undefined) => {
+  return value ? new Date(value) : null;
+};
+
+/* =========================
+   works
+========================= */
 const allWorks = await getCollection("works");
 
-// ▼ filter（安全）
 const works = allWorks.filter((work) => {
   return work.data.artist === artist.id;
 });
 
-// ▼ exhibitions
+/* =========================
+   exhibitions
+========================= */
 const rawExhibitions = await getCollection("exhibitions", ({ data }) =>
   Array.isArray(data.artist)
     ? data.artist.includes(artist.id)
     : data.artist === artist.id
 );
 
-// ▼ 日付ソート
-rawExhibitions.sort(
-  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
-);
+/* ▼ 日付ソート（安全） */
+rawExhibitions.sort((a, b) => {
+  const dateA = parseDate(a.data.date);
+  const dateB = parseDate(b.data.date);
 
-// ▼ ステータス判定
+  const timeA = dateA ? dateA.getTime() : 0;
+  const timeB = dateB ? dateB.getTime() : 0;
+
+  return timeB - timeA;
+});
+
+/* ▼ ステータス判定（修正） */
 const now = new Date();
 now.setHours(0, 0, 0, 0);
 
 const exhibitions = rawExhibitions.map((exh) => {
-  const start = new Date(exh.data.date);
-  const end = exh.data.end_date ? new Date(exh.data.end_date) : start;
+  const start = parseDate(exh.data.date);
+const end = parseDate(exh.data.end_date) || start;
 
-  const compareEnd = new Date(end);
+if (!start || !end) {
+  return { ...exh, status: "past" };
+}
+
+const compareEnd = new Date(end);
   compareEnd.setHours(23, 59, 59, 999);
 
   let status = "past";
@@ -56,12 +83,16 @@ const exhibitions = rawExhibitions.map((exh) => {
   return { ...exh, status };
 });
 
-// ▼ URL
+/* =========================
+   URL
+========================= */
 const siteUrl = Astro.site
   ? new URL(`/artists/${artist.id}`, Astro.site).href
   : null;
 
-// ▼ Person JSON-LD
+/* =========================
+   JSON-LD
+========================= */
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
@@ -105,10 +136,26 @@ const jsonLd = {
   ]}
 >
   <article>
-    <h1>{artistName}</h1>
 
-    <p>{artist.data.bio_short}</p>
-    <p><a href="#bio">Learn more</a></p>
+<section class="section artists-intro">
+  <div class="artists-intro__left">
+    <h1 class="artists-title">{artistName}</h1>
+
+    {artist.data.medium && (
+      <p class="artists-medium">
+        {Array.isArray(artist.data.medium)
+          ? artist.data.medium.join(", ")
+          : artist.data.medium}
+      </p>
+    )}
+  </div>
+
+  <div class="artists-intro__right">
+    <p class="artists-bio-short">{artist.data.bio_short}</p>
+
+    <a href="#bio" class="artists-link">Learn more</a>
+  </div>
+    </section>
 
     <!-- ▼ Works -->
     <section>
@@ -138,29 +185,25 @@ const jsonLd = {
     </section>
 
     <!-- ▼ Shop -->
-    {
-      artist.data.shop_url && (
-        <p class="shop-link">
-          <a
-            href={artist.data.shop_url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Explore available works
-          </a>
-        </p>
-      )
-    }
+    {artist.data.shop_url && (
+      <p class="shop-link">
+        <a
+          href={artist.data.shop_url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Explore available works
+        </a>
+      </p>
+    )}
 
     <!-- ▼ Bio -->
     <section id="bio">
       <h2>Biography</h2>
 
-      {
-        artist.data.image && (
-          <img src={artist.data.image} alt={artistName} width="400" />
-        )
-      }
+      {artist.data.image && (
+        <img src={artist.data.image} alt={artistName} width="400" />
+      )}
 
       <p style="white-space: pre-line;">
         {artist.data.bio}
@@ -180,7 +223,12 @@ const jsonLd = {
               </a>
               <span>
                 {" "}
-                ({formatDateRangeJa(exh.data.date, exh.data.end_date)})
+                (
+                {formatDateRangeJa(
+                  exh.data.date ?? "",
+                  exh.data.end_date ?? ""
+                )}
+                )
               </span>
             </li>
           ))}

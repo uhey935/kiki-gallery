@@ -1,0 +1,40 @@
+/* =========================
+   Intro Layout
+========================= */
+
+.artists-intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+  margin-bottom: 80px;
+}
+
+/* =========================
+   Typography
+========================= */
+
+.artists-title {
+  font-size: clamp(2.25rem, 4vw, 3.0rem);
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.artists-medium {
+  display: inline-block;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.artists-bio-short {
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.artists-link {
+  font-size: 0.875rem;
+  text-decoration: underline;
+  color: #111;
+}
