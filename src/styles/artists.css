@@ -1,5 +1,5 @@
 /* =========================
-   Intro Layout
+   Intro
 ========================= */
 
 .artists-intro {
@@ -10,18 +10,13 @@
   margin-bottom: 80px;
 }
 
-/* =========================
-   Typography
-========================= */
-
 .artists-title {
-  font-size: clamp(2.25rem, 4vw, 3.0rem);
+  font-size: clamp(2.25rem, 4vw, 3rem);
   line-height: 1.2;
   margin-bottom: 1rem;
 }
 
 .artists-medium {
-  display: inline-block;
   font-size: 0.875rem;
   color: #666;
 }
@@ -36,5 +31,97 @@
 .artists-link {
   font-size: 0.875rem;
   text-decoration: underline;
-  color: #111;
+}
+
+/* =========================
+   Works
+========================= */
+
+.artists-works {
+  padding: 0 clamp(16px, 4vw, 80px);
+  margin-top: 80px;
+}
+
+/* 共通カード */
+.artists-works-card {
+  display: grid;
+  margin-bottom: 40px;
+  padding-bottom: 100px;
+  align-items: start;
+}
+
+.artists-works-card__item img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.artists-works-caption {
+  font-size: 0.875rem;
+  margin-top: 8px;
+}
+
+.artists-works-card--3-2,
+.artists-works-card--1-3 {
+  width: 88%;
+  column-gap: 110px;
+  margin: 0 auto;
+}
+
+.artists-works-card--1-left,
+.artists-works-card--1-right {
+  width: 62%;
+}
+
+/* =========================
+   Works：1-3
+========================= */
+
+.artists-works-card--1-3 {
+  grid-template-columns: 1.7fr 1fr;
+}
+
+/* =========================
+   Works：3-2
+========================= */
+
+.artists-works-card--3-2 {
+  grid-template-columns: 1fr 1.7fr;
+}
+
+/* =========================
+   Works：1-left
+========================= */
+
+.artists-works-card--1-left {
+  justify-content: start;
+  margin-left: 230px;
+}
+
+/* =========================
+   Works：1-right
+========================= */
+
+.artists-works-card--1-right {
+  margin-left: auto;
+  margin-right: 230px;
+}
+
+.artists-works-card--1-right figure {
+  margin: 0;
+}
+/* =========================
+   Bio
+========================= */
+
+.artists-bio {
+  margin-top: 80px;
+}
+
+/* =========================
+   Exhibitions
+========================= */
+
+.artists-exhibitions {
+  margin-top: 80px;
 }

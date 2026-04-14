@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
 import { formatDateRangeJa } from "../../utils/date";
 
 /* =========================
@@ -15,7 +16,13 @@ export async function getStaticPaths() {
   }));
 }
 
-const { artist } = Astro.props;
+/* =========================
+   Props
+========================= */
+const { artist } = Astro.props as {
+  artist: CollectionEntry<"artists">;
+};
+
 const artistName = artist.data.nameJa || artist.data.name;
 
 /* =========================
@@ -26,7 +33,7 @@ const description = artist.data.bio_short
   : artistName;
 
 /* =========================
-   Date安全処理（←追加）
+   Date安全処理
 ========================= */
 const parseDate = (value: string | undefined) => {
   return value ? new Date(value) : null;
@@ -41,6 +48,19 @@ const works = allWorks.filter((work) => {
   return work.data.artist === artist.id;
 });
 
+/* ▼ layout別に分ける */
+const works_1_3 = works
+  .filter((w) => w.data.layout === "1-3")
+  .sort((a, b) => (a.data.position ?? 0) - (b.data.position ?? 0));
+
+const works_1_left = works.filter((w) => w.data.layout === "1-left");
+
+const works_3_2 = works
+  .filter((w) => w.data.layout === "3-2")
+  .sort((a, b) => (a.data.position ?? 0) - (b.data.position ?? 0));
+
+const works_1_right = works.filter((w) => w.data.layout === "1-right");
+
 /* =========================
    exhibitions
 ========================= */
@@ -50,7 +70,7 @@ const rawExhibitions = await getCollection("exhibitions", ({ data }) =>
     : data.artist === artist.id
 );
 
-/* ▼ 日付ソート（安全） */
+/* ▼ 日付ソート */
 rawExhibitions.sort((a, b) => {
   const dateA = parseDate(a.data.date);
   const dateB = parseDate(b.data.date);
@@ -61,19 +81,19 @@ rawExhibitions.sort((a, b) => {
   return timeB - timeA;
 });
 
-/* ▼ ステータス判定（修正） */
+/* ▼ ステータス判定 */
 const now = new Date();
 now.setHours(0, 0, 0, 0);
 
 const exhibitions = rawExhibitions.map((exh) => {
   const start = parseDate(exh.data.date);
-const end = parseDate(exh.data.end_date) || start;
+  const end = parseDate(exh.data.end_date) || start;
 
-if (!start || !end) {
-  return { ...exh, status: "past" };
-}
+  if (!start || !end) {
+    return { ...exh, status: "past" };
+  }
 
-const compareEnd = new Date(end);
+  const compareEnd = new Date(end);
   compareEnd.setHours(23, 59, 59, 999);
 
   let status = "past";
@@ -158,31 +178,140 @@ const jsonLd = {
     </section>
 
     <!-- ▼ Works -->
-    <section>
-      <h2>Works</h2>
+<section class="section artists-works">
+  <h2>Works</h2>
 
-      {works.length > 0 ? (
-        <div class="works-grid">
-          {works.map((work) => (
-            <figure>
+  {works.length > 0 ? (
+    <>
+      {/* =========================
+         1-3
+      ========================= */}
+      <div class="artists-works-card artists-works-card--1-3">
+        {works_1_3.map((work) => (
+          <figure class="artists-works-card__item">
+            <img
+              src={work.data.image}
+              alt={work.data.alt || work.data.title}
+            />
+
+            <figcaption class="artists-works-caption">
+              <p class="artists-works-title">
+                {work.data.year
+                  ? `${work.data.title.trim()}, ${work.data.year}`
+                  : work.data.title.trim()}
+              </p>
+
+              {(work.data.size || work.data.material) && (
+                <p class="artists-works-meta">
+                  {[work.data.size, work.data.material]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+              )}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+
+      {/* =========================
+         1-left
+      ========================= */}
+      {works_1_left.length > 0 && (
+        <div class="artists-works-card artists-works-card--1-left">
+          {works_1_left.map((work) => (
+            <figure class="artists-works-card__item">
               <img
                 src={work.data.image}
                 alt={work.data.alt || work.data.title}
-                loading="lazy"
               />
-              <figcaption>
-                {work.data.title}
-                {[work.data.size, work.data.material]
-                  .filter(Boolean)
-                  .join(" / ")}
+
+              <figcaption class="artists-works-caption">
+                <p class="artists-works-title">
+                  {work.data.year
+                    ? `${work.data.title.trim()}, ${work.data.year}`
+                    : work.data.title.trim()}
+                </p>
+
+                {(work.data.size || work.data.material) && (
+                  <p class="artists-works-meta">
+                    {[work.data.size, work.data.material]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                )}
               </figcaption>
             </figure>
           ))}
         </div>
-      ) : (
-        <p>No works available.</p>
       )}
-    </section>
+
+      {/* =========================
+         3-2
+      ========================= */}
+      {works_3_2.length > 0 && (
+        <div class="artists-works-card artists-works-card--3-2">
+          {works_3_2.map((work) => (
+            <figure class="artists-works-card__item">
+              <img
+                src={work.data.image}
+                alt={work.data.alt || work.data.title}
+              />
+
+              <figcaption class="artists-works-caption">
+                <p class="artists-works-title">
+                  {work.data.year
+                    ? `${work.data.title.trim()}, ${work.data.year}`
+                    : work.data.title.trim()}
+                </p>
+
+                {(work.data.size || work.data.material) && (
+                  <p class="artists-works-meta">
+                    {[work.data.size, work.data.material]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                )}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
+      {/* =========================
+   1-right
+========================= */}
+{works_1_right.length > 0 && (
+  <div class="artists-works-card artists-works-card--1-right">
+    {works_1_right.map((work) => (
+      <figure class="artists-works-card__item">
+        <img
+          src={work.data.image}
+          alt={work.data.alt || work.data.title}
+        />
+
+        <figcaption class="artists-works-caption">
+          <p class="artists-works-title">
+            {work.data.year
+              ? `${work.data.title.trim()}, ${work.data.year}`
+              : work.data.title.trim()}
+          </p>
+
+          {(work.data.size || work.data.material) && (
+            <p class="artists-works-meta">
+              {[work.data.size, work.data.material]
+                .filter(Boolean)
+                .join(", ")}
+            </p>
+          )}
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+)}
+    </>
+  ) : (
+    <p>No works available.</p>
+  )}
+</section>
 
     <!-- ▼ Shop -->
     {artist.data.shop_url && (
@@ -198,7 +327,7 @@ const jsonLd = {
     )}
 
     <!-- ▼ Bio -->
-    <section id="bio">
+    <section class="section artists-bio">
       <h2>Biography</h2>
 
       {artist.data.image && (
@@ -211,7 +340,7 @@ const jsonLd = {
     </section>
 
     <!-- ▼ Exhibitions -->
-    <section>
+    <section class="section artists-exhibitions">
       <h2>Exhibitions</h2>
 
       {exhibitions.length > 0 ? (
