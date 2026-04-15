@@ -7,7 +7,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 40px;
   align-items: start;
-  margin: 48px 0 110px;
+  margin: 48px 0 120px;
 }
 
 .artists-title {
@@ -94,6 +94,12 @@
 .artists-works-card--1-left,
 .artists-works-card--1-right {
   width: 60%;
+}
+
+.artists-exhibitions-empty,
+.artists-works-empty {
+  display: block;
+  margin: 55px 0 110px;
 }
 
 /* =========================
