@@ -7,15 +7,19 @@ const { items = [] } = Astro.props as {
 <nav class="breadcrumb" aria-label="breadcrumb">
   <div class="wrapper">
     <ol>
-      {items.map((item, index) => (
-        <li>
-          {index < items.length - 1 ? (
-            <a href={item.href}>{item.label}</a>
-          ) : (
-            <span>{item.label}</span>
-          )}
-        </li>
-      ))}
+      {
+        items.map((item, index) => (
+          <li
+            lang={/[\u3040-\u30ff\u4e00-\u9faf]/.test(item.label) ? "ja" : "en"}
+          >
+            {index < items.length - 1 ? (
+              <a href={item.href}>{item.label}</a>
+            ) : (
+              <span>{item.label}</span>
+            )}
+          </li>
+        ))
+      }
     </ol>
   </div>
 </nav>

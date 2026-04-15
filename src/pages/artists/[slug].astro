@@ -173,13 +173,13 @@ const jsonLd = {
   <div class="artists-intro__right">
     <p class="artists-bio-short">{artist.data.bio_short}</p>
 
-    <a href="#bio" class="artists-link">Learn more</a>
+    <a href="#full-biography" class="artists-link">Read full biography</a>
   </div>
     </section>
 
     <!-- ▼ Works -->
 <section class="section artists-works">
-  <h2>Works</h2>
+  <h2 class="artists-heading">Works</h2>
 
   {works.length > 0 ? (
     <>
@@ -327,44 +327,72 @@ const jsonLd = {
     )}
 
     <!-- ▼ Bio -->
-    <section class="section artists-bio">
-      <h2>Biography</h2>
+<section class="section artists-bio" id="full-biography">
+  <h2 class="artists-heading">Biography</h2>
 
-      {artist.data.image && (
+  <div class="artists-bio-layout">
+    {artist.data.image && (
+      <div class="artists-bio-image">
         <img src={artist.data.image} alt={artistName} width="400" />
-      )}
+      </div>
+    )}
 
-      <p style="white-space: pre-line;">
-        {artist.data.bio}
-      </p>
-    </section>
+    <p class="artists-bio-text">
+  {artist.data.bio}
+</p>
+    </div>
+  </div>
+</section>
 
-    <!-- ▼ Exhibitions -->
-    <section class="section artists-exhibitions">
-      <h2>Exhibitions</h2>
+<!-- =========================
+     Exhibitions
+========================= -->
+<section class="section artists-exhibitions">
+  <h2 class="artists-heading">Exhibitions</h2>
 
-      {exhibitions.length > 0 ? (
-        <ul>
-          {exhibitions.map((exh) => (
-            <li>
-              <a href={`/exhibitions/${exh.id}`}>
-                {exh.data.title || artistName}
-              </a>
-              <span>
-                {" "}
-                (
-                {formatDateRangeJa(
-                  exh.data.date ?? "",
-                  exh.data.end_date ?? ""
-                )}
-                )
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No exhibitions available.</p>
-      )}
-    </section>
+<div class="artists-exhibitions-list">
+  {rawExhibitions.length > 0 ? (
+    rawExhibitions.map((exh) => (
+      <article class="artists-exhibitions-card">
+        <a href={`/exhibitions/${exh.id}`}>
+
+          {/* 画像 */}
+          {exh.data.image && (
+            <div class="artists-exhibitions-card-image">
+              <img src={exh.data.image} alt={exh.data.title || ""} />
+            </div>
+          )}
+
+          {/* テキスト */}
+          <div class="artists-exhibitions-card-meta">
+
+            <h3 class="artists-exhibitions-card-title">
+              {exh.data.title || artistName}
+            </h3>
+
+            <p class="artists-exhibitions-card-date">
+              {formatDateRangeJa(
+                exh.data.date ?? "",
+                exh.data.end_date ?? ""
+              )}
+            </p>
+
+            {exh.data.venue?.name && (
+              <p class="artists-exhibitions-card-venue">
+                {exh.data.venue.name}
+              </p>
+            )}
+
+          </div>
+        </a>
+      </article>
+    ))
+  ) : (
+    <p class="artists-exhibitions-empty">
+      No exhibitions available.
+    </p>
+  )}
+</div>
+</section>
   </article>
 </Layout>

@@ -87,8 +87,10 @@ body {
 /* =========================
    Breadcrumb
 ========================= */
+
 .breadcrumb {
-  margin: 28px 0 28px;
+  font-size: 1rem;
+  margin: 28px 0;
 }
 
 .breadcrumb ol {
@@ -100,10 +102,17 @@ body {
   content: "/";
   margin: 0 0.5em 0 0.8em;
   font-weight: 400;
+  font-size: 1rem;
+  position: relative;
+  top: 0;
 }
 
 .breadcrumb li:last-child {
   font-weight: 600;
+}
+
+.breadcrumb li:lang(ja) {
+  font-size: 0.9rem;
 }
 
 /* =========================
