@@ -1,0 +1,263 @@
+/* =========================
+   Hero Structure
+========================= */
+
+.exhibitions-detail {
+  position: relative;
+  z-index: 0;
+  background: #f7f7f7;
+  margin-bottom: 40px;
+}
+
+.exhibitions-image,
+.exhibitions-content {
+  position: relative;
+  z-index: 2;
+  background: #f7f7f7;
+}
+
+/* =========================
+   Detail Layout
+========================= */
+
+.exhibitions-heading {
+  width: 100%;
+  padding-top: 121px;
+}
+
+/* full width hero image */
+.exhibitions-image {
+  width: 100%;
+  margin-bottom: 88px;
+}
+
+.exhibitions-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* bottom space */
+.exhibitions-content {
+  padding-bottom: 120px;
+}
+
+/* =========================
+   Main Layout
+========================= */
+
+/* Desktop:
+   開催概要 + article の2カラム */
+.exhibitions-main {
+  width: 90%;
+  display: grid;
+  grid-template-columns: 272px minmax(0, 1fr);
+  gap: 110px;
+  align-items: start;
+  margin: 0 auto 50px;
+}
+
+/* =========================
+   　開催概要
+========================= */
+
+.exhibitions-info {
+  width: 100%;
+}
+
+.exhibitions-info-list {
+  margin: 0;
+}
+
+.exhibitions-info-list dt {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.exhibitions-info-list dd {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 0 0 24px;
+}
+
+.exhibitions-info-list dd:last-child {
+  margin-bottom: 0;
+}
+
+.exhibitions-info-list dd.exhibitions-date-main {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+/* =========================
+   Article
+========================= */
+
+.exhibitions-article {
+  min-width: 0;
+  font-size: 0.95rem;
+  line-height: 2.1;
+  color: #333;
+}
+
+.exhibitions-article p {
+  margin-bottom: 1.4em;
+}
+
+.exhibitions-article p + p {
+  margin-top: 2em;
+}
+
+.exhibitions-venue {
+  margin-top: 73px;
+  padding-top: 73px;
+  border-top: 1px solid #ccc;
+}
+
+.exhibitions-article .exhibitions-venue p {
+  margin-bottom: 0;
+}
+
+.exhibitions-article .exhibitions-venue p + p {
+  margin-top: 0px;
+}
+
+.exhibitions-article .exhibitions-venue .exhibitions-venue-closed {
+  margin-top: 0px;
+}
+
+/* =========================
+   Typography
+========================= */
+
+.exhibitions-artist {
+  font-size: clamp(1.1rem, 2.4vw, 1.8rem);
+  color: #666;
+  letter-spacing: 0.1rem;
+  margin-bottom: 4px;
+}
+
+.exhibitions-h1-title {
+  font-size: clamp(1.4rem, 4vw, 3.2rem);
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.14rem;
+  line-height: 1.2;
+  margin-bottom: 36px;
+}
+
+.exhibitions-venue-title {
+  font-size: 0.95rem;
+  margin-bottom: 11px;
+}
+
+/* =========================
+   Utility
+========================= */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
+}
+
+/* =========================
+   Works
+========================= */
+
+.exhibitions-works {
+  padding: 120px 0;
+}
+
+.exhibitions-section-title {
+  font-size: 1.4rem;
+  line-height: 1.4;
+  margin-bottom: 48px;
+}
+
+.exhibitions-works-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+}
+
+.exhibitions-work {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.exhibitions-work img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.exhibitions-work-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exhibitions-work-artist {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.exhibitions-work-artist a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.exhibitions-work-title {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.exhibitions-work-meta {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #555;
+}
+
+/* =========================
+   Artists
+========================= */
+
+.exhibitions-artists {
+  padding-bottom: 120px;
+}
+
+.exhibitions-artists-list {
+  margin: 0;
+  padding: 0;
+}
+
+.exhibitions-artist-item {
+  list-style: none;
+  margin-bottom: 20px;
+}
+
+.exhibitions-artist-item:last-child {
+  margin-bottom: 0;
+}
+
+.exhibitions-artist-link {
+  display: inline-block;
+  text-decoration: none;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1.6;
+}

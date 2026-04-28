@@ -13,9 +13,7 @@ export async function getStaticPaths() {
       ? exh.data.artist
       : [exh.data.artist];
 
-    const artists = allArtists.filter((a) =>
-      artistIds.includes(a.id)
-    );
+    const artists = allArtists.filter((a) => artistIds.includes(a.id));
 
     return {
       params: { slug: exh.id },
@@ -27,32 +25,33 @@ export async function getStaticPaths() {
 // props
 const { exh, artists } = Astro.props;
 
+const allWorks = await getCollection("works");
+
+const exhibitionWorks = (exh.data.works ?? [])
+  .map((workId) => allWorks.find((work) => work.id === workId))
+  .filter((work): work is (typeof allWorks)[number] => Boolean(work));
+
 // Markdown → HTML
 const { Content } = await render(exh);
 
 // artist名（日本語優先）
-const artistNames = artists
-  .map((a) => a.data.nameJa || a.data.name)
-  .join(", ");
+const artistNames = artists.map((a) => a.data.nameJa || a.data.name).join("、");
 
 // displayTitle（重要ロジック）
 const displayTitle =
   exh.data.title && exh.data.title !== ""
     ? exh.data.title
     : artistNames
-      ? (artists.length > 1
-          ? `${artistNames} 合同展`
-          : `${artistNames} 個展`)
+      ? artists.length > 1
+        ? `${artistNames} 合同展`
+        : `${artistNames} 個展`
       : "Exhibition";
 
 // 日付（安全処理）
 const safeDate = exh.data.date!;
 
 // 表示用日付
-const dateString = formatDateRangeJa(
-  safeDate,
-  exh.data.end_date || safeDate
-);
+const dateString = formatDateRangeJa(safeDate, exh.data.end_date || safeDate);
 
 // description
 const description = artistNames
@@ -114,11 +113,180 @@ if (start > today) {
     { label: displayTitle, href: `/exhibitions/${exh.id}` },
   ]}
 >
-  <h1>{displayTitle}</h1>
+  <!-- background -->
+  <section class="section exhibitions-detail">
+    <header class="exhibitions-heading">
+      {artistNames && <p class="exhibitions-artist">{artistNames}</p>}
 
-  <p>{dateString}</p>
+      <h1 class="exhibitions-h1-title">
+        {displayTitle}
+      </h1>
+    </header>
+  </section>
 
-  {artistNames && <p>{artistNames}</p>}
+  <!-- hero image -->
+  {
+    exh.data.image && (
+      <figure class="exhibitions-image">
+        <img src={exh.data.image} alt={displayTitle} />
+      </figure>
+    )
+  }
 
-  <Content />
+  <!-- foreground -->
+  <section class="section exhibitions-content">
+    <!-- info + article wrapper -->
+    <div class="exhibitions-main">
+      <!-- 開催概要 -->
+      <section class="exhibitions-info">
+        <h2 class="visually-hidden">開催概要</h2>
+
+        <dl class="exhibitions-info-list">
+          <dt>開催期間</dt>
+          <dd class="exhibitions-date-main">
+            {dateString}
+          </dd>
+
+          {
+            exh.data.attendance && (
+              <>
+                <dt>作家在廊日</dt>
+                <dd>{exh.data.attendance}</dd>
+              </>
+            )
+          }
+
+          {
+            exh.data.open_time && (
+              <>
+                <dt>開催時間</dt>
+                <dd>{exh.data.open_time.replace("-", " - ")}</dd>
+              </>
+            )
+          }
+        </dl>
+      </section>
+
+      <!-- article -->
+      <article class="exhibitions-article">
+        <h2 class="visually-hidden">Exhibition Overview</h2>
+
+        <Content />
+
+        <section class="exhibitions-venue">
+          <h3 class="exhibitions-venue-title">会場</h3>
+
+          {exh.data.venue?.name && <p>{exh.data.venue.name}</p>}
+
+          {
+            exh.data.venue?.address && (
+              <p>
+                <a
+                  href={exh.data.venue.map}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {exh.data.venue.address}
+                </a>
+              </p>
+            )
+          }
+
+          {
+            exh.data.closed_days && (
+              <p class="exhibitions-venue-closed">
+                休廊日 / {exh.data.closed_days}
+              </p>
+            )
+          }
+        </section>
+      </article>
+    </div>
+
+    <!-- Works -->
+    <section class="exhibitions-works">
+      <h2 class="exhibitions-section-title">Works</h2>
+
+      {
+        exhibitionWorks.length > 0 && (
+          <div class="exhibitions-works-list">
+            {exhibitionWorks.map((work) => (
+              <figure class="exhibitions-work">
+                <img
+                  src={work.data.image}
+                  alt={work.data.alt || work.data.title}
+                />
+
+                <figcaption class="exhibitions-work-caption">
+                  {artists.length > 1 && (
+                    <p class="exhibitions-work-artist">
+                      <a href={`/artists/${work.data.artist}`}>
+                        {artists.find((a) => a.id === work.data.artist)?.data
+                          .nameJa ||
+                          artists.find((a) => a.id === work.data.artist)?.data
+                            .name ||
+                          work.data.artist}
+                      </a>
+                    </p>
+                  )}
+
+                  <p class="exhibitions-work-title">
+                    {work.data.year
+                      ? `${work.data.title}, ${work.data.year}`
+                      : work.data.title}
+                  </p>
+
+                  {(work.data.size || work.data.material) && (
+                    <p class="exhibitions-work-meta">
+                      {[work.data.size, work.data.material]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </p>
+                  )}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        )
+      }
+    </section>
+
+    <!-- Artists -->
+    <section class="exhibitions-artists">
+      <h2 class="exhibitions-section-title">
+        {artists.length > 1 ? "Artists" : "Artist"}
+      </h2>
+
+      <ul class="exhibitions-artists-list">
+        {
+          artists.map((artist) => (
+            <li class="exhibitions-artist-item">
+              <a href={`/artists/${artist.id}`} class="exhibitions-artist-link">
+                {artist.data.nameJa || artist.data.name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </section>
+
+  <script>
+    const heading = document.querySelector(
+      ".exhibitions-heading",
+    ) as HTMLElement | null;
+
+    const updateParallax = () => {
+      if (!heading) return;
+
+      const scrollY = window.scrollY;
+      const offset = scrollY * 0.19;
+
+      heading.style.transform = `translateY(${offset}px)`;
+    };
+
+    window.addEventListener("scroll", updateParallax, {
+      passive: true,
+    });
+  </script>
 </Layout>

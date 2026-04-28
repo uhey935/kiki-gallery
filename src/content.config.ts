@@ -54,9 +54,11 @@ const exhibitions = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/exhibitions" }),
   schema: z.object({
     title: z.string(),
-    artist: z.union([z.string(), z.array(z.string())]),
 
+    artist: z.union([z.string(), z.array(z.string())]),
     artist_name: z.union([z.string(), z.array(z.string())]).optional(),
+
+    works: z.array(z.string()).optional(),
 
     date: z.string().optional(),
     end_date: z.string().optional(),
@@ -66,10 +68,12 @@ const exhibitions = defineCollection({
     attendance: z.string().optional(),
 
     image: z.string().optional(),
+    lead: z.string().optional(),
 
     venue: z
       .object({
         name: z.string(),
+        address: z.string().optional(),
         map: z.string().optional(),
       })
       .optional(),
@@ -90,8 +94,8 @@ const journal = defineCollection({
     has_page: z.boolean().optional(),
     link: z.string().optional(),
     categories: z.array(z.string()).optional(),
-
-    hero_image: z.string().optional(), // ← これ
+    hero_image: z.string().optional(),
+    hero_caption: z.string().optional(),
   }),
 });
 

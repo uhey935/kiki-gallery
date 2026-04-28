@@ -29,43 +29,52 @@ const { Content } = await render(item);
 /* =========================
    type（categoriesの先頭）
 ========================= */
-const type = item.data.categories[0];
+const type = item.data.categories && item.data.categories[0];
 ---
 
 <Layout
   title={item.data.title}
   breadcrumb={[
-    { label: "Journal", href: "/journal" },
-    { label: type, href: `/journal/${item.id}` },
+    {
+      label: "Journal",
+      href: "/journal",
+    },
+    {
+      label: item.data.categories?.[0] || item.data.title,
+      href: `/journal/${item.id}`,
+    },
   ]}
 >
   <article class="article">
-
     {/* Hero（全タイプ共通） */}
-    {item.data.hero_image && (
-      <figure class="article-hero">
-        <img src={item.data.hero_image} alt="" />
-        {item.data.hero_caption && (
-          <figcaption>{item.data.hero_caption}</figcaption>
-        )}
-      </figure>
-    )}
+    {
+      item.data.hero_image && (
+        <figure class="article-hero">
+          <img src={item.data.hero_image} alt="" />
+          {item.data.hero_caption && (
+            <figcaption>{item.data.hero_caption}</figcaption>
+          )}
+        </figure>
+      )
+    }
 
     {/* Title */}
     <h1 class="article-title">{item.data.title}</h1>
 
     {/* Date */}
-    {item.data.date && (
-      <time class="article-date" datetime={item.data.date}>
-        Published{" "}
-        {new Date(item.data.date).toLocaleDateString("en-US", {
-          weekday: "long",
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })}
-      </time>
-    )}
+    {
+      item.data.date && (
+        <time class="article-date" datetime={item.data.date}>
+          Published{" "}
+          {new Date(item.data.date).toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })}
+        </time>
+      )
+    }
 
     {/* 本文（共通） */}
     <div class="article-body">
@@ -73,9 +82,10 @@ const type = item.data.categories[0];
     </div>
 
     {/* interviewだけRelated */}
-    {type === "interview" && (
-      <h2 class="article-related-title">Related Articles</h2>
-    )}
-
+    {
+      type === "interview" && (
+        <h2 class="article-related-title">Related Articles</h2>
+      )
+    }
   </article>
 </Layout>
