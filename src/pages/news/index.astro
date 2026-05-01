@@ -84,12 +84,33 @@ const journalItems: NewsItem[] = journal.map((item) => ({
   type: "Journal",
   excerpt: item.data.excerpt || truncate(item.body || "", 80),
 }));
+
 // 5. 統合 + ソート
 const sortedItems: NewsItem[] = [
   ...newsItems,
   ...journalItems,
   ...exhibitionItems,
 ].sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
+
+// 6. 年でグループ化
+const groupedByYear: Record<string, NewsItem[]> = sortedItems.reduce<
+  Record<string, NewsItem[]>
+>((acc, item) => {
+  const year = item.date ? String(item.date.getFullYear()) : "Unknown";
+
+  // 初期化
+  acc[year] ??= [];
+
+  // 追加
+  acc[year].push(item);
+
+  return acc;
+}, {});
+
+// 年配列（降順）
+const years: string[] = Object.keys(groupedByYear).sort(
+  (a, b) => Number(b) - Number(a),
+);
 
 // 日付フォーマット
 const formatDate = (date: Date) =>
@@ -100,50 +121,69 @@ const formatDate = (date: Date) =>
   });
 ---
 
-<Layout title="News" breadcrumb={[{ label: "News", href: "/news" }]}>
-  <section>
-    <h1>News</h1>
+<Layout
+  title="Exhibitions"
+  breadcrumb={[{ label: "News", href: "/news" }]}
+>
+  <section class="news-index">
+    <h1 class="news-title">News</h1>
 
-    <ul>
-      {
-        sortedItems.map((item) => {
-          const targetHref = item.href;
-          // 案3: シンプルな外部リンク判定
-          const isExternal =
-            targetHref?.startsWith("http") || targetHref?.startsWith("//");
+    {
+      years.map((year) => (
+        <section class="news-year" data-year={year}>
 
-          return (
-            <li>
-              <h2>
-                {targetHref ? (
-                  <a
-                    href={targetHref}
-                    target={isExternal ? "_blank" : undefined}
-                    rel={isExternal ? "noopener noreferrer" : undefined}
-                  >
-                    {item.title}
-                  </a>
-                ) : (
-                  item.title
-                )}
+          <div class="news-year-row">
+
+            <!-- 左（sticky） -->
+            <div class="news-year-left">
+              <h2 class="news-year-heading">
+                {year}
               </h2>
+            </div>
 
-              <p>{item.excerpt}</p>
+            <!-- 右（list） -->
+            <div class="news-year-right">
+              <ul class="news-list">
+                {
+                  groupedByYear[year].map((item) => (
+                    <li class="news-item">
+                      <article class="news-card">
 
-              <div>
-                <span>{item.type}</span>
-                {item.date && (
-                  <time datetime={item.date.toISOString()}>
-                    | {formatDate(item.date)}
-                  </time>
-                )}
-              </div>
-            </li>
-          );
-        })
-      }
-    </ul>
+                        {item.date && (
+                          <p class="news-date">
+                            {formatDate(item.date)}
+                          </p>
+                        )}
 
-    {sortedItems.length === 0 && <p>現在、お知らせはありません。</p>}
+                        <h3 class="news-card-title">
+                          {item.href ? (
+                            <a href={item.href}>
+                              {item.title}
+                            </a>
+                          ) : (
+                            item.title
+                          )}
+                        </h3>
+
+                        <p class="news-excerpt">
+                          {item.excerpt}
+                        </p>
+
+                        <p class="news-category">
+                          {item.type}
+                        </p>
+
+                      </article>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+
+          </div>
+
+        </section>
+      ))
+    }
   </section>
 </Layout>

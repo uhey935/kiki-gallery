@@ -63,6 +63,8 @@ const exhibitions = defineCollection({
     date: z.string().optional(),
     end_date: z.string().optional(),
 
+     news_title: z.string().optional(),
+
     open_time: z.string().optional(),
     closed_days: z.string().optional(),
     attendance: z.string().optional(),

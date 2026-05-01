@@ -1,0 +1,59 @@
+
+/* =========================
+   News Layout (Structure only)
+========================= */
+
+/* 全体 */
+.news-index {
+  width: 90%;
+  margin: 130px auto 0;
+}
+
+/* 年ブロック */
+.news-year {
+  margin-bottom: 80px;
+}
+
+/* 2カラム */
+.news-year-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  column-gap: 40px;
+}
+
+/* 左（年） */
+.news-year-left {
+  position: relative;
+}
+
+/* sticky */
+.news-year-heading {
+  position: sticky;
+  top: 25px;
+  z-index: 1;
+}
+
+/* 右（リスト） */
+.news-year-right {
+  width: 100%;
+}
+
+/* リスト */
+.news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* 各記事 */
+.news-item {
+  margin-bottom: 32px;
+}
+
+.news-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
