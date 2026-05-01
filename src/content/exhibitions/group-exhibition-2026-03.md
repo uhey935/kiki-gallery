@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "合同展"
 artist:
   - reiko-kinoshita
   - yuka-mori

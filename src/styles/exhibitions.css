@@ -9,11 +9,46 @@
   margin-bottom: 40px;
 }
 
-.exhibitions-image,
+.exhibitions-detail-image,
 .exhibitions-content {
   position: relative;
   z-index: 2;
   background: #f7f7f7;
+}
+
+/* =========================
+   Typography
+========================= */
+
+.exhibitions-heading-artist {
+  font-size: clamp(1.1rem, 2.4vw, 1.6rem);
+  color: #666;
+  letter-spacing: 0.15rem;
+  margin-bottom: 2px;
+}
+
+.exhibitions-h1-title {
+  font-size: clamp(1.4rem, 4vw, 3.2rem);
+  font-weight: 500;
+  letter-spacing: 0.14rem;
+  line-height: 1.2;
+  margin-bottom: 22px;
+}
+
+.exhibitions-heading-status {
+  display: inline-block;
+  font-size: 0.9rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  padding: 9px 11px;
+  margin-bottom: 13px;
+  background: #e5e5e5;
+  color: #111;
+}
+
+.exhibitions-venue-title {
+  font-size: 0.95rem;
+  margin-bottom: 11px;
 }
 
 /* =========================
@@ -22,25 +57,20 @@
 
 .exhibitions-heading {
   width: 100%;
-  padding-top: 121px;
+  padding-top: 146px;
 }
 
 /* full width hero image */
-.exhibitions-image {
+.exhibitions-detail-image {
   width: 100%;
-  margin-bottom: 88px;
+  margin-bottom: 120px;
 }
 
-.exhibitions-image img {
+.exhibitions-detail-image img {
   width: 100%;
   height: auto;
   display: block;
   object-fit: cover;
-}
-
-/* bottom space */
-.exhibitions-content {
-  padding-bottom: 120px;
 }
 
 /* =========================
@@ -50,12 +80,12 @@
 /* Desktop:
    開催概要 + article の2カラム */
 .exhibitions-main {
-  width: 90%;
+  width: 80%;
   display: grid;
-  grid-template-columns: 272px minmax(0, 1fr);
+  grid-template-columns: 254px minmax(0, 1fr);
   gap: 110px;
   align-items: start;
-  margin: 0 auto 50px;
+  margin: 0 auto 120px;
 }
 
 /* =========================
@@ -64,6 +94,9 @@
 
 .exhibitions-info {
   width: 100%;
+  position: sticky;
+  will-change: transform;
+  top: 63px;
 }
 
 .exhibitions-info-list {
@@ -131,31 +164,6 @@
 }
 
 /* =========================
-   Typography
-========================= */
-
-.exhibitions-artist {
-  font-size: clamp(1.1rem, 2.4vw, 1.8rem);
-  color: #666;
-  letter-spacing: 0.1rem;
-  margin-bottom: 4px;
-}
-
-.exhibitions-h1-title {
-  font-size: clamp(1.4rem, 4vw, 3.2rem);
-  font-weight: 500;
-  font-style: italic;
-  letter-spacing: 0.14rem;
-  line-height: 1.2;
-  margin-bottom: 36px;
-}
-
-.exhibitions-venue-title {
-  font-size: 0.95rem;
-  margin-bottom: 11px;
-}
-
-/* =========================
    Utility
 ========================= */
 
@@ -181,14 +189,21 @@
 }
 
 .exhibitions-section-title {
-  font-size: 1.4rem;
-  line-height: 1.4;
-  margin-bottom: 48px;
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
+  line-height: 1.2;
+  margin-bottom: 38px;
+}
+
+.exhibitions-works--2col .exhibitions-works-list {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.exhibitions-works--3col .exhibitions-works-list {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .exhibitions-works-list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 48px;
 }
 
@@ -208,12 +223,12 @@
 .exhibitions-work-caption {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 .exhibitions-work-artist {
   font-size: 0.9rem;
   color: #666;
+  margin-bottom: 13px;
 }
 
 .exhibitions-work-artist a {
@@ -222,14 +237,15 @@
 }
 
 .exhibitions-work-title {
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 7px;
 }
 
 .exhibitions-work-meta {
-  font-size: 0.9rem;
-  line-height: 1.7;
-  color: #555;
+    font-size: 0.8rem;
+    color: #777;
 }
 
 /* =========================
@@ -237,27 +253,32 @@
 ========================= */
 
 .exhibitions-artists {
-  padding-bottom: 120px;
+  padding-bottom: 148px;
 }
 
 .exhibitions-artists-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
   margin: 0;
   padding: 0;
 }
 
 .exhibitions-artist-item {
   list-style: none;
-  margin-bottom: 20px;
-}
-
-.exhibitions-artist-item:last-child {
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .exhibitions-artist-link {
   display: inline-block;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
   color: inherit;
   font-size: 1rem;
   line-height: 1.6;
+  text-decoration-thickness: 1px;
+}
+
+.exhibitions-artist-item:last-child {
+  margin-bottom: 0;
 }

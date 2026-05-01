@@ -116,18 +116,23 @@ if (start > today) {
   <!-- background -->
   <section class="section exhibitions-detail">
     <header class="exhibitions-heading">
-      {artistNames && <p class="exhibitions-artist">{artistNames}</p>}
+      {artistNames && <p class="exhibitions-heading-artist">{artistNames}</p>}
 
       <h1 class="exhibitions-h1-title">
         {displayTitle}
       </h1>
+      <p class="exhibitions-heading-status">
+        {status === "ongoing" && "Ongoing Exhibition"}
+        {status === "upcoming" && "Upcoming Exhibition"}
+        {status === "past" && "Ended Exhibition"}
+      </p>
     </header>
   </section>
 
   <!-- hero image -->
   {
     exh.data.image && (
-      <figure class="exhibitions-image">
+      <figure class="exhibitions-detail-image">
         <img src={exh.data.image} alt={displayTitle} />
       </figure>
     )
@@ -204,11 +209,17 @@ if (start > today) {
     </div>
 
     <!-- Works -->
-    <section class="exhibitions-works">
-      <h2 class="exhibitions-section-title">Works</h2>
+    {
+      exhibitionWorks.length > 0 && (
+        <section
+          class={`exhibitions-works ${
+            exhibitionWorks.length >= 6
+              ? "exhibitions-works--3col"
+              : "exhibitions-works--2col"
+          }`}
+        >
+          <h2 class="exhibitions-section-title">Works</h2>
 
-      {
-        exhibitionWorks.length > 0 && (
           <div class="exhibitions-works-list">
             {exhibitionWorks.map((work) => (
               <figure class="exhibitions-work">
@@ -247,9 +258,9 @@ if (start > today) {
               </figure>
             ))}
           </div>
-        )
-      }
-    </section>
+        </section>
+      )
+    }
 
     <!-- Artists -->
     <section class="exhibitions-artists">
