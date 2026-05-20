@@ -106,8 +106,8 @@ const restItems = items.slice(5);
 
       {/* 4カード（Grid部分） */}
       {
-        topItems.map((item) => (
-          <article class="card journal-card">
+        topItems.map((item, index) => (
+          <article class={`card journal-card journal-card--item-${index + 1}`}>
             <a href={item.href} class="card-link">
               {item.hero_image && (
                 <div class="card-image journal-image">

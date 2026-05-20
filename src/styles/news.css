@@ -1,12 +1,11 @@
-
 /* =========================
-   News Layout (Structure only)
+   News Layout (Final Base)
 ========================= */
 
 /* 全体 */
 .news-index {
   width: 90%;
-  margin: 130px auto 0;
+  margin: 90px auto 0;
 }
 
 /* 年ブロック */
@@ -14,26 +13,39 @@
   margin-bottom: 80px;
 }
 
-/* 2カラム */
+/* =========================
+   2カラム
+========================= */
+
 .news-year-row {
   display: grid;
   grid-template-columns: 180px 1fr;
   column-gap: 40px;
+
+  align-items: baseline; /* ←揃えの核 */
 }
 
 /* 左（年） */
 .news-year-left {
-  position: relative;
-}
-
-/* sticky */
-.news-year-heading {
   position: sticky;
-  top: 25px;
-  z-index: 1;
+  top: 33px;
 }
 
-/* 右（リスト） */
+.news-year-heading {
+  margin: 0;
+  line-height: 1;
+
+  align-self: start; /* ←これが本質 */
+}
+
+.news-year:last-child {
+  margin-bottom: 0;
+}
+
+/* =========================
+   右（リスト）
+========================= */
+
 .news-year-right {
   width: 100%;
 }
@@ -45,15 +57,53 @@
   padding: 0;
 }
 
-/* 各記事 */
-.news-item {
-  margin-bottom: 32px;
+
+/* =========================
+   メタ（日付 | カテゴリ）
+========================= */
+
+.news-meta {
+  font-size: 0.9rem;
+  color: #666;
+
+  line-height: 1;
 }
+
+.news-separator {
+  margin: 0 6px;
+}
+
+/* =========================
+   タイトル
+========================= */
+
+.news-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.4;
+
+  margin: 31px 0 8px;
+}
+
+/* =========================
+   本文
+========================= */
+
+.news-excerpt {
+  font-size: 1rem;
+  line-height: 1.6;
+
+  margin-bottom: 88px;
+}
+
+/* =========================
+   h1（視覚非表示）
+========================= */
 
 .news-title {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
-  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
 }

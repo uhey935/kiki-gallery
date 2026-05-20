@@ -1,5 +1,6 @@
 ---
 import "../styles/base.css";
+import "../styles/home.css";
 import "../styles/exhibition.css";
 import "../styles/exhibitions.css";
 import "../styles/journal.css";
@@ -15,9 +16,16 @@ interface Props {
   title?: string;
   description?: string;
   image?: string;
+  flush?: boolean;
 }
 
-const { breadcrumb, title, description, image } = Astro.props;
+const {
+  title,
+  description,
+  image,
+  breadcrumb = [],
+  flush = false,
+} = Astro.props;
 
 const siteUrl = Astro.site?.origin ?? "https://your-domain.com";
 
@@ -25,10 +33,7 @@ const siteUrl = Astro.site?.origin ?? "https://your-domain.com";
 const ogImageUrl = new URL(image ?? "/default-og.jpg", siteUrl).toString();
 
 // breadcrumb（Home付き）
-const breadcrumbList = [
-  { label: "Home", href: "/" },
-  ...(breadcrumb ?? []),
-];
+const breadcrumbList = [{ label: "Home", href: "/" }, ...(breadcrumb ?? [])];
 
 // JSON-LD
 const breadcrumbJsonLd = {
@@ -38,10 +43,7 @@ const breadcrumbJsonLd = {
     "@type": "ListItem",
     position: index + 1,
     name: item.label,
-    item:
-      item.href === "#"
-        ? siteUrl
-        : new URL(item.href, siteUrl).toString(),
+    item: item.href === "#" ? siteUrl : new URL(item.href, siteUrl).toString(),
   })),
 };
 ---
@@ -56,21 +58,29 @@ const breadcrumbJsonLd = {
 
     <title>{title ? `${title} | KiKi Gallery` : "KiKi Gallery"}</title>
     <meta name="description" content={description ?? "KiKi Gallery"} />
-    <link rel="canonical" href={new URL(Astro.url.pathname, siteUrl).toString()} />
+    <link
+      rel="canonical"
+      href={new URL(Astro.url.pathname, siteUrl).toString()}
+    />
 
     <meta property="og:title" content={title ?? "KiKi Gallery"} />
     <meta property="og:description" content={description ?? "KiKi Gallery"} />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content={new URL(Astro.url.pathname, siteUrl).toString()} />
+    <meta
+      property="og:url"
+      content={new URL(Astro.url.pathname, siteUrl).toString()}
+    />
     <meta property="og:image" content={ogImageUrl} />
     <meta property="og:site_name" content="KiKi Gallery" />
 
-    {breadcrumbList.length > 0 && (
-      <script
-        type="application/ld+json"
-        set:html={JSON.stringify(breadcrumbJsonLd)}
-      />
-    )}
+    {
+      breadcrumbList.length > 0 && (
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify(breadcrumbJsonLd)}
+        />
+      )
+    }
   </head>
 
   <body>
@@ -78,7 +88,7 @@ const breadcrumbJsonLd = {
 
     {breadcrumbList.length > 1 && <Breadcrumb items={breadcrumbList} />}
 
-    <main class="main">
+    <main class:list={["site-main", { "site-main--flush": flush }]}>
       <slot />
     </main>
 

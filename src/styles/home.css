@@ -1,0 +1,55 @@
+/* =========================
+   Home Hero
+========================= */
+
+.home {
+  width: 100%;
+}
+
+.home-hero {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  margin-top: calc(-1 * var(--header-height, 96px));
+}
+
+.home-hero__link,
+.home-hero__fallback {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-hero__media,
+.home-hero__fallback-image {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.home-hero__media img,
+.home-hero__fallback-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.home-hero__content {
+  position: absolute;
+  left: 48px;
+  bottom: 48px;
+  z-index: 2;
+}
+
+.home-hero__artist,
+.home-hero__date {
+  margin: 0;
+}
+
+.home-hero__title {
+  margin: 8px 0;
+}

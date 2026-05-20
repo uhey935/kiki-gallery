@@ -5,6 +5,9 @@
 .journal-grid {
   display: grid;
   grid-template-columns: 2.25fr 1fr 1fr;
+  grid-template-areas:
+    "hero item1 item2"
+    "hero item3 item4";
   gap: 68px;
 }
 
@@ -14,9 +17,12 @@
   gap: 68px;
   margin-top: 48px;
 }
-
+　
 .journal-card--hero {
   grid-row: span 2;
+}
+.journal-card--hero {
+  grid-area: hero;
 }
 
 .journal-image img {
@@ -26,6 +32,11 @@
 .journal-meta {
   margin-top: 16px;
 }
+
+.journal-card--item-1 { grid-area: item1; }
+.journal-card--item-2 { grid-area: item2; }
+.journal-card--item-3 { grid-area: item3; }
+.journal-card--item-4 { grid-area: item4; }
 
 /* =========================
    TEXT（統一）
@@ -62,6 +73,17 @@
 
 @media (max-width: 1023px) {
   .journal-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "hero"
+      "item1"
+      "item2"
+      "item3"
+      "item4";
+    gap: 32px;
+  }
+
+  .journal-grid--list {
     grid-template-columns: 1fr;
     gap: 32px;
   }
