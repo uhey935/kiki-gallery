@@ -14,7 +14,8 @@ const artists = defineCollection({
     bio: z.string().optional(),
     bio_short: z.string().optional(),
 
-    shop_url: z.string().optional(),
+    shop_url: z.string().url().optional(),
+
     awards: z.array(z.string()).optional(),
     exhibitions: z.array(z.string()).optional(),
 
@@ -97,9 +98,12 @@ const journal = defineCollection({
     title: z.string(),
     date: z.string().optional(),
     excerpt: z.string().optional(),
+
     has_page: z.boolean().optional(),
     link: z.string().optional(),
+
     categories: z.array(z.string()).optional(),
+
     hero_image: z.string().optional(),
     hero_caption: z.string().optional(),
   }),

@@ -23,6 +23,9 @@ venue:
 works:
   - yuka-mori-01
   - reiko-kinoshita-01
+
+hero_text_position: "right-center"
+hero_text_color: "light"
 ---
 
 GALLERY crossingは、2026年4⽉18⽇(土)〜5⽉3⽇(日)の会期にて、アラーナ・ウィルソン個展「Roots」を開催いたします。本展はウィルソンの当ギャラリーで5度目となる個展であり、本年3月までに行われた、滋賀県立陶芸の森（信楽）でのレジデンス制作を中心に構成されます。

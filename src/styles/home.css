@@ -2,15 +2,12 @@
    Home Hero
 ========================= */
 
-.home {
-  width: 100%;
-}
-
 .home-hero {
   position: relative;
   width: 100%;
-  height: 100svh;
-  margin-top: calc(-1 * var(--header-height, 96px));
+  height: 100vh;
+  overflow: hidden;
+  margin-top: -38.4px;
 }
 
 .home-hero__link,
@@ -40,16 +37,72 @@
 
 .home-hero__content {
   position: absolute;
-  left: 48px;
-  bottom: 48px;
   z-index: 2;
+  max-width: 720px;
+
+  left: clamp(24px, 5vw, 80px);
+  bottom: clamp(40px, 8vw, 96px);
 }
 
-.home-hero__artist,
-.home-hero__date {
-  margin: 0;
+/* =========================
+   Hero text
+========================= */
+
+.home-hero__artist {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: inherit;
 }
 
 .home-hero__title {
-  margin: 8px 0;
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 5rem);
+  line-height: 1.05;
+  font-weight: 500;
+  color: inherit;
+}
+
+.home-hero__date {
+  margin: 20px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: inherit;
+}
+
+/* =========================
+   Hero text position
+========================= */
+
+.home-hero__content--left-center {
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
+.home-hero__content--right-bottom {
+  left: auto;
+  right: clamp(24px, 5vw, 80px);
+  text-align: right;
+}
+
+.home-hero__content--right-center {
+  left: auto;
+  right: clamp(24px, 5vw, 80px);
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  text-align: left;
+}
+
+/* =========================
+   Hero text color
+========================= */
+
+.home-hero--light {
+  color: #fff;
+}
+
+.home-hero--dark {
+  color: #111;
 }

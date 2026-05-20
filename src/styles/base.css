@@ -58,6 +58,11 @@ body {
 /* =========================
    Header
 ========================= */
+header {
+  position: relative;
+  z-index: 100;
+}
+
 .header-inner {
   display: flex;
   justify-content: space-between;

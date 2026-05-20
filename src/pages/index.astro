@@ -79,7 +79,16 @@ const heroExhibition =
 
 <Layout flush={true}>
   <div class="home">
-    <section class="home-hero">
+    <section
+      class:list={[
+        "home-hero",
+        {
+          "home-hero--light": heroExhibition?.data.hero_text_color === "light",
+
+          "home-hero--dark": heroExhibition?.data.hero_text_color === "dark",
+        },
+      ]}
+    >
       {
         heroExhibition ? (
           <a href={`/exhibitions/${heroExhibition.id}`} class="home-hero__link">
@@ -94,7 +103,21 @@ const heroExhibition =
               />
             </figure>
 
-            <div class="home-hero__content">
+            <div
+              class:list={[
+                "home-hero__content",
+                {
+                  "home-hero__content--left-center":
+                    heroExhibition?.data.hero_text_position === "left-center",
+
+                  "home-hero__content--right-bottom":
+                    heroExhibition?.data.hero_text_position === "right-bottom",
+
+                  "home-hero__content--right-center":
+                    heroExhibition?.data.hero_text_position === "right-center",
+                },
+              ]}
+            >
               <p class="home-hero__artist">
                 {heroExhibition.artistNames.join(SEPARATOR)}
               </p>
