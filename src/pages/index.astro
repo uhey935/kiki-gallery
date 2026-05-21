@@ -9,6 +9,7 @@ const artists = await getCollection("artists");
 const artistMap = new Map(artists.map((a) => [a.id, a.data]));
 
 const SEPARATOR = "、";
+const HERO_FALLBACK_FIRST = true;// false = 個展ファースト, true = fallbackファースト
 
 const getArtistDisplayNames = (artistIds: string[] | string | undefined) => {
   const ids = Array.isArray(artistIds)
@@ -42,9 +43,10 @@ const parseDate = (date: string | undefined) => {
   return new Date(year, month - 1, day);
 };
 
-const getStatus = (start: Date | null, end: Date | null) => {
-  const today = new Date();
+const today = new Date();
+today.setHours(0, 0, 0, 0);
 
+const getStatus = (start: Date | null, end: Date | null) => {
   if (!start) return "past";
 
   const compare = new Date(end ?? start);
@@ -56,25 +58,53 @@ const getStatus = (start: Date | null, end: Date | null) => {
   return "past";
 };
 
-const formattedExhibitions = exhibitions.map((exh) => {
-  const names = getArtistDisplayNames(exh.data.artist);
-  const startDate = parseDate(exh.data.date);
-  const endDate = parseDate(exh.data.end_date);
+const formattedExhibitions = exhibitions
+  .map((exh) => {
+    const names = getArtistDisplayNames(exh.data.artist);
+    const startDate = parseDate(exh.data.date);
+    const endDate = parseDate(exh.data.end_date);
 
-  return {
-    ...exh,
-    artistNames: names,
-    displayTitle: getDisplayTitle(exh.data.title, names),
-    status: getStatus(startDate, endDate),
-    startDate,
-    endDate,
-  };
-});
+    return {
+      ...exh,
+      artistNames: names,
+      displayTitle: getDisplayTitle(exh.data.title, names),
+      status: getStatus(startDate, endDate),
+      startDate,
+      endDate,
+    };
+  })
+  .sort((a, b) => {
+    if (!a.startDate) return 1;
+    if (!b.startDate) return -1;
 
-const heroExhibition =
-  formattedExhibitions.find((exh) => exh.status === "ongoing") ||
-  formattedExhibitions.find((exh) => exh.status === "upcoming") ||
-  null;
+    return b.startDate.getTime() - a.startDate.getTime();
+  });
+
+
+
+const heroExhibition = HERO_FALLBACK_FIRST
+  ? null
+  : formattedExhibitions.find((exh) => exh.status === "ongoing") ||
+    formattedExhibitions.find((exh) => exh.status === "upcoming") ||
+    null;
+
+const ongoingExhibitions = formattedExhibitions.filter(
+  (exh) => exh.status === "ongoing",
+);
+
+const upcomingExhibitions = formattedExhibitions.filter(
+  (exh) => exh.status === "upcoming",
+);
+
+const pastExhibitions = formattedExhibitions.filter(
+  (exh) => exh.status === "past",
+);
+
+const homeExhibitions = [
+  ...ongoingExhibitions,
+  ...upcomingExhibitions,
+  ...pastExhibitions,
+].slice(0, 2);
 ---
 
 <Layout flush={true}>
@@ -148,6 +178,55 @@ const heroExhibition =
           </div>
         )
       }
+    </section>
+
+    <section class="home-exhibition" aria-labelledby="home-exhibition-heading">
+      <div class="home-exhibition__inner">
+        <h2 id="home-exhibition-heading" class="home-exhibition__heading">
+          Exhibition
+        </h2>
+
+        <div class="home-exhibition__list">
+          {
+            homeExhibitions.map((exhibition) => {
+              const dateString = exhibition.data.date
+                ? formatDateRangeJa(
+                    exhibition.data.date,
+                    exhibition.data.end_date,
+                  )
+                : "";
+
+              return (
+                <article class="home-exhibition__item">
+                  <a
+                    href={`/exhibitions/${exhibition.id}`}
+                    class="home-exhibition__link"
+                  >
+                    <figure class="home-exhibition__media">
+                      <img
+                        src={exhibition.data.image}
+                        alt={exhibition.displayTitle}
+                      />
+                    </figure>
+
+                    <div class="home-exhibition__content">
+                      <p class="home-exhibition__artist">
+                        {exhibition.artistNames.join(SEPARATOR)}
+                      </p>
+
+                      <h3 class="home-exhibition__title">
+                        {exhibition.displayTitle}
+                      </h3>
+
+                      <p class="home-exhibition__date">{dateString}</p>
+                    </div>
+                  </a>
+                </article>
+              );
+            })
+          }
+        </div>
+      </div>
     </section>
   </div>
 </Layout>
