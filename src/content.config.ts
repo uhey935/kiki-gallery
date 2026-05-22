@@ -121,6 +121,10 @@ const news = defineCollection({
 
     has_page: z.boolean().optional(),
     link: z.string().optional(),
+    link_label: z.string().optional(),
+
+    type: z.string().optional(),
+    image: z.string().optional(),
   }),
 });
 

@@ -5,11 +5,12 @@ import { formatDateRangeJa } from "../utils/date";
 
 const exhibitions = await getCollection("exhibitions");
 const artists = await getCollection("artists");
+const news = await getCollection("news");
 
 const artistMap = new Map(artists.map((a) => [a.id, a.data]));
 
 const SEPARATOR = "、";
-const HERO_FALLBACK_FIRST = true;// false = 個展ファースト, true = fallbackファースト
+const HERO_FALLBACK_FIRST = true; // false = 個展ファースト, true = fallbackファースト
 
 const getArtistDisplayNames = (artistIds: string[] | string | undefined) => {
   const ids = Array.isArray(artistIds)
@@ -80,8 +81,6 @@ const formattedExhibitions = exhibitions
     return b.startDate.getTime() - a.startDate.getTime();
   });
 
-
-
 const heroExhibition = HERO_FALLBACK_FIRST
   ? null
   : formattedExhibitions.find((exh) => exh.status === "ongoing") ||
@@ -105,6 +104,42 @@ const homeExhibitions = [
   ...upcomingExhibitions,
   ...pastExhibitions,
 ].slice(0, 2);
+
+const journal = await getCollection("journal");
+
+const newsStories = news
+  .filter((item) => item.data.image && (item.data.link || item.data.has_page))
+  .map((item) => ({
+    id: item.id,
+    title: item.data.title,
+    date: item.data.date,
+    type: item.data.type,
+    image: item.data.image,
+    href: item.data.has_page ? `/news/${item.id}` : item.data.link || "#",
+  }));
+
+const journalStories = journal
+  .filter((item) => item.data.hero_image && item.data.categories?.length)
+  .map((item) => ({
+    id: item.id,
+    title: item.data.title,
+    date: item.data.date,
+    type: item.data.categories?.[0],
+    image: item.data.hero_image,
+    href: `/journal/${item.id}`,
+  }));
+
+const stories = [...newsStories, ...journalStories]
+  .sort((a, b) => {
+    const aDate = parseDate(a.date);
+    const bDate = parseDate(b.date);
+
+    if (!aDate) return 1;
+    if (!bDate) return -1;
+
+    return bDate.getTime() - aDate.getTime();
+  })
+  .slice(0, 6);
 ---
 
 <Layout flush={true}>
@@ -121,16 +156,23 @@ const homeExhibitions = [
     >
       {
         heroExhibition ? (
-          <a href={`/exhibitions/${heroExhibition.id}`} class="home-hero__link">
+          <a
+            href={`/exhibitions/${heroExhibition!.id}`}
+            class="home-hero__link"
+          >
             <figure class="home-hero__media">
               <img
                 src={
-                  heroExhibition.data.hero_media ||
-                  heroExhibition.data.image ||
+                  heroExhibition!.data.hero_media ||
+                  heroExhibition!.data.image ||
                   "/images/home/fallback-hero.webp"
                 }
-                alt={heroExhibition.displayTitle}
+                alt={heroExhibition!.displayTitle}
               />
+
+              <span class="home-hero__cover home-hero__cover--1" />
+              <span class="home-hero__cover home-hero__cover--2" />
+              <span class="home-hero__cover home-hero__cover--3" />
             </figure>
 
             <div
@@ -166,11 +208,17 @@ const homeExhibitions = [
           </a>
         ) : (
           <div class="home-hero__fallback">
-            <img
-              src="/images/home/fallback-hero.webp"
-              alt="KiKi Gallery"
-              class="home-hero__fallback-image"
-            />
+            <div class="home-hero__fallback-image-wrap">
+              <img
+                src="/images/home/fallback-hero.webp"
+                alt="KiKi Gallery"
+                class="home-hero__fallback-image"
+              />
+
+              <span class="home-hero__cover home-hero__cover--1" />
+              <span class="home-hero__cover home-hero__cover--2" />
+              <span class="home-hero__cover home-hero__cover--3" />
+            </div>
 
             <div class="home-hero__content">
               <h1 class="home-hero__title">KiKi Gallery</h1>
@@ -224,6 +272,38 @@ const homeExhibitions = [
                 </article>
               );
             })
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="home-stories" aria-labelledby="home-stories-heading">
+      <div class="home-stories__inner">
+        <header class="home-stories__header">
+          <h2 id="home-stories-heading" class="home-stories__heading">
+            Stories
+          </h2>
+        </header>
+
+        <div class="home-stories__list">
+          {
+            stories.map((story) => (
+              <article class="home-stories__item">
+                <a href={story.href} class="home-stories__link">
+                  <figure class="home-stories__media">
+                    <img src={story.image} alt={story.title} loading="lazy" />
+                  </figure>
+
+                  <div class="home-stories__body">
+                    {story.type && (
+                      <p class="home-stories__kind">{story.type}</p>
+                    )}
+
+                    <h3 class="home-stories__title">{story.title}</h3>
+                  </div>
+                </a>
+              </article>
+            ))
           }
         </div>
       </div>

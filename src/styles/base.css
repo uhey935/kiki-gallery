@@ -58,8 +58,11 @@ body {
 /* =========================
    Header
 ========================= */
-header {
-  position: relative;
+.site-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   z-index: 100;
 }
 
@@ -91,7 +94,7 @@ header {
 
 .breadcrumb {
   font-size: 1rem;
-  margin: 28px 0;
+  margin: 88px 0 28px;
 }
 
 .breadcrumb ol {

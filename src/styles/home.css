@@ -7,7 +7,6 @@
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  margin-top: -38.4px;
 }
 
 .home-hero__link,
@@ -20,25 +19,81 @@
   text-decoration: none;
 }
 
-.home-hero__media {
+.home-hero__fallback-image-wrap {
   position: relative;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
-.home-hero__media,
-.home-hero__fallback-image {
+/* media */
+
+.home-hero__media {
+  position: relative;
   width: 100%;
   height: 100%;
   margin: 0;
+  overflow: hidden;
 }
 
 .home-hero__media img,
 .home-hero__fallback-image {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
+
+.home-hero__fallback-image {
+  width: 100%;
+  height: 100%;
+}
+
+/* animation */
+
+.home-hero__cover {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc((100% / 3) - 1px);
+  height: 100%;
+  display: block;
+  background: #111;
+  pointer-events: none;
+  z-index: 3;
+
+  transform: translateY(0);
+  will-change: transform;
+
+  animation-name: home-hero-cover-reveal;
+  animation-duration: 1.1s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-delay: 0.15s;
+  animation-fill-mode: forwards;
+}
+
+.home-hero__cover--2 {
+  left: calc(100% / 3);
+  animation-delay: 0.35s;
+}
+
+.home-hero__cover--3 {
+  left: calc(100% / 3 * 2);
+  animation-delay: 0.55s;
+}
+
+@keyframes home-hero-cover-reveal {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+/* content */
 
 .home-hero__content {
   position: absolute;
@@ -49,9 +104,7 @@
   bottom: clamp(40px, 8vw, 96px);
 }
 
-/* =========================
-   Hero text
-========================= */
+/* text */
 
 .home-hero__artist {
   margin: 0 0 12px;
@@ -62,7 +115,7 @@
 
 .home-hero__title {
   margin: 0;
-  font-size: clamp(2rem, 6vw, 5rem);
+  font-size: clamp(2rem, 6vw, 3rem);
   line-height: 1.05;
   font-weight: 500;
   color: inherit;
@@ -75,9 +128,7 @@
   color: inherit;
 }
 
-/* =========================
-   Hero text position
-========================= */
+/* variants: position */
 
 .home-hero__content--left-center {
   top: 50%;
@@ -92,17 +143,15 @@
 }
 
 .home-hero__content--right-center {
-  left: auto;
-  right: clamp(24px, 5vw, 80px);
   top: 50%;
+  right: clamp(24px, 5vw, 80px);
   bottom: auto;
+  left: auto;
   transform: translateY(-50%);
   text-align: left;
 }
 
-/* =========================
-   Hero text color
-========================= */
+/* variants: color */
 
 .home-hero--light {
   color: #fff;
@@ -117,7 +166,7 @@
 ========================= */
 
 .home-exhibition {
-  padding: 120px 80px 0;
+  padding: 120px 80px 120px;
 }
 
 .home-exhibition__heading {
@@ -142,16 +191,13 @@
 
 .home-exhibition__media {
   width: 100%;
-  aspect-ratio: 4 / 5;
-  background: #f0f0f0;
-  overflow: hidden;
+  background: #f7f7f7;
 }
 
 .home-exhibition__media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   display: block;
+  width: 100%;
+  height: auto;
 }
 
 .home-exhibition__content {
@@ -159,15 +205,95 @@
 }
 
 .home-exhibition__artist {
-  margin-bottom: 10px;
+  margin: 0 0 10px;
   line-height: 1.4;
 }
 
 .home-exhibition__title {
-  margin-bottom: 12px;
+  margin: 0 0 12px;
   line-height: 1.4;
 }
 
 .home-exhibition__date {
+  margin: 0;
   line-height: 1.4;
+}
+
+/* =========================
+   Stories
+========================= */
+
+.home-stories {
+  padding: 80px 80px 120px;
+  background: #e9e9e6;
+}
+
+.home-stories__inner {
+  width: 100%;
+}
+
+.home-stories__header {
+  margin-bottom: 48px;
+}
+
+.home-stories__heading {
+  display: block;
+  margin: 0;
+  color: #111;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.home-stories__list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px 100px;
+}
+
+.home-stories__item {
+  position: relative;
+  min-width: 0;
+}
+
+.home-stories__link {
+  position: relative;
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-stories__media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin: 0 0 20px;
+  background: #ecece4;
+  overflow: hidden;
+}
+
+.home-stories__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-stories__body {
+  position: relative;
+}
+
+.home-stories__kind {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.home-stories__title {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 500;
 }
