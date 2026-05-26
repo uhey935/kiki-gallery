@@ -49,43 +49,27 @@ body {
   background: #f7f7f7;
 }
 
+/* =========================
+   Common Layout
+========================= */
+
+.site-main {
+  padding: 40px 0 80px;
+}
+
+.site-main--flush {
+  padding: 0;
+}
+
+.section {
+  width: 100%;
+  padding: 0 clamp(16px, 4vw, 80px);
+}
+
 .wrapper {
   width: 100%;
   padding: 0 clamp(16px, 4vw, 80px);
   margin: 0 auto;
-}
-
-/* =========================
-   Header
-========================= */
-.site-header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 100;
-}
-
-.header-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-logo a {
-  font-size: 1.125rem;
-  font-weight: 500;
-}
-
-.header-nav ul {
-  display: flex;
-  gap: 24px;
-}
-
-.header-nav a {
-  display: block;
-  font-size: 0.875rem;
-  padding: 8px 0;
 }
 
 /* =========================
@@ -120,21 +104,9 @@ body {
 }
 
 /* =========================
-   Common Layout
+   Common Title
 ========================= */
-.site-main {
-  padding: 40px 0 80px;
-}
 
-.site-main--flush {
-  padding: 0;
-}
-.section {
-  width: 100%;
-  padding: 0 clamp(16px, 4vw, 80px);
-}
-
-/* ページタイトル（共通） */
 .page-title {
   font-size: 1.75rem;
   line-height: 1.4;
@@ -142,10 +114,9 @@ body {
 }
 
 /* =========================
-   Meta（共通）
+   Common Meta
 ========================= */
 
-/* カテゴリ（interview / report など） */
 .meta-category {
   font-size: 0.75rem;
   letter-spacing: 0.08em;
@@ -153,7 +124,6 @@ body {
   color: #666;
 }
 
-/* 日付 */
 .meta-date {
   font-size: 0.8rem;
   color: #888;
@@ -161,8 +131,9 @@ body {
 }
 
 /* =========================
-   Article（共通）
+   Article
 ========================= */
+
 .article {
   max-width: 800px;
   margin: 0 auto;
@@ -174,7 +145,6 @@ body {
   line-height: 1.9;
 }
 
-/* Hero */
 .article-hero {
   position: relative;
   margin-bottom: 58px;
@@ -229,12 +199,10 @@ body {
    Article Body Image
 ========================= */
 
-/* figureリセット */
 .article-body figure {
   margin: 0;
 }
 
-/* caption */
 .article-body figure figcaption {
   margin-top: 18px;
   font-size: 0.85rem;
@@ -242,12 +210,10 @@ body {
   color: #666;
 }
 
-/* text → image */
 .article-body p + figure {
   margin-top: 116px;
 }
 
-/* image → text */
 .article-body figure + p {
   margin-top: 48px;
 }
@@ -255,8 +221,9 @@ body {
 /* =========================
    Footer
 ========================= */
+
 .footer {
-  background-color: #000;
+  background: #000;
   color: #fff;
   padding: 17px 0;
 

@@ -1,25 +1,328 @@
 ---
+import "../styles/header.css";
 
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith("/en");
 ---
 
 <header class="site-header">
-  <div class="wrapper">
-    <div class="header-inner">
-      <div class="header-logo">
-        <a href="/">KiKi Gallery</a>
-      </div>
+  <a href="/" class="site-header__logo" aria-label="KiKi Gallery home">
+    KiKi
+  </a>
 
-      <nav class="header-nav">
-        <ul>
-          <li><a href="/artists">Artists</a></li>
-          <li><a href="/exhibitions">Exhibitions</a></li>
-          <li><a href="/journal">Journal</a></li>
-          <li><a href="/news">News</a></li>
-          <li><a href="/about">About</a></li>
-          <li><a href="/visit">Visit</a></li>
-          <li><a href="https://your-shop-url.com">Shop</a></li>
-        </ul>
-      </nav>
+  <div class="site-header__controls">
+    <div class="site-header__language">
+      <a
+        href="/en/"
+        class="site-header__language-link"
+        aria-current={isEnglish ? "page" : undefined}
+      >
+        EN
+      </a>
+
+      <span class="site-header__language-separator">/</span>
+
+      <a
+        href="/"
+        class="site-header__language-link"
+        aria-current={!isEnglish ? "page" : undefined}
+      >
+        JA
+      </a>
+    </div>
+
+    <button
+      class="site-header__menu-button"
+      type="button"
+      aria-label="Open menu"
+      aria-expanded="false"
+      aria-controls="site-menu"
+      data-menu-open
+    >
+      <span class="site-header__menu-icon">
+        <span class="site-header__menu-line site-header__menu-line--top"></span>
+        <span class="site-header__menu-line site-header__menu-line--bottom"
+        ></span>
+      </span>
+    </button>
+  </div>
+
+  <div
+    class="site-header__overlay"
+    id="site-menu"
+    aria-hidden="true"
+    data-overlay
+  >
+    <div class="site-header__overlay-inner">
+      <div class="site-header__overlay-layout">
+        <div class="site-header__overlay-primary">
+          <div class="site-header__primary-navigation">
+            <p class="site-header__navigation-label">Menu</p>
+
+            <nav class="site-header__nav" aria-label="Global navigation">
+              <ul class="site-header__nav-list">
+                <li class="site-header__nav-item">
+                  <a
+                    href="/artists"
+                    class="site-header__nav-link"
+                    data-menu-link
+                    aria-current={currentPath === "/artists"
+                      ? "page"
+                      : undefined}
+                  >
+                    Artists
+                  </a>
+                </li>
+
+                <li class="site-header__nav-item">
+                  <a
+                    href="/exhibitions"
+                    class="site-header__nav-link"
+                    data-menu-link
+                    aria-current={currentPath === "/exhibitions"
+                      ? "page"
+                      : undefined}
+                  >
+                    Exhibitions
+                  </a>
+                </li>
+
+                <li class="site-header__nav-item">
+                  <a
+                    href="/journal"
+                    class="site-header__nav-link"
+                    data-menu-link
+                    aria-current={currentPath === "/journal"
+                      ? "page"
+                      : undefined}
+                  >
+                    Journal
+                  </a>
+                </li>
+
+                <li class="site-header__nav-item">
+                  <a
+                    href="/news"
+                    class="site-header__nav-link"
+                    data-menu-link
+                    aria-current={currentPath === "/news" ? "page" : undefined}
+                  >
+                    News
+                  </a>
+                </li>
+
+                <li class="site-header__nav-item">
+                  <a
+                    href="/about"
+                    class="site-header__nav-link"
+                    data-menu-link
+                    aria-current={currentPath === "/about" ? "page" : undefined}
+                  >
+                    About
+                  </a>
+                </li>
+
+                <li class="site-header__nav-item">
+                  <a
+                    href="/visit"
+                    class="site-header__nav-link"
+                    data-menu-link
+                    aria-current={currentPath === "/visit" ? "page" : undefined}
+                  >
+                    Visit
+                  </a>
+                </li>
+
+                <li class="site-header__nav-item">
+                  <a
+                    href="/shop"
+                    class="site-header__nav-link"
+                    data-menu-link
+                    aria-current={currentPath === "/shop" ? "page" : undefined}
+                  >
+                    Shop
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+
+        <div class="site-header__overlay-secondary">
+          <div class="site-header__info">
+            <ul class="site-header__info-list">
+              <li class="site-header__info-item">
+                <a
+                  href="#"
+                  id="email-link"
+                  class="site-header__info-link"
+                  data-u="aW5mbw=="
+                  data-d="a2lraS1nYWxsZXJ5LmNvbQ=="
+                >
+                </a>
+              </li>
+
+              <li class="site-header__info-item">
+                <address class="site-header__info-address">
+                  Kanagawa, Japan
+                </address>
+              </li>
+
+              <li class="site-header__info-item">
+                <p class="site-header__info-text">Hours</p>
+              </li>
+
+              <li class="site-header__info-item">
+                <li class="site-header__info-item">
+                  <a
+                    href="https://instagram.com/xxxxx"
+                    class="site-header__info-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Instagram"
+                  >
+                    <svg
+                      class="site-header__social-icon"
+                      viewBox="0 0 19 19"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M13.76-.007H5.24A5.258 5.258 0 0 0-.01 5.24v8.52a5.258 5.258 0 0 0 5.25 5.247h8.52a5.258 5.258 0 0 0 5.25-5.247V5.24a5.258 5.258 0 0 0-5.25-5.247zM17 14a2.683 2.683 0 0 1-3 3H5a2.683 2.683 0 0 1-3-3V5a2.683 2.683 0 0 1 3-3h9a2.683 2.683 0 0 1 3 3v9zM9.5 4.6a4.9 4.9 0 1 0 4.9 4.9 4.906 4.906 0 0 0-4.9-4.9zm0 8.111a3.212 3.212 0 1 1 3.21-3.212 3.215 3.215 0 0 1-3.21 3.213zm5.1-9.542a1.233 1.233 0 1 0 .88.362 1.245 1.245 0 0 0-.88-.361z"
+                        fill="currentColor"></path>
+                    </svg>
+                  </a>
+                </li>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </header>
+
+<script>
+  const header = document.querySelector<HTMLElement>(".site-header")!;
+  const menuButton = document.querySelector<HTMLButtonElement>(
+    ".site-header__menu-button",
+  )!;
+  const overlay = document.querySelector<HTMLElement>(".site-header__overlay")!;
+  const menuLinks =
+    document.querySelectorAll<HTMLAnchorElement>("[data-menu-link]");
+
+  let scrollPosition = 0;
+  let isAnimating = false;
+
+  let lastScrollY = window.scrollY;
+  const scrollThreshold = 24;
+  const topThreshold = 72;
+
+  function openMenu() {
+    if (isAnimating || header.classList.contains("is-open")) return;
+
+    isAnimating = true;
+    scrollPosition = window.scrollY;
+
+    overlay.style.display = "block";
+
+    header.classList.remove("is-closing", "is-hidden");
+    header.classList.add("is-opening");
+
+    document.body.style.overflow = "hidden";
+
+    requestAnimationFrame(() => {
+      header.classList.add("is-open");
+
+      setTimeout(() => {
+        header.classList.remove("is-opening");
+        isAnimating = false;
+      }, 500);
+    });
+  }
+
+  function closeMenu() {
+    if (isAnimating || !header.classList.contains("is-open")) return;
+
+    isAnimating = true;
+
+    header.classList.remove("is-opening", "is-open");
+    header.classList.add("is-closing");
+
+    setTimeout(() => {
+      overlay.style.display = "none";
+      header.classList.remove("is-closing");
+
+      document.body.style.overflow = "";
+      window.scrollTo(0, scrollPosition);
+
+      isAnimating = false;
+    }, 500);
+  }
+
+  function handleHeaderScroll() {
+    if (header.classList.contains("is-open")) return;
+
+    const currentScrollY = window.scrollY;
+    const delta = currentScrollY - lastScrollY;
+
+    if (currentScrollY <= topThreshold) {
+      header.classList.remove("is-hidden");
+      lastScrollY = currentScrollY;
+      return;
+    }
+
+    if (Math.abs(delta) < scrollThreshold) return;
+
+    if (delta > 0) {
+      header.classList.add("is-hidden");
+    } else {
+      header.classList.remove("is-hidden");
+    }
+
+    lastScrollY = currentScrollY;
+  }
+
+  menuButton.addEventListener("click", () => {
+    if (header.classList.contains("is-open")) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) {
+      closeMenu();
+    }
+  });
+
+  menuLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      closeMenu();
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && header.classList.contains("is-open")) {
+      closeMenu();
+    }
+  });
+
+  window.addEventListener("scroll", handleHeaderScroll, {
+    passive: true,
+  });
+
+  const emailLink = document.getElementById("email-link");
+
+  if (emailLink instanceof HTMLAnchorElement) {
+    const user = atob(emailLink.dataset.u || "");
+    const domain = atob(emailLink.dataset.d || "");
+
+    emailLink.textContent = `${user}@${domain}`;
+
+    emailLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.href = `mailto:${user}@${domain}`;
+    });
+  }
+</script>
