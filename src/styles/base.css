@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&display=swap");
+
 /* =========================
    Reset
 ========================= */
@@ -43,10 +45,28 @@ html {
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    "Instrument Sans",
+    "Noto Sans JP",
+    system-ui,
+    sans-serif;
+}
+
+body {
   line-height: 1.6;
   color: #111;
   background: #f7f7f7;
+}
+
+
+::selection {
+  background: #111;
+  color: #fff;
+}
+
+::-moz-selection {
+  background: #111;
+  color: #fff;
 }
 
 /* =========================
