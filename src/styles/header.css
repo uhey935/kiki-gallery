@@ -13,8 +13,14 @@
 }
 
 .site-header__nav-link {
-  font-size: 3.8rem;
+  font-size: 4.1rem;
   line-height: 0.9;
+}
+
+.site-header__info {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
 }
 
 /* =========================
@@ -31,7 +37,7 @@
   align-items: center;
   justify-content: space-between;
 
-  padding: 28px 32px;
+  padding: 28px 28px;
 
   transform: translateY(0);
   transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -75,15 +81,17 @@
   position: relative;
 }
 
+.site-header__language-link,
+.site-header__nav-link {
+  position: relative;
+}
+
 .site-header__language-link::after,
 .site-header__nav-link::after {
   content: "";
   position: absolute;
   left: 0;
-  bottom: -0.18em;
-
   width: 100%;
-  height: 2.5px;
 
   background: currentColor;
 
@@ -92,6 +100,17 @@
   transition: transform 0.28s ease;
 }
 
+/* language */
+.site-header__language-link::after {
+  bottom: -0.18em;
+  height: 2px;
+}
+
+/* menu */
+.site-header__nav-link::after {
+  bottom: -0.10em;
+  height: 5px;
+}
 .site-header__language-separator {
   line-height: 1;
 }
@@ -217,7 +236,7 @@
   width: 100%;
   min-height: 100vh;
 
-  padding: 140px 93px 93px;
+  padding: 140px 108px 108px;
   box-sizing: border-box;
 }
 
@@ -238,7 +257,7 @@
 .site-header__primary-navigation {
   display: flex;
   align-items: flex-start;
-  gap: 68px;
+  gap: 63px;
 }
 
 .site-header__navigation-label {
@@ -316,7 +335,7 @@
   display: flex;
   justify-content: flex-end;
 
-  padding-top: 240px;
+  padding-top: 470px;
 }
 
 .site-header__info {
@@ -340,6 +359,10 @@
 
 .site-header__info-item + .site-header__info-item {
   margin-top: 12px;
+}
+
+.site-header__info-item:last-child {
+  margin-top: 38px;
 }
 
 .site-header__info-link {
@@ -382,4 +405,29 @@
 .site-header button:focus-visible {
   outline: 1px solid currentColor;
   outline-offset: 4px;
+}
+
+/* =========================
+   Home Variant
+========================= */
+
+.site-header--home:not(.is-open):not(.is-scrolled) .site-header__logo,
+.site-header--home:not(.is-open):not(.is-scrolled) .site-header__language-link,
+.site-header--home:not(.is-open):not(.is-scrolled)
+  .site-header__language-separator {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.site-header--home:not(.is-open):not(.is-scrolled) .site-header__menu-line {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.site-header--home.is-scrolled .site-header__logo,
+.site-header--home.is-scrolled .site-header__language-link,
+.site-header--home.is-scrolled .site-header__language-separator {
+  color: #111;
+}
+
+.site-header--home.is-scrolled .site-header__menu-line {
+  background: #111;
 }

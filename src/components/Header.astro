@@ -2,10 +2,11 @@
 import "../styles/header.css";
 
 const currentPath = Astro.url.pathname;
+const isHome = currentPath === "/";
 const isEnglish = currentPath.startsWith("/en");
 ---
 
-<header class="site-header">
+<header class:list={["site-header", isHome && "site-header--home"]}>
   <a href="/" class="site-header__logo" aria-label="KiKi Gallery home">
     KiKi
   </a>
@@ -173,25 +174,23 @@ const isEnglish = currentPath.startsWith("/en");
               </li>
 
               <li class="site-header__info-item">
-                <li class="site-header__info-item">
-                  <a
-                    href="https://instagram.com/xxxxx"
-                    class="site-header__info-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Instagram"
+                <a
+                  href="https://instagram.com/xxxxx"
+                  class="site-header__info-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                >
+                  <svg
+                    class="site-header__social-icon"
+                    viewBox="0 0 19 19"
+                    aria-hidden="true"
                   >
-                    <svg
-                      class="site-header__social-icon"
-                      viewBox="0 0 19 19"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M13.76-.007H5.24A5.258 5.258 0 0 0-.01 5.24v8.52a5.258 5.258 0 0 0 5.25 5.247h8.52a5.258 5.258 0 0 0 5.25-5.247V5.24a5.258 5.258 0 0 0-5.25-5.247zM17 14a2.683 2.683 0 0 1-3 3H5a2.683 2.683 0 0 1-3-3V5a2.683 2.683 0 0 1 3-3h9a2.683 2.683 0 0 1 3 3v9zM9.5 4.6a4.9 4.9 0 1 0 4.9 4.9 4.906 4.906 0 0 0-4.9-4.9zm0 8.111a3.212 3.212 0 1 1 3.21-3.212 3.215 3.215 0 0 1-3.21 3.213zm5.1-9.542a1.233 1.233 0 1 0 .88.362 1.245 1.245 0 0 0-.88-.361z"
-                        fill="currentColor"></path>
-                    </svg>
-                  </a>
-                </li>
+                    <path
+                      d="M13.76-.007H5.24A5.258 5.258 0 0 0-.01 5.24v8.52a5.258 5.258 0 0 0 5.25 5.247h8.52a5.258 5.258 0 0 0 5.25-5.247V5.24a5.258 5.258 0 0 0-5.25-5.247zM17 14a2.683 2.683 0 0 1-3 3H5a2.683 2.683 0 0 1-3-3V5a2.683 2.683 0 0 1 3-3h9a2.683 2.683 0 0 1 3 3v9zM9.5 4.6a4.9 4.9 0 1 0 4.9 4.9 4.906 4.906 0 0 0-4.9-4.9zm0 8.111a3.212 3.212 0 1 1 3.21-3.212 3.215 3.215 0 0 1-3.21 3.213zm5.1-9.542a1.233 1.233 0 1 0 .88.362 1.245 1.245 0 0 0-.88-.361z"
+                      fill="currentColor"></path>
+                  </svg>
+                </a>
               </li>
             </ul>
           </div>
@@ -209,13 +208,38 @@ const isEnglish = currentPath.startsWith("/en");
   const overlay = document.querySelector<HTMLElement>(".site-header__overlay")!;
   const menuLinks =
     document.querySelectorAll<HTMLAnchorElement>("[data-menu-link]");
+  const emailLink = document.getElementById("email-link");
+
+  if (emailLink) {
+    const user = atob(emailLink.dataset.u || "");
+    const domain = atob(emailLink.dataset.d || "");
+    const email = `${user}@${domain}`;
+
+    emailLink.textContent = email;
+
+    emailLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      window.location.href = `mailto:${email}`;
+    });
+  }
 
   let scrollPosition = 0;
   let isAnimating = false;
 
   let lastScrollY = window.scrollY;
-  const scrollThreshold = 24;
+  const scrollThreshold = 8;
   const topThreshold = 72;
+  const homeThreshold = window.innerHeight * 0.12;
+
+  function updateHomeHeaderState() {
+    if (!header.classList.contains("site-header--home")) return;
+
+    if (window.scrollY > homeThreshold) {
+      header.classList.add("is-scrolled");
+    } else {
+      header.classList.remove("is-scrolled");
+    }
+  }
 
   function openMenu() {
     if (isAnimating || header.classList.contains("is-open")) return;
@@ -235,6 +259,8 @@ const isEnglish = currentPath.startsWith("/en");
 
       setTimeout(() => {
         header.classList.remove("is-opening");
+        menuButton.setAttribute("aria-expanded", "true");
+        overlay.setAttribute("aria-hidden", "false");
         isAnimating = false;
       }, 500);
     });
@@ -245,8 +271,12 @@ const isEnglish = currentPath.startsWith("/en");
 
     isAnimating = true;
 
-    header.classList.remove("is-opening", "is-open");
+    header.classList.remove("is-opening");
     header.classList.add("is-closing");
+    header.classList.remove("is-open");
+
+    menuButton.setAttribute("aria-expanded", "false");
+    overlay.setAttribute("aria-hidden", "true");
 
     setTimeout(() => {
       overlay.style.display = "none";
@@ -255,31 +285,10 @@ const isEnglish = currentPath.startsWith("/en");
       document.body.style.overflow = "";
       window.scrollTo(0, scrollPosition);
 
+      updateHomeHeaderState();
+
       isAnimating = false;
     }, 500);
-  }
-
-  function handleHeaderScroll() {
-    if (header.classList.contains("is-open")) return;
-
-    const currentScrollY = window.scrollY;
-    const delta = currentScrollY - lastScrollY;
-
-    if (currentScrollY <= topThreshold) {
-      header.classList.remove("is-hidden");
-      lastScrollY = currentScrollY;
-      return;
-    }
-
-    if (Math.abs(delta) < scrollThreshold) return;
-
-    if (delta > 0) {
-      header.classList.add("is-hidden");
-    } else {
-      header.classList.remove("is-hidden");
-    }
-
-    lastScrollY = currentScrollY;
   }
 
   menuButton.addEventListener("click", () => {
@@ -308,21 +317,28 @@ const isEnglish = currentPath.startsWith("/en");
     }
   });
 
-  window.addEventListener("scroll", handleHeaderScroll, {
-    passive: true,
+  window.addEventListener("scroll", () => {
+    if (header.classList.contains("is-open")) return;
+
+    const currentScrollY = window.scrollY;
+
+    if (currentScrollY <= topThreshold) {
+      header.classList.remove("is-hidden");
+      updateHomeHeaderState();
+      lastScrollY = currentScrollY;
+      return;
+    }
+
+    if (currentScrollY > lastScrollY + scrollThreshold) {
+      header.classList.add("is-hidden");
+    } else if (currentScrollY < lastScrollY - scrollThreshold) {
+      header.classList.remove("is-hidden");
+    }
+
+    updateHomeHeaderState();
+
+    lastScrollY = currentScrollY;
   });
 
-  const emailLink = document.getElementById("email-link");
-
-  if (emailLink instanceof HTMLAnchorElement) {
-    const user = atob(emailLink.dataset.u || "");
-    const domain = atob(emailLink.dataset.d || "");
-
-    emailLink.textContent = `${user}@${domain}`;
-
-    emailLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      window.location.href = `mailto:${user}@${domain}`;
-    });
-  }
+  updateHomeHeaderState();
 </script>
