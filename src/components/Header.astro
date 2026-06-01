@@ -136,7 +136,7 @@ const isEnglish = currentPath.startsWith("/en");
 
                 <li class="site-header__nav-item">
                   <a
-                    href="/shop"
+                    href="https://www.kiki-shop.jp/"
                     class="site-header__nav-link"
                     data-menu-link
                     aria-current={currentPath === "/shop" ? "page" : undefined}
@@ -206,6 +206,7 @@ const isEnglish = currentPath.startsWith("/en");
     ".site-header__menu-button",
   )!;
   const overlay = document.querySelector<HTMLElement>(".site-header__overlay")!;
+
   const menuLinks =
     document.querySelectorAll<HTMLAnchorElement>("[data-menu-link]");
   const emailLink = document.getElementById("email-link");
@@ -299,10 +300,8 @@ const isEnglish = currentPath.startsWith("/en");
     }
   });
 
-  overlay.addEventListener("click", (event) => {
-    if (event.target === overlay) {
-      closeMenu();
-    }
+  overlay.addEventListener("click", () => {
+    closeMenu();
   });
 
   menuLinks.forEach((link) => {

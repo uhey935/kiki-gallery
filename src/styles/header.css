@@ -14,11 +14,20 @@
 
 .site-header__nav-link {
   font-size: 4.1rem;
-  line-height: 0.9;
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: 0.025em;
+}
+
+.site-header__navigation-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
 }
 
 .site-header__info {
   font-size: 0.95rem;
+  font-weight: 500;
   line-height: 1.55;
   letter-spacing: 0.02em;
 }
@@ -257,7 +266,7 @@
 .site-header__primary-navigation {
   display: flex;
   align-items: flex-start;
-  gap: 63px;
+  gap: 51px;/* MENUギャップ */
 }
 
 .site-header__navigation-label {
@@ -281,8 +290,10 @@
   padding: 0;
 }
 
-.site-header__nav-item + .site-header__nav-item {
-  margin-top: 18px;
+.site-header__nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .site-header__nav-item {
