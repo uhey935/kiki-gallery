@@ -116,11 +116,16 @@ if (start > today) {
   <!-- background -->
   <section class="section exhibitions-detail">
     <header class="exhibitions-heading">
-      {artistNames && <p class="exhibitions-heading-artist">{artistNames}</p>}
+      {
+        exh.data.display_artists !== false && artistNames && (
+          <p class="exhibitions-heading-artist">{artistNames}</p>
+        )
+      }
 
       <h1 class="exhibitions-h1-title">
         {displayTitle}
       </h1>
+
       <p class="exhibitions-heading-status">
         {status === "ongoing" && "Ongoing Exhibition"}
         {status === "upcoming" && "Upcoming Exhibition"}

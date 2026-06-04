@@ -1,11 +1,14 @@
 ---
 title: "合同展"
+
 artist:
   - reiko-kinoshita
   - yuka-mori
 artist_name:
   - 木下令子
   - 森夕香
+display_artists: false
+
 date: "2026-03-05"
 end_date: "2026-07-09"
 image: /images/exhibitions/group-exhibition-2026-03.png

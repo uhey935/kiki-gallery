@@ -86,6 +86,8 @@ const exhibitions = defineCollection({
       .optional(),
 
     published_at: z.string().optional(),
+    
+    display_artists: z.boolean().optional(),
   }),
 });
 
