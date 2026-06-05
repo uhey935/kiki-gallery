@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
-import { formatDateRangeJa } from "../../utils/date";
+import { formatDateRangeJa, getWeekday } from "../../utils/date";
 
 // =====================
 // 1. データ取得
@@ -24,6 +24,7 @@ const getArtistDisplayNames = (artistIds: string[] | string | undefined) => {
     : artistIds
       ? [artistIds]
       : [];
+
   return ids
     .map((id) => {
       const data = artistMap.get(id);
@@ -35,7 +36,9 @@ const getArtistDisplayNames = (artistIds: string[] | string | undefined) => {
 // 表示用タイトルの生成
 const getDisplayTitle = (title: string | undefined, names: string[]) => {
   if (title && title.trim() !== "") return title;
+
   if (names.length === 0) return "Exhibition";
+
   return names.length > 1
     ? `${names.join(SEPARATOR)} 合同展`
     : `${names[0]} 個展`;
@@ -44,6 +47,7 @@ const getDisplayTitle = (title: string | undefined, names: string[]) => {
 // ステータス判定（ビルド時の時刻基準）
 const getStatus = (start: Date | null, end: Date | null) => {
   const today = new Date();
+
   if (!start) return "past";
 
   // 終了日の23:59:59と比較（endがなければstartを基準にする）
@@ -52,21 +56,18 @@ const getStatus = (start: Date | null, end: Date | null) => {
 
   if (start > today) return "upcoming";
   if (compare >= today) return "ongoing";
+
   return "past";
 };
 
 // =====================
-// 3. データ加工（一括処理）
+// 3. データ加工
 // =====================
-const sorted = [...exhibitions].sort((a, b) => {
-  const dateA = a.data.date ? new Date(a.data.date).getTime() : 0;
-  const dateB = b.data.date ? new Date(b.data.date).getTime() : 0;
-  return dateB - dateA;
-});
-
-const formattedExhibitions = sorted.map((exh) => {
+const formattedExhibitions = exhibitions.map((exh) => {
   const names = getArtistDisplayNames(exh.data.artist);
+
   const startDate = exh.data.date ? new Date(exh.data.date) : null;
+
   const endDate = exh.data.end_date ? new Date(exh.data.end_date) : null;
 
   return {
@@ -79,9 +80,33 @@ const formattedExhibitions = sorted.map((exh) => {
   };
 });
 
-// hero（先頭）と grid（残り）に分離
-const hero = formattedExhibitions[0];
-const gridExhibitions = formattedExhibitions.slice(1);
+// =====================
+// 4. ソート
+// =====================
+const statusOrder: Record<string, number> = {
+  ongoing: 0,
+  upcoming: 1,
+  past: 2,
+};
+
+formattedExhibitions.sort((a, b) => {
+  const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+
+  if (statusDiff !== 0) return statusDiff;
+
+  // ongoing → 開始日が新しい順
+  if (a.status === "ongoing") {
+    return (b.startDate?.getTime() ?? 0) - (a.startDate?.getTime() ?? 0);
+  }
+
+  // upcoming → 開始日が近い順
+  if (a.status === "upcoming") {
+    return (a.startDate?.getTime() ?? 0) - (b.startDate?.getTime() ?? 0);
+  }
+
+  // past → 終了日が新しい順
+  return (b.endDate?.getTime() ?? 0) - (a.endDate?.getTime() ?? 0);
+});
 ---
 
 <Layout
@@ -91,67 +116,10 @@ const gridExhibitions = formattedExhibitions.slice(1);
   <section class="section exhibitions">
     <h1 class="page-title">Exhibitions</h1>
 
-    {/* ===================== hero ===================== */}
-    {
-      hero && (
-        <div class="exhibitions-hero">
-          <div class="exhibitions-hero__card">
-            <div class="exhibitions-hero__link">
-              <a
-                href={`/exhibitions/${hero.id}`}
-                class="exhibitions-hero__image"
-              >
-                {hero.data.image && (
-                  <img src={hero.data.image} alt={hero.displayTitle} />
-                )}
-              </a>
-
-              <div class="exhibitions-hero__content">
-                <p class="exhibitions-status">{hero.status}</p>
-
-                {hero.data.display_artists !== false && (
-                  <p class="exhibitions-artist">
-                    {hero.artistNames.join(SEPARATOR)}
-                  </p>
-                )}
-
-                <h2 class="exhibitions-title">
-                  <a href={`/exhibitions/${hero.id}`}>{hero.displayTitle}</a>
-                </h2>
-
-                <p class="exhibitions-date">
-                  {hero.data.date
-                    ? formatDateRangeJa(hero.data.date, hero.data.end_date)
-                    : ""}
-                </p>
-
-                {hero.data.venue?.name && (
-                  <p class="exhibitions-venue">{hero.data.venue.name}</p>
-                )}
-
-                {hero.data.lead && (
-                  <p class="exhibitions-lead">{hero.data.lead}</p>
-                )}
-
-                <a href={`/exhibitions/${hero.id}`} class="exhibitions-more">
-                  Learn more
-                  <span class="exhibitions-arrow">
-                    <svg viewBox="0 0 100 20">
-                      <polyline points="0,18 70,18 58,6" />
-                    </svg>
-                  </span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      )
-    }
-
     {/* ===================== grid ===================== */}
     <div class="exhibitions-grid">
       {
-        gridExhibitions.map((exh, index) => (
+        formattedExhibitions.map((exh, index) => (
           <div
             class={`exhibitions-card ${
               index === 0
@@ -164,6 +132,12 @@ const gridExhibitions = formattedExhibitions.slice(1);
                 {exh.data.image && (
                   <img src={exh.data.image} alt={exh.displayTitle} />
                 )}
+
+                <span
+                  class={`exhibitions-status exhibitions-status--${exh.status}`}
+                >
+                  {exh.status}
+                </span>
               </div>
 
               <div class="exhibitions-card__meta">
@@ -178,15 +152,18 @@ const gridExhibitions = formattedExhibitions.slice(1);
                 </div>
 
                 <p class="exhibitions-date exhibitions-card__date">
-                  {exh.startDate
-                    ? exh.startDate
-                        .toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "2-digit",
-                          year: "numeric",
-                        })
-                        .toUpperCase()
-                    : ""}
+                  {exh.data.date && (
+                    <>
+                      <span class="exhibitions-date__value">{`${exh.startDate?.getFullYear()}.${String((exh.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exh.startDate?.getDate()).padStart(2, "0")}`}</span><span class="exhibitions-date__weekday">{getWeekday(exh.data.date)}</span>
+
+                      {exh.data.end_date && (
+                        <>
+                          <span class="exhibitions-date__separator"> - </span>
+                          <span class="exhibitions-date__value">{`${String((exh.endDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exh.endDate?.getDate()).padStart(2, "0")}`}</span><span class="exhibitions-date__weekday">{getWeekday(exh.data.end_date)}</span>
+                        </>
+                      )}
+                    </>
+                  )}
                 </p>
               </div>
             </a>

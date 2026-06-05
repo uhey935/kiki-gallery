@@ -1,147 +1,39 @@
 /* =========================
-   HERO
-========================= */
-
-.exhibitions-hero {
-  display: grid;
-  gap: 120px;
-  margin-bottom: 100px;
-}
-
-.exhibitions-hero__link {
-  display: grid;
-  grid-template-columns: 1.2fr 0.64fr;
-  gap: 68px;
-  align-items: start;
-}
-
-.exhibitions-hero__image {
-  background: #f0f0f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1 / 1.19;
-}
-
-.exhibitions-hero__image img {
-  max-width: 70%;
-  max-height: 70%;
-  object-fit: contain;
-}
-
-.exhibitions-hero__content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-top: 120px;
-}
-
-/* =========================
-   HERO TEXT
-========================= */
-
-.exhibitions-hero .exhibitions-status {
-  background: #000;
-  color: #fff;
-  font-size: 0.9rem;
-  padding: 4px 8px;
-  margin-bottom: 38px;
-  width: fit-content;
-}
-
-.exhibitions-hero .exhibitions-artist {
-  font-size: 1rem;
-  margin-bottom: 8px;
-}
-
-.exhibitions-hero .exhibitions-title {
-  font-size: 2.1rem;
-  margin-bottom: 32px;
-}
-
-.exhibitions-hero .exhibitions-date {
-  font-size: 1rem;
-  color: #555;
-  margin-bottom: 7px;
-}
-
-.exhibitions-hero .exhibitions-venue {
-  font-size: 1rem;
-  color: #555;
-  margin-bottom: 33px;
-}
-
-.exhibitions-hero .exhibitions-lead {
-  font-size: 1rem;
-  color: #555;
-  line-height: 1.9;
-  margin-bottom: 24px;
-}
-
-.exhibitions-hero .exhibitions-more {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  font-weight: 700;
-}
-
-.exhibitions-arrow {
-  width: 60px;
-  height: 20px;
-}
-
-.exhibitions-arrow svg {
-  width: 100%;
-  height: 100%;
-}
-
-.exhibitions-arrow polyline {
-  fill: none;
-  stroke: #111;
-  stroke-width: 1;
-}
-
-/* =========================
    GRID
 ========================= */
 
 .exhibitions-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 13px;
-}
-
-.exhibitions-card {
-  background: #f0f0f0;
-}
-
-.exhibitions-card--small {
-  aspect-ratio: 1 / 1.19;
-}
-
-.exhibitions-card--middle {
-  grid-column: span 2;
-  aspect-ratio: 2 / 1.19;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 62px;
 }
 
 .exhibitions-card__link {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 24px;
 }
 
 .exhibitions-card__image {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.exhibitions-status {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  padding: 6px 10px;
+}
+
+.exhibitions-status--ongoing {
+  background: #111;
 }
 
 .exhibitions-card__image img {
-  max-width: 70%;
-  max-height: 70%;
-  object-fit: contain;
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .exhibitions-card__meta {
@@ -154,26 +46,47 @@
    GRID TEXT
 ========================= */
 
+.exhibitions-status {
+font-size: 0.7rem;
+  line-height: 1;
+  color: #111;
+  letter-spacing: 0.1em;
+  background: rgb(237, 237, 232);
+  text-transform: uppercase;
+}
+
 .exhibitions-card .exhibitions-artist {
-  font-size: 0.85rem;
+  font-size: 1.0rem;
   color: #666;
+  margin-bottom: 14px;
 }
 
 .exhibitions-card .exhibitions-title {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   line-height: 1.4;
+  margin-bottom: 21px;
 }
 
 .exhibitions-card .exhibitions-date {
-  font-size: 0.85rem;
   color: #666;
 }
 
+.exhibitions-date__value {
+  font-size: 1.0rem;
+  letter-spacing: 0.02em;
+}
+
+.exhibitions-date__weekday {
+  font-size: 0.8em;
+  opacity: 0.7;
+  letter-spacing: 0.01em;
+}
+
 /* 位置 */
+
 .exhibitions-card__date {
   position: absolute;
   right: 0;
-  top: 2.2em;
   white-space: nowrap;
 }
 
@@ -182,11 +95,6 @@
 ========================= */
 
 @media (max-width: 768px) {
-  .exhibitions-hero__link {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
   .exhibitions-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;

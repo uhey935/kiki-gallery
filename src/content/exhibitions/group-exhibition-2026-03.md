@@ -7,7 +7,7 @@ artist:
 artist_name:
   - 木下令子
   - 森夕香
-display_artists: false
+display_artists: true
 
 date: "2026-03-05"
 end_date: "2026-07-09"
