@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
-import { formatDateRangeJa } from "../utils/date";
+import { formatDateRangeJa, getWeekday } from "../utils/date";
 
 const exhibitions = await getCollection("exhibitions");
 const artists = await getCollection("artists");
@@ -237,36 +237,61 @@ const stories = [...newsStories, ...journalStories]
         <div class="home-exhibition__list">
           {
             homeExhibitions.map((exhibition) => {
-              const dateString = exhibition.data.date
-                ? formatDateRangeJa(
-                    exhibition.data.date,
-                    exhibition.data.end_date,
-                  )
-                : "";
-
               return (
                 <article class="home-exhibition__item">
                   <a
                     href={`/exhibitions/${exhibition.id}`}
                     class="home-exhibition__link"
                   >
-                    <figure class="home-exhibition__media">
-                      <img
-                        src={exhibition.data.image}
-                        alt={exhibition.displayTitle}
-                      />
-                    </figure>
+                    <div class="home-exhibition__image">
+                      <figure class="home-exhibition__media">
+                        <img
+                          src={exhibition.data.image}
+                          alt={exhibition.displayTitle}
+                        />
+                      </figure>
+
+                      <span
+                        class={`home-exhibition__status home-exhibition__status--${exhibition.status}`}
+                      >
+                        {exhibition.status}
+                      </span>
+                    </div>
 
                     <div class="home-exhibition__content">
-                      <p class="home-exhibition__artist">
-                        {exhibition.artistNames.join(SEPARATOR)}
-                      </p>
+                      <div class="home-exhibition__heading-row">
+                        <p class="home-exhibition__artist">
+                          {exhibition.artistNames.join(SEPARATOR)}
+                        </p>
+
+                        <p class="home-exhibition__date">
+                          {exhibition.data.date && (
+                            <>
+                              <span class="home-exhibition__date-value">{`${exhibition.startDate?.getFullYear()}.${String((exhibition.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.startDate?.getDate()).padStart(2, "0")}`}</span>
+                              <span class="home-exhibition__date-weekday">
+                                {getWeekday(exhibition.data.date)}
+                              </span>
+
+                              {exhibition.data.end_date && (
+                                <>
+                                  <span class="home-exhibition__date-separator">
+                                    {" "}
+                                    -{" "}
+                                  </span>
+                                  <span class="home-exhibition__date-value">{`${String((exhibition.endDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.endDate?.getDate()).padStart(2, "0")}`}</span>
+                                  <span class="home-exhibition__date-weekday">
+                                    {getWeekday(exhibition.data.end_date)}
+                                  </span>
+                                </>
+                              )}
+                            </>
+                          )}
+                        </p>
+                      </div>
 
                       <h3 class="home-exhibition__title">
                         {exhibition.displayTitle}
                       </h3>
-
-                      <p class="home-exhibition__date">{dateString}</p>
                     </div>
                   </a>
                 </article>

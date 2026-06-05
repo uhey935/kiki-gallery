@@ -1,4 +1,19 @@
 /* =========================
+   h2 Exhibiton, Stories
+========================= */
+
+.home-exhibition__heading,
+.home-stories__heading {
+  display: block;
+  margin: 0;
+  color: #111;
+  font-size: 2.0rem;
+  line-height: 1.2;
+  font-weight: 500;
+  margin-bottom: 58px;
+}
+
+/* =========================
    Home Hero
 ========================= */
 
@@ -27,7 +42,6 @@
 }
 
 /* media */
-
 .home-hero__media {
   position: relative;
   width: 100%;
@@ -50,9 +64,7 @@
 }
 
 /* animation */
-
 .home-hero__cover {
-  display: none;
   position: absolute;
   top: 0;
   left: 0;
@@ -94,7 +106,6 @@
 }
 
 /* content */
-
 .home-hero__content {
   position: absolute;
   z-index: 2;
@@ -105,7 +116,6 @@
 }
 
 /* text */
-
 .home-hero__artist {
   margin: 0 0 12px;
   font-size: 0.95rem;
@@ -121,15 +131,7 @@
   color: inherit;
 }
 
-.home-hero__date {
-  margin: 20px 0 0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  color: inherit;
-}
-
 /* variants: position */
-
 .home-hero__content--left-center {
   top: 50%;
   bottom: auto;
@@ -152,7 +154,6 @@
 }
 
 /* variants: color */
-
 .home-hero--light {
   color: #fff;
 }
@@ -169,8 +170,8 @@
   padding: 120px 80px 120px;
 }
 
-.home-exhibition__heading {
-  margin-bottom: 48px;
+.home-exhibition__image {
+  position: relative;
 }
 
 .home-exhibition__list {
@@ -210,13 +211,43 @@
 }
 
 .home-exhibition__title {
-  margin: 0 0 12px;
+  margin: 0;
   line-height: 1.4;
 }
 
 .home-exhibition__date {
   margin: 0;
   line-height: 1.4;
+}
+
+.home-exhibition__status {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  padding: 6px 10px;
+
+  font-size: 0.7rem;
+  line-height: 1;
+  color: #111;
+  letter-spacing: 0.1em;
+  background: rgb(237, 237, 232);
+  text-transform: uppercase;
+}
+
+.home-exhibition__heading-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+}
+
+.home-exhibition__date-value {
+  font-size: 1em;
+}
+
+.home-exhibition__date-weekday {
+  font-size: 0.82em;
+  opacity: 0.65;
 }
 
 /* =========================
@@ -230,19 +261,6 @@
 
 .home-stories__inner {
   width: 100%;
-}
-
-.home-stories__header {
-  margin-bottom: 48px;
-}
-
-.home-stories__heading {
-  display: block;
-  margin: 0;
-  color: #111;
-  font-size: 1.75rem;
-  line-height: 1.2;
-  font-weight: 600;
 }
 
 .home-stories__list {
