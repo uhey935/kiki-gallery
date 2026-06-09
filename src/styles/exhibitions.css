@@ -20,23 +20,23 @@
 ========================= */
 
 .exhibitions-heading-artist {
-  font-size: clamp(1.1rem, 2.4vw, 1.6rem);
+  font-size: clamp(1.1rem, 2.4vw, 1.4rem);
   color: #666;
   letter-spacing: 0.15rem;
-  margin-bottom: 2px;
+  margin-bottom: 7px;
 }
-
+/*
 .exhibitions-heading-status {
   display: inline-block;
   font-size: 0.9rem;
   line-height: 1;
   letter-spacing: 0.04em;
   padding: 9px 11px;
-  margin-bottom: 13px;
+  margin-bottom: 21px;
   background: #e5e5e5;
   color: #111;
 }
-
+ */
 .exhibitions-venue-title {
   font-size: 0.95rem;
   margin-bottom: 11px;

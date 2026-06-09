@@ -27,17 +27,35 @@ const { exh, artists } = Astro.props;
 
 const allWorks = await getCollection("works");
 
+if (!exh.data.date) {
+  throw new Error(`Missing exhibition date: ${exh.id}`);
+}
+
+const exhibitionDate = exh.data.date;
+
+const getFamilyName = (name: string) => name.trim().split(/\s+/).pop() ?? "";
+
 const exhibitionWorks = (exh.data.works ?? [])
   .map((workId) => allWorks.find((work) => work.id === workId))
-  .filter((work): work is (typeof allWorks)[number] => Boolean(work));
+  .filter((work): work is (typeof allWorks)[number] => Boolean(work))
+  .sort((a, b) => {
+    const artistA = artists.find((artist) => artist.id === a.data.artist);
 
-// Markdown → HTML
+    const artistB = artists.find((artist) => artist.id === b.data.artist);
+
+    const familyA = getFamilyName(artistA?.data.name ?? "");
+
+    const familyB = getFamilyName(artistB?.data.name ?? "");
+
+    return familyA.localeCompare(familyB, "en", { sensitivity: "base" });
+  });
+
 const { Content } = await render(exh);
 
-// artist名（日本語優先）
-const artistNames = artists.map((a) => a.data.nameJa || a.data.name).join("、");
+const artistNames = artists
+  .map((artist) => artist.data.nameJa || artist.data.name)
+  .join("、");
 
-// displayTitle（重要ロジック）
 const displayTitle =
   exh.data.title && exh.data.title !== ""
     ? exh.data.title
@@ -47,26 +65,23 @@ const displayTitle =
         : `${artistNames} 個展`
       : "Exhibition";
 
-// 日付（安全処理）
-const safeDate = exh.data.date!;
+const dateString = formatDateRangeJa(
+  exhibitionDate,
+  exh.data.end_date || exhibitionDate,
+);
 
-// 表示用日付
-const dateString = formatDateRangeJa(safeDate, exh.data.end_date || safeDate);
-
-// description
 const description = artistNames
   ? `${artistNames}の展覧会｜${dateString}`
   : displayTitle;
 
-// ▼ status（最終日含める）
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 
-const start = new Date(safeDate);
+const start = new Date(exhibitionDate);
 
 const end = exh.data.end_date
-  ? new Date(exh.data.end_date + "T23:59:59")
-  : start;
+  ? new Date(`${exh.data.end_date}T23:59:59`)
+  : new Date(`${exhibitionDate}T23:59:59`);
 
 let status: "upcoming" | "ongoing" | "past";
 
@@ -86,8 +101,8 @@ if (start > today) {
     "@type": "Event",
     name: displayTitle,
     description,
-    startDate: safeDate,
-    endDate: exh.data.end_date || safeDate,
+    startDate: exhibitionDate,
+    endDate: exh.data.end_date || exhibitionDate,
     eventStatus:
       status === "upcoming"
         ? "https://schema.org/EventScheduled"
@@ -113,7 +128,6 @@ if (start > today) {
     { label: displayTitle, href: `/exhibitions/${exh.id}` },
   ]}
 >
-  <!-- background -->
   <section class="section exhibitions-detail">
     <header class="exhibitions-heading">
       {
@@ -126,15 +140,16 @@ if (start > today) {
         {displayTitle}
       </h1>
 
-      <p class="exhibitions-heading-status">
-        {status === "ongoing" && "Ongoing Exhibition"}
-        {status === "upcoming" && "Upcoming Exhibition"}
-        {status === "past" && "Ended Exhibition"}
-      </p>
+{/*
+<p class="exhibitions-heading-status">
+  {status === "ongoing" && "Ongoing"}
+  {status === "upcoming" && "Upcoming"}
+  {status === "past" && "Past"}
+</p>
+*/}
     </header>
   </section>
 
-  <!-- hero image -->
   {
     exh.data.image && (
       <figure class="exhibitions-detail-image">
@@ -143,11 +158,8 @@ if (start > today) {
     )
   }
 
-  <!-- foreground -->
   <section class="section exhibitions-content">
-    <!-- info + article wrapper -->
     <div class="exhibitions-main">
-      <!-- 開催概要 -->
       <section class="exhibitions-info">
         <h2 class="visually-hidden">開催概要</h2>
 
@@ -177,7 +189,6 @@ if (start > today) {
         </dl>
       </section>
 
-      <!-- article -->
       <article class="exhibitions-article">
         <h2 class="visually-hidden">Exhibition Overview</h2>
 
@@ -189,7 +200,8 @@ if (start > today) {
           {exh.data.venue?.name && <p>{exh.data.venue.name}</p>}
 
           {
-            exh.data.venue?.address && (
+            /* 【修正3】address と map の両方が存在する場合のみリンク付きで表示 */
+            exh.data.venue?.address && exh.data.venue?.map && (
               <p>
                 <a
                   href={exh.data.venue.map}
@@ -213,7 +225,6 @@ if (start > today) {
       </article>
     </div>
 
-    <!-- Works -->
     {
       exhibitionWorks.length > 0 && (
         <section
@@ -226,48 +237,49 @@ if (start > today) {
           <h2 class="detail-h2-title">Works</h2>
 
           <div class="exhibitions-works-list">
-            {exhibitionWorks.map((work) => (
-              <figure class="exhibitions-work">
-                <img
-                  src={work.data.image}
-                  alt={work.data.alt || work.data.title}
-                />
+            {exhibitionWorks.map((work) => {
+              const workArtist = artists.find((a) => a.id === work.data.artist);
 
-                <figcaption class="exhibitions-work-caption">
-                  {artists.length > 1 && (
-                    <p class="exhibitions-work-artist">
-                      <a href={`/artists/${work.data.artist}`}>
-                        {artists.find((a) => a.id === work.data.artist)?.data
-                          .nameJa ||
-                          artists.find((a) => a.id === work.data.artist)?.data
-                            .name ||
-                          work.data.artist}
-                      </a>
+              return (
+                <figure class="exhibitions-work">
+                  <img
+                    src={work.data.image}
+                    alt={work.data.alt || work.data.title}
+                  />
+
+                  <figcaption class="exhibitions-work-caption">
+                    {artists.length > 1 && (
+                      <p class="exhibitions-work-artist">
+                        <a href={`/artists/${work.data.artist}`}>
+                          {workArtist?.data.nameJa ||
+                            workArtist?.data.name ||
+                            work.data.artist}
+                        </a>
+                      </p>
+                    )}
+
+                    <p class="exhibitions-work-title">
+                      {work.data.year
+                        ? `${work.data.title}, ${work.data.year}`
+                        : work.data.title}
                     </p>
-                  )}
 
-                  <p class="exhibitions-work-title">
-                    {work.data.year
-                      ? `${work.data.title}, ${work.data.year}`
-                      : work.data.title}
-                  </p>
-
-                  {(work.data.size || work.data.material) && (
-                    <p class="exhibitions-work-meta">
-                      {[work.data.size, work.data.material]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </p>
-                  )}
-                </figcaption>
-              </figure>
-            ))}
+                    {(work.data.size || work.data.material) && (
+                      <p class="exhibitions-work-meta">
+                        {[work.data.size, work.data.material]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                    )}
+                  </figcaption>
+                </figure>
+              );
+            })}
           </div>
         </section>
       )
     }
 
-    <!-- Artists -->
     <section class="exhibitions-artists">
       <h2 class="detail-h2-title">
         {artists.length > 1 ? "Artists" : "Artist"}
