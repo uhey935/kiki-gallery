@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&display=swap");
-
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 /* =========================
    Reset
 ========================= */
@@ -93,6 +93,60 @@ body {
 }
 
 /* =========================
+   Page Heading Offset
+========================= */
+
+:root {
+  --page-heading-offset: 148px;
+
+  --index-h1-size: 4.1rem;
+  --index-h1-line-height: 1.4;
+  --index-h1-margin-bottom: 88px;
+}
+
+/* =========================
+   Title
+========================= */
+
+/* Common H1 */
+.index-h1 {
+  font-family: "Inter", sans-serif;
+  font-size: var(--index-h1-size);
+  font-weight: 600;
+  letter-spacing: -0.04rem;
+  text-transform: uppercase;
+
+  line-height: var(--index-h1-line-height);
+  margin-bottom: var(--index-h1-margin-bottom);
+}
+
+/* Artists Detail H1 */
+.artists-h1-title {
+  font-size: clamp(1.7rem, 4vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.14rem;
+  margin-bottom: 0.7rem;
+}
+
+/* Exhibition Detail H1 */
+.exhibitions-h1-title {
+  font-size: clamp(1.4rem, 4vw, 3.2rem);
+  font-weight: 500;
+  letter-spacing: 0.14rem;
+  line-height: 1.2;
+  margin-bottom: 22px;
+}
+
+/* Detail H2 */
+.detail-h2-title {
+  font-size: clamp(1.7rem, 4vw, 1.7rem);
+  font-weight: 600;
+  letter-spacing: 0.01rem;
+  margin-bottom: 38px;
+}
+
+/* =========================
    Breadcrumb
 ========================= */
 
@@ -124,16 +178,6 @@ body {
 }
 
 /* =========================
-   Common Title
-========================= */
-
-.page-title {
-  font-size: 1.75rem;
-  line-height: 1.4;
-  margin-bottom: 38px;
-}
-
-/* =========================
    Common Meta
 ========================= */
 
@@ -158,6 +202,7 @@ body {
   max-width: 800px;
   margin: 0 auto;
   padding: 0 clamp(16px, 4vw, 80px);
+  padding-top: var(--article-offset); /* 上スペース */
 }
 
 .article-body {

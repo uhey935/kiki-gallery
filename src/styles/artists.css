@@ -7,18 +7,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 40px;
   align-items: start;
-  margin: 48px 0 120px;
-}
-
-.artists-title {
-  font-size: clamp(1.7rem, 4vw, 1.9rem);
-  line-height: 1.2;
-  margin-bottom: 0.7rem;
-}
-
-.artists-medium {
-  font-size: 0.9rem;
-  color: #666;
+  margin: var(--page-heading-offset) 0 120px;
 }
 
 .artists-bio-short {
@@ -32,13 +21,12 @@
 }
 
 /* =========================
-   Common
+   Font
 ========================= */
 
-.artists-title {
-  font-size: clamp(1.4rem, 4vw, 1.9rem);
-  line-height: 1.2;
-  margin-bottom: 40px;
+.artists-medium {
+  font-size: 1.0rem;
+  color: #666;
 }
 
 .artists-bio-text,

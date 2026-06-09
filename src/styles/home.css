@@ -5,12 +5,12 @@
 .home-exhibition__heading,
 .home-stories__heading {
   display: block;
-  margin: 0;
+  font-size: 1.6rem;
   color: #111;
-  font-size: 2.0rem;
   line-height: 1.2;
   font-weight: 500;
-  margin-bottom: 58px;
+  margin: 0;
+  margin-bottom: 50px;
 }
 
 /* =========================

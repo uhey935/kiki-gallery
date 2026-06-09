@@ -1,3 +1,7 @@
+.journal {
+  padding-top: var(--page-heading-offset); /* 上スペース */
+}
+
 /* =========================
    Journal
 ========================= */

@@ -4,13 +4,23 @@
 
 /* 全体 */
 .news-index {
-  width: 90%;
-  margin: 90px auto 0;
+  width: 100%;
+  padding-top: var(--page-heading-offset);
 }
 
 /* 年ブロック */
 .news-year {
   margin-bottom: 80px;
+}
+
+/* =========================
+   h1
+========================= */
+
+.page-title {
+  font-size: var(--page-title-size);
+  line-height: var(--page-title-line-height);
+  margin-bottom: var(--page-title-margin-bottom);
 }
 
 /* =========================
@@ -94,16 +104,4 @@
   line-height: 1.6;
 
   margin-bottom: 88px;
-}
-
-/* =========================
-   h1（視覚非表示）
-========================= */
-
-.news-title {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
 }

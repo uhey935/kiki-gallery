@@ -26,6 +26,7 @@ const artistMap = new Map(artists.map((a) => [a.id, a.data]));
 // ヘルパー: テキスト丸め
 const truncate = (text: string, limit: number) => {
   const cleanText = text.replace(/\n/g, " ");
+
   return cleanText.length > limit
     ? cleanText.slice(0, limit) + "..."
     : cleanText;
@@ -58,6 +59,7 @@ const exhibitionItems: NewsItem[] = exhibitions.map((item) => {
 
   // タイトル決定ロジック
   let displayTitle = item.data.news_title || item.data.title;
+
   if (!displayTitle && artistNames.length > 0) {
     displayTitle =
       artistNames.join("、") +
@@ -94,21 +96,23 @@ const sortedItems: NewsItem[] = [
 ].sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
 
 // 7. 年でグループ化
-const groupedByYear: Record<string, NewsItem[]> = sortedItems.reduce<
-  Record<string, NewsItem[]>
->((acc, item) => {
-  const year = item.date ? String(item.date.getFullYear()) : "Unknown";
+const groupedByYear: Record<string, NewsItem[]> =
+  sortedItems.reduce<Record<string, NewsItem[]>>((acc, item) => {
+    const year = item.date
+      ? String(item.date.getFullYear())
+      : "Unknown";
 
-  acc[year] ??= [];
-  acc[year].push(item);
+    acc[year] ??= [];
+    acc[year].push(item);
 
-  return acc;
-}, {});
+    return acc;
+  }, {});
 
 // 8. 年配列（降順 + Unknown最後）
 const years: string[] = Object.keys(groupedByYear).sort((a, b) => {
   if (a === "Unknown") return 1;
   if (b === "Unknown") return -1;
+
   return Number(b) - Number(a);
 });
 
@@ -116,6 +120,7 @@ const years: string[] = Object.keys(groupedByYear).sort((a, b) => {
 const formatDate = (date: Date) => {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
+
   return `${month}.${day}`;
 };
 
@@ -130,30 +135,25 @@ const categoryLinks = {
   title="News"
   breadcrumb={[{ label: "News", href: "/news" }]}
 >
-  <section class="news-index">
-    <h1 class="news-title">News</h1>
+  <section class="news-index section">
+    <h1 class="index-h1">News</h1>
 
     {
       years.map((year) => (
         <section class="news-year" data-year={year}>
-
           <div class="news-year-row">
-
-            <!-- 左（sticky） -->
+            {/* 左（sticky） */}
             <div class="news-year-left">
-              <h2 class="news-year-heading">
-                {year}
-              </h2>
+              <h2 class="news-year-heading">{year}</h2>
             </div>
 
-            <!-- 右（list） -->
+            {/* 右（list） */}
             <div class="news-year-right">
               <ul class="news-list">
                 {
                   groupedByYear[year].map((item) => (
                     <li class="news-item">
                       <article class="news-card">
-
                         {/* 上段メタ */}
                         <div class="news-meta">
                           {item.date && (
@@ -164,15 +164,15 @@ const categoryLinks = {
 
                           <span class="news-separator"> | </span>
 
-<span class="news-category">
-  {item.type === "News" ? (
-    item.type
-  ) : (
-    <a href={categoryLinks[item.type]}>
-      {item.type}
-    </a>
-  )}
-</span>
+                          <span class="news-category">
+                            {item.type === "News" ? (
+                              item.type
+                            ) : (
+                              <a href={categoryLinks[item.type]}>
+                                {item.type}
+                              </a>
+                            )}
+                          </span>
                         </div>
 
                         {/* タイトル */}
@@ -190,16 +190,13 @@ const categoryLinks = {
                         <p class="news-excerpt">
                           {item.excerpt}
                         </p>
-
                       </article>
                     </li>
                   ))
                 }
               </ul>
             </div>
-
           </div>
-
         </section>
       ))
     }

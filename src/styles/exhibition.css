@@ -1,3 +1,7 @@
+.exhibitions {
+  padding-top: var(--page-heading-offset); /* 上スペース */
+}
+
 /* =========================
    GRID
 ========================= */
