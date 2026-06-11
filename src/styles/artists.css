@@ -1,42 +1,115 @@
 /* =========================
-   Intro
+   Index Layout
 ========================= */
 
-.artists-intro {
+.artists {
+  padding-top: var(--page-heading-offset);
+  padding-bottom: 80px;
+}
+
+/* =========================
+   Index Typography
+========================= */
+
+.artists-name {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.artists-medium {
+  font-size: 0.85rem;
+  color: #777;
+  letter-spacing: 0.06rem;
+  margin-top: 5px;
+}
+
+/* =========================
+   Index Image
+========================= */
+
+.artists-image {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.artists-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.artists-image:hover img {
+  transform: scale(1.1);
+}
+
+/* =========================
+   Index Grid
+========================= */
+
+.artists-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  align-items: start;
-  margin: var(--page-heading-offset) 0 120px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 70px 48px;
+}
+
+/* =========================
+   Index Card
+========================= */
+
+.artists-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.artists-meta {
+  margin-top: 25px;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 1024px) {
+  .artists-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .artists-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* =========================
+   Detail Typography
+========================= */
+
+.artists-intro__medium {
+  font-size: 1rem;
+  color: #666;
+}
+
+.artists-bio-short,
+.artists-bio-text {
+  font-size: 0.9rem;
+  line-height: 2;
+  color: #333;
 }
 
 .artists-bio-short {
   margin-bottom: 1.25rem;
 }
 
-.artists-link {
-  font-size: 0.9rem;
-  font-weight: 600;
+.artists-bio-text {
+  white-space: pre-line;
 }
 
 /* =========================
-   Font
-========================= */
-
-.artists-medium {
-  font-size: 1.0rem;
-  color: #666;
-}
-
-.artists-bio-text,
-.artists-bio-short {
-  font-size: 0.9rem;
-  line-height: 2.0;
-  color: #333;
-}
-
-/* =========================
-   Hover
+   Detail Hover
 ========================= */
 
 .artists-biography-link {
@@ -48,15 +121,11 @@
 .artists-biography-link::after {
   content: "";
   position: absolute;
-
   left: 0;
   bottom: -4px;
-
   width: 100%;
   height: 1px;
-
   background: currentColor;
-
   transform: scaleX(0);
   transform-origin: left center;
 }
@@ -66,8 +135,11 @@
 }
 
 .artists-exhibitions-card-image img {
-  transition: transform 600ms
-    cubic-bezier(0.22, 1, 0.36, 1);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .artists-exhibitions-card-image:hover img {
@@ -75,7 +147,19 @@
 }
 
 /* =========================
-   Works
+   Detail Intro
+========================= */
+
+.artists-intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+  margin: var(--page-heading-offset) 0 120px;
+}
+
+/* =========================
+   Detail Works
 ========================= */
 
 .artists-works {
@@ -84,6 +168,7 @@
 }
 
 /* Card Common */
+
 .artists-works-card {
   display: grid;
   padding-bottom: 120px;
@@ -110,6 +195,7 @@
 }
 
 /* Grid Common */
+
 .artists-works-card--3-2,
 .artists-works-card--1-3 {
   width: 88%;
@@ -150,7 +236,7 @@
 
 .artists-works-card--1-left {
   justify-content: start;
-  margin-left: 230px;
+  margin-left: max(40px, 15vw);
 }
 
 /* =========================
@@ -159,14 +245,16 @@
 
 .artists-works-card--1-right {
   margin-left: auto;
-  margin-right: 230px;
+  /* 同上 */
+  margin-right: max(40px, 15vw);
 }
 
 .artists-works-card--1-right figure {
   margin: 0;
 }
+
 /* =========================
-   Bio
+   Detail Bio
 ========================= */
 
 .artists-bio {
@@ -183,12 +271,8 @@
   align-items: start;
 }
 
-.artists-bio-text {
-  white-space: pre-line;
-}
-
 /* =========================
-   Exhibitions
+   Detail Exhibitions
 ========================= */
 
 .artists-exhibitions-list {

@@ -161,7 +161,7 @@ const jsonLd = {
         <h1 class="artists-h1-title">{artistName}</h1>
 
         {artist.data.medium && (
-          <p class="artists-medium">
+          <p class="artists-intro__medium">
             {Array.isArray(artist.data.medium)
               ? artist.data.medium.join(", ")
               : artist.data.medium}
@@ -172,7 +172,7 @@ const jsonLd = {
       <div class="artists-intro__right">
         <p class="artists-bio-short">{artist.data.bio_short}</p>
 
-        <a href="#biography" class="artists-biography-link">
+        <a href="#full-biography" class="artists-biography-link">
           Read full biography
         </a>
       </div>
