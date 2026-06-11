@@ -20,11 +20,9 @@
     );
 }
 
-.exhibitions-card:hover
-.exhibitions-card__image img {
+.exhibitions-card__image:hover img {
   transform: scale(1.06);
 }
-
 
 /* =========================
    GRID

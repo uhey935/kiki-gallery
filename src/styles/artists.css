@@ -17,7 +17,6 @@
 .artists-link {
   font-size: 0.9rem;
   font-weight: 600;
-  text-decoration: underline;
 }
 
 /* =========================
@@ -49,6 +48,7 @@
 .artists-biography-link::after {
   content: "";
   position: absolute;
+
   left: 0;
   bottom: -4px;
 
@@ -59,11 +59,19 @@
 
   transform: scaleX(0);
   transform-origin: left center;
-  transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.artists-biography-link:hover::after {
-  transform: scaleX(1);
+.artists-exhibitions-card-image {
+  overflow: hidden;
+}
+
+.artists-exhibitions-card-image img {
+  transition: transform 600ms
+    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.artists-exhibitions-card-image:hover img {
+  transform: scale(1.08);
 }
 
 /* =========================
