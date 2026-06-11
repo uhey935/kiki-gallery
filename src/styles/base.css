@@ -42,6 +42,7 @@ img {
 ========================= */
 html {
   font-size: 16px;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -175,6 +176,51 @@ body {
 
 .breadcrumb li:lang(ja) {
   font-size: 0.9rem;
+}
+
+/* =========================
+   Detail Navigation
+========================= */
+
+.detail-navigation {
+  text-align: center;
+  margin-top: 4.21rem;
+}
+
+.detail-navigation-link {
+  position: relative;
+  text-decoration: none;
+}
+
+.detail-navigation-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+
+  width: 100%;
+  height: 1px;
+
+  background: currentColor;
+
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.detail-navigation.is-visible .detail-navigation-link::after {
+  animation: detail-navigation-line 800ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    forwards;
+}
+
+@keyframes detail-navigation-line {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
 }
 
 /* =========================

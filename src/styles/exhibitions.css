@@ -58,10 +58,11 @@
 }
 
 .exhibitions-detail-image img {
-  width: 100%;
+  width: 94%;
   height: auto;
   display: block;
   object-fit: cover;
+  margin: 0 auto 0;
 }
 
 /* =========================
