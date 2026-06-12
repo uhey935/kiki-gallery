@@ -1,5 +1,126 @@
 /* =========================
-   Hero Structure
+   Index Layout
+========================= */
+
+.exhibitions {
+  padding-top: var(--page-heading-offset);
+}
+
+/* =========================
+   Index Typography
+========================= */
+
+.exhibitions-status {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  padding: 6px 10px;
+
+  font-size: 0.7rem;
+  line-height: 1;
+
+  color: #111;
+  letter-spacing: 0.1em;
+
+  background: rgb(237, 237, 232);
+
+  text-transform: uppercase;
+}
+
+.exhibitions-card .exhibitions-artist {
+  font-size: 1rem;
+  margin-bottom: 14px;
+}
+
+.exhibitions-card .exhibitions-title {
+  font-size: 1.35rem;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  margin-bottom: 21px;
+}
+
+.exhibitions-card .exhibitions-date {
+  color: #666;
+}
+
+.exhibitions-date__value {
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.exhibitions-date__weekday {
+  font-size: 0.8em;
+  opacity: 0.7;
+  letter-spacing: 0.01em;
+}
+
+/* =========================
+   Index Image
+========================= */
+
+.exhibitions-card__image {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.exhibitions-card__image img {
+  display: block;
+  width: 100%;
+  height: auto;
+
+  transition:
+    transform 600ms cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    );
+}
+
+/* =========================
+   Index Hover
+========================= */
+
+.exhibitions-card__image:hover img {
+  transform: scale(1.06);
+}
+
+/* =========================
+   Index Grid
+========================= */
+
+.exhibitions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 62px;
+}
+
+/* =========================
+   Index Card
+========================= */
+
+.exhibitions-card__link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.exhibitions-card__meta {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+}
+
+.exhibitions-card__date {
+  position: absolute;
+  right: 0;
+  white-space: nowrap;
+}
+
+/* =========================
+   Detail Layout
 ========================= */
 
 .exhibitions-detail {
@@ -8,15 +129,22 @@
   background: #f7f7f7;
 }
 
-.exhibitions-detail-image,
-.exhibitions-content {
-  position: relative;
-  z-index: 2;
-  background: #f7f7f7;
+.exhibitions-heading {
+  width: 100%;
+  padding-top: var(--page-heading-offset);
+}
+
+.exhibitions-main {
+  width: 80%;
+  display: grid;
+  grid-template-columns: 254px minmax(0, 1fr);
+  gap: 110px;
+  align-items: start;
+  margin: 0 auto 120px;
 }
 
 /* =========================
-   Typography
+   Detail Typography
 ========================= */
 
 .exhibitions-heading-artist {
@@ -25,6 +153,7 @@
   letter-spacing: 0.15rem;
   margin-bottom: 7px;
 }
+
 /*
 .exhibitions-heading-status {
   display: inline-block;
@@ -36,22 +165,24 @@
   background: #e5e5e5;
   color: #111;
 }
- */
+*/
+
 .exhibitions-venue-title {
   font-size: 0.95rem;
   margin-bottom: 11px;
 }
 
 /* =========================
-   Detail Layout
+   Detail Hero
 ========================= */
 
-.exhibitions-heading {
-  width: 100%;
-  padding-top: var(--page-heading-offset); /* 上スペース */
+.exhibitions-detail-image,
+.exhibitions-content {
+  position: relative;
+  z-index: 2;
+  background: #f7f7f7;
 }
 
-/* full width hero image */
 .exhibitions-detail-image {
   width: 100%;
   margin-bottom: 120px;
@@ -62,26 +193,11 @@
   height: auto;
   display: block;
   object-fit: cover;
-  margin: 0 auto 0;
+  margin: 0 auto;
 }
 
 /* =========================
-   Main Layout
-========================= */
-
-/* Desktop:
-   開催概要 + article の2カラム */
-.exhibitions-main {
-  width: 80%;
-  display: grid;
-  grid-template-columns: 254px minmax(0, 1fr);
-  gap: 110px;
-  align-items: start;
-  margin: 0 auto 120px;
-}
-
-/* =========================
-   　開催概要
+   Detail Information
 ========================= */
 
 .exhibitions-info {
@@ -119,7 +235,7 @@
 }
 
 /* =========================
-   Article
+   Detail Article
 ========================= */
 
 .exhibitions-article {
@@ -148,42 +264,24 @@
 }
 
 .exhibitions-article .exhibitions-venue p + p {
-  margin-top: 0px;
+  margin-top: 0;
 }
 
 .exhibitions-article .exhibitions-venue .exhibitions-venue-closed {
-  margin-top: 0px;
+  margin-top: 0;
 }
 
 /* =========================
-   Utility
-========================= */
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  border: 0;
-  white-space: nowrap;
-}
-
-/* =========================
-   Works
+   Detail Works
 ========================= */
 
 .exhibitions-works {
   padding: 120px 0;
 }
 
-.exhibitions-section-title {
-  font-size: clamp(1.4rem, 4vw, 1.9rem);
-  line-height: 1.2;
-  margin-bottom: 38px;
+.exhibitions-works-list {
+  display: grid;
+  gap: 48px;
 }
 
 .exhibitions-works--2col .exhibitions-works-list {
@@ -192,11 +290,6 @@
 
 .exhibitions-works--3col .exhibitions-works-list {
   grid-template-columns: repeat(3, 1fr);
-}
-
-.exhibitions-works-list {
-  display: grid;
-  gap: 48px;
 }
 
 .exhibitions-work {
@@ -236,12 +329,12 @@
 }
 
 .exhibitions-work-meta {
-    font-size: 0.8rem;
-    color: #777;
+  font-size: 0.8rem;
+  color: #777;
 }
 
 /* =========================
-   Artists
+   Detail Artists
 ========================= */
 
 .exhibitions-artists {
@@ -277,7 +370,7 @@
 }
 
 /* =========================
-   Hover
+   Detail Hover
 ========================= */
 
 .exhibitions-artist-link::after {
