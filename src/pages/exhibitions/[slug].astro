@@ -140,13 +140,15 @@ if (start > today) {
         {displayTitle}
       </h1>
 
-{/*
+      {
+        /*
 <p class="exhibitions-heading-status">
   {status === "ongoing" && "Ongoing"}
   {status === "upcoming" && "Upcoming"}
   {status === "past" && "Past"}
 </p>
-*/}
+*/
+      }
     </header>
   </section>
 
@@ -207,6 +209,7 @@ if (start > today) {
                   href={exh.data.venue.map}
                   target="_blank"
                   rel="noopener noreferrer"
+                  class="exhibitions-address-link"
                 >
                   {exh.data.venue.address}
                 </a>
@@ -298,18 +301,11 @@ if (start > today) {
       </ul>
     </section>
 
-    <nav
-      class="detail-navigation"
-      aria-label="Exhibition navigation"
-    >
-      <a
-        href="/exhibitions"
-        class="detail-navigation-link"
-      >
+    <nav class="detail-navigation" aria-label="Exhibition navigation">
+      <a href="/exhibitions" class="detail-navigation-link">
         View All Exhibitions
       </a>
     </nav>
-
   </section>
 
   <script>

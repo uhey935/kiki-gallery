@@ -94,7 +94,7 @@
 .exhibitions-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 62px;
+  gap: var(--layout-space);
 }
 
 /* =========================
@@ -130,7 +130,7 @@
 }
 
 .exhibitions-heading {
-  width: 100%;
+  /* width: 100%; 削除：ブロック要素のためデフォルトで100% */
   padding-top: var(--page-heading-offset);
 }
 
@@ -172,6 +172,11 @@
   margin-bottom: 11px;
 }
 
+.exhibitions-address-link {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 /* =========================
    Detail Hero
 ========================= */
@@ -185,7 +190,7 @@
 
 .exhibitions-detail-image {
   width: 100%;
-  margin-bottom: 120px;
+  margin-bottom: 108px;
 }
 
 .exhibitions-detail-image img {
@@ -201,10 +206,10 @@
 ========================= */
 
 .exhibitions-info {
-  width: 100%;
+  /* width: 100%; 削除：ブロック要素のためデフォルトで100% */
   position: sticky;
   will-change: transform;
-  top: 63px;
+  top: 55px;
 }
 
 .exhibitions-info-list {
@@ -259,12 +264,9 @@
   border-top: 1px solid #ccc;
 }
 
+/* 整理：margin-bottomを0にするため、後続のpのmargin-topを打ち消す必要がなくなりました */
 .exhibitions-article .exhibitions-venue p {
-  margin-bottom: 0;
-}
-
-.exhibitions-article .exhibitions-venue p + p {
-  margin-top: 0;
+  margin: 0;
 }
 
 .exhibitions-article .exhibitions-venue .exhibitions-venue-closed {
@@ -276,12 +278,12 @@
 ========================= */
 
 .exhibitions-works {
-  padding: 120px 0;
+  padding-bottom: 120px;
 }
 
 .exhibitions-works-list {
   display: grid;
-  gap: 48px;
+  gap: var(--layout-space); /* Cardのスペース */
 }
 
 .exhibitions-works--2col .exhibitions-works-list {
@@ -295,7 +297,7 @@
 .exhibitions-work {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 20px; /* 画像とタイトルのスペース */
 }
 
 .exhibitions-work img {
@@ -351,8 +353,11 @@
 
 .exhibitions-artist-item {
   list-style: none;
-  margin: 0;
+  /* margin: 0; 不要なため削除 */
 }
+
+/* 不要なため削除：親でgap管理しており、かつflex-wrapしているため */
+/* .exhibitions-artist-item:last-child { margin-bottom: 0; } */
 
 .exhibitions-artist-link {
   position: relative;
@@ -363,10 +368,6 @@
 
   font-size: 1rem;
   line-height: 1.6;
-}
-
-.exhibitions-artist-item:last-child {
-  margin-bottom: 0;
 }
 
 /* =========================

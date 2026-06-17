@@ -1,10 +1,10 @@
-.journal {
-  padding-top: var(--page-heading-offset); /* 上スペース */
-}
-
 /* =========================
-   Journal
+   Journal Layout
 ========================= */
+
+.journal {
+  padding-top: var(--page-heading-offset);
+}
 
 .journal-grid {
   display: grid;
@@ -26,6 +26,22 @@
   grid-area: hero;
 }
 
+.journal-card--item-1 {
+  grid-area: item1;
+}
+
+.journal-card--item-2 {
+  grid-area: item2;
+}
+
+.journal-card--item-3 {
+  grid-area: item3;
+}
+
+.journal-card--item-4 {
+  grid-area: item4;
+}
+
 .journal-image img {
   width: 100%;
 }
@@ -34,13 +50,8 @@
   margin-top: 20px;
 }
 
-.journal-card--item-1 { grid-area: item1; }
-.journal-card--item-2 { grid-area: item2; }
-.journal-card--item-3 { grid-area: item3; }
-.journal-card--item-4 { grid-area: item4; }
-
 /* =========================
-   TEXT（統一）
+   Journal Typography
 ========================= */
 
 .journal-title {
@@ -68,7 +79,96 @@
 }
 
 /* =========================
-   SP
+   Journal Detail
+========================= */
+
+.article {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 var(--layout-space);
+  padding-top: var(--article-offset);
+}
+
+.article-body {
+  font-size: 1rem;
+  line-height: 1.9;
+}
+
+.article-hero {
+  position: relative;
+  margin-bottom: 58px;
+}
+
+.article-hero figcaption {
+  position: absolute;
+  right: -31px;
+  bottom: 0;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.4;
+  transform: rotate(180deg);
+}
+
+.article-title {
+  font-size: 1.75rem;
+  line-height: 1.4;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.article-date {
+  display: block;
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 73px;
+  text-align: center;
+}
+
+.article-related-title {
+  font-size: 1.125rem;
+  margin-top: 64px;
+}
+
+/* =========================
+   Journal Article Body
+========================= */
+
+.article-body h2 {
+  font-size: 1.25rem;
+  margin: 40px 0 16px;
+}
+
+.article-body p {
+  margin-bottom: 1.2em;
+}
+
+.article-body p + p {
+  margin-top: 2.4em;
+}
+
+.article-body figure {
+  margin: 0;
+}
+
+.article-body figure figcaption {
+  margin-top: 18px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #666;
+}
+
+.article-body p + figure {
+  margin-top: 116px;
+}
+
+.article-body figure + p {
+  margin-top: 48px;
+}
+
+/* =========================
+   Responsive
 ========================= */
 
 @media (max-width: 1023px) {

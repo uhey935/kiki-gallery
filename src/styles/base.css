@@ -59,7 +59,6 @@ body {
   background: #f7f7f7;
 }
 
-
 ::selection {
   background: #111;
   color: #fff;
@@ -76,7 +75,7 @@ body {
 
 .site-main {
   padding: 40px 0 80px;
-}
+} /* コンテンツの上下スペース */
 
 .site-main--flush {
   padding: 0;
@@ -84,14 +83,14 @@ body {
 
 .section {
   width: 100%;
-  padding: 0 clamp(16px, 4vw, 80px);
-}
+  padding: 0 var(--layout-space);
+} /* 左右スペース */
 
 .wrapper {
   width: 100%;
-  padding: 0 clamp(16px, 4vw, 80px);
+  padding: 0 var(--layout-space);
   margin: 0 auto;
-}
+} /* パンくずリストの左右スペース */
 
 /* =========================
    Page Heading Offset
@@ -99,6 +98,7 @@ body {
 
 :root {
   --page-heading-offset: 118px;
+  --layout-space: clamp(16px, 4vw, 80px); /* 左右スペース */
 
   --index-h1-size: 2.6rem;
   --index-h1-line-height: 1.4;
@@ -283,95 +283,6 @@ body {
   clip-path: inset(50%);
   border: 0;
   white-space: nowrap;
-}
-
-/* =========================
-   Article
-========================= */
-
-.article {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 clamp(16px, 4vw, 80px);
-  padding-top: var(--article-offset); /* 上スペース */
-}
-
-.article-body {
-  font-size: 1rem;
-  line-height: 1.9;
-}
-
-.article-hero {
-  position: relative;
-  margin-bottom: 58px;
-}
-
-.article-hero figcaption {
-  position: absolute;
-  right: -31px;
-  bottom: 0;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  font-size: 14px;
-  color: #555;
-  line-height: 1.4;
-  transform: rotate(180deg);
-}
-
-.article-title {
-  font-size: 1.75rem;
-  line-height: 1.4;
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.article-date {
-  display: block;
-  font-size: 0.875rem;
-  color: #666;
-  margin-bottom: 73px;
-  text-align: center;
-}
-
-.article-body h2 {
-  font-size: 1.25rem;
-  margin: 40px 0 16px;
-}
-
-.article-body p {
-  margin-bottom: 1.2em;
-}
-
-.article-body p + p {
-  margin-top: 2.4em;
-}
-
-.article-related-title {
-  font-size: 1.125rem;
-  margin-top: 64px;
-}
-
-/* =========================
-   Article Body Image
-========================= */
-
-.article-body figure {
-  margin: 0;
-}
-
-.article-body figure figcaption {
-  margin-top: 18px;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: #666;
-}
-
-.article-body p + figure {
-  margin-top: 116px;
-}
-
-.article-body figure + p {
-  margin-top: 48px;
 }
 
 /* =========================

@@ -163,7 +163,7 @@
 ========================= */
 
 .artists-works {
-  padding: 0 clamp(16px, 4vw, 80px);
+  padding: 0 var(--layout-space);/* 左右スペース */
   margin-top: 80px;
 }
 
@@ -278,7 +278,7 @@
 .artists-exhibitions-list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 56px;
+  gap: var(--layout-space);
 }
 
 .artists-exhibitions-card-title {

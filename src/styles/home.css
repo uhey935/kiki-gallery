@@ -167,7 +167,7 @@
 ========================= */
 
 .home-exhibition {
-  padding: 120px 80px 120px;
+  padding: 120px clamp(24px, 5vw, 80px) 120px; /* 左右スペース */
 }
 
 .home-exhibition__image {
@@ -255,7 +255,7 @@
 ========================= */
 
 .home-stories {
-  padding: 80px 80px 120px;
+  padding: 80px clamp(24px, 5vw, 80px) 120px; /* 左右スペース */
   background: #e9e9e6;
 }
 
@@ -266,7 +266,7 @@
 .home-stories__list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 48px 100px;
+  gap: 48px clamp(24px, 5vw, 80px);
 }
 
 .home-stories__item {
