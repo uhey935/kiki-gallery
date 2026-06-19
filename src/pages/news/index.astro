@@ -13,15 +13,10 @@ type NewsItem = {
 };
 
 // 2. データ取得
-const [news, exhibitions, artists, journal] = await Promise.all([
+const [news, journal] = await Promise.all([
   getCollection("news"),
-  getCollection("exhibitions"),
-  getCollection("artists"),
   getCollection("journal"),
 ]);
-
-// Artist lookup map
-const artistMap = new Map(artists.map((a) => [a.id, a.data]));
 
 // ヘルパー: テキスト丸め
 const truncate = (text: string, limit: number) => {
@@ -44,39 +39,7 @@ const newsItems: NewsItem[] = news.map((item) => ({
   excerpt: item.data.excerpt || truncate(item.body || "", 80),
 }));
 
-// 4. Exhibitionの整形
-const exhibitionItems: NewsItem[] = exhibitions.map((item) => {
-  const artistIds = Array.isArray(item.data.artist)
-    ? item.data.artist
-    : [item.data.artist];
-
-  const artistNames = artistIds
-    .map((id) => {
-      const data = artistMap.get(id);
-      return data ? data.nameJa || data.name : null;
-    })
-    .filter((name): name is string => !!name);
-
-  // タイトル決定ロジック
-  let displayTitle = item.data.news_title || item.data.title;
-
-  if (!displayTitle && artistNames.length > 0) {
-    displayTitle =
-      artistNames.join("、") +
-      (artistIds.length > 1 ? "合同展" : "個展");
-  }
-
-  return {
-    id: item.id,
-    href: `/exhibitions/${item.id}`,
-    title: displayTitle || "Exhibition",
-    date: item.data.date ? new Date(item.data.date) : null,
-    type: "Exhibition",
-    excerpt: truncate(item.body || "", 80),
-  };
-});
-
-// 5. Journalの整形
+// 4. Journalの整形
 const journalItems: NewsItem[] = journal.map((item) => ({
   id: item.id,
   href:
@@ -88,14 +51,13 @@ const journalItems: NewsItem[] = journal.map((item) => ({
   excerpt: item.data.excerpt || truncate(item.body || "", 80),
 }));
 
-// 6. 統合 + ソート
+// 5. 統合 + ソート
 const sortedItems: NewsItem[] = [
   ...newsItems,
   ...journalItems,
-  ...exhibitionItems,
 ].sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
 
-// 7. 年でグループ化
+// 6. 年でグループ化
 const groupedByYear: Record<string, NewsItem[]> =
   sortedItems.reduce<Record<string, NewsItem[]>>((acc, item) => {
     const year = item.date
@@ -108,7 +70,7 @@ const groupedByYear: Record<string, NewsItem[]> =
     return acc;
   }, {});
 
-// 8. 年配列（降順 + Unknown最後）
+// 7. 年配列（降順 + Unknown最後）
 const years: string[] = Object.keys(groupedByYear).sort((a, b) => {
   if (a === "Unknown") return 1;
   if (b === "Unknown") return -1;
@@ -116,7 +78,7 @@ const years: string[] = Object.keys(groupedByYear).sort((a, b) => {
   return Number(b) - Number(a);
 });
 
-// 9. 日付フォーマット
+// 7. 日付フォーマット
 const formatDate = (date: Date) => {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
@@ -124,7 +86,7 @@ const formatDate = (date: Date) => {
   return `${month}.${day}`;
 };
 
-// 10. リンク
+// 8. リンク
 const categoryLinks = {
   Exhibition: "/exhibitions",
   Journal: "/journal",

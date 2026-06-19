@@ -108,7 +108,12 @@ const homeExhibitions = [
 const journal = await getCollection("journal");
 
 const newsStories = news
-  .filter((item) => item.data.image && (item.data.link || item.data.has_page))
+  .filter(
+    (item) =>
+      item.data.show_on_home !== false &&
+      item.data.image &&
+      (item.data.link || item.data.has_page),
+  )
   .map((item) => ({
     id: item.id,
     title: item.data.title,

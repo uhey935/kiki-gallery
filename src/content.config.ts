@@ -115,18 +115,21 @@ const journal = defineCollection({
    news
 ========================= */
 const news = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "./src/content/news" }),
+  loader: glob({
+    pattern: "**/*.md",
+    base: "./src/content/news",
+  }),
+
   schema: z.object({
     title: z.string(),
     date: z.string().optional(),
     excerpt: z.string().optional(),
-
     has_page: z.boolean().optional(),
     link: z.string().optional(),
-    link_label: z.string().optional(),
 
     type: z.string().optional(),
     image: z.string().optional(),
+    show_on_home: z.boolean().optional(),
   }),
 });
 
