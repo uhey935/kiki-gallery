@@ -1,9 +1,9 @@
 /* =========================
-   Layout
+   Intro Layout
 ========================= */
 
 .about-intro {
-  width: min(39vw, 720px);
+  width: 588px;
   margin: 0 auto;
 }
 
@@ -13,6 +13,14 @@
 
   overflow: hidden;
 }
+
+.about-information {
+  margin-top: 33px;
+}
+
+/* =========================
+   Hero
+========================= */
 
 .about-hero-image {
   width: 100%;
@@ -26,13 +34,9 @@
   will-change: transform;
 }
 
-.about-information {
-  font-size: 0.9rem;
-  line-height: 1.9;
-  letter-spacing: 0.02em;
-
-  margin-top: 33px;
-}
+/* =========================
+   Information Layout
+========================= */
 
 .about-information-item:not(:first-child) {
   display: flex;
@@ -40,25 +44,92 @@
   gap: 1rem;
 }
 
-.about-information-address a,
-.about-information-email a {
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-}
-
 .about-information-item:last-child {
   margin-top: 23px;
+}
+
+/* =========================
+   Statement Layout
+========================= */
+
+.about-statement {
+  position: relative;
+
+  margin: 147px 0 103px;
+  padding: 0 var(--layout-space);
+}
+
+.about-statement-body {
+  max-width: 872px;
+  margin: 0 auto;
+}
+
+/* =========================
+   Gallery Layout
+========================= */
+
+.about-gallery {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.about-gallery img {
+  display: block;
+  width: auto;
+  height: min(26vw, 396px);
+}
+
+/* =========================
+   Typography
+========================= */
+
+.about-information {
+  font-size: 0.9rem;
+  line-height: 1.9;
+  letter-spacing: 0.02em;
 }
 
 .about-information-label {
   min-width: 4rem;
 }
 
-.about-information-ig {
-  display: block;
-  width: 18px;
-  height: 18px;
+.about-statement-heading {
+  position: absolute;
+  top: 0;
+  left: var(--layout-space);
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
 }
+
+.about-statement-body p {
+  color: #111;
+  font-size: 0.9rem;
+  line-height: 2.1;
+  letter-spacing: 0.02em;
+}
+
+.about-statement-body p + p {
+  margin-top: 2em;
+}
+
+/* =========================
+   Links
+========================= */
+
+.about-information-address a,
+.about-information-email a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* =========================
+   Hover
+========================= */
 
 .about-information-ig {
   display: block;
@@ -70,36 +141,4 @@
 
 .about-information-item a:hover .about-information-ig {
   opacity: 0.6;
-}
-
-/* =========================
-   Statement
-========================= */
-
-.about-statement {
-  max-width: 840px;
-  margin: 147px auto 112px;
-  padding: 0 clamp(16px, 4vw, 80px);
-}
-
-.about-statement p {
-  color: #111;
-  font-size: 0.9rem;
-  line-height: 2.1;
-  letter-spacing: 0.02em;
-}
-
-.about-statement p + p {
-  margin-top: 2em;
-}
-
-.about-gallery {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.about-gallery img {
-  display: block;
-  width: auto;
-  height: min(30vw, 352px);
 }

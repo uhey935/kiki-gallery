@@ -245,14 +245,16 @@ const isEnglish = currentPath.startsWith("/en");
     document.body.style.overflow = "hidden";
 
     requestAnimationFrame(() => {
-      header.classList.add("is-open");
+      requestAnimationFrame(() => {
+        header.classList.add("is-open");
 
-      setTimeout(() => {
-        header.classList.remove("is-opening");
-        menuButton.setAttribute("aria-expanded", "true");
-        overlay.setAttribute("aria-hidden", "false");
-        isAnimating = false;
-      }, 500);
+        setTimeout(() => {
+          header.classList.remove("is-opening");
+          menuButton.setAttribute("aria-expanded", "true");
+          overlay.setAttribute("aria-hidden", "false");
+          isAnimating = false;
+        }, 500);
+      });
     });
   }
 

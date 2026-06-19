@@ -52,13 +52,17 @@ import Layout from "../layouts/Layout.astro";
     </div>
 
     <section class="about-statement">
-      <p>
-        GALLERY
-        crossingは2017年岐阜県美濃加茂市にオープンしたアートギャラリーです。ギャラリーの位置する旧中山道・太田宿は、江戸時代には宿場町として栄え、並行して流れる木曽川と共に、人と物のクロスポイントとなる場所でした。「crossing」という名前には、川を渡り、街道を行き交ったかつての旅人たちのイメージと、外からの風と土地の土が交わることで生まれる新たな風土・文化への期待が込められています。
-      </p>
-      <p>
-        ギャラリーでは、現代アート・工芸の領域を超えて普遍的な問いかけへのアプローチを実践する現代作家にフォーカスし、今をうつすもの、これからに必要と考える作家作品を紹介しています。ディレクターの黒元実紗は「CIRCULATION、WIND&SOIL、HUMANITY、CULTIVATE、VOYAGE」をギャラリーを構成する5つのコンセプトとし、近年は特に東洋的美意識へつながる不可視領域や気配への感覚、自然と人との関係性に視点を持つ作家に着目しています。個の持つルーツ、歴史や文化を背景に、時間や空間を超えた本質への眼差しと普遍的な問いかけを持つ作品を通じて思考することは、個を拡張し、多様化する世界へのおおらかな理解へとつながるでしょう。
-      </p>
+      <h2 class="about-statement-heading">About</h2>
+
+      <div class="about-statement-body">
+        <p>
+          GALLERY
+          crossingは2017年岐阜県美濃加茂市にオープンしたアートギャラリーです。ギャラリーの位置する旧中山道・太田宿は、江戸時代には宿場町として栄え、並行して流れる木曽川と共に、人と物のクロスポイントとなる場所でした。「crossing」という名前には、川を渡り、街道を行き交ったかつての旅人たちのイメージと、外からの風と土地の土が交わることで生まれる新たな風土・文化への期待が込められています。
+        </p>
+        <p>
+          ギャラリーでは、現代アート・工芸の領域を超えて普遍的な問いかけへのアプローチを実践する現代作家にフォーカスし、今をうつすもの、これからに必要と考える作家作品を紹介しています。ディレクターの黒元実紗は「CIRCULATION、WIND&SOIL、HUMANITY、CULTIVATE、VOYAGE」をギャラリーを構成する5つのコンセプトとし、近年は特に東洋的美意識へつながる不可視領域や気配への感覚、自然と人との関係性に視点を持つ作家に着目しています。個の持つルーツ、歴史や文化を背景に、時間や空間を超えた本質への眼差しと普遍的な問いかけを持つ作品を通じて思考することは、個を拡張し、多様化する世界へのおおらかな理解へとつながるでしょう。
+        </p>
+      </div>
     </section>
 
     <section class="about-gallery">
@@ -74,10 +78,7 @@ import Layout from "../layouts/Layout.astro";
 </Layout>
 
 <script>
-  const heroImage =
-    document.querySelector<HTMLElement>(
-      ".about-hero-image",
-    );
+  const heroImage = document.querySelector<HTMLElement>(".about-hero-image");
 
   if (heroImage) {
     const speed = 0.12;
@@ -85,11 +86,9 @@ import Layout from "../layouts/Layout.astro";
     let ticking = false;
 
     const updateParallax = () => {
-      const rect =
-        heroImage.parentElement!.getBoundingClientRect();
+      const rect = heroImage.parentElement!.getBoundingClientRect();
 
-      heroImage.style.transform =
-        `translateY(${rect.top * speed}px)`;
+      heroImage.style.transform = `translateY(${rect.top * speed}px)`;
 
       ticking = false;
     };
