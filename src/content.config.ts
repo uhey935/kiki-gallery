@@ -71,6 +71,7 @@ const exhibitions = defineCollection({
     attendance: z.string().optional(),
 
     image: z.string().optional(),
+    hero_portrait: z.boolean().optional(),
     lead: z.string().optional(),
 
     hero_media: z.string().optional(),

@@ -108,15 +108,15 @@
 }
 
 .exhibitions-card__meta {
-  position: relative;
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
 }
 
 .exhibitions-card__date {
-  position: absolute;
-  right: 0;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* =========================
@@ -199,6 +199,10 @@
   display: block;
   object-fit: cover;
   margin: 0 auto;
+}
+
+.exhibitions-detail-image--portrait img {
+  width: 54%;
 }
 
 /* =========================

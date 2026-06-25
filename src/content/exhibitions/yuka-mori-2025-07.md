@@ -10,7 +10,10 @@ end_date: "2025-07-26"
 open_time: "13:00-17:00"
 closed_days: "水曜・木曜"
 attendance: "7月17、18日"
-image: /images/exhibitions/yuka-mori-2025-07.png
+
+image: /images/exhibitions/yuka-mori-2025-07.jpg
+hero_portrait: true
+
 published_at: "2025-06-20"
 venue:
   name: KiKi Gallery

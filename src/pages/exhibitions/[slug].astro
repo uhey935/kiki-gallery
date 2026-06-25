@@ -154,7 +154,13 @@ if (start > today) {
 
   {
     exh.data.image && (
-      <figure class="exhibitions-detail-image">
+      <figure
+        class={
+          exh.data.hero_portrait
+            ? "exhibitions-detail-image exhibitions-detail-image--portrait"
+            : "exhibitions-detail-image"
+        }
+      >
         <img src={exh.data.image} alt={displayTitle} />
       </figure>
     )

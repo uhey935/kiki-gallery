@@ -11,7 +11,7 @@ display_artists: true
 
 date: "2026-03-05"
 end_date: "2026-07-09"
-image: /images/exhibitions/group-exhibition-2026-03.png
+image: /images/exhibitions/group-exhibition-2026-03.jpg
 lead: "GALLERY crossingは、2026年4⽉18⽇(土)〜5⽉3⽇(日)の会期にて、アラーナ・ウィルソン個展「Roots」を開催いたします。本展はウィルソンの当ギャラリーで5度目となる個展であり、本年3月までに行われた、滋賀県立陶芸の森（信楽）でのレジデンス制作を中心に構成されます。"
 
 open_time: "13:00-17:00"
