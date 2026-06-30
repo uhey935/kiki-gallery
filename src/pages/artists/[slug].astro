@@ -178,168 +178,168 @@ const jsonLd = {
       </div>
     </section>
 
-    {/* =========================
-       Works
-    ========================= */}
-    <section class="section artists-works">
-      <h2 class="detail-h2-title">Works</h2>
+{/* =========================
+   Works
+========================= */}
+<section class="section artists-works">
+  <h2 class="detail-h2-title">Works</h2>
 
-      {works.length > 0 ? (
-        <>
-          {/* =========================
-             1-3
-          ========================= */}
-          <div class="artists-works-card artists-works-card--1-3">
-            {works_1_3.map((work) => (
-              <figure class="artists-works-card__item">
-                <a
-                  href={`/works/${work.id}`}
-                  class="artists-works-link"
-                >
-                  <img
-                    class="artists-works-image"
-                    src={work.data.image}
-                    alt={work.data.alt || work.data.title}
-                  />
+  {works.length > 0 ? (
+    <>
+      {/* =========================
+         1-3
+      ========================= */}
+      <div class="artists-works-card artists-works-card--1-3">
+        {works_1_3.map((work) => (
+          <figure class="artists-works-card__item">
+            <a
+              href={`/works/${work.id}`}
+              class="artists-works-link"
+            >
+              <img
+                class="artists-works-image"
+                src={work.data.images[0].src}
+                alt={work.data.images[0].alt ?? work.data.title}
+              />
 
-                  <figcaption class="artists-works-caption">
-                    <p class="artists-works-title">
-                      {work.data.year
-                        ? `${work.data.title.trim()}, ${work.data.year}`
-                        : work.data.title.trim()}
+              <figcaption class="artists-works-caption">
+                <p class="artists-works-title">
+                  {work.data.year
+                    ? `${work.data.title.trim()}, ${work.data.year}`
+                    : work.data.title.trim()}
+                </p>
+
+                {(work.data.size || work.data.material) && (
+                  <p class="artists-works-meta">
+                    {[work.data.size, work.data.material]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                )}
+              </figcaption>
+            </a>
+          </figure>
+        ))}
+      </div>
+
+      {/* =========================
+         1-left
+      ========================= */}
+      {works_1_left.length > 0 && (
+        <div class="artists-works-card artists-works-card--1-left">
+          {works_1_left.map((work) => (
+            <figure class="artists-works-card__item">
+              <a
+                href={`/works/${work.id}`}
+                class="artists-works-link"
+              >
+                <img
+                  class="artists-works-image"
+                  src={work.data.images[0].src}
+                  alt={work.data.images[0].alt ?? work.data.title}
+                />
+
+                <figcaption class="artists-works-caption">
+                  <p class="artists-works-title">
+                    {work.data.year
+                      ? `${work.data.title.trim()}, ${work.data.year}`
+                      : work.data.title.trim()}
+                  </p>
+
+                  {(work.data.size || work.data.material) && (
+                    <p class="artists-works-meta">
+                      {[work.data.size, work.data.material]
+                        .filter(Boolean)
+                        .join(", ")}
                     </p>
-
-                    {(work.data.size || work.data.material) && (
-                      <p class="artists-works-meta">
-                        {[work.data.size, work.data.material]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </p>
-                    )}
-                  </figcaption>
-                </a>
-              </figure>
-            ))}
-          </div>
-
-          {/* =========================
-             1-left
-          ========================= */}
-          {works_1_left.length > 0 && (
-            <div class="artists-works-card artists-works-card--1-left">
-              {works_1_left.map((work) => (
-                <figure class="artists-works-card__item">
-                  <a
-                    href={`/works/${work.id}`}
-                    class="artists-works-link"
-                  >
-                    <img
-                      class="artists-works-image"
-                      src={work.data.image}
-                      alt={work.data.alt || work.data.title}
-                    />
-
-                    <figcaption class="artists-works-caption">
-                      <p class="artists-works-title">
-                        {work.data.year
-                          ? `${work.data.title.trim()}, ${work.data.year}`
-                          : work.data.title.trim()}
-                      </p>
-
-                      {(work.data.size || work.data.material) && (
-                        <p class="artists-works-meta">
-                          {[work.data.size, work.data.material]
-                            .filter(Boolean)
-                            .join(", ")}
-                        </p>
-                      )}
-                    </figcaption>
-                  </a>
-                </figure>
-              ))}
-            </div>
-          )}
-
-          {/* =========================
-             3-2
-          ========================= */}
-          {works_3_2.length > 0 && (
-            <div class="artists-works-card artists-works-card--3-2">
-              {works_3_2.map((work) => (
-                <figure class="artists-works-card__item">
-                  <a
-                    href={`/works/${work.id}`}
-                    class="artists-works-link"
-                  >
-                    <img
-                      class="artists-works-image"
-                      src={work.data.image}
-                      alt={work.data.alt || work.data.title}
-                    />
-
-                    <figcaption class="artists-works-caption">
-                      <p class="artists-works-title">
-                        {work.data.year
-                          ? `${work.data.title.trim()}, ${work.data.year}`
-                          : work.data.title.trim()}
-                      </p>
-
-                      {(work.data.size || work.data.material) && (
-                        <p class="artists-works-meta">
-                          {[work.data.size, work.data.material]
-                            .filter(Boolean)
-                            .join(", ")}
-                        </p>
-                      )}
-                    </figcaption>
-                  </a>
-                </figure>
-              ))}
-            </div>
-          )}
-
-          {/* =========================
-             1-right
-          ========================= */}
-          {works_1_right.length > 0 && (
-            <div class="artists-works-card artists-works-card--1-right">
-              {works_1_right.map((work) => (
-                <figure class="artists-works-card__item">
-                  <a
-                    href={`/works/${work.id}`}
-                    class="artists-works-link"
-                  >
-                    <img
-                      class="artists-works-image"
-                      src={work.data.image}
-                      alt={work.data.alt || work.data.title}
-                    />
-
-                    <figcaption class="artists-works-caption">
-                      <p class="artists-works-title">
-                        {work.data.year
-                          ? `${work.data.title.trim()}, ${work.data.year}`
-                          : work.data.title.trim()}
-                      </p>
-
-                      {(work.data.size || work.data.material) && (
-                        <p class="artists-works-meta">
-                          {[work.data.size, work.data.material]
-                            .filter(Boolean)
-                            .join(", ")}
-                        </p>
-                      )}
-                    </figcaption>
-                  </a>
-                </figure>
-              ))}
-            </div>
-          )}
-        </>
-      ) : (
-        <p class="artists-exhibitions-empty">No works available.</p>
+                  )}
+                </figcaption>
+              </a>
+            </figure>
+          ))}
+        </div>
       )}
-    </section>
+
+      {/* =========================
+         3-2
+      ========================= */}
+      {works_3_2.length > 0 && (
+        <div class="artists-works-card artists-works-card--3-2">
+          {works_3_2.map((work) => (
+            <figure class="artists-works-card__item">
+              <a
+                href={`/works/${work.id}`}
+                class="artists-works-link"
+              >
+                <img
+                  class="artists-works-image"
+                  src={work.data.images[0].src}
+                  alt={work.data.images[0].alt ?? work.data.title}
+                />
+
+                <figcaption class="artists-works-caption">
+                  <p class="artists-works-title">
+                    {work.data.year
+                      ? `${work.data.title.trim()}, ${work.data.year}`
+                      : work.data.title.trim()}
+                  </p>
+
+                  {(work.data.size || work.data.material) && (
+                    <p class="artists-works-meta">
+                      {[work.data.size, work.data.material]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </p>
+                  )}
+                </figcaption>
+              </a>
+            </figure>
+          ))}
+        </div>
+      )}
+
+      {/* =========================
+         1-right
+      ========================= */}
+      {works_1_right.length > 0 && (
+        <div class="artists-works-card artists-works-card--1-right">
+          {works_1_right.map((work) => (
+            <figure class="artists-works-card__item">
+              <a
+                href={`/works/${work.id}`}
+                class="artists-works-link"
+              >
+                <img
+                  class="artists-works-image"
+                  src={work.data.images[0].src}
+                  alt={work.data.images[0].alt ?? work.data.title}
+                />
+
+                <figcaption class="artists-works-caption">
+                  <p class="artists-works-title">
+                    {work.data.year
+                      ? `${work.data.title.trim()}, ${work.data.year}`
+                      : work.data.title.trim()}
+                  </p>
+
+                  {(work.data.size || work.data.material) && (
+                    <p class="artists-works-meta">
+                      {[work.data.size, work.data.material]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </p>
+                  )}
+                </figcaption>
+              </a>
+            </figure>
+          ))}
+        </div>
+      )}
+    </>
+  ) : (
+    <p class="artists-exhibitions-empty">No works available.</p>
+  )}
+</section>
 
     {/* =========================
        Shop

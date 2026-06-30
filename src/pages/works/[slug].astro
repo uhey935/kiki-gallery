@@ -20,21 +20,22 @@ export async function getStaticPaths() {
         work,
         artistName:
           artist?.data.nameJa ?? artist?.data.name ?? work.data.artist,
-        artistHref: `/artists/${work.data.artist}`,
       },
     };
   });
 }
 
-const { work, artistName, artistHref } = Astro.props;
+const { work, artistName } = Astro.props;
+
 const { Content } = await render(work);
+
 const hasStatement = (work.body ?? "").trim().length > 0;
 
 const workTitle = work.data.title;
-
 const description = `${workTitle} | KiKi Gallery`;
 
 const inquiryHref = "mailto:info@kiki-gallery.com";
+const artistHref = `/artists/${work.data.artist}`;
 ---
 
 <WorkLayout title={workTitle} description={description}>
@@ -60,11 +61,21 @@ const inquiryHref = "mailto:info@kiki-gallery.com";
     </svg>
   </button>
   <main class="works-detail">
-    <section class="works-detail-section">
-      <figure class="works-detail-image">
-        <img src={work.data.image} alt={work.data.alt ?? workTitle} />
-      </figure>
-    </section>
+    {
+      work.data.images.map((image, index) => (
+        <section class="works-detail-section">
+          <figure class="works-detail-image">
+            <img
+              src={image.src}
+              alt={image.alt ?? workTitle}
+              decoding="async"
+              fetchpriority={index === 0 ? "high" : undefined}
+              loading={index >= 3 ? "lazy" : undefined}
+            />
+          </figure>
+        </section>
+      ))
+    }
 
     <section class="works-detail-section">
       <div class="works-detail-meta">
@@ -126,9 +137,19 @@ const inquiryHref = "mailto:info@kiki-gallery.com";
 </WorkLayout>
 
 <script define:vars={{ artistHref }}>
+  const worksDetail = document.querySelector(".works-detail");
   const closeButton = document.querySelector(".works-detail-close");
 
+  requestAnimationFrame(() => {
+    worksDetail?.classList.add("is-ready");
+  });
+
   closeButton?.addEventListener("click", () => {
+    if (document.referrer.includes("/artists/")) {
+      history.back();
+      return;
+    }
+
     window.location.assign(artistHref);
   });
 </script>

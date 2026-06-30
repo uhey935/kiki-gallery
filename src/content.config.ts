@@ -32,12 +32,19 @@ const works = defineCollection({
   schema: z.object({
     title: z.string(),
     artist: z.string(),
-    image: z.string(),
+
+    images: z
+      .array(
+        z.object({
+          src: z.string(),
+          alt: z.string().optional(),
+        })
+      )
+      .min(1),
 
     size: z.string().optional(),
     material: z.string().optional(),
 
-    alt: z.string().optional(),
     year: z.number().optional(),
 
     date: z.string().optional(),
