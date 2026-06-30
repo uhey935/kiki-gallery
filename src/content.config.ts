@@ -45,6 +45,8 @@ const works = defineCollection({
 
     layout: z.string().optional(),
     position: z.number().optional(),
+
+    inquiry: z.boolean().optional(),
   }),
 });
 

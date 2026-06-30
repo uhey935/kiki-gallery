@@ -192,38 +192,12 @@ const jsonLd = {
           <div class="artists-works-card artists-works-card--1-3">
             {works_1_3.map((work) => (
               <figure class="artists-works-card__item">
-                <img
-                  src={work.data.image}
-                  alt={work.data.alt || work.data.title}
-                />
-
-                <figcaption class="artists-works-caption">
-                  <p class="artists-works-title">
-                    {work.data.year
-                      ? `${work.data.title.trim()}, ${work.data.year}`
-                      : work.data.title.trim()}
-                  </p>
-
-                  {(work.data.size || work.data.material) && (
-                    <p class="artists-works-meta">
-                      {[work.data.size, work.data.material]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </p>
-                  )}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-
-          {/* =========================
-             1-left
-          ========================= */}
-          {works_1_left.length > 0 && (
-            <div class="artists-works-card artists-works-card--1-left">
-              {works_1_left.map((work) => (
-                <figure class="artists-works-card__item">
+                <a
+                  href={`/works/${work.id}`}
+                  class="artists-works-link"
+                >
                   <img
+                    class="artists-works-image"
                     src={work.data.image}
                     alt={work.data.alt || work.data.title}
                   />
@@ -243,6 +217,44 @@ const jsonLd = {
                       </p>
                     )}
                   </figcaption>
+                </a>
+              </figure>
+            ))}
+          </div>
+
+          {/* =========================
+             1-left
+          ========================= */}
+          {works_1_left.length > 0 && (
+            <div class="artists-works-card artists-works-card--1-left">
+              {works_1_left.map((work) => (
+                <figure class="artists-works-card__item">
+                  <a
+                    href={`/works/${work.id}`}
+                    class="artists-works-link"
+                  >
+                    <img
+                      class="artists-works-image"
+                      src={work.data.image}
+                      alt={work.data.alt || work.data.title}
+                    />
+
+                    <figcaption class="artists-works-caption">
+                      <p class="artists-works-title">
+                        {work.data.year
+                          ? `${work.data.title.trim()}, ${work.data.year}`
+                          : work.data.title.trim()}
+                      </p>
+
+                      {(work.data.size || work.data.material) && (
+                        <p class="artists-works-meta">
+                          {[work.data.size, work.data.material]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                      )}
+                    </figcaption>
+                  </a>
                 </figure>
               ))}
             </div>
@@ -255,26 +267,32 @@ const jsonLd = {
             <div class="artists-works-card artists-works-card--3-2">
               {works_3_2.map((work) => (
                 <figure class="artists-works-card__item">
-                  <img
-                    src={work.data.image}
-                    alt={work.data.alt || work.data.title}
-                  />
+                  <a
+                    href={`/works/${work.id}`}
+                    class="artists-works-link"
+                  >
+                    <img
+                      class="artists-works-image"
+                      src={work.data.image}
+                      alt={work.data.alt || work.data.title}
+                    />
 
-                  <figcaption class="artists-works-caption">
-                    <p class="artists-works-title">
-                      {work.data.year
-                        ? `${work.data.title.trim()}, ${work.data.year}`
-                        : work.data.title.trim()}
-                    </p>
-
-                    {(work.data.size || work.data.material) && (
-                      <p class="artists-works-meta">
-                        {[work.data.size, work.data.material]
-                          .filter(Boolean)
-                          .join(", ")}
+                    <figcaption class="artists-works-caption">
+                      <p class="artists-works-title">
+                        {work.data.year
+                          ? `${work.data.title.trim()}, ${work.data.year}`
+                          : work.data.title.trim()}
                       </p>
-                    )}
-                  </figcaption>
+
+                      {(work.data.size || work.data.material) && (
+                        <p class="artists-works-meta">
+                          {[work.data.size, work.data.material]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                      )}
+                    </figcaption>
+                  </a>
                 </figure>
               ))}
             </div>
@@ -287,35 +305,39 @@ const jsonLd = {
             <div class="artists-works-card artists-works-card--1-right">
               {works_1_right.map((work) => (
                 <figure class="artists-works-card__item">
-                  <img
-                    src={work.data.image}
-                    alt={work.data.alt || work.data.title}
-                  />
+                  <a
+                    href={`/works/${work.id}`}
+                    class="artists-works-link"
+                  >
+                    <img
+                      class="artists-works-image"
+                      src={work.data.image}
+                      alt={work.data.alt || work.data.title}
+                    />
 
-                  <figcaption class="artists-works-caption">
-                    <p class="artists-works-title">
-                      {work.data.year
-                        ? `${work.data.title.trim()}, ${work.data.year}`
-                        : work.data.title.trim()}
-                    </p>
-
-                    {(work.data.size || work.data.material) && (
-                      <p class="artists-works-meta">
-                        {[work.data.size, work.data.material]
-                          .filter(Boolean)
-                          .join(", ")}
+                    <figcaption class="artists-works-caption">
+                      <p class="artists-works-title">
+                        {work.data.year
+                          ? `${work.data.title.trim()}, ${work.data.year}`
+                          : work.data.title.trim()}
                       </p>
-                    )}
-                  </figcaption>
+
+                      {(work.data.size || work.data.material) && (
+                        <p class="artists-works-meta">
+                          {[work.data.size, work.data.material]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                      )}
+                    </figcaption>
+                  </a>
                 </figure>
               ))}
             </div>
           )}
         </>
       ) : (
-        <p class="artists-exhibitions-empty">
-          No works available.
-        </p>
+        <p class="artists-exhibitions-empty">No works available.</p>
       )}
     </section>
 
@@ -343,17 +365,11 @@ const jsonLd = {
       <div class="artists-bio-layout">
         {artist.data.image && (
           <div class="artists-bio-image">
-            <img
-              src={artist.data.image}
-              alt={artistName}
-              width="400"
-            />
+            <img src={artist.data.image} alt={artistName} width="400" />
           </div>
         )}
 
-        <p class="artists-bio-text">
-          {artist.data.bio}
-        </p>
+        <p class="artists-bio-text">{artist.data.bio}</p>
       </div>
     </section>
 
@@ -371,10 +387,7 @@ const jsonLd = {
                 {/* 画像 */}
                 {exh.data.image && (
                   <div class="artists-exhibitions-card-image">
-                    <img
-                      src={exh.data.image}
-                      alt={exh.data.title || ""}
-                    />
+                    <img src={exh.data.image} alt={exh.data.title || ""} />
                   </div>
                 )}
 
@@ -401,25 +414,37 @@ const jsonLd = {
             </article>
           ))
         ) : (
-          <p class="artists-exhibitions-empty">
-            No exhibitions available.
-          </p>
+          <p class="artists-exhibitions-empty">No exhibitions available.</p>
         )}
       </div>
     </section>
 
-    <nav
-      class="detail-navigation"
-      aria-label="Artist navigation"
-    >
-      <a
-        href="/artists"
-        class="detail-navigation-link"
-      >
+    <nav class="detail-navigation" aria-label="Artist navigation">
+      <a href="/artists" class="detail-navigation-link">
         View All Artists
       </a>
     </nav>
-
   </article>
-
 </Layout>
+
+<script>
+  const bioImage = document.querySelector(".artists-bio-image");
+
+  if (bioImage) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+
+        if (entry.isIntersecting) {
+          bioImage.classList.add("is-visible");
+          observer.unobserve(bioImage);
+        }
+      },
+      {
+        threshold: 0.4,
+      }
+    );
+
+    observer.observe(bioImage);
+  }
+</script>

@@ -41,7 +41,7 @@
 }
 
 .artists-image:hover img {
-  transform: scale(1.1);
+  transform: scale(1.04);
 }
 
 /* =========================
@@ -143,7 +143,7 @@
 }
 
 .artists-exhibitions-card-image:hover img {
-  transform: scale(1.08);
+  transform: scale(1.04);
 }
 
 /* =========================
@@ -163,7 +163,7 @@
 ========================= */
 
 .artists-works {
-  padding: 0 var(--layout-space);/* 左右スペース */
+  padding: 0 var(--layout-space); /* 左右スペース */
   margin-top: 80px;
 }
 
@@ -175,11 +175,18 @@
   align-items: start;
 }
 
-.artists-works-card__item img {
+.artists-works-link {
+  display: block;
+  overflow: hidden;
+}
+
+.artists-works-image {
+  display: block;
+
   width: 100%;
   height: 100%;
+
   object-fit: contain;
-  display: block;
 }
 
 .artists-works-title {
@@ -271,6 +278,16 @@
   align-items: start;
 }
 
+.artists-bio-image {
+  opacity: 0;
+
+  transition: opacity 500ms ease-out;
+}
+
+.artists-bio-image.is-visible {
+  opacity: 1;
+}
+
 /* =========================
    Detail Exhibitions
 ========================= */
@@ -293,3 +310,18 @@
   font-size: 0.9rem;
   margin-bottom: 3px;
 }
+
+/* =========================
+   Detail Works Hover
+========================= */
+/* 
+
+.artists-works-image {
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.artists-works-link:hover .artists-works-image {
+  transform: scale(1.02);
+}
+
+ */
