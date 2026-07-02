@@ -153,15 +153,9 @@ if (start > today) {
   </section>
 
   {
-    exh.data.image && (
-      <figure
-        class={
-          exh.data.hero_portrait
-            ? "exhibitions-detail-image exhibitions-detail-image--portrait"
-            : "exhibitions-detail-image"
-        }
-      >
-        <img src={exh.data.image} alt={displayTitle} />
+    exh.data.hero_image && (
+      <figure class="exhibitions-detail-image">
+        <img src={exh.data.hero_image} alt={displayTitle} />
       </figure>
     )
   }
@@ -252,8 +246,8 @@ if (start > today) {
               return (
                 <figure class="exhibitions-work">
                   <img
-                    src={work.data.image}
-                    alt={work.data.alt || work.data.title}
+                    src={work.data.images[0].src}
+                    alt={work.data.images[0].alt ?? work.data.title}
                   />
 
                   <figcaption class="exhibitions-work-caption">

@@ -251,7 +251,7 @@ const stories = [...newsStories, ...journalStories]
                     <div class="home-exhibition__image">
                       <figure class="home-exhibition__media">
                         <img
-                          src={exhibition.data.image}
+                          src={exhibition.data.hero_image}
                           alt={exhibition.displayTitle}
                         />
                       </figure>
@@ -272,7 +272,10 @@ const stories = [...newsStories, ...journalStories]
                         <p class="home-exhibition__date">
                           {exhibition.data.date && (
                             <>
-                              <span class="home-exhibition__date-value">{`${exhibition.startDate?.getFullYear()}.${String((exhibition.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.startDate?.getDate()).padStart(2, "0")}`}</span><span class="home-exhibition__date-weekday">{getWeekday(exhibition.data.date)}</span>
+                              <span class="home-exhibition__date-value">{`${exhibition.startDate?.getFullYear()}.${String((exhibition.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.startDate?.getDate()).padStart(2, "0")}`}</span>
+                              <span class="home-exhibition__date-weekday">
+                                {getWeekday(exhibition.data.date)}
+                              </span>
 
                               {exhibition.data.end_date && (
                                 <>
@@ -280,7 +283,10 @@ const stories = [...newsStories, ...journalStories]
                                     {" "}
                                     -{" "}
                                   </span>
-                                  <span class="home-exhibition__date-value">{`${String((exhibition.endDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.endDate?.getDate()).padStart(2, "0")}`}</span><span class="home-exhibition__date-weekday">{getWeekday(exhibition.data.end_date)}</span>
+                                  <span class="home-exhibition__date-value">{`${String((exhibition.endDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.endDate?.getDate()).padStart(2, "0")}`}</span>
+                                  <span class="home-exhibition__date-weekday">
+                                    {getWeekday(exhibition.data.end_date)}
+                                  </span>
                                 </>
                               )}
                             </>

@@ -8,7 +8,7 @@ open_time: "13:00-17:00"
 closed_days: "水曜・木曜"
 attendance: ""
 
-image: /images/exhibitions/alana-wilson-2024-04.png
+hero_image: /images/exhibitions/alana-wilson-2024-04.png
 hero_portrait: true
 
 published_at: "2027-04-04"

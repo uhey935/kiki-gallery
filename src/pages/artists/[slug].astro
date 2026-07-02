@@ -385,9 +385,12 @@ const jsonLd = {
             <article class="artists-exhibitions-card">
               <a href={`/exhibitions/${exh.id}`}>
                 {/* 画像 */}
-                {exh.data.image && (
+                {exh.data.hero_image && (
                   <div class="artists-exhibitions-card-image">
-                    <img src={exh.data.image} alt={exh.data.title || ""} />
+                    <img
+                      src={exh.data.hero_image}
+                      alt={exh.data.title || ""}
+                    />
                   </div>
                 )}
 

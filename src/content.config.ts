@@ -80,6 +80,18 @@ const exhibitions = defineCollection({
     attendance: z.string().optional(),
 
     image: z.string().optional(),
+
+    hero_image: z.string().optional(),
+
+    images: z
+      .array(
+        z.object({
+          src: z.string(),
+          alt: z.string().optional(),
+        })
+      )
+      .optional(),
+
     hero_portrait: z.boolean().optional(),
     lead: z.string().optional(),
 
@@ -96,7 +108,7 @@ const exhibitions = defineCollection({
       .optional(),
 
     published_at: z.string().optional(),
-    
+
     display_artists: z.boolean().optional(),
   }),
 });

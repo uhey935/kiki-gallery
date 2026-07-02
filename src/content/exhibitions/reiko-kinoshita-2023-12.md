@@ -7,7 +7,9 @@ end_date: "2024-01-26"
 open_time: "13:00-17:00"
 closed_days: "水曜・木曜"
 attendance: "7月17、18日"
-image: /images/exhibitions/reiko-kinoshita-2023-12.png
+
+hero_image: /images/exhibitions/reiko-kinoshita-2023-12.png
+
 works:
   - reiko-kinoshita-04
   - reiko-kinoshita-02

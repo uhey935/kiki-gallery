@@ -7,7 +7,9 @@ end_date: "2024-07-09"
 open_time: "13:00-17:00"
 closed_days: "水曜・木曜"
 attendance: ""
-image: /images/exhibitions/keisuke-matsuda-2024-07.jpg
+
+hero_image: /images/exhibitions/keisuke-matsuda-2024-07.jpg
+
 published_at: "2024-06-11"
 venue:
   name: KiKi Gallery
