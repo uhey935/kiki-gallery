@@ -414,8 +414,8 @@
 
 .site-header a:focus-visible,
 .site-header button:focus-visible {
-  outline: 1px solid currentColor;
-  outline-offset: 4px;
+outline: 1px solid rgb(17 17 17 / 35%);
+outline-offset: 6px;
 }
 
 /* =========================

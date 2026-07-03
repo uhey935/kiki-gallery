@@ -135,10 +135,10 @@
 }
 
 .exhibitions-main {
-  width: 80%;
+  width: 90%;
   display: grid;
   grid-template-columns: 254px minmax(0, 1fr);
-  gap: 110px;
+  gap: clamp(38px, 8vw, 110px);
   align-items: start;
   margin: 0 auto 120px;
 }
@@ -249,9 +249,10 @@
 
 .exhibitions-article {
   min-width: 0;
-  font-size: 0.95rem;
-  line-height: 2.1;
-  color: #333;
+  font-size: var(--font-size-body-reading);
+  line-height: var(--line-height-body-reading);
+  letter-spacing: var(--letter-spacing-body);
+  color: var(--color-text-body);
 }
 
 .exhibitions-article p {
@@ -263,8 +264,8 @@
 }
 
 .exhibitions-venue {
-  margin-top: 73px;
-  padding-top: 73px;
+  margin-top: 68px;
+  padding-top: 68px;
   border-top: 1px solid #ccc;
 }
 
@@ -317,7 +318,7 @@
 }
 
 .exhibitions-work-artist {
-  font-size: 0.9rem;
+  font-size: .9rem;
   color: #666;
   margin-bottom: 13px;
 }

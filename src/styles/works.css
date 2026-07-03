@@ -159,11 +159,10 @@
 
 .works-detail-statement {
   min-width: 0;
-
-  font-size: 0.95rem;
-  line-height: 2.1;
-
-  color: #333;
+  font-size: var(--font-size-body-reading);
+  line-height: var(--line-height-body-reading);
+  letter-spacing: var(--letter-spacing-body);
+  color: var(--color-text-body);
 }
 
 .works-detail-statement p + p {

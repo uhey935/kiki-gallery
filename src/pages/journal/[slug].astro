@@ -25,11 +25,6 @@ const { item } = Astro.props;
    Markdown → HTML
 ========================= */
 const { Content } = await render(item);
-
-/* =========================
-   type（categoriesの先頭）
-========================= */
-const type = item.data.categories && item.data.categories[0];
 ---
 
 <Layout
@@ -80,12 +75,9 @@ const type = item.data.categories && item.data.categories[0];
     <div class="article-body">
       <Content />
     </div>
-
-    {/* interviewだけRelated */}
-    {
-      type === "interview" && (
-        <h2 class="article-related-title">Related Articles</h2>
-      )
-    }
   </article>
+
+  <nav class="detail-navigation" aria-label="Journal navigation">
+    <a href="/journal" class="detail-navigation-link"> View All Journal </a>
+  </nav>
 </Layout>

@@ -3,11 +3,30 @@ import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import { formatDateRangeJa, getWeekday } from "../utils/date";
 
+/* =========================
+   Home
+========================= */
+
+const [home] = await getCollection("home");
+
+if (!home) {
+  throw new Error("Missing home content.");
+}
+
+/* =========================
+   Collections
+========================= */
+
 const exhibitions = await getCollection("exhibitions");
 const artists = await getCollection("artists");
+const journal = await getCollection("journal");
 const news = await getCollection("news");
 
-const artistMap = new Map(artists.map((a) => [a.id, a.data]));
+/* =========================
+   Helpers
+========================= */
+
+const artistMap = new Map(artists.map((artist) => [artist.id, artist.data]));
 
 const SEPARATOR = "、";
 const HERO_FALLBACK_FIRST = true; // false = 個展ファースト, true = fallbackファースト
@@ -59,6 +78,10 @@ const getStatus = (start: Date | null, end: Date | null) => {
   return "past";
 };
 
+/* =========================
+   Exhibitions
+========================= */
+
 const formattedExhibitions = exhibitions
   .map((exh) => {
     const names = getArtistDisplayNames(exh.data.artist);
@@ -105,7 +128,9 @@ const homeExhibitions = [
   ...pastExhibitions,
 ].slice(0, 2);
 
-const journal = await getCollection("journal");
+/* =========================
+   Stories
+========================= */
 
 const newsStories = news
   .filter(
@@ -145,6 +170,18 @@ const stories = [...newsStories, ...journalStories]
     return bDate.getTime() - aDate.getTime();
   })
   .slice(0, 6);
+
+const artistsSection = home.data.sections.find(
+  (section) => section.id === "artists",
+);
+
+const aboutSection = home.data.sections.find(
+  (section) => section.id === "about",
+);
+
+if (!artistsSection || !aboutSection) {
+  throw new Error("Missing home sections.");
+}
 ---
 
 <Layout flush={true}>
@@ -215,7 +252,7 @@ const stories = [...newsStories, ...journalStories]
           <div class="home-hero__fallback">
             <div class="home-hero__fallback-image-wrap">
               <img
-                src="/images/home/fallback-hero.webp"
+                src={home.data.hero_image}
                 alt="KiKi Gallery"
                 class="home-hero__fallback-image"
               />
@@ -307,6 +344,38 @@ const stories = [...newsStories, ...journalStories]
       </div>
     </section>
 
+    <section class="home-sections">
+      <div class="home-sections__inner">
+        <div class="home-sections__artists">
+          <a href={artistsSection.href} class="home-sections__link">
+            <h2 class="home-sections__artists-title">
+              {artistsSection.title}
+            </h2>
+
+            <figure class="home-sections__artists-media home-sections__media">
+              <img src={artistsSection.image.square} alt="" />
+            </figure>
+          </a>
+        </div>
+
+        <div class="home-sections__about">
+          <a href={aboutSection.href} class="home-sections__link">
+            <figure class="home-sections__about-media home-sections__media">
+              <img src={aboutSection.image.landscape} alt="" />
+            </figure>
+
+            <h2 class="home-sections__about-title">
+              {aboutSection.title}
+            </h2>
+
+            <p class="home-sections__description">
+              GALLERY crossingは2017年岐阜県美濃加茂市にオープンしたアートギャラリーです。ギャラリーの位置する旧中山道・太田宿は、江戸時代には宿場町として栄え、並行して流れる木曽川と共に、人と物のクロスポイントとなる場所でした。
+            </p>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <section class="home-stories" aria-labelledby="home-stories-heading">
       <div class="home-stories__inner">
         <header class="home-stories__header">
@@ -340,3 +409,23 @@ const stories = [...newsStories, ...journalStories]
     </section>
   </div>
 </Layout>
+
+<script>
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    },
+    {
+      threshold: 0.1,
+    }
+  );
+
+  document
+    .querySelectorAll(".home-sections__media")
+    .forEach((element) => observer.observe(element));
+</script>

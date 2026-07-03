@@ -95,9 +95,10 @@
 
 .artists-bio-short,
 .artists-bio-text {
-  font-size: 0.9rem;
-  line-height: 2;
-  color: #333;
+  font-size: var(--font-size-body-supporting);
+  line-height: var(--line-height-body-supporting);
+  letter-spacing: var(--letter-spacing-body);
+  color: var(--color-text-body);
 }
 
 .artists-bio-short {

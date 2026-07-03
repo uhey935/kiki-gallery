@@ -103,6 +103,15 @@ body {
   --index-h1-size: 2.6rem;
   --index-h1-line-height: 1.4;
   --index-h1-margin-bottom: 59px;
+
+  --font-size-body-supporting: 0.9rem;
+  --line-height-body-supporting: 2;
+
+  --font-size-body-reading: 0.95rem;
+  --line-height-body-reading: 2.1;
+
+  --letter-spacing-body: 0.02em;
+  --color-text-body: #333;
 }
 
 /* =========================

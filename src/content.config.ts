@@ -2,6 +2,36 @@ import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
 /* =========================
+   home
+========================= */
+
+const home = defineCollection({
+  loader: glob({
+    pattern: "**/*.md",
+    base: "./src/content/home",
+  }),
+
+  schema: z.object({
+    hero_image: z.string(),
+
+    sections: z.array(
+      z.object({
+       id: z.string(),
+
+        title: z.string(),
+        href: z.string(),
+
+       image: z.object({
+          landscape: z.string(),
+          square: z.string(),
+          portrait: z.string(),
+        }),
+      }),
+    ),
+  }),
+});
+
+/* =========================
    artists
 ========================= */
 const artists = defineCollection({
@@ -164,4 +194,5 @@ export const collections = {
   exhibitions,
   journal,
   news,
+  home,
 };

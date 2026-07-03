@@ -60,7 +60,7 @@
 }
 
 .about-statement-body {
-  max-width: 872px;
+  max-width: 798px;
   margin: 0 auto;
 }
 
@@ -107,10 +107,10 @@
 }
 
 .about-statement-body p {
-  color: #111;
-  font-size: 0.9rem;
-  line-height: 2.1;
-  letter-spacing: 0.02em;
+  color: var(--color-text-body);
+  font-size: var(--font-size-body-supporting);
+  line-height: var(--line-height-body-supporting);
+  letter-spacing: var(--letter-spacing-body);
 }
 
 .about-statement-body p + p {

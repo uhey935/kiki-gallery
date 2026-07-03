@@ -154,7 +154,14 @@ if (start > today) {
 
   {
     exh.data.hero_image && (
-      <figure class="exhibitions-detail-image">
+      <figure
+        class:list={[
+          "exhibitions-detail-image",
+          {
+            "exhibitions-detail-image--portrait": exh.data.hero_portrait,
+          },
+        ]}
+      >
         <img src={exh.data.hero_image} alt={displayTitle} />
       </figure>
     )
