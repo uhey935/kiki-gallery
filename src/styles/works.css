@@ -101,7 +101,7 @@
 }
 
 .works-detail-title {
-  font-size: 3rem;
+  font-size: clamp(1.7rem, 3vw, 3.0rem);
   line-height: 1.3;
   font-weight: 500;
 

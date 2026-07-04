@@ -158,6 +158,11 @@
   align-items: start;
   margin: var(--page-heading-offset) 0 120px;
 }
+@media (max-width: 1280px) {
+  .artists-intro {
+  grid-template-columns: 1fr 1.438fr;
+  }
+}
 
 /* =========================
    Detail Works
@@ -174,6 +179,11 @@
   display: grid;
   padding-bottom: 120px;
   align-items: start;
+}
+@media (max-width: 1280px) {
+  .artists-works-card {
+  padding-bottom: 110px;
+  }
 }
 
 .artists-works-link {
@@ -277,6 +287,11 @@
   gap: 40px;
   margin: 0 auto;
   align-items: start;
+}
+@media (max-width: 1280px) {
+  .artists-bio-layout {
+    width: 94%;
+  }
 }
 
 .artists-bio-image {
