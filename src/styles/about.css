@@ -67,7 +67,7 @@
   max-width: 798px;
   margin: 0 auto;
 }
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .about-statement-body {
     max-width: 738px;
   }

@@ -127,7 +127,9 @@ const artistHref = `/artists/${work.data.artist}`;
         {
           work.data.inquiry && (
             <p class="works-detail-inquiry">
-              <a href={inquiryHref}>Inquire</a>
+              <a href={inquiryHref} class="action-link">
+                Inquire
+              </a>
             </p>
           )
         }

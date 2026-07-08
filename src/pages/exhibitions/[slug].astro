@@ -299,7 +299,7 @@ if (start > today) {
         {
           artists.map((artist) => (
             <li class="exhibitions-artist-item">
-              <a href={`/artists/${artist.id}`} class="exhibitions-artist-link">
+              <a href={`/artists/${artist.id}`} class="action-link">
                 {artist.data.nameJa || artist.data.name}
               </a>
             </li>
@@ -308,10 +308,8 @@ if (start > today) {
       </ul>
     </section>
 
-    <nav class="detail-navigation" aria-label="Exhibition navigation">
-      <a href="/exhibitions" class="detail-navigation-link">
-        View All Exhibitions
-      </a>
+    <nav class="detail-navigation" aria-label="All exhibitions">
+      <a href="/exhibitions" class="action-link"> View All Exhibitions </a>
     </nav>
   </section>
 

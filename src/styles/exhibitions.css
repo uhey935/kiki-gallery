@@ -141,7 +141,7 @@
   align-items: start;
   margin: 0 auto var(--section-gap-lg);
 }
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .exhibitions-main {
   width: 97%;
   grid-template-columns: 270px minmax(0, 1fr);
@@ -344,29 +344,4 @@
 
 .exhibitions-artist-item {
   list-style: none;
-}
-
-.exhibitions-artist-link {
-  position: relative;
-  display: inline-block;
-
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-/* =========================
-   Detail Hover
-========================= */
-
-.exhibitions-artist-link::after {
-  content: "";
-  position: absolute;
-
-  left: 0;
-  bottom: 2px;
-
-  width: 100%;
-  height: 1px;
-
-  background: currentColor;
 }
