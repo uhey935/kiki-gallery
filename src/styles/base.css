@@ -51,9 +51,7 @@ body {
     "Noto Sans JP",
     system-ui,
     sans-serif;
-}
 
-body {
   line-height: 1.6;
   color: #111;
   background: #f7f7f7;
@@ -75,7 +73,7 @@ body {
 
 .site-main {
   padding: 40px 0 80px;
-} /* コンテンツの上下スペース */
+}
 
 .site-main--flush {
   padding: 0;
@@ -84,13 +82,13 @@ body {
 .section {
   width: 100%;
   padding: 0 var(--layout-space);
-} /* 左右スペース */
+}
 
-.wrapper {
+.breadcrumb-container {
   width: 100%;
   padding: 0 var(--layout-space);
   margin: 0 auto;
-} /* パンくずリストの左右スペース */
+}
 
 /* =========================
    Page Heading Offset

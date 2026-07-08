@@ -130,7 +130,6 @@
 }
 
 .exhibitions-heading {
-  /* width: 100%; 削除：ブロック要素のためデフォルトで100% */
   padding-top: var(--page-heading-offset);
 }
 
@@ -160,19 +159,6 @@
   letter-spacing: 0.15rem;
   margin-bottom: 7px;
 }
-
-/*
-.exhibitions-heading-status {
-  display: inline-block;
-  font-size: 0.9rem;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  padding: 9px 11px;
-  margin-bottom: 21px;
-  background: #e5e5e5;
-  color: #111;
-}
-*/
 
 .exhibitions-venue-title {
   font-size: 0.95rem;
@@ -217,7 +203,6 @@
 ========================= */
 
 .exhibitions-info {
-  /* width: 100%; 削除：ブロック要素のためデフォルトで100% */
   position: sticky;
   will-change: transform;
   top: 55px;
@@ -276,7 +261,6 @@
   border-top: 1px solid #ccc;
 }
 
-/* 整理：margin-bottomを0にするため、後続のpのmargin-topを打ち消す必要がなくなりました */
 .exhibitions-article .exhibitions-venue p {
   margin: 0;
 }
@@ -325,14 +309,9 @@
 }
 
 .exhibitions-work-artist {
-  font-size: .9rem;
+  font-size: 0.9rem;
   color: #666;
   margin-bottom: 13px;
-}
-
-.exhibitions-work-artist a {
-  text-decoration: none;
-  color: inherit;
 }
 
 .exhibitions-work-title {
@@ -365,18 +344,11 @@
 
 .exhibitions-artist-item {
   list-style: none;
-  /* margin: 0; 不要なため削除 */
 }
-
-/* 不要なため削除：親でgap管理しており、かつflex-wrapしているため */
-/* .exhibitions-artist-item:last-child { margin-bottom: 0; } */
 
 .exhibitions-artist-link {
   position: relative;
   display: inline-block;
-
-  text-decoration: none;
-  color: inherit;
 
   font-size: 1rem;
   line-height: 1.6;

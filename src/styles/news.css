@@ -2,29 +2,17 @@
    News Layout (Final Base)
 ========================= */
 
-/* 全体 */
 .news-index {
   width: 100%;
   padding-top: var(--page-heading-offset);
 }
 
-/* 年ブロック */
 .news-year {
   margin-bottom: clamp(64px, 6vw, 80px);
 }
 
 /* =========================
-   h1
-========================= */
-
-.page-title {
-  font-size: var(--page-title-size);
-  line-height: var(--page-title-line-height);
-  margin-bottom: var(--page-title-margin-bottom);
-}
-
-/* =========================
-   2カラム
+    Year Layout
 ========================= */
 
 .news-year-row {
@@ -32,10 +20,9 @@
   grid-template-columns: 180px 1fr;
   column-gap: 40px;
 
-  align-items: baseline; /* ←揃えの核 */
+  align-items: baseline; 
 }
 
-/* 左（年） */
 .news-year-left {
   position: sticky;
   top: 33px;
@@ -45,31 +32,25 @@
   margin: 0;
   line-height: 1;
 
-  align-self: start; /* ←これが本質 */
+  align-self: start;
 }
 
 .news-year:last-child {
   margin-bottom: 0;
 }
 
-/* =========================
-   右（リスト）
-========================= */
-
 .news-year-right {
   width: 100%;
 }
 
-/* リスト */
 .news-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-
 /* =========================
-   メタ（日付 | カテゴリ）
+   News Meta
 ========================= */
 
 .news-meta {
@@ -84,7 +65,7 @@
 }
 
 /* =========================
-   タイトル
+    News Typography
 ========================= */
 
 .news-card-title {
@@ -94,10 +75,6 @@
 
   margin: 31px 0 8px;
 }
-
-/* =========================
-   本文
-========================= */
 
 .news-excerpt {
   font-size: var(--font-size-body-reading);

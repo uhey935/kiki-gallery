@@ -62,7 +62,6 @@
   z-index: 20;
 
   color: #111;
-  text-decoration: none;
 }
 
 .site-header__controls {
@@ -82,12 +81,6 @@
 
 .site-header__language-link {
   color: #111;
-  text-decoration: none;
-}
-
-.site-header__language-link,
-.site-header__nav-link {
-  position: relative;
 }
 
 .site-header__language-link,
@@ -266,7 +259,7 @@
 .site-header__primary-navigation {
   display: flex;
   align-items: flex-start;
-  gap: 51px;/* MENUギャップ */
+  gap: 51px;
 }
 
 .site-header__navigation-label {
@@ -276,7 +269,7 @@
   text-orientation: mixed;
   line-height: 1;
 
-    transform: rotate(180deg) translateY(-0.41em);
+  transform: rotate(180deg) translateY(-0.41em);
   text-transform: uppercase;
 }
 
@@ -335,7 +328,6 @@
 
 .site-header__nav-link {
   color: inherit;
-  text-decoration: none;
 }
 
 /* =========================
@@ -378,7 +370,6 @@
 
 .site-header__info-link {
   color: inherit;
-  text-decoration: none;
 }
 
 .site-header__info-address {
@@ -414,8 +405,8 @@
 
 .site-header a:focus-visible,
 .site-header button:focus-visible {
-outline: 1px solid rgb(17 17 17 / 35%);
-outline-offset: 6px;
+  outline: 1px solid rgb(17 17 17 / 35%);
+  outline-offset: 6px;
 }
 
 /* =========================
