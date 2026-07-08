@@ -10,7 +10,7 @@
 
 /* 年ブロック */
 .news-year {
-  margin-bottom: 80px;
+  margin-bottom: clamp(64px, 6vw, 80px);
 }
 
 /* =========================
@@ -105,5 +105,5 @@
   letter-spacing: var(--letter-spacing-body);
   color: var(--color-text-body);
 
-  margin-bottom: 88px;
+  margin-bottom: clamp(58px, 6vw, 88px);
 }

@@ -98,7 +98,9 @@ body {
 
 :root {
   --page-heading-offset: 118px;
-  --layout-space: clamp(16px, 4vw, 80px); /* 左右スペース */
+  --layout-space: clamp(16px, 4vw, 80px);
+
+  --section-gap-lg: clamp(80px, 8vw, 120px); /* section間の標準余白 */
 
   --index-h1-size: 2.6rem;
   --index-h1-line-height: 1.4;
@@ -193,7 +195,7 @@ body {
 
 .detail-navigation {
   text-align: center;
-  margin-top: 4.21rem;
+  margin-top: clamp(63px, 5vw, 68px);
 }
 
 .detail-navigation-link {

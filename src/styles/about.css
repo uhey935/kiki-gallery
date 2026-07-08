@@ -55,13 +55,22 @@
 .about-statement {
   position: relative;
 
-  margin: 147px 0 103px;
+  margin:
+    clamp(80px, 9vw, 147px)
+    0
+    clamp(80px, 8vw, 103px);
+
   padding: 0 var(--layout-space);
 }
 
 .about-statement-body {
   max-width: 798px;
   margin: 0 auto;
+}
+@media (max-width: 1024px) {
+  .about-statement-body {
+  max-width: 738px;
+  }
 }
 
 /* =========================

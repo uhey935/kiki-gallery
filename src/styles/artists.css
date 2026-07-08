@@ -4,7 +4,7 @@
 
 .artists {
   padding-top: var(--page-heading-offset);
-  padding-bottom: 80px;
+  padding-bottom: clamp(62px, 6vw, 82px);
 }
 
 /* =========================
@@ -51,7 +51,7 @@
 .artists-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 70px 48px;
+  gap: clamp(66px, 5vw, 70px) 48px;
 }
 
 /* =========================
@@ -156,7 +156,10 @@
   grid-template-columns: 1fr 1fr;
   gap: 40px;
   align-items: start;
-  margin: var(--page-heading-offset) 0 120px;
+  margin:
+    var(--page-heading-offset)
+    0
+    var(--section-gap-lg);
 }
 @media (max-width: 1280px) {
   .artists-intro {
@@ -169,8 +172,8 @@
 ========================= */
 
 .artists-works {
-  padding: 0 var(--layout-space); /* 左右スペース */
-  margin-top: 80px;
+  padding: 0 var(--layout-space);
+  margin-top: 0;
 }
 
 /* Card Common */
@@ -182,7 +185,7 @@
 }
 @media (max-width: 1280px) {
   .artists-works-card {
-  padding-bottom: 110px;
+  padding-bottom: clamp(100px, 8vw, 120px);
   }
 }
 
@@ -276,7 +279,7 @@
 ========================= */
 
 .artists-bio {
-  margin-bottom: 120px;
+  margin-bottom: var(--section-gap-lg);
   scroll-margin-top: 140px;
 }
 

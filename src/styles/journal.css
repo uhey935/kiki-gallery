@@ -12,14 +12,17 @@
   grid-template-areas:
     "hero item1 item2"
     "hero item3 item4";
-  gap: 68px;
 }
 
 .journal-grid--list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 68px;
   margin-top: 48px;
+}
+
+.journal-grid,
+.journal-grid--list {
+  gap: clamp(40px, 5vw, 68px);
 }
 
 .journal-card--hero {
@@ -117,7 +120,7 @@
   display: block;
   font-size: 0.875rem;
   color: #666;
-  margin-bottom: 73px;
+  margin-bottom: clamp(56px, 6vw, 73px);
   text-align: center;
 }
 
@@ -160,7 +163,7 @@
 }
 
 .article-body p + figure {
-  margin-top: 116px;
+  margin-top: clamp(80px, 8vw, 116px);
 }
 
 .article-body figure + p {
