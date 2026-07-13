@@ -108,10 +108,16 @@ body {
   --line-height-body-supporting: 2;
 
   --font-size-body-reading: clamp(0.9rem, 1.2vw, 0.95rem);
-  --line-height-body-reading: clamp(1.85, 2vw, 2.1);
+  --line-height-body-reading: 2.1;
 
   --letter-spacing-body: clamp(0.01em, 0.005em + 0.04vw, 0.02em);
   --color-text-body: #333;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --line-height-body-reading: 1.9;
+  }
 }
 
 /* =========================
