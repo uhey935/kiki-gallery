@@ -36,6 +36,11 @@ const description = `${workTitle} | KiKi Gallery`;
 
 const inquiryHref = "mailto:info@kiki-gallery.com";
 const artistHref = `/artists/${work.data.artist}`;
+
+const images = work.data.images;
+
+const isSingleLandscape =
+  images.length === 1 && work.data.orientation === "landscape";
 ---
 
 <WorkLayout title={workTitle} description={description}>
@@ -60,81 +65,132 @@ const artistHref = `/artists/${work.data.artist}`;
         stroke-linecap="round"></path>
     </svg>
   </button>
-  <main class="works-detail">
+  <main
+    class:list={["works-detail", { "works-detail--single": isSingleLandscape }]}
+  >
     {
-      work.data.images.map((image, index) => (
-        <section class="works-detail-section">
+      isSingleLandscape ? (
+        <section class="works-detail-section works-detail-section--single">
           <figure class="works-detail-image">
             <img
-              src={image.src}
-              alt={image.alt ?? workTitle}
+              src={images[0].src}
+              alt={images[0].alt ?? workTitle}
               decoding="async"
-              fetchpriority={index === 0 ? "high" : undefined}
-              loading={index >= 3 ? "lazy" : undefined}
+              fetchpriority="high"
+              loading="eager"
             />
           </figure>
-        </section>
-      ))
-    }
 
-    <section class="works-detail-section">
-      <div class="works-detail-meta">
-        <h1 class="works-detail-title">{workTitle}</h1>
+          <div class="works-detail-meta">
+            <h1 class="works-detail-title">{workTitle}</h1>
 
-        <p class="works-detail-artist">
-          <a href={artistHref}>
-            {artistName}
-          </a>
-        </p>
-
-        <dl class="works-detail-information">
-          {
-            work.data.material && (
-              <>
-                <dt>Material</dt>
-                <dd>{work.data.material}</dd>
-              </>
-            )
-          }
-
-          {
-            work.data.size && (
-              <>
-                <dt>Size</dt>
-                <dd>{work.data.size}</dd>
-              </>
-            )
-          }
-
-          {
-            work.data.year && (
-              <>
-                <dt>Year</dt>
-                <dd>{work.data.year}</dd>
-              </>
-            )
-          }
-        </dl>
-
-        {
-          hasStatement && (
-            <div class="works-detail-statement">
-              <Content />
-            </div>
-          )
-        }
-
-        {
-          work.data.inquiry && (
-            <p class="works-detail-inquiry">
-              <a href={inquiryHref} class="action-link">
-                Inquire
-              </a>
+            <p class="works-detail-artist">
+              <a href={artistHref}>{artistName}</a>
             </p>
-          )
-        }
-      </div>
-    </section>
+
+            <dl class="works-detail-information">
+              {work.data.material && (
+                <>
+                  <dt>Material</dt>
+                  <dd>{work.data.material}</dd>
+                </>
+              )}
+
+              {work.data.size && (
+                <>
+                  <dt>Size</dt>
+                  <dd>{work.data.size}</dd>
+                </>
+              )}
+
+              {work.data.year && (
+                <>
+                  <dt>Year</dt>
+                  <dd>{work.data.year}</dd>
+                </>
+              )}
+            </dl>
+
+            {hasStatement && (
+              <div class="works-detail-statement">
+                <Content />
+              </div>
+            )}
+
+            {work.data.inquiry && (
+              <p class="works-detail-inquiry">
+                <a href={inquiryHref} class="action-link">
+                  Inquire
+                </a>
+              </p>
+            )}
+          </div>
+        </section>
+      ) : (
+        <>
+          {images.map((image, index) => (
+            <section class="works-detail-section">
+              <figure class="works-detail-image">
+                <img
+                  src={image.src}
+                  alt={image.alt ?? workTitle}
+                  decoding="async"
+                  fetchpriority={index === 0 ? "high" : undefined}
+                  loading={index >= 3 ? "lazy" : undefined}
+                />
+              </figure>
+            </section>
+          ))}
+
+          <section class="works-detail-section">
+            <div class="works-detail-meta">
+              <h1 class="works-detail-title">{workTitle}</h1>
+
+              <p class="works-detail-artist">
+                <a href={artistHref}>{artistName}</a>
+              </p>
+
+              <dl class="works-detail-information">
+                {work.data.material && (
+                  <>
+                    <dt>Material</dt>
+                    <dd>{work.data.material}</dd>
+                  </>
+                )}
+
+                {work.data.size && (
+                  <>
+                    <dt>Size</dt>
+                    <dd>{work.data.size}</dd>
+                  </>
+                )}
+
+                {work.data.year && (
+                  <>
+                    <dt>Year</dt>
+                    <dd>{work.data.year}</dd>
+                  </>
+                )}
+              </dl>
+
+              {hasStatement && (
+                <div class="works-detail-statement">
+                  <Content />
+                </div>
+              )}
+
+              {work.data.inquiry && (
+                <p class="works-detail-inquiry">
+                  <a href={inquiryHref} class="action-link">
+                    Inquire
+                  </a>
+                </p>
+              )}
+            </div>
+          </section>
+        </>
+      )
+    }
   </main>
 </WorkLayout>
 

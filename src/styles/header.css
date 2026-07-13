@@ -1,5 +1,5 @@
 /* =========================
-   Font Size
+   Typography
 ========================= */
 
 .site-header__logo {
@@ -13,7 +13,7 @@
 }
 
 .site-header__nav-link {
-  font-size: 4.1rem;
+  font-size: clamp(2.2rem, 10vw, 4.1rem);
   font-weight: 500;
   line-height: 0.95;
   letter-spacing: 0.025em;
@@ -432,4 +432,96 @@
 
 .site-header--home.is-scrolled .site-header__menu-line {
   background: #111;
+}
+
+/* =========================
+   Mobile
+========================= */
+
+@media (max-width: 767px) {
+  /* ----------
+     Header
+  ---------- */
+
+  .site-header {
+    padding: 24px 20px;
+  }
+
+  /* ----------
+     Overlay
+  ---------- */
+
+  .site-header__overlay-layout {
+    display: flex;
+    flex-direction: column;
+
+    min-height: 100vh;
+    padding: clamp(48px, 9vw, 53px) 
+    0 
+    0 
+    clamp(32px, 10vw, 100px);
+  }
+
+  /* ----------
+     Navigation
+  ---------- */
+
+  .site-header__navigation-label {
+    display: none;
+  }
+
+  .site-header__primary-navigation {
+    display: block;
+  }
+
+  .site-header__nav-list {
+    gap: 12px;
+  }
+
+  /* ----------
+     Information
+  ---------- */
+
+  .site-header__overlay-secondary {
+    display: block;
+    margin-top: 56px;
+    padding-top: 0;
+  }
+
+  .site-header__info {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .site-header__info-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .site-header__info-item:last-child {
+    margin-top: 24px;
+  }
+
+  .site-header__info {
+    font-size: clamp(0.9rem, 2.4vw, 1.2rem);
+    line-height: 1.0;
+  }
+
+  /* ----------
+     Menu Button
+  ---------- */
+
+  .site-header__menu-button {
+    width: 56px;
+    height: 26px;
+  }
+
+  .site-header__menu-icon {
+    width: 56px;
+  }
+
+  .site-header__menu-line {
+    width: 56px;
+  }
 }

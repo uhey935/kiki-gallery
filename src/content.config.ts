@@ -75,6 +75,8 @@ const works = defineCollection({
     size: z.string().optional(),
     material: z.string().optional(),
 
+    orientation: z.literal("landscape").optional(),
+
     year: z.number().optional(),
 
     date: z.string().optional(),

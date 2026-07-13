@@ -17,12 +17,12 @@
 .journal-grid--list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  margin-top: 48px;
+  margin-top: clamp(48px, 6vw, 80px);
 }
 
 .journal-grid,
 .journal-grid--list {
-  gap: clamp(40px, 5vw, 68px);
+  gap: clamp(24px, 5vw, 68px);
 }
 
 .journal-card--hero {
@@ -58,15 +58,19 @@
 ========================= */
 
 .journal-title {
-  font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
   font-weight: 800;
+  line-height: 1.5;
+
   margin: 10px 0 23px;
 }
 
 .journal-card-title {
-  font-size: clamp(1.1rem, 2.2vw, 1.3rem);
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
   font-weight: 800;
-  margin: 10px 0 18px;
+  line-height: 1.5;
+
+  margin: 10px 0 clamp(12px, 1.5vw, 18px);
 }
 
 .journal-category {
@@ -86,43 +90,59 @@
 ========================= */
 
 .article {
-  max-width: 800px;
+  width: 100%;
+  max-width: clamp(640px, 65vw, 800px);
+
   margin: 0 auto;
   padding:
-    var(--article-offset)
-    var(--layout-space)
+    clamp(80px, 10vw, var(--article-offset))
+    0
     0;
 }
 
 .article-hero {
   position: relative;
-  margin-bottom: 58px;
+  margin-bottom: clamp(35px, 6vw, 58px);
+}
+
+.article-hero img {
+  width: 100%;
 }
 
 .article-hero figcaption {
   position: absolute;
   right: -31px;
   bottom: 0;
+
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  font-size: 14px;
-  color: #555;
+
+  font-size: 0.85rem;
   line-height: 1.4;
+
+  color: #555;
+
   transform: rotate(180deg);
 }
 
 .article-title {
-  font-size: 1.75rem;
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
   line-height: 1.4;
+
   text-align: center;
+
   margin-bottom: 32px;
 }
 
 .article-date {
   display: block;
-  font-size: 0.875rem;
+
+  font-size: clamp(0.8rem, 1vw, 0.875rem);
+
   color: #666;
+
   margin-bottom: clamp(56px, 6vw, 73px);
+
   text-align: center;
 }
 
@@ -159,8 +179,10 @@
 
 .article-body figure figcaption {
   margin-top: 18px;
+
   font-size: 0.85rem;
   line-height: 1.5;
+
   color: #666;
 }
 
@@ -173,10 +195,10 @@
 }
 
 /* =========================
-   Responsive
+   Responsive Journal Index
 ========================= */
 
-@media (max-width: 1023px) {
+@media (max-width: 767px) {
   .journal-grid {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -185,11 +207,76 @@
       "item2"
       "item3"
       "item4";
-    gap: 32px;
+
+    gap: clamp(56px, 12vw, 80px);
   }
 
   .journal-grid--list {
-    grid-template-columns: 1fr;
-    gap: 32px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(20px, 6vw, 32px);
+  }
+
+  .journal-grid--list .journal-card-title {
+    font-size: 1rem;
+    margin-bottom: 11px;
+  }
+}
+
+/* Prevent date wrapping just before mobile layout */
+@media (max-width: 780px) and (min-width: 768px) {
+  .journal-card:not(.journal-card--hero) .journal-date {
+    display: none;
+  }
+}
+
+/* =========================
+   Responsive Journal Detail
+========================= */
+
+@media (max-width: 1279px) {
+  .article {
+    padding-top: clamp(72px, 8vw, 93px);
+  }
+}
+
+@media (max-width: 767px) {
+  .article {
+    width: auto;
+
+    padding:
+      0
+      var(--layout-space)
+      0;
+  }
+
+  .article-hero {
+    width: calc(100% + (var(--layout-space) * 2));
+
+    margin-top: clamp(30px, 11vw, 55px);
+    margin-left: calc(var(--layout-space) * -1);
+  }
+
+  .article-hero figcaption {
+    position: static;
+
+    margin:
+      14px
+      var(--layout-space)
+      0;
+
+    writing-mode: horizontal-tb;
+    transform: none;
+
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .article-title {
+    text-align: left;
+    margin-bottom: 24px;
+  }
+
+  .article-date {
+    text-align: left;
   }
 }

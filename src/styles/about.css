@@ -114,6 +114,11 @@
   text-orientation: mixed;
   transform: rotate(180deg);
 }
+@media (max-width: 1023px) {
+  .about-statement-heading {
+    display: none;
+  }
+} 
 
 .about-statement-body p {
   color: var(--color-text-body);
@@ -150,4 +155,50 @@
 
 .about-information-item a:hover .about-information-ig {
   opacity: 0.6;
+}
+
+/* =========================
+   Mobile
+========================= */
+
+@media (max-width: 767px) {
+  .about-intro {
+    width: 100%;
+  }
+
+  .about-hero {
+    margin-top: clamp(30px, 11vw, 55px);
+  }
+
+  .about-information {
+    padding: 0 var(--layout-space);
+  }
+
+  .about-statement {
+    margin:
+      clamp(40px, 18vw, 90px)
+      0
+      clamp(40px, 18vw, 90px);
+  }
+
+  .about-statement-heading {
+    display: none;
+  }
+
+  .about-gallery {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-left: clamp(55px, 12vw, 100px);
+    scrollbar-width: none;
+  }
+
+  .about-gallery::-webkit-scrollbar {
+    display: none;
+  }
+
+  .about-gallery img {
+    flex: 0 0 auto;
+    width: auto;
+    height: clamp(220px, 65vw, 300px);
+  }
 }

@@ -30,9 +30,11 @@
 
 .news-year-heading {
   margin: 0;
-  line-height: 1;
 
-  align-self: start;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
 }
 
 .news-year:last-child {
@@ -54,7 +56,7 @@
 ========================= */
 
 .news-meta {
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 1vw, 0.9rem);
   color: #666;
 
   line-height: 1;
@@ -69,11 +71,11 @@
 ========================= */
 
 .news-card-title {
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 1.5vw, 1.1rem);
   font-weight: 600;
   line-height: 1.4;
 
-  margin: 31px 0 8px;
+  margin: clamp(15px, 3vw, 31px) 0 8px;
 }
 
 .news-excerpt {
@@ -83,4 +85,28 @@
   color: var(--color-text-body);
 
   margin-bottom: clamp(58px, 6vw, 88px);
+}
+
+/* =========================
+   Responsive
+========================= */
+
+/* Mobile */
+@media (max-width: 767px) {
+  .news-year-row {
+    display: block;
+  }
+
+  .news-year-left {
+    position: static;
+  }
+
+ .news-year-heading {
+    margin: 0;
+    margin-bottom: clamp(33px, 8vw, 48px);    
+  }
+
+  .news-card-title {
+  margin-bottom: 19px;
+  }
 }
