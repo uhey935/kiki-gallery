@@ -141,7 +141,7 @@ formattedExhibitions.sort((a, b) => {
               </div>
 
               <div class="exhibitions-card__meta">
-                <div>
+                <div class="exhibitions-card__content">
                   {exh.data.display_artists !== false && (
                     <p class="exhibitions-artist">
                       {exh.artistNames.join("・")}
@@ -154,7 +154,13 @@ formattedExhibitions.sort((a, b) => {
                 <p class="exhibitions-date exhibitions-card__date">
                   {exh.data.date && (
                     <>
-                      <span class="exhibitions-date__value">{`${exh.startDate?.getFullYear()}.${String((exh.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exh.startDate?.getDate()).padStart(2, "0")}`}</span>
+                      <time
+                        class="exhibitions-date__value"
+                        datetime={exh.data.date}
+                      >
+                        {`${exh.startDate?.getFullYear()}.${String((exh.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exh.startDate?.getDate()).padStart(2, "0")}`}
+                      </time>
+
                       <span class="exhibitions-date__weekday">
                         {getWeekday(exh.data.date)}
                       </span>
@@ -162,7 +168,14 @@ formattedExhibitions.sort((a, b) => {
                       {exh.data.end_date && (
                         <>
                           <span class="exhibitions-date__separator"> - </span>
-                          <span class="exhibitions-date__value">{`${String((exh.endDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exh.endDate?.getDate()).padStart(2, "0")}`}</span>
+
+                          <time
+                            class="exhibitions-date__value"
+                            datetime={exh.data.end_date}
+                          >
+                            {`${String((exh.endDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exh.endDate?.getDate()).padStart(2, "0")}`}
+                          </time>
+
                           <span class="exhibitions-date__weekday">
                             {getWeekday(exh.data.end_date)}
                           </span>

@@ -29,15 +29,15 @@
 }
 
 .exhibitions-card .exhibitions-artist {
-  font-size: 1rem;
-  margin-bottom: 14px;
+  font-size: clamp(0.95rem, 2vw, 1rem);
+  margin-bottom: clamp(10px, 1.6vw, 14px);
 }
 
 .exhibitions-card .exhibitions-title {
-  font-size: 1.35rem;
+  font-size: clamp(1.2rem, 2.8vw, 1.35rem);
   letter-spacing: 0.03em;
   line-height: 1.4;
-  margin-bottom: 21px;
+  margin-bottom: clamp(16px, 2vw, 21px);
 }
 
 .exhibitions-card .exhibitions-date {
@@ -45,7 +45,7 @@
 }
 
 .exhibitions-date__value {
-  font-size: 1rem;
+  font-size: clamp(0.95rem, 2vw, 1rem);
   letter-spacing: 0.02em;
 }
 
@@ -62,7 +62,7 @@
 .exhibitions-card__image {
   position: relative;
   overflow: hidden;
-  margin-bottom: 18px;
+  margin-bottom: clamp(16px, 2vw, 18px);
 }
 
 .exhibitions-card__image img {
@@ -111,7 +111,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 24px;
+  gap: clamp(16px, 2vw, 24px);
 }
 
 .exhibitions-card__date {
@@ -344,4 +344,56 @@
 
 .exhibitions-artist-item {
   list-style: none;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+/* Tablet */
+@media (max-width: 1023px) {
+  .exhibitions-card__meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .exhibitions-card .exhibitions-artist {
+    margin-bottom: clamp(3px, 0.6vw, 6px);
+  }
+
+  .exhibitions-card .exhibitions-title {
+    margin-bottom: 0;
+  }
+
+  .exhibitions-card__date {
+    margin-top: clamp(9px, 1.6vw, 15px);
+  }
+
+  .exhibitions-grid {
+    row-gap: calc(var(--layout-space) + 33px);
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .exhibitions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .exhibitions-card__image {
+    margin-bottom: clamp(18px, 4vw, 23px);
+  }
+
+  .exhibitions-card .exhibitions-artist {
+    margin-bottom: clamp(3px, 1vw, 6px);
+  }
+
+  .exhibitions-card .exhibitions-title {
+    margin-bottom: clamp(5px, 1.5vw, 8px);
+  }
+
+  .exhibitions-card__link {
+    padding-bottom: clamp(4px, 1.5vw, 7px);
+  }
 }

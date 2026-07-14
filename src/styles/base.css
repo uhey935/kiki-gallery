@@ -95,14 +95,14 @@ body {
 ========================= */
 
 :root {
-  --page-heading-offset: 118px;
+  --page-heading-offset: clamp(88px, 9vw, 118px);
   --layout-space: clamp(16px, 4vw, 80px);
 
   --section-gap-lg: clamp(80px, 8vw, 120px); /* section間の標準余白 */
 
-  --index-h1-size: 2.6rem;
+  --index-h1-size: clamp(2rem, 5vw, 2.6rem);
   --index-h1-line-height: 1.4;
-  --index-h1-margin-bottom: 59px;
+  --index-h1-margin-bottom: clamp(40px, 5vw, 59px);
 
   --font-size-body-supporting: clamp(0.85rem, 0.82rem + 0.15vw, 0.9rem);
   --line-height-body-supporting: 2;
@@ -116,6 +116,7 @@ body {
 
 @media (max-width: 767px) {
   :root {
+    --index-h1-line-height: 1.3;
     --line-height-body-reading: 1.9;
   }
 }
