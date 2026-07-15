@@ -274,12 +274,8 @@ if (start > today) {
                         : work.data.title}
                     </p>
 
-                    {(work.data.size || work.data.material) && (
-                      <p class="exhibitions-work-meta">
-                        {[work.data.size, work.data.material]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </p>
+                    {work.data.material && (
+                      <p class="exhibitions-work-meta">{work.data.material}</p>
                     )}
                   </figcaption>
                 </figure>

@@ -144,7 +144,7 @@
 @media (max-width: 1023px) {
   .exhibitions-main {
   width: 97%;
-  grid-template-columns: 270px minmax(0, 1fr);
+  grid-template-columns: 254px minmax(0, 1fr);
   gap: 0;
   }
 }
@@ -157,12 +157,12 @@
   font-size: clamp(1.1rem, 2.4vw, 1.4rem);
   color: #666;
   letter-spacing: 0.15rem;
-  margin-bottom: 7px;
+  margin-bottom: clamp(5px, 0.76vw, 7px);
 }
 
 .exhibitions-venue-title {
-  font-size: 0.95rem;
-  margin-bottom: 11px;
+  font-size: clamp(0.9rem, 1vw, 0.95rem);
+  margin-bottom: clamp(9px, 1vw, 11px);
 }
 
 .exhibitions-address-link {
@@ -213,15 +213,15 @@
 }
 
 .exhibitions-info-list dt {
-  font-size: 0.8rem;
+  font-size: clamp(0.75rem, 0.8vw, 0.8rem);
   color: #666;
-  margin-bottom: 4px;
+  margin-bottom: clamp(3px, 0.4vw, 4px);
 }
 
 .exhibitions-info-list dd {
-  font-size: 0.95rem;
+  font-size: clamp(0.9rem, 1vw, 0.95rem);
   line-height: 1.7;
-  margin: 0 0 24px;
+  margin: 0 0 clamp(20px, 2vw, 24px);
 }
 
 .exhibitions-info-list dd:last-child {
@@ -229,10 +229,10 @@
 }
 
 .exhibitions-info-list dd.exhibitions-date-main {
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
   font-weight: 600;
   line-height: 1.6;
-  margin-top: 8px;
+  margin-top: clamp(6px, 0.6vw, 8px);
 }
 
 /* =========================
@@ -293,7 +293,7 @@
 .exhibitions-work {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* 画像とタイトルのスペース */
+  gap: clamp(16px, 2vw, 20px);
 }
 
 .exhibitions-work img {
@@ -309,20 +309,20 @@
 }
 
 .exhibitions-work-artist {
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 1vw, 0.9rem);
   color: #666;
-  margin-bottom: 13px;
+  margin-bottom: clamp(10px, 1.2vw, 13px);
 }
 
 .exhibitions-work-title {
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
   font-weight: 600;
   line-height: 1.4;
-  margin-bottom: 7px;
+  margin-bottom: clamp(5px, 0.6vw, 7px);
 }
 
 .exhibitions-work-meta {
-  font-size: 0.8rem;
+  font-size: clamp(0.75rem, 0.8vw, 0.8rem);
   color: #777;
 }
 
@@ -337,7 +337,7 @@
 .exhibitions-artists-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: clamp(20px, 2vw, 24px);
   margin: 0;
   padding: 0;
 }
@@ -347,10 +347,9 @@
 }
 
 /* =========================
-   Responsive
+   Responsive Index
 ========================= */
 
-/* Tablet */
 @media (max-width: 1023px) {
   .exhibitions-card__meta {
     flex-direction: column;
@@ -375,7 +374,6 @@
   }
 }
 
-/* Mobile */
 @media (max-width: 767px) {
   .exhibitions-grid {
     grid-template-columns: 1fr;
@@ -395,5 +393,35 @@
 
   .exhibitions-card__link {
     padding-bottom: clamp(4px, 1.5vw, 7px);
+  }
+}
+
+/* =========================
+   Responsive Detail
+========================= */
+
+@media (max-width: 767px) {
+  .exhibitions-main {
+    width: 100%;
+    display: block;
+  }
+
+.exhibitions-detail-image {
+  margin-bottom: clamp(40px, 8vw, 48px);
+}
+
+.exhibitions-info {
+  position: static;
+  top: auto;
+  margin-bottom: clamp(24px, 6vw, 32px);
+}
+
+.exhibitions-venue {
+  margin-top: clamp(24px, 6vw, 32px);
+  padding-top: clamp(40px, 8vw, 48px);
+}
+
+  .exhibitions-works--3col .exhibitions-works-list {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
