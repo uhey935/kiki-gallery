@@ -6,7 +6,7 @@
 .home-stories__heading,
 .home-sections__artists-title,
 .home-sections__about-title {
-  font-size: clamp(1.7rem, 4vw, 2.1rem);
+  font-size: clamp(1.45rem, 3.4vw, 2.1rem);
   color: #111;
   line-height: 1.2;
   font-weight: 500;
@@ -16,15 +16,15 @@
 .home-exhibition__heading,
 .home-stories__heading,
 .home-sections__artists-title {
-  margin-bottom: 50px;
+  margin-bottom: clamp(32px, 4vw, 50px);
 }
 
 .home-sections__artists-title {
-  padding-left: 60px;
+  padding-left: clamp(24px, 4vw, 60px);
 }
 
 .home-sections__about-title {
-  margin-bottom: 19px;
+  margin-bottom: clamp(24px, 3.2vw, 43px);
 }
 
 /* =========================
@@ -205,22 +205,44 @@
 }
 
 .home-exhibition__content {
-  padding-top: 24px;
+  padding-top: clamp(18px, 2vw, 24px);
+}
+
+.home-exhibition__heading-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.home-exhibition__heading-left {
+  min-width: 0;
+  flex: 1;
 }
 
 .home-exhibition__artist {
-  margin: 0 0 10px;
+  font-size: clamp(0.85rem, 2.0vw, 0.95rem);
   line-height: 1.4;
+
+  margin: 0 0 clamp(6px, 1vw, 11px);
 }
 
 .home-exhibition__title {
+  font-size: clamp(1.0rem, 1.75vw, 1.4rem);
+  line-height: 1.5;
+  font-weight: 500;
+
   margin: 0;
-  line-height: 1.6;
 }
 
 .home-exhibition__date {
-  margin: 0;
+  flex-shrink: 0;
+
+  font-size: var(--font-size-body-supporting);
   line-height: 1.4;
+  text-align: right;
+
+  margin: 0;
 }
 
 .home-exhibition__status {
@@ -237,13 +259,6 @@
   text-transform: uppercase;
 }
 
-.home-exhibition__heading-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 24px;
-}
-
 .home-exhibition__date-value {
   font-size: 1em;
 }
@@ -252,20 +267,19 @@
   font-size: 0.82em;
   opacity: 0.65;
 }
-
 /* =========================
    Home Sections
 ========================= */
 
 .home-sections {
   padding-right: clamp(40px, 9vw, 138px);
-  padding-bottom: calc(var(--section-gap-lg) + 40px);
+  padding-bottom: calc(var(--section-gap-lg) + 21px);
 }
 
 .home-sections__inner {
   display: grid;
-  grid-template-columns: 1.54fr 1fr;
-  gap: clamp(80px, 10vw, 160px);
+  grid-template-columns: 1.56fr 1fr;
+  gap: clamp(80px, 9.4vw, 153px);
 }
 
 .home-sections__link {
@@ -285,7 +299,7 @@
 
 .home-sections__about-media {
   margin-top: clamp(120px, 12vw, 191px);
-  margin-bottom: 50px;
+  margin-bottom: clamp(32px, 4vw, 50px);
 }
 
 .home-sections__description {
@@ -299,7 +313,7 @@
 
 .home-stories {
   padding:
-    80px
+    clamp(56px, 6vw, 80px)
     clamp(24px, 5vw, 80px)
     var(--section-gap-lg);
   background: #e9e9e6;
@@ -312,7 +326,7 @@
 .home-stories__list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 48px clamp(24px, 5vw, 80px);
+  gap: clamp(36px, 5vw, 48px) clamp(24px, 5vw, 80px);
 }
 
 .home-stories__item {
@@ -329,7 +343,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  margin: 0 0 20px;
+  margin: 0 0 clamp(16px, 2vw, 20px);
   background: #ecece4;
   overflow: hidden;
 }
@@ -346,7 +360,7 @@
 }
 
 .home-stories__kind {
-  margin: 0 0 8px;
+  margin: 0 0 clamp(6px, 1vw, 8px);
   font-size: 0.8rem;
   line-height: 1.2;
   text-transform: uppercase;
@@ -395,4 +409,71 @@
 .home-sections__artists-media.is-visible,
 .home-sections__about-media.is-visible {
   opacity: 1;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 1023px) {
+  .home-exhibition__heading-row {
+    display: block;
+  }
+
+  .home-exhibition__artist {
+    margin-bottom: clamp(4px, 0.8vw, 7px);
+  }
+
+  .home-exhibition__title {
+    margin-bottom: clamp(14px, 2vw, 19px);
+  }
+
+  .home-exhibition__date {
+    text-align: left;
+  }
+
+  .home-exhibition__list {
+    gap: clamp(18px, 6.5vw, 96px);
+  }
+
+  .home-sections {
+  padding-right: clamp(24px, 5vw, 80px);
+  }
+
+  .home-sections__about-media {
+    margin-top: clamp(180px, 22vw, 269px);
+  }
+
+  .home-sections__inner {
+    grid-template-columns: 1.53fr 1.13fr;
+    gap: clamp(56px, 7vw, 88px);
+  }
+}
+
+@media (max-width: 767px) {
+  .home-sections {
+    padding-inline: clamp(24px, 5vw, 80px);
+  }
+
+  .home-sections__inner {
+    grid-template-columns: 1fr;
+    gap: clamp(72px, 10vw, 96px);
+  }
+
+  .home-sections__artists-title {
+    padding-left: 0;
+  }
+
+  .home-sections__about-media {
+    margin-top: 32px;
+  }
+
+  .home-sections {
+  padding-bottom: calc(var(--section-gap-lg) + 10px);
+  }
+
+  .home-sections__about {
+  width: 91%;
+  margin: 0 auto;
+  }
 }

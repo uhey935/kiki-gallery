@@ -302,14 +302,23 @@ if (!artistsSection || !aboutSection) {
 
                     <div class="home-exhibition__content">
                       <div class="home-exhibition__heading-row">
-                        <p class="home-exhibition__artist">
-                          {exhibition.artistNames.join(SEPARATOR)}
-                        </p>
+                        <div class="home-exhibition__heading-left">
+                          <p class="home-exhibition__artist">
+                            {exhibition.artistNames.join(SEPARATOR)}
+                          </p>
+
+                          <h3 class="home-exhibition__title">
+                            {exhibition.displayTitle}
+                          </h3>
+                        </div>
 
                         <p class="home-exhibition__date">
                           {exhibition.data.date && (
                             <>
-                              <span class="home-exhibition__date-value">{`${exhibition.startDate?.getFullYear()}.${String((exhibition.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.startDate?.getDate()).padStart(2, "0")}`}</span>
+                              <span class="home-exhibition__date-value">
+                                {`${exhibition.startDate?.getFullYear()}.${String((exhibition.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.startDate?.getDate()).padStart(2, "0")}`}
+                              </span>
+
                               <span class="home-exhibition__date-weekday">
                                 {getWeekday(exhibition.data.date)}
                               </span>
@@ -320,7 +329,11 @@ if (!artistsSection || !aboutSection) {
                                     {" "}
                                     -{" "}
                                   </span>
-                                  <span class="home-exhibition__date-value">{`${String((exhibition.endDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.endDate?.getDate()).padStart(2, "0")}`}</span>
+
+                                  <span class="home-exhibition__date-value">
+                                    {`${String((exhibition.endDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.endDate?.getDate()).padStart(2, "0")}`}
+                                  </span>
+
                                   <span class="home-exhibition__date-weekday">
                                     {getWeekday(exhibition.data.end_date)}
                                   </span>
@@ -330,10 +343,6 @@ if (!artistsSection || !aboutSection) {
                           )}
                         </p>
                       </div>
-
-                      <h3 class="home-exhibition__title">
-                        {exhibition.displayTitle}
-                      </h3>
                     </div>
                   </a>
                 </article>
@@ -369,7 +378,8 @@ if (!artistsSection || !aboutSection) {
             </h2>
 
             <p class="home-sections__description">
-              GALLERY crossingは2017年岐阜県美濃加茂市にオープンしたアートギャラリーです。ギャラリーの位置する旧中山道・太田宿は、江戸時代には宿場町として栄え、並行して流れる木曽川と共に、人と物のクロスポイントとなる場所でした。
+              GALLERY
+              crossingは2017年岐阜県美濃加茂市にオープンしたアートギャラリーです。ギャラリーの位置する旧中山道・太田宿は、江戸時代には宿場町として栄え、並行して流れる木曽川と共に、人と物のクロスポイントとなる場所でした。
             </p>
           </a>
         </div>
@@ -422,7 +432,7 @@ if (!artistsSection || !aboutSection) {
     },
     {
       threshold: 0.1,
-    }
+    },
   );
 
   document
