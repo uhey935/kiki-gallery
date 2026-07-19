@@ -2,24 +2,20 @@
    Home Headings
 ========================= */
 
-.home-exhibition__heading,
-.home-stories__heading,
+.home-section__heading,
 .home-sections__artists-title,
 .home-sections__about-title {
-  font-size: clamp(1.45rem, 3.4vw, 2.1rem);
-  color: #111;
-  line-height: 1.2;
-  font-weight: 500;
   margin: 0;
+
+  font-size: clamp(1.45rem, 3.4vw, 2.1rem);
+  font-weight: 500;
+  line-height: 1.2;
+
+  color: #111;
 }
 
-.home-exhibition__heading,
-.home-stories__heading,
 .home-sections__artists-title {
   margin-bottom: clamp(32px, 4vw, 50px);
-}
-
-.home-sections__artists-title {
   padding-left: clamp(24px, 5vw, 68px);
 }
 
@@ -174,26 +170,23 @@
     var(--section-gap-lg);
 }
 
-.home-exhibition__image {
-  position: relative;
-}
-
 .home-exhibition__list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: clamp(48px, 10vw, 160px);
 }
 
-.home-exhibition__item {
-  width: 100%;
-}
-
 .home-exhibition__link {
   display: block;
 }
 
+.home-exhibition__image {
+  position: relative;
+}
+
 .home-exhibition__media {
   width: 100%;
+
   background: #f7f7f7;
   overflow: hidden;
 }
@@ -216,56 +209,62 @@
 }
 
 .home-exhibition__heading-left {
-  min-width: 0;
   flex: 1;
+  min-width: 0;
 }
 
-.home-exhibition__artist {
-  font-size: clamp(0.85rem, 2.0vw, 0.95rem);
-  line-height: 1.4;
+/* =========================
+   Home Exhibition Typography
+========================= */
 
+.home-exhibition__artist {
   margin: 0 0 clamp(6px, 1vw, 11px);
+
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  line-height: 1.4;
 }
 
 .home-exhibition__title {
-  font-size: clamp(1.0rem, 1.75vw, 1.4rem);
-  line-height: 1.5;
-  font-weight: 500;
-
   margin: 0;
+
+  font-size: clamp(1rem, 1.75vw, 1.4rem);
+  font-weight: 500;
+  line-height: 1.5;
 }
 
 .home-exhibition__date {
   flex-shrink: 0;
 
+  margin: 0;
+
   font-size: var(--font-size-body-supporting);
   line-height: 1.4;
   text-align: right;
-
-  margin: 0;
-}
-
-.home-exhibition__status {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 6px 10px;
-
-  font-size: 0.7rem;
-  line-height: 1;
-  color: #111;
-  letter-spacing: 0.1em;
-  background: rgb(237, 237, 232);
-  text-transform: uppercase;
-}
-
-.home-exhibition__date-value {
-  font-size: 1em;
 }
 
 .home-exhibition__date-weekday {
   font-size: 0.82em;
   opacity: 0.65;
+}
+
+/* =========================
+   Home Exhibition Status
+========================= */
+
+.home-exhibition__status {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  padding: 6px 10px;
+
+  font-size: 0.7rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+
+  color: #111;
+  background: rgb(237, 237, 232);
 }
 
 /* =========================
@@ -299,7 +298,7 @@
 }
 
 .home-sections__about-media {
-  margin-top: clamp(120px, 12vw, 191px);
+  margin-top: clamp(140px, 14vw, 221px);
   margin-bottom: clamp(32px, 4vw, 50px);
 }
 
@@ -341,32 +340,25 @@
 }
 
 /* =========================
-   Stories
+   Home Section Header
 ========================= */
 
-.home-stories {
-  padding:
-    clamp(56px, 6vw, 80px)
-    clamp(24px, 5vw, 80px)
-    var(--section-gap-lg);
-  background: #e9e9e6;
-}
-
-.home-stories__header {
+.home-section__header {
   display: flex;
   align-items: baseline;
-  column-gap: clamp(28px, 4vw, 44px);
+  column-gap: clamp(24px, 3vw, 34px);
 
   margin-bottom: clamp(40px, 5vw, 50px);
 }
 
-.home-stories__heading {
+.home-section__heading {
   margin: 0;
 }
 
-.home-stories__all {
+.home-section__action {
   position: relative;
   display: inline-block;
+
   flex-shrink: 0;
 
   font-size: var(--font-size-body-supporting);
@@ -376,10 +368,10 @@
   text-decoration: none;
 }
 
-.home-stories__all::after {
+.home-section__action::after {
   content: "";
-  position: absolute;
 
+  position: absolute;
   left: 0;
   bottom: -4px;
 
@@ -387,14 +379,31 @@
   height: 1px;
 
   background: currentColor;
-  opacity: 0;
+
+  transform: scaleX(0);
+  transform-origin: left center;
+
+  transition:
+    transform 350ms
+    cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.home-stories__all:hover::after,
-.home-stories__all:focus-visible::after {
-  opacity: 1;
-  animation: hover-underline-cycle 450ms
-    cubic-bezier(0.22, 1, 0.36, 1);
+.home-section__action:hover::after,
+.home-section__action:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* =========================
+   Stories
+========================= */
+
+.home-stories {
+  padding:
+    clamp(56px, 6vw, 80px)
+    clamp(24px, 5vw, 80px)
+    var(--section-gap-lg);
+
+  background: #e9e9e6;
 }
 
 .home-stories__list {
@@ -427,13 +436,17 @@
   object-fit: cover;
 }
 
+/* =========================
+   Stories Typography
+========================= */
+
 .home-stories__kind {
   margin-bottom: clamp(6px, 1vw, 8px);
 
   font-size: 0.8rem;
   line-height: 1.2;
-  text-transform: uppercase;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .home-stories__title {

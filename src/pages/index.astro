@@ -272,9 +272,13 @@ if (!artistsSection || !aboutSection) {
 
     <section class="home-exhibition" aria-labelledby="home-exhibition-heading">
       <div class="home-exhibition__inner">
-        <h2 id="home-exhibition-heading" class="home-exhibition__heading">
-          Exhibitions
-        </h2>
+        <header class="home-section__header">
+          <h2 id="home-exhibition-heading" class="home-section__heading">
+            Exhibitions
+          </h2>
+
+          <a class="home-section__action" href="/exhibitions/"> View All </a>
+        </header>
 
         <div class="home-exhibition__list">
           {
@@ -389,12 +393,12 @@ if (!artistsSection || !aboutSection) {
 
     <section class="home-stories" aria-labelledby="home-stories-heading">
       <div class="home-stories__inner">
-        <header class="home-stories__header">
-          <h2 id="home-stories-heading" class="home-stories__heading">
+        <header class="home-section__header">
+          <h2 id="home-stories-heading" class="home-section__heading">
             Stories
           </h2>
 
-          <a class="home-stories__all" href="/journal/">View All </a>
+          <a class="home-section__action" href="/journal/"> View All </a>
         </header>
 
         <div class="home-stories__list">
@@ -481,5 +485,59 @@ if (!artistsSection || !aboutSection) {
       storiesList.addEventListener("scroll", updateProgress);
       window.addEventListener("resize", updateProgress);
     }
+  }
+
+  /* =========================
+   Home Sections Parallax
+========================= */
+
+  const homeSections = document.querySelector<HTMLElement>(".home-sections");
+  const aboutSection = document.querySelector<HTMLElement>(
+    ".home-sections__about",
+  );
+
+  if (homeSections && aboutSection) {
+    let ticking = false;
+
+    const updateParallax = () => {
+      const rect = homeSections.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // セクションが画面外ならリセット
+      if (rect.bottom <= 0 || rect.top >= viewportHeight) {
+        aboutSection.style.transform = "";
+        ticking = false;
+        return;
+      }
+
+      // セクション内での進行度（0〜1）
+      const startOffset = viewportHeight * 0.3;
+
+      const progress = Math.min(
+        Math.max(
+          (viewportHeight - rect.top - startOffset) /
+            (viewportHeight + rect.height - startOffset),
+          0,
+        ),
+        1,
+      );
+
+      // Aboutのみパララックス（上方向）
+      aboutSection.style.transform = `translateY(${-progress * 97}px)`;
+
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+
+    onScroll();
   }
 </script>
