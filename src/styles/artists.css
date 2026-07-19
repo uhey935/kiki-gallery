@@ -4,7 +4,7 @@
 
 .artists {
   padding-top: var(--page-heading-offset);
-  padding-bottom: clamp(62px, 6vw, 82px);
+  padding-bottom: clamp(32px, 5vw, 64px);
 }
 
 /* =========================
@@ -51,7 +51,8 @@
 .artists-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: clamp(66px, 5vw, 70px) 48px;
+  row-gap: clamp(66px, 5vw, 70px);
+  column-gap: clamp(17px, 4vw, 48px);
 }
 
 /* =========================
