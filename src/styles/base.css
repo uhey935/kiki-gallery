@@ -309,9 +309,13 @@ body {
 ========================= */
 
 .footer {
+  font-size: var(--font-size-body-supporting);
+  line-height: var(--line-height-body-supporting);
+  letter-spacing: 0.02em;
+
   background: #000;
   color: #fff;
-  padding: 17px 0;
+  padding: clamp(11px, 2vw, 17px) 0;
 
   display: flex;
   justify-content: center;

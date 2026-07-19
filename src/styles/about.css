@@ -178,7 +178,7 @@
     margin:
       clamp(40px, 18vw, 90px)
       0
-      clamp(40px, 18vw, 90px);
+      clamp(40px, 15vw, 90px);
   }
 
   .about-statement-heading {
