@@ -273,7 +273,7 @@ if (!artistsSection || !aboutSection) {
     <section class="home-exhibition" aria-labelledby="home-exhibition-heading">
       <div class="home-exhibition__inner">
         <h2 id="home-exhibition-heading" class="home-exhibition__heading">
-          Exhibition
+          Exhibitions
         </h2>
 
         <div class="home-exhibition__list">
@@ -356,11 +356,11 @@ if (!artistsSection || !aboutSection) {
     <section class="home-sections">
       <div class="home-sections__inner">
         <div class="home-sections__artists">
-          <a href={artistsSection.href} class="home-sections__link">
-            <h2 class="home-sections__artists-title">
-              {artistsSection.title}
-            </h2>
+          <h2 class="home-sections__artists-title">
+            {artistsSection.title}
+          </h2>
 
+          <a href={artistsSection.href} class="home-sections__link">
             <figure class="home-sections__artists-media home-sections__media">
               <img src={artistsSection.image.square} alt="" />
             </figure>
@@ -380,6 +380,7 @@ if (!artistsSection || !aboutSection) {
             <p class="home-sections__description">
               GALLERY
               crossingは2017年岐阜県美濃加茂市にオープンしたアートギャラリーです。ギャラリーの位置する旧中山道・太田宿は、江戸時代には宿場町として栄え、並行して流れる木曽川と共に、人と物のクロスポイントとなる場所でした。
+              <span class="home-sections__learn-more">Learn More</span>
             </p>
           </a>
         </div>
@@ -392,6 +393,8 @@ if (!artistsSection || !aboutSection) {
           <h2 id="home-stories-heading" class="home-stories__heading">
             Stories
           </h2>
+
+          <a class="home-stories__all" href="/journal/">View All </a>
         </header>
 
         <div class="home-stories__list">
@@ -415,12 +418,20 @@ if (!artistsSection || !aboutSection) {
             ))
           }
         </div>
+
+        <div class="home-stories__progress" aria-hidden="true">
+          <div class="home-stories__progress-bar"></div>
+        </div>
       </div>
     </section>
   </div>
 </Layout>
 
 <script>
+  /* =========================
+     Home Sections Fade
+  ========================= */
+
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -438,4 +449,37 @@ if (!artistsSection || !aboutSection) {
   document
     .querySelectorAll(".home-sections__media")
     .forEach((element) => observer.observe(element));
+
+  /* =========================
+   Stories Progress
+========================= */
+
+  const mediaQuery = window.matchMedia("(max-width: 767px)");
+
+  if (mediaQuery.matches) {
+    const storiesList = document.querySelector<HTMLElement>(
+      ".home-stories__list",
+    );
+
+    const progressBar = document.querySelector<HTMLElement>(
+      ".home-stories__progress-bar",
+    );
+
+    if (storiesList && progressBar) {
+      const updateProgress = () => {
+        const maxScroll = storiesList.scrollWidth - storiesList.clientWidth;
+
+        const progress = maxScroll > 0 ? storiesList.scrollLeft / maxScroll : 0;
+
+        const scale = 0.25 + progress * 0.75;
+
+        progressBar.style.transform = `scaleX(${scale})`;
+      };
+
+      updateProgress();
+
+      storiesList.addEventListener("scroll", updateProgress);
+      window.addEventListener("resize", updateProgress);
+    }
+  }
 </script>

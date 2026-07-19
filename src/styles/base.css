@@ -269,6 +269,7 @@ body {
 .artists-biography-link:hover::after {
   transform: scaleX(1);
 }
+
 /* =========================
    Common Meta
 ========================= */
