@@ -1,5 +1,5 @@
 /* =========================
-   Home Headings
+   Home Titles
 ========================= */
 
 .home-section__heading,
@@ -553,12 +553,12 @@
   }
 
   .home-sections {
-  padding-bottom: 0;
+    padding-bottom: 0;
   }
 
   .home-sections__about {
-  width: 89%;
-  margin: 0 auto;
+    width: 89%;
+    margin: 0 auto;
   }
 
   .home-stories__list {

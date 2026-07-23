@@ -29,16 +29,6 @@ const { Content } = await render(item);
 
 <Layout
   title={item.data.title}
-  breadcrumb={[
-    {
-      label: "Journal",
-      href: "/journal",
-    },
-    {
-      label: item.data.categories?.[0] || item.data.title,
-      href: `/journal/${item.id}`,
-    },
-  ]}
 >
   <article class="article">
     {/* Hero（全タイプ共通） */}

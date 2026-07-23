@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const pageTitle = "404 | KiKi Gallery";
+---
+
+<Layout title={pageTitle}>
+  <section class="not-found section">
+    <div class="not-found-content">
+      <h1 class="index-h1">Page Not Found</h1>
+
+      <p class="not-found-description">
+        お探しのページは削除されたか、URLが変更された可能性があります。
+      </p>
+    </div>
+
+    <div class="not-found-action">
+      <a href="/" class="action-link">Back to Home</a>
+    </div>
+  </section>
+</Layout>

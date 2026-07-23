@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
 /* =========================
    Reset
 ========================= */
@@ -84,12 +85,6 @@ body {
   padding: 0 var(--layout-space);
 }
 
-.breadcrumb-container {
-  width: 100%;
-  padding: 0 var(--layout-space);
-  margin: 0 auto;
-}
-
 /* =========================
    Page Heading Offset
 ========================= */
@@ -161,37 +156,6 @@ body {
   font-weight: 500;
   letter-spacing: 0.01rem;
   margin-bottom: clamp(36px, 5vw, 46px);
-}
-
-/* =========================
-   Breadcrumb
-========================= */
-
-.breadcrumb {
-  font-size: 1rem;
-  margin: 98px 0 38px;
-}
-
-.breadcrumb ol {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.breadcrumb li + li::before {
-  content: "/";
-  margin: 0 0.5em 0 0.8em;
-  font-weight: 400;
-  font-size: 1rem;
-  position: relative;
-  top: 0;
-}
-
-.breadcrumb li:last-child {
-  font-weight: 600;
-}
-
-.breadcrumb li:lang(ja) {
-  font-size: 0.9rem;
 }
 
 /* =========================
@@ -330,4 +294,33 @@ body {
 
 .footer-nav a {
   color: #fff;
+}
+
+/* =========================
+   404
+========================= */
+
+.not-found {
+  padding-top: clamp(140px, 12vw, 179px);
+  padding-bottom: clamp(240px, 24vw, 360px);
+}
+
+.not-found .index-h1 {
+  margin-bottom: clamp(20px, 2.5vw, 29px);
+}
+
+.not-found-content {
+  width: 88%;
+  margin: 0 auto;
+}
+
+.not-found-description {
+  font-size: var(--font-size-body-reading);
+  line-height: var(--line-height-body-reading);
+
+  margin-bottom: clamp(96px, 12vw, 171px);
+}
+
+.not-found-action {
+  text-align: center;
 }

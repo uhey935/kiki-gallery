@@ -22,10 +22,6 @@ const { Content } = await render(item);
 
 <Layout
   title={item.data.title}
-  breadcrumb={[
-    { label: "News", href: "/news" },
-    { label: String(item.data.title), href: `/news/${item.id}` },
-  ]}
 >
   <article>
     <h1>{item.data.title}</h1>
