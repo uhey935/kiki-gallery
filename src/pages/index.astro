@@ -85,7 +85,7 @@ const getStatus = (start: Date | null, end: Date | null) => {
 const formattedExhibitions = exhibitions
   .map((exh) => {
     const names = getArtistDisplayNames(exh.data.artist);
-    const startDate = parseDate(exh.data.date);
+    const startDate = parseDate(exh.data.start_date);
     const endDate = parseDate(exh.data.end_date);
 
     return {
@@ -239,9 +239,9 @@ if (!artistsSection || !aboutSection) {
               <h1 class="home-hero__title">{heroExhibition.displayTitle}</h1>
 
               <p class="home-hero__date">
-                {heroExhibition.data.date
+                {heroExhibition.data.start_date
                   ? formatDateRangeJa(
-                      heroExhibition.data.date,
+                      heroExhibition.data.start_date,
                       heroExhibition.data.end_date,
                     )
                   : ""}
@@ -317,14 +317,14 @@ if (!artistsSection || !aboutSection) {
                         </div>
 
                         <p class="home-exhibition__date">
-                          {exhibition.data.date && (
+                          {exhibition.data.start_date && (
                             <>
                               <span class="home-exhibition__date-value">
                                 {`${exhibition.startDate?.getFullYear()}.${String((exhibition.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.startDate?.getDate()).padStart(2, "0")}`}
                               </span>
 
                               <span class="home-exhibition__date-weekday">
-                                {getWeekday(exhibition.data.date)}
+                                {getWeekday(exhibition.data.start_date)}
                               </span>
 
                               {exhibition.data.end_date && (

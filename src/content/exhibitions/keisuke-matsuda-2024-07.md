@@ -2,7 +2,7 @@
 title: Undulation
 artist: keisuke-matsuda
 artist_name: 松田啓佑
-date: "2024-07-05"
+start_date: "2024-07-05"
 end_date: "2024-07-09"
 open_time: "13:00-17:00"
 closed_days: "水曜・木曜"

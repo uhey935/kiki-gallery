@@ -5,7 +5,7 @@ artist: yuka-mori
 artist_name: 森夕香
 display_artists: true
 
-date: "2025-07-02"
+start_date: "2025-07-02"
 end_date: "2025-07-26"
 open_time: "13:00-17:00"
 closed_days: "水曜・木曜"

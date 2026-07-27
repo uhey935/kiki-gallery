@@ -72,8 +72,8 @@ const rawExhibitions = await getCollection("exhibitions", ({ data }) =>
 
 /* ▼ 日付ソート */
 rawExhibitions.sort((a, b) => {
-  const dateA = parseDate(a.data.date);
-  const dateB = parseDate(b.data.date);
+  const dateA = parseDate(a.data.start_date);
+  const dateB = parseDate(b.data.start_date);
 
   const timeA = dateA ? dateA.getTime() : 0;
   const timeB = dateB ? dateB.getTime() : 0;
@@ -86,7 +86,7 @@ const now = new Date();
 now.setHours(0, 0, 0, 0);
 
 const exhibitions = rawExhibitions.map((exh) => {
-  const start = parseDate(exh.data.date);
+  const start = parseDate(exh.data.start_date);
   const end = parseDate(exh.data.end_date) || start;
 
   if (!start || !end) {
@@ -398,7 +398,7 @@ const jsonLd = {
 
                   <p class="artists-exhibitions-card-date">
                     {formatDateRangeJa(
-                      exh.data.date ?? "",
+                      exh.data.start_date ?? "",
                       exh.data.end_date ?? ""
                     )}
                   </p>

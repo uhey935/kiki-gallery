@@ -2,7 +2,7 @@
 title: 粒と房
 artist: reiko-kinoshita
 artist_name: 木下令子
-date: "2023-12-09"
+start_date: "2023-12-09"
 end_date: "2024-01-26"
 open_time: "13:00-17:00"
 closed_days: "水曜・木曜"

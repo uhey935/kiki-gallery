@@ -66,7 +66,7 @@ const getStatus = (start: Date | null, end: Date | null) => {
 const formattedExhibitions = exhibitions.map((exh) => {
   const names = getArtistDisplayNames(exh.data.artist);
 
-  const startDate = exh.data.date ? new Date(exh.data.date) : null;
+  const startDate = exh.data.start_date ? new Date(exh.data.start_date) : null;
 
   const endDate = exh.data.end_date ? new Date(exh.data.end_date) : null;
 
@@ -151,17 +151,17 @@ formattedExhibitions.sort((a, b) => {
                 </div>
 
                 <p class="exhibitions-date exhibitions-card__date">
-                  {exh.data.date && (
+                  {exh.data.start_date && (
                     <>
                       <time
                         class="exhibitions-date__value"
-                        datetime={exh.data.date}
+                        datetime={exh.data.start_date}
                       >
                         {`${exh.startDate?.getFullYear()}.${String((exh.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exh.startDate?.getDate()).padStart(2, "0")}`}
                       </time>
 
                       <span class="exhibitions-date__weekday">
-                        {getWeekday(exh.data.date)}
+                        {getWeekday(exh.data.start_date)}
                       </span>
 
                       {exh.data.end_date && (

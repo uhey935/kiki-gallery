@@ -102,7 +102,7 @@ const exhibitions = defineCollection({
 
     works: z.array(z.string()).optional(),
 
-    date: z.string().optional(),
+    start_date: z.string(),
     end_date: z.string().optional(),
 
     news_title: z.string().optional(),

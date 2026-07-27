@@ -9,7 +9,7 @@ artist_name:
   - 森夕香
 display_artists: true
 
-date: "2026-03-05"
+start_date: "2026-03-05"
 end_date: "2026-07-09"
 
 hero_image: /images/exhibitions/group-exhibition-2026-03.jpg

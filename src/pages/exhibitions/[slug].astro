@@ -27,11 +27,11 @@ const { exh, artists } = Astro.props;
 
 const allWorks = await getCollection("works");
 
-if (!exh.data.date) {
+if (!exh.data.start_date) {
   throw new Error(`Missing exhibition date: ${exh.id}`);
 }
 
-const exhibitionDate = exh.data.date;
+const exhibitionDate = exh.data.start_date;
 
 const getFamilyName = (name: string) => name.trim().split(/\s+/).pop() ?? "";
 

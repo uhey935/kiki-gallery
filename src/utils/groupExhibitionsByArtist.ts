@@ -14,7 +14,7 @@ export function groupExhibitionsByArtist(
 
   exhibitions.forEach((exh) => {
     const status = getExhibitionStatus(
-      exh.data.date,
+      exh.data.start_date,
       exh.data.end_date
     );
 
@@ -23,11 +23,17 @@ export function groupExhibitionsByArtist(
       status,
     };
 
-    if (!grouped[exh.data.artist]) {
-      grouped[exh.data.artist] = [];
-    }
+    const artists = Array.isArray(exh.data.artist)
+      ? exh.data.artist
+      : [exh.data.artist];
 
-    grouped[exh.data.artist].push(withStatus);
+    artists.forEach((artist) => {
+      if (!grouped[artist]) {
+        grouped[artist] = [];
+      }
+
+      grouped[artist].push(withStatus);
+    });
   });
 
   return grouped;
