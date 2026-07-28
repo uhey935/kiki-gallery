@@ -15,4 +15,6 @@ exhibitions:
   - Roots
 medium: 陶芸
 region: オーストラリア・キャンベラ
+
+works_layout: []
 ---

@@ -88,5 +88,3 @@ export const formatDateRangeShort = (start: string, end?: string) => {
 
   return `${startYear}.${startMonth}.${startDay}${startWeekday} - ${endMonth}.${endDay}${endWeekday}`;
 };
-
-const pad2 = (value: number) => String(value).padStart(2, "0");

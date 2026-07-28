@@ -2,6 +2,34 @@ import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
 /* =========================
+   Content Enums
+========================= */
+
+const WORK_TEMPLATES = [
+  "single-a",
+  "single-b",
+  "double-a",
+  "double-b",
+] as const;
+
+const workLayoutSectionSchema = z
+  .object({
+    template: z.enum(WORK_TEMPLATES),
+    works: z.array(z.string()),
+  })
+  .superRefine((section, context) => {
+    const expectedWorkCount = section.template.startsWith("single-") ? 1 : 2;
+
+    if (section.works.length !== expectedWorkCount) {
+      context.addIssue({
+        code: "custom",
+        path: ["works"],
+        message: `${section.template} requires exactly ${expectedWorkCount} work${expectedWorkCount === 1 ? "" : "s"}.`,
+      });
+    }
+  });
+
+/* =========================
    home
 ========================= */
 
@@ -51,6 +79,8 @@ const artists = defineCollection({
 
     medium: z.union([z.string(), z.array(z.string())]).optional(),
     region: z.string().optional(),
+
+    works_layout: z.array(workLayoutSectionSchema),
   }),
 });
 
@@ -81,9 +111,6 @@ const works = defineCollection({
 
     date: z.string().optional(),
     news_title: z.string().optional(),
-
-    layout: z.string().optional(),
-    position: z.number().optional(),
 
     inquiry: z.boolean().optional(),
   }),

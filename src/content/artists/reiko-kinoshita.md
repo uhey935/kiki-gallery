@@ -17,4 +17,23 @@ exhibitions:
   - 粒と房
 medium: 油絵
 region: 東京
+
+works_layout:
+  - template: double-a
+    works:
+      - reiko-kinoshita-01
+      - reiko-kinoshita-02
+
+  - template: single-a
+    works:
+      - reiko-kinoshita-03
+
+  - template: double-b
+    works:
+      - reiko-kinoshita-04
+      - reiko-kinoshita-05
+
+  - template: single-b
+    works:
+      - reiko-kinoshita-06
 ---

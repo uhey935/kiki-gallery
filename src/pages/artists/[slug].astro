@@ -48,18 +48,24 @@ const works = allWorks.filter((work) => {
   return work.data.artist === artist.id;
 });
 
-/* ▼ layout別に分ける */
-const works_1_3 = works
-  .filter((w) => w.data.layout === "1-3")
-  .sort((a, b) => (a.data.position ?? 0) - (b.data.position ?? 0));
+const workById = new Map(works.map((work) => [work.id, work]));
 
-const works_1_left = works.filter((w) => w.data.layout === "1-left");
+const workSections = artist.data.works_layout.map((section) => ({
+  template: section.template,
+  works: section.works.map((workId) => {
+    const work = workById.get(workId);
 
-const works_3_2 = works
-  .filter((w) => w.data.layout === "3-2")
-  .sort((a, b) => (a.data.position ?? 0) - (b.data.position ?? 0));
+    if (!work) {
+      throw new Error(
+        `Artist "${artist.id}" references missing or unrelated work "${workId}".`
+      );
+    }
 
-const works_1_right = works.filter((w) => w.data.layout === "1-right");
+    return work;
+  }),
+}));
+
+const hasWorkSections = workSections.length > 0;
 
 /* =========================
    exhibitions
@@ -79,28 +85,6 @@ rawExhibitions.sort((a, b) => {
   const timeB = dateB ? dateB.getTime() : 0;
 
   return timeB - timeA;
-});
-
-/* ▼ ステータス判定 */
-const now = new Date();
-now.setHours(0, 0, 0, 0);
-
-const exhibitions = rawExhibitions.map((exh) => {
-  const start = parseDate(exh.data.start_date);
-  const end = parseDate(exh.data.end_date) || start;
-
-  if (!start || !end) {
-    return { ...exh, status: "past" };
-  }
-
-  const compareEnd = new Date(end);
-  compareEnd.setHours(23, 59, 59, 999);
-
-  let status = "past";
-  if (start > now) status = "upcoming";
-  else if (compareEnd >= now) status = "ongoing";
-
-  return { ...exh, status };
 });
 
 /* =========================
@@ -180,158 +164,44 @@ const jsonLd = {
 <section class="section artists-works">
   <h2 class="detail-h2-title">Works</h2>
 
-  {works.length > 0 ? (
-    <>
-      {/* =========================
-         1-3
-      ========================= */}
-      <div class="artists-works-card artists-works-card--1-3">
-        {works_1_3.map((work) => (
-          <figure class="artists-works-card__item">
-            <a
-              href={`/works/${work.id}`}
-              class="artists-works-link"
-            >
-              <img
-                class="artists-works-image"
-                src={work.data.images[0].src}
-                alt={work.data.images[0].alt ?? work.data.title}
-              />
+  {hasWorkSections ? (
+    workSections.map((section) => (
+      <div
+        class={`artists-works-section artists-works-section--${section.template}`}
+        data-template={section.template}
+      >
+        {section.works.map((work) => (
+            <figure class="artists-works-section__item">
+              <a
+                href={`/works/${work.id}`}
+                class="artists-works-link"
+              >
+                <img
+                  class="artists-works-image"
+                  src={work.data.images[0].src}
+                  alt={work.data.images[0].alt ?? work.data.title}
+                />
 
-              <figcaption class="artists-works-caption">
-                <p class="artists-works-title">
-                  {work.data.year
-                    ? `${work.data.title.trim()}, ${work.data.year}`
-                    : work.data.title.trim()}
-                </p>
-
-                {(work.data.size || work.data.material) && (
-                  <p class="artists-works-meta">
-                    {[work.data.size, work.data.material]
-                      .filter(Boolean)
-                      .join(", ")}
+                <figcaption class="artists-works-caption">
+                  <p class="artists-works-title">
+                    {work.data.year
+                      ? `${work.data.title.trim()}, ${work.data.year}`
+                      : work.data.title.trim()}
                   </p>
-                )}
-              </figcaption>
-            </a>
-          </figure>
+
+                  {(work.data.size || work.data.material) && (
+                    <p class="artists-works-meta">
+                      {[work.data.size, work.data.material]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </p>
+                  )}
+                </figcaption>
+              </a>
+            </figure>
         ))}
       </div>
-
-      {/* =========================
-         1-left
-      ========================= */}
-      {works_1_left.length > 0 && (
-        <div class="artists-works-card artists-works-card--1-left">
-          {works_1_left.map((work) => (
-            <figure class="artists-works-card__item">
-              <a
-                href={`/works/${work.id}`}
-                class="artists-works-link"
-              >
-                <img
-                  class="artists-works-image"
-                  src={work.data.images[0].src}
-                  alt={work.data.images[0].alt ?? work.data.title}
-                />
-
-                <figcaption class="artists-works-caption">
-                  <p class="artists-works-title">
-                    {work.data.year
-                      ? `${work.data.title.trim()}, ${work.data.year}`
-                      : work.data.title.trim()}
-                  </p>
-
-                  {(work.data.size || work.data.material) && (
-                    <p class="artists-works-meta">
-                      {[work.data.size, work.data.material]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </p>
-                  )}
-                </figcaption>
-              </a>
-            </figure>
-          ))}
-        </div>
-      )}
-
-      {/* =========================
-         3-2
-      ========================= */}
-      {works_3_2.length > 0 && (
-        <div class="artists-works-card artists-works-card--3-2">
-          {works_3_2.map((work) => (
-            <figure class="artists-works-card__item">
-              <a
-                href={`/works/${work.id}`}
-                class="artists-works-link"
-              >
-                <img
-                  class="artists-works-image"
-                  src={work.data.images[0].src}
-                  alt={work.data.images[0].alt ?? work.data.title}
-                />
-
-                <figcaption class="artists-works-caption">
-                  <p class="artists-works-title">
-                    {work.data.year
-                      ? `${work.data.title.trim()}, ${work.data.year}`
-                      : work.data.title.trim()}
-                  </p>
-
-                  {(work.data.size || work.data.material) && (
-                    <p class="artists-works-meta">
-                      {[work.data.size, work.data.material]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </p>
-                  )}
-                </figcaption>
-              </a>
-            </figure>
-          ))}
-        </div>
-      )}
-
-      {/* =========================
-         1-right
-      ========================= */}
-      {works_1_right.length > 0 && (
-        <div class="artists-works-card artists-works-card--1-right">
-          {works_1_right.map((work) => (
-            <figure class="artists-works-card__item">
-              <a
-                href={`/works/${work.id}`}
-                class="artists-works-link"
-              >
-                <img
-                  class="artists-works-image"
-                  src={work.data.images[0].src}
-                  alt={work.data.images[0].alt ?? work.data.title}
-                />
-
-                <figcaption class="artists-works-caption">
-                  <p class="artists-works-title">
-                    {work.data.year
-                      ? `${work.data.title.trim()}, ${work.data.year}`
-                      : work.data.title.trim()}
-                  </p>
-
-                  {(work.data.size || work.data.material) && (
-                    <p class="artists-works-meta">
-                      {[work.data.size, work.data.material]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </p>
-                  )}
-                </figcaption>
-              </a>
-            </figure>
-          ))}
-        </div>
-      )}
-    </>
+    ))
   ) : (
     <p class="artists-exhibitions-empty">No works available.</p>
   )}

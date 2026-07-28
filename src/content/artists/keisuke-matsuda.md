@@ -15,4 +15,6 @@ exhibitions:
   - Undulation
 medium: 日本画
 region: 京都
+
+works_layout: []
 ---

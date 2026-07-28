@@ -139,7 +139,7 @@
 
 /* Card Common */
 
-.artists-works-card {
+.artists-works-section {
   display: grid;
   padding-bottom: clamp(92px, 8vw, 120px);
   align-items: start;
@@ -176,15 +176,15 @@
 
 /* Grid Common */
 
-.artists-works-card--3-2,
-.artists-works-card--1-3 {
+.artists-works-section--double-a,
+.artists-works-section--double-b {
   width: 88%;
   column-gap: clamp(32px, 7vw, 110px);
   margin: 0 auto;
 }
 
-.artists-works-card--1-left,
-.artists-works-card--1-right {
+.artists-works-section--single-a,
+.artists-works-section--single-b {
   width: 60%;
 }
 
@@ -197,40 +197,40 @@
 }
 
 /* =========================
-   Works: 1-3
+   Works: Double A
 ========================= */
 
-.artists-works-card--1-3 {
+.artists-works-section--double-a {
   grid-template-columns: 1.6fr 1fr;
 }
 
 /* =========================
-   Works: 3-2
+   Works: Double B
 ========================= */
 
-.artists-works-card--3-2 {
+.artists-works-section--double-b {
   grid-template-columns: 1fr 1.7fr;
 }
 
 /* =========================
-   Works: 1-left
+   Works: Single A
 ========================= */
 
-.artists-works-card--1-left {
+.artists-works-section--single-a {
   justify-content: start;
   margin-left: max(40px, 15vw);
 }
 
 /* =========================
-   Works: 1-right
+   Works: Single B
 ========================= */
 
-.artists-works-card--1-right {
+.artists-works-section--single-b {
   margin-left: auto;
   margin-right: max(40px, 15vw);
 }
 
-.artists-works-card--1-right figure {
+.artists-works-section--single-b figure {
   margin: 0;
 }
 
@@ -370,27 +370,27 @@
     margin-right: var(--layout-space);
   }
 
-  .artists-works-card--1-3,
-  .artists-works-card--3-2 {
+  .artists-works-section--double-a,
+  .artists-works-section--double-b {
     grid-template-columns: 1fr;
     row-gap: clamp(56px, 10vw, 80px);
   }
 
-  .artists-works-card--1-3,
-  .artists-works-card--3-2,
-  .artists-works-card--1-left,
-  .artists-works-card--1-right {
+  .artists-works-section--double-a,
+  .artists-works-section--double-b,
+  .artists-works-section--single-a,
+  .artists-works-section--single-b {
     width: 100%;
     margin-left: 0;
     margin-right: 0;
   }
 
-  .artists-works-card {
+  .artists-works-section {
     padding-bottom: clamp(56px, 10vw, 64px);
   }
 
-  .artists-works-card--1-3,
-  .artists-works-card--3-2 {
+  .artists-works-section--double-a,
+  .artists-works-section--double-b {
     gap: clamp(56px, 10vw, 64px);
   }
 

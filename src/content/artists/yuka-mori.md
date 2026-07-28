@@ -15,4 +15,9 @@ exhibitions:
   - Intertwined ー 戯れるメッシュ
 medium: 油絵
 region: 滋賀
+
+works_layout:
+  - template: single-a
+    works:
+      - yuka-mori-01
 ---

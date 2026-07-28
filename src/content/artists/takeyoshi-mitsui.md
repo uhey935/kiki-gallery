@@ -11,4 +11,6 @@ bio_short: 1987年広島県生まれ。倉敷芸術科学大学大学院芸術�
 awards: []
 medium: ガラス
 region: 富山
+
+works_layout: []
 ---
