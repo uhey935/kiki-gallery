@@ -1,197 +1,390 @@
-# CSS Style Guide
+# CSS Style Guide for KiKi Gallery
 
-## Philosophy
+| Property | Value |
+| --- | --- |
+| Version | v1.0 |
+| Status | Draft |
+| Last Updated | 2026-07-30 |
+| Owner | KiKi Gallery |
 
-The CSS architecture of KiKi Gallery is designed to prioritize readability, maintainability, and long-term sustainability.
-
-CSS is treated as a blueprint for the user interface rather than a collection of visual styles.
-
-Every stylesheet should communicate structure, responsibilities, and design intent as clearly as possible.
-
----
-
-## Core Principles
-
-The following principles guide every CSS decision.
-
-- CSS is a blueprint for the UI.
-- Organize code by responsibility.
-- Readability is more important than brevity.
-- Match CSS structure with UI structure.
-- Prefer Design Tokens over hard-coded values.
-- Keep components independent and reusable.
+> This document defines the CSS architecture, conventions, and styling guidelines used throughout the KiKi Gallery website.
 
 ---
 
-## Responsibility First
+## Purpose
 
-CSS should be organized according to responsibilities rather than file size.
+This document defines the CSS architecture used by the KiKi Gallery website.
 
-Each section should represent a single responsibility.
+Its purpose is to establish consistent styling conventions that improve readability, maintainability, and long-term scalability.
 
-Avoid creating miscellaneous sections such as:
-
-- Misc
-- Other
-- Utilities (unless truly shared)
-
-If a responsibility can be clearly identified, it deserves its own section.
+This document focuses on architectural principles rather than visual design decisions.
 
 ---
 
-## Page Structure
+## Relationship to Other Documents
 
-CSS structure should follow the structure of the page.
+This document should be read together with the following architectural documents.
+
+| Document | Purpose |
+| --- | --- |
+| Architecture Audit | Evaluates the current architecture and identifies opportunities for improvement. |
+| Content Model Specification | Defines the canonical content architecture and data model. |
+| Architecture Review Report | Verifies that the architecture is internally consistent and ready for implementation. |
+
+The CSS Style Guide defines how the architecture should be implemented within the presentation layer.
+
+---
+
+# 1. Design Philosophy
+
+The CSS architecture is designed around a small number of consistent principles.
+
+The primary goals are:
+
+- Readability
+- Predictability
+- Maintainability
+- Long-term scalability
+
+CSS should describe presentation only.
+
+Content structure, business logic, and application behavior belong outside the styling layer.
+
+---
+
+# 2. CSS Architecture
+
+## 2.1 Architecture Principles
+
+The stylesheet follows a component-oriented architecture.
+
+Each stylesheet is responsible for a single page or reusable component.
+
+Global styles should remain minimal.
+
+Component styles should remain self-contained.
+
+---
+
+## 2.2 Separation of Responsibilities
+
+CSS is responsible for presentation.
+
+HTML is responsible for document structure.
+
+Astro components are responsible for rendering.
+
+Content Collections are responsible for data.
+
+Responsibilities should never overlap.
+
+---
+
+## 2.3 Desktop First
+
+Layouts are designed for desktop first.
+
+Responsive behavior is introduced progressively through media queries.
+
+Current breakpoints are:
+
+```css
+@media (max-width: 1279px) {}
+
+@media (max-width: 1023px) {}
+
+@media (max-width: 767px) {}
+```
+
+Additional breakpoints should only be introduced when justified by a genuine layout requirement.
+
+---
+
+# 3. Naming Conventions
+
+## 3.1 Component Prefixes
+
+Every page or component uses its own namespace.
+
+Examples:
+
+```text
+home-
+
+artists-
+
+works-
+
+journal-
+
+news-
+
+about-
+
+privacy-
+
+404-
+```
+
+Generic class names should be avoided.
+
+Examples of prohibited names include:
+
+```text
+.title
+
+.card
+
+.grid
+
+.wrapper
+
+.item
+```
+
+---
+
+## 3.2 BEM
+
+Classes follow a simplified BEM convention.
+
+```text
+component
+
+component__element
+
+component--modifier
+```
 
 Example:
 
-```
-Page
+```css
+.home-stories {}
 
-↓
+.home-stories__card {}
 
-Hero
-
-↓
-
-Intro
-
-↓
-
-Gallery
-
-↓
-
-Footer
+.home-stories__card--featured {}
 ```
 
-Developers should be able to understand the page simply by reading the stylesheet.
+Nested selectors should be kept to a minimum.
 
 ---
 
-## Layout
+## 3.3 Modifier Classes
 
-Layout rules define spatial relationships.
+Modifiers represent variations of an existing component.
 
-Typical responsibilities include:
+Examples:
 
-- width
-- max-width
-- display
-- grid
-- flex
-- gap
-- margin
-- padding
-- alignment
+```css
+.artists-works-section--double-a
 
-Avoid mixing typography or interaction rules inside layout sections.
+.artists-works-section--double-b
 
----
+.artists-works-section--single-a
 
-## Typography
+.artists-works-section--single-b
+```
 
-Typography sections define how content is presented.
-
-Typical properties include:
-
-- font-size
-- font-weight
-- line-height
-- letter-spacing
-- color
-- text-transform
-
-Typography should remain independent from layout whenever practical.
+Modifiers should never introduce unrelated behavior.
 
 ---
 
-## Components
+# 4. Layout Principles
 
-Reusable UI elements should have their own responsibility.
+## 4.1 Layout Responsibility
+
+Layout is controlled using:
+
+- Grid
+- Flexbox
+- Gap
+- Margin
+- Padding
+
+Layout adjustments belong inside responsive breakpoints when they depend on screen width.
+
+Typography should not be modified inside layout rules unless necessary.
+
+---
+
+## 4.2 Spacing
+
+Spacing should primarily use design tokens.
+
+Repeated spacing values should be extracted into CSS custom properties.
+
+Component-specific spacing may remain local when reuse is unlikely.
+
+---
+
+## 4.3 Width
+
+Widths should be fluid whenever practical.
+
+Preferred techniques include:
+
+- `max-width`
+- `%`
+- `clamp()`
+
+Fixed widths should only be used when required by the design.
+
+---
+
+# 5. Typography
+
+## 5.1 Typography Scale
+
+Typography should use shared variables whenever possible.
 
 Examples include:
 
-- cards
-- buttons
-- badges
-- navigation
-- media
-- labels
+- Heading sizes
+- Body text
+- Supporting text
+- Reading text
 
-Components should remain reusable across pages whenever possible.
+Individual components should avoid introducing unique font scales unless justified.
 
 ---
 
-## Interaction
+## 5.2 clamp()
 
-Interaction should be separated from typography and layout.
+Responsive typography should prefer `clamp()` over multiple breakpoint-specific font sizes.
 
-Preferred order:
+Example:
 
+```css
+font-size: clamp(1.2rem, 2vw, 1.5rem);
 ```
-Typography
-
-↓
-
-Links
-
-↓
-
-Hover
-```
-
-Hover effects, transitions, and animations should be grouped together.
 
 ---
 
-## Responsive Design
+## 5.3 Line Height
 
-Responsive behavior should preserve architectural consistency.
+Line height should prioritize readability.
 
-Desktop First is the default strategy.
-
-Breakpoints:
-
-- 1279px (when necessary)
-- 1023px
-- 767px
-
-General guideline:
-
-Layout changes belong inside media queries.
-
-Typography and spacing should use Design Tokens and `clamp()` whenever practical.
+Body text should generally use larger line heights than headings.
 
 ---
 
-## Design Tokens
+# 6. Responsive Design
 
-Shared values should always be preferred over page-specific values.
+## 6.1 Responsive Strategy
 
-Priority:
+Responsive design follows three stages.
 
-```
-Global Design Tokens
+1. Layout
+2. Spacing
+3. Typography
 
-↓
-
-Shared Variables
-
-↓
-
-Page-specific Values
-```
-
-New hard-coded values should only be introduced when no existing token is appropriate.
+Layouts should be simplified before typography is adjusted.
 
 ---
 
-## Comments
+## 6.2 Grid
 
-Comments represent responsibilities.
+Grid layouts should collapse progressively.
 
 Examples:
+
+```text
+4 Columns
+
+↓
+
+2 Columns
+
+↓
+
+1 Column
+```
+
+Horizontal scrolling should only be used when it improves the browsing experience.
+
+---
+
+## 6.3 Images
+
+Images should preserve their aspect ratio.
+
+Cropping should be intentional rather than accidental.
+
+Presentation rules should remain independent from content.
+
+---
+
+# 7. CSS Variables
+
+CSS custom properties are the primary source of reusable design values.
+
+Variables should be defined globally when shared.
+
+Component-specific values should remain local.
+
+Examples include:
+
+```css
+--layout-space
+
+--section-gap-lg
+
+--page-heading-offset
+
+--index-h1-size
+
+--index-h1-line-height
+```
+
+Variables should describe purpose rather than appearance.
+
+Preferred:
+
+```text
+--section-gap-lg
+```
+
+Avoid:
+
+```text
+--large-gap
+```
+
+---
+
+# 8. Animation
+
+Animations should support interaction rather than decoration.
+
+Transitions should remain subtle.
+
+Animations must never reduce usability or delay content visibility.
+
+Hover interactions should not be relied upon for touch devices.
+
+---
+
+# 9. Performance
+
+CSS should remain lightweight and predictable.
+
+Avoid:
+
+- Deep selector nesting
+- Unnecessary specificity
+- Duplicate declarations
+- Dead code
+
+Reusable rules should be extracted whenever appropriate.
+
+---
+
+# 10. Documentation
+
+Every stylesheet should follow a consistent section structure.
+
+Example:
 
 ```css
 /* =========================
@@ -205,95 +398,28 @@ Examples:
 /* =========================
    Components
 ========================= */
+
+/* =========================
+   Responsive
+========================= */
 ```
 
-Avoid generic section names such as:
-
-- Misc
-- Other
-- Temporary
-
-Every comment should clearly describe the responsibility of the following code.
+Sections should be ordered consistently across every stylesheet.
 
 ---
 
-## Content Isolation
+# 11. Guiding Principles
 
-CMS content should remain independent from page layout.
+When making styling decisions, prioritize the following principles.
 
-Preferred structure:
+1. Readability over cleverness.
+2. Consistency over convenience.
+3. Simplicity over abstraction.
+4. Maintainability over short-term optimization.
+5. Predictability over personal preference.
 
-```
-Article
-
-↓
-
-Article Body
-```
-
-Page layout should never depend on the internal structure of CMS content.
+These principles apply to every stylesheet within the project.
 
 ---
 
-## Readability
-
-Readable code is preferred over compact code.
-
-Guidelines:
-
-- Use consistent formatting.
-- Group related declarations.
-- Leave appropriate whitespace.
-- Avoid unnecessary shorthand when it reduces clarity.
-
-Future maintainability is more important than minimizing the number of lines.
-
----
-
-## Simplicity
-
-Each page should contain only the responsibilities it actually requires.
-
-Do not force every stylesheet to share identical sections.
-
-Architecture should remain simple and reflect the actual UI.
-
----
-
-## Architecture Principles
-
-When designing new pages, follow this process.
-
-```
-UI
-
-↓
-
-Page Structure
-
-↓
-
-Responsibilities
-
-↓
-
-CSS
-```
-
-CSS should be the result of architectural thinking rather than visual styling alone.
-
----
-
-## Checklist
-
-Before completing a stylesheet, confirm the following.
-
-- Responsibilities are clearly separated.
-- CSS structure matches the UI structure.
-- Design Tokens are used whenever possible.
-- Comments represent responsibilities.
-- Layout and Typography remain independent.
-- Interaction is separated from content styling.
-- Components remain reusable.
-- Code prioritizes readability over brevity.
-- The stylesheet is easy to understand without additional explanation.
+**End of CSS Style Guide**

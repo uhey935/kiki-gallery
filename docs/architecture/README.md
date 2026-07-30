@@ -2,27 +2,43 @@
 
 This directory contains the architectural documentation for the KiKi Gallery website.
 
-Rather than documenting implementation details, these documents describe the design principles and architectural decisions behind the project.
+These documents define the project's architectural principles, design decisions, and implementation guidelines. Together, they serve as the long-term reference for developing and maintaining the website.
 
-The goal is to ensure that the codebase remains readable, maintainable, and extensible over the long term.
+The documentation is intended to evolve alongside the project while preserving a consistent architectural philosophy.
 
 ---
 
-## Documentation
+## Reading Order
 
-### Architecture Audit
+The documents are designed to be read in the following order.
 
-**architecture-audit.md**
+| Document | Purpose |
+| --- | --- |
+| **Content Model Specification** | Defines the canonical content architecture and data model. |
+| **CSS Style Guide** | Defines the presentation architecture and CSS conventions. |
+| **Architecture Audit** | Evaluates the current implementation and identifies improvements. |
+| **Architecture Review Report** | Verifies architectural consistency before implementation. |
 
-A summary of the architecture review conducted after the initial implementation.
+---
 
-Contents include:
+## Documents
 
-- Audit scope
-- Findings
-- Design decisions
-- Architectural improvements
-- Future recommendations
+### Content Model Specification
+
+**content-model-specification.md**
+
+Defines the canonical content architecture for the project.
+
+Topics include:
+
+- Design Principles
+- Content Architecture
+- Collections
+- Common Objects
+- Common Fields
+- Validation Rules
+- Naming Conventions
+- Decision Log
 
 ---
 
@@ -30,52 +46,93 @@ Contents include:
 
 **css-style-guide.md**
 
-The coding standards and architectural principles used throughout the project.
+Defines the CSS architecture and styling conventions used throughout the project.
 
 Topics include:
 
-- Philosophy
-- Responsibility First
-- Page Structure
+- CSS Philosophy
+- Architecture Principles
+- Naming Conventions
 - Layout
 - Typography
-- Components
-- Interaction
 - Responsive Design
-- Design Tokens
-- Comment Rules
-- Simplicity
-- Readability
-- Architecture Principles
+- CSS Variables
+- Animation
+- Performance
+- Documentation Standards
+
+---
+
+### Architecture Audit
+
+**architecture-audit.md**
+
+Evaluates the current implementation against the project's architectural principles.
+
+Topics include:
+
+- Information Architecture
+- Content Architecture
+- Component Architecture
+- CSS Architecture
+- Accessibility
+- Performance
+- Maintainability
+- Audit Findings
+
+---
+
+### Architecture Review Report
+
+**architecture-review-report.md**
+
+Provides a structured review of the architecture before implementation.
+
+Topics include:
+
+- Design Principles Review
+- Information Ownership Review
+- Collection Review
+- Common Object Review
+- Naming Review
+- Validation Review
+- Documentation Review
+- Implementation Readiness
 
 ---
 
 ## Core Principles
 
-KiKi Gallery follows several core architectural principles.
+The KiKi Gallery architecture is built upon the following principles.
 
-- CSS is a blueprint for the UI.
-- Readability is more important than brevity.
-- Organize code by responsibility.
-- Match CSS structure with UI structure.
-- Prefer Design Tokens over hard-coded values.
-- Build for long-term maintainability.
+- Single Source of Truth
+- Clear Ownership
+- Separation of Content and Presentation
+- Simplicity over Premature Abstraction
+- Readability over Cleverness
+- Consistency over Convenience
+- Long-term Maintainability
 
-These principles are described in detail throughout the documentation.
+These principles are shared across all architectural documents.
 
 ---
 
-## Future Documentation
+## Repository Structure
 
-Additional documents may be added as the project evolves.
+```text
+docs/
+└── architecture/
+    ├── README.md
+    ├── content-model-specification.md
+    ├── css-style-guide.md
+    ├── architecture-audit.md
+    └── architecture-review-report.md
+```
 
-Examples include:
+---
 
-- Responsive Guidelines
-- Naming Conventions
-- i18n Strategy
-- CMS Architecture
-- SEO Guidelines
-- Performance Guide
+## Versioning
 
-The architecture documentation is intended to evolve together with the project while preserving consistent design principles.
+Each document maintains its own version, review status, and update history.
+
+Architectural changes should be reflected in the relevant document before implementation whenever practical.
