@@ -1,189 +1,459 @@
-# Content Model Specification for KiKi Gallery
+# Content Model Specification
 
-| Property | Value |
-| --- | --- |
-| Version | v1.0 |
-| Status | Draft |
-| Last Updated | 2026-07-30 |
-| Owner | KiKi Gallery |
-
-> This document defines the canonical content model for the KiKi Gallery website.
+Version: v1.0
+Status: Approved
+Last Updated: 2026-08-01
 
 ---
 
-## Purpose
+## 1. Overview and Canonical ID
 
-This document defines the content architecture, data model, and structural rules used throughout the KiKi Gallery website.
+本仕様は KiKi Gallery の Schema、Editor、Astro、および将来の CMS 実装における正式な Content Model の基準である。対象は Artist、Work、Exhibition、Journal、News、Home とする。
 
-Its primary purpose is to establish a single, authoritative specification for all content collections before implementation.
+すべての Collection Entry の Canonical ID は Astro の `entry.id` とする。
 
-This specification defines **what** content exists, **where** it belongs, and **how** it relates to other content.
-
-Implementation details—including Astro components, editor configuration, CSS architecture, and deployment—are intentionally documented separately.
-
----
-
-## Relationship to Other Documents
-
-This document should be read together with the following architectural documents.
-
-| Document | Purpose |
-| --- | --- |
-| Architecture Audit | Evaluates the current architecture and identifies opportunities for improvement. |
-| CSS Style Guide | Defines CSS architecture, conventions, and styling guidelines. |
-| Architecture Review Report | Records the architectural review performed prior to implementation. |
-
-Each document has a distinct responsibility and should be maintained independently.
-
----
-
-# 1. Introduction
-
-## 1.1 Overview
-
-KiKi Gallery is designed as a long-term digital archive rather than a conventional content management system.
-
-The content model prioritizes:
-
-- Clarity
-- Consistency
-- Maintainability
-- Long-term sustainability
-
-Each Collection has a clearly defined responsibility.
-
-Every piece of information has a single authoritative owner, and relationships between Collections are expressed through references instead of duplicated data.
-
-The resulting architecture is intentionally simple, making the content easier to understand, maintain, and evolve over time.
-
----
-
-## 1.2 Scope
-
-This specification defines:
-
-- Content Collections
-- Common Objects
-- Shared Fields
-- Localized Fields
-- Enumerations
-- Validation Rules
-- Relationships between Collections
-
-This specification does not define:
-
-- Astro implementation
-- Component architecture
-- CSS
-- Editor configuration
-- Build process
-- Deployment
-- Runtime behavior
-
-These subjects are documented separately.
-
----
-
-## 1.3 Design Goals
-
-The content model is designed to achieve the following goals.
-
-### Clarity
-
-Every Collection has a clearly defined responsibility.
-
-Ownership of every piece of information should always be unambiguous.
-
-### Simplicity
-
-Simple structures are preferred over speculative abstraction.
-
-Future extensibility must never reduce present-day readability.
-
-### Consistency
-
-Equivalent concepts should always be represented consistently throughout the project.
-
-Naming, relationships, and shared structures should follow the same conventions across every Collection.
-
-### Maintainability
-
-The model should remain understandable and editable over many years without requiring implementation knowledge.
-
-Editors should be able to manage content without understanding the underlying application architecture.
-
-### Scalability
-
-The architecture should support future expansion without requiring structural redesign.
-
-New Collections, Objects, or Fields should integrate naturally into the existing model.
+- 現在の単一ファイル構成では、拡張子を除いたファイル名を ID とする。
+- 将来 Publication Unit 化した場合はディレクトリ名を ID とする。
+- `slug` を frontmatter へ重複保存しない。
+- URL、Route、Map key は `entry.id` を基準に生成する。
+- Collection Reference は `reference.id` で解決する。
+- Publication Unit へ移行しても Canonical ID の責務は変更しない。
 
 ---
 
 ## 2. Design Principles
 
-The following principles govern every architectural decision defined in this specification.
+### 2.1 Shared / Localized / Derived
 
-### 2.1 Single Source of Truth
+| Classification | Definition                                         | Examples                                                   |
+| -------------- | -------------------------------------------------- | ---------------------------------------------------------- |
+| Shared         | 言語に依存せず共通利用するデータ                   | ID、日付、Reference、画像Path、Enum、Presentation Metadata |
+| Localized      | 言語ごとに保持するデータ                           | `title`、`summary`、`body`、`alt`、`biography`、`material` |
+| Derived        | 保存せず Canonical data から表示時に生成するデータ | URL、表示タイトル、日付表示、展示状態、リンク先画像        |
 
-Every piece of information has exactly one authoritative owner.
+Derived data は frontmatter へ保存しない。
 
-Other Collections reference that information instead of duplicating it.
+### 2.2 Single Source of Truth
 
-Examples include:
+同じ意味の情報を複数の Collection や Field へ複製しない。所有元の Canonical data を Reference または表示時の算出によって再利用する。
 
-- Artist names belong to Artist.
-- Biographies belong to Artist.
-- Work images belong to Work.
-- Exhibition dates belong to Exhibition.
+- Work の内容は Work が所有する。
+- Artist Detail における Work の順序と Layout は Artist が所有する。
+- Exhibition と Artist の関係は Exhibition の `artists` が所有する。
+- Home は参照先の Canonical data を複製しない。
+- News の内部リンク先画像は Home 表示時に参照先から取得する。
 
-Duplicated information should never exist within the content model.
+### 2.3 Markdown, Editor, and Validation
 
-### 2.2 Clear Ownership
-
-Each Collection owns only the information that belongs to its responsibility.
-
-Collections should never become containers for unrelated content.
-
-For example, an Exhibition references Artists but does not own Artist information.
-
-### 2.3 Separation of Content and Presentation
-
-Content describes information.
-
-Presentation describes how information is displayed.
-
-Presentation decisions should only become part of the content model when they represent reusable editorial intent.
-
-Examples:
-
-- Hero layout belongs to the content model.
-- CSS Grid layout belongs to the presentation layer.
-
-### 2.4 Shared Before Localized
-
-Information that is identical across every language should exist only once.
-
-Information that differs by language should be localized.
-
-This distinction should remain consistent throughout every Collection.
-
-### 2.5 Reference Over Duplication
-
-Relationships between Collections are expressed through references.
-
-Collections should never duplicate another Collection's data for convenience.
-
-### 2.6 Simplicity Over Premature Abstraction
-
-Common Objects should be introduced only when they are genuinely shared.
-
-The architecture should solve today's requirements while allowing future evolution through incremental change.
-
-### 2.7 Long-Term Maintainability
-
-The content model is expected to remain maintainable over many years.
-
-Architectural decisions should favor readability, consistency, and stability over short-term convenience.
+- Markdown 本文に見出しを設ける場合は H1 を使わず H2 から開始する。H1 は Astro 側で描画する。
+- 分類や Navigation に使用する制御語彙は英語固定とする。
+- Editor は Content Model に従い、Editor 都合でモデルを変更しない。
+- Build 時Validationを必須とし、不整合があれば公開Buildを失敗させる。
+- Editor の正式設計は別フェーズで文書化する。
 
 ---
+
+## 3. Hero Objects
+
+Hero は Collection ごとに責務を分離し、暗黙に流用しない。
+
+### 3.1 Artist Hero
+
+```yaml
+hero:
+  image: /images/artists/example.webp
+hero_alt: 作品の代替テキスト
+```
+
+| Field        | Classification | Required |
+| ------------ | -------------- | -------- |
+| `hero.image` | Shared         | Yes      |
+| `hero_alt`   | Localized      | Yes      |
+
+Artist 専用とし、Standard Hero の `orientation`、`position`、`treatment`、`hero_caption` は持たない。
+
+### 3.2 Exhibition Hero
+
+```yaml
+hero:
+  image: /images/exhibitions/example.webp
+  orientation: landscape
+  position: center
+  treatment: cover
+  hero_caption: Photo credit
+hero_alt: 展示画像の代替テキスト
+```
+
+| Field               | Classification | Required |
+| ------------------- | -------------- | -------- |
+| `hero.image`        | Shared         | Yes      |
+| `hero.orientation`  | Shared         | Yes      |
+| `hero.position`     | Shared         | No       |
+| `hero.treatment`    | Shared         | No       |
+| `hero.hero_caption` | Shared         | No       |
+| `hero_alt`          | Localized      | Yes      |
+
+Allowed values:
+
+- `orientation`: `portrait`, `landscape`
+- `position`: `top`, `center`, `bottom`, `left`, `right`
+- `treatment`: `default`, `contain`, `cover`
+
+### 3.3 Journal Hero
+
+```yaml
+hero:
+  image: /images/journal/example.webp
+  hero_caption: Photo credit
+hero_alt: 記事画像の代替テキスト
+```
+
+| Field               | Classification | Required |
+| ------------------- | -------------- | -------- |
+| `hero.image`        | Shared         | Yes      |
+| `hero.hero_caption` | Shared         | No       |
+| `hero_alt`          | Localized      | Yes      |
+
+`orientation`、`position`、`treatment` は禁止する。
+
+### 3.4 Home Hero
+
+```yaml
+home_hero:
+  media:
+    type: image
+    image: /images/home/example.webp
+```
+
+`home_hero` は Home 専用の Optional Object であり、画像と動画に対応する。
+
+| Field          | Required                  | Rule                               |
+| -------------- | ------------------------- | ---------------------------------- |
+| `media`        | Yes when Home Hero exists | Home Hero media                    |
+| `media.type`   | Yes                       | `image` or `video`                 |
+| `media.image`  | Conditional               | `type: image` で必須               |
+| `media.video`  | Conditional               | `type: video` で必須               |
+| `media.poster` | Conditional               | `type: video` で必須               |
+| `layout`       | No                        | `default`, `portrait`, `alternate` |
+
+- 未設定時は表示実装で `/images/home/fallback-hero.webp` を使用する。
+- Fallback 専用Fieldは保存しない。
+- Exhibition HeroをHome Heroとして流用しない。
+
+---
+
+## 4. Artist and Work Layout
+
+### 4.1 Artist Fields
+
+Shared:
+
+| Field          | Type             | Required |
+| -------------- | ---------------- | -------- |
+| `name`         | String           | Yes      |
+| `hero`         | Artist Hero      | Yes      |
+| `medium`       | English String[] | Yes      |
+| `works_layout` | Work Layout[]    | No       |
+
+Localized:
+
+| Field          | Type   | Required |
+| -------------- | ------ | -------- |
+| `display_name` | String | No       |
+| `hero_alt`     | String | Yes      |
+| `short_bio`    | String | Yes      |
+| `biography`    | String | No       |
+| `seo_title`    | String | No       |
+| `description`  | String | No       |
+
+Rules:
+
+- `medium` は Required の英語配列で、1件以上を必要とする。
+- `works_layout` は Optional とする。
+- Artist は Work や Exhibition の Canonical data を重複所有しない。
+- Exhibition 一覧は Exhibition の `artists` から Derived する。
+- `display_name` 未設定時は `name` を表示名にする。
+
+### 4.2 Work Layout
+
+```yaml
+works_layout:
+  - layout: double-a
+    works:
+      - work-a
+      - work-b
+```
+
+Field 名は `layout` とする。Allowed values:
+
+- `single-a`
+- `single-b`
+- `double-a`
+- `double-b`
+
+Rules:
+
+- `single-a` / `single-b` は Work 1件、`double-a` / `double-b` は Work 2件を参照する。
+- 同一 Artist Detail 内で同じ Work を複数回参照しない。
+- 参照 Work の所属 Artist と参照元 Artist が一致しなければならない。
+- 参照切れ・所属不一致は Cross-collection validation で Build を失敗させる。
+
+---
+
+## 5. Work
+
+Work は Hero を持たず、`images[0]` を代表画像として使用する。
+
+Shared:
+
+| Field         | Type             | Required |
+| ------------- | ---------------- | -------- |
+| `artist`      | Artist Reference | Yes      |
+| `images`      | Work Image[]     | Yes      |
+| `year`        | Positive Integer | No       |
+| `size`        | String           | No       |
+| `orientation` | Enum             | No       |
+| `inquiry`     | Inquiry          | Yes      |
+
+Localized:
+
+| Field         | Type     | Required |
+| ------------- | -------- | -------- |
+| `title`       | String   | Yes      |
+| `material`    | String   | No       |
+| `description` | String   | No       |
+| `seo_title`   | String   | No       |
+| Markdown body | Markdown | No       |
+
+```yaml
+images:
+  - src: /images/works/example.webp
+    alt: 作品画像の代替テキスト
+```
+
+Rules:
+
+- `images` は1件以上。各画像は現在の単一ファイル構成では `src` と `alt` を持つ。
+- 同一 Work 内で同じ `src` を重複させない。
+- 将来 Publication Unit 化した場合、`src` は Shared、`alt` は Localized へ分離する。
+- `size` は Shared Optional、`material` は Localized Optional とする。
+- Work は `medium` を持たない。
+- `orientation` は Optional で、現時点では `landscape` のみ許可する。
+- `images.length === 1 && orientation === "landscape"` の場合に専用表示を使用する。
+- 画像寸法から `orientation` を自動推論しない。
+
+### 5.1 Inquiry
+
+```yaml
+inquiry:
+  type: inquiry
+```
+
+```yaml
+inquiry:
+  type: shop
+  url: https://example.com/item
+```
+
+```yaml
+inquiry:
+  type: none
+```
+
+- Inquiry Object は Required。
+- `shop` は URL 必須、`inquiry` は URL 任意、`none` は URL 禁止とする。
+- Boolean は使用しない。
+
+---
+
+## 6. Exhibition
+
+Shared:
+
+| Field             | Type               | Required |
+| ----------------- | ------------------ | -------- |
+| `artists`         | Artist Reference[] | Yes      |
+| `start_date`      | Date               | Yes      |
+| `end_date`        | Date               | Yes      |
+| `hero`            | Exhibition Hero    | Yes      |
+| `works`           | Work Reference[]   | No       |
+| `display_artists` | Boolean            | No       |
+
+Localized:
+
+| Field           | Type     | Required |
+| --------------- | -------- | -------- |
+| `title`         | String   | No       |
+| `summary`       | String   | No       |
+| `hero_alt`      | String   | Yes      |
+| `venue`         | String   | No       |
+| `opening_hours` | String   | No       |
+| `closed_days`   | String   | No       |
+| `attendance`    | String   | No       |
+| Markdown body   | Markdown | No       |
+
+Rules:
+
+- `artists` は Required で1件以上を必要とする。
+- `start_date` / `end_date` は両方 Required で、`end_date >= start_date` とする。
+- `title` / `summary` は Optional、`venue` は Localized String とする。
+- `works` は Optional Work Reference 配列。
+- `display_artists` は Optional で、未指定時は表示する。
+- `status` は日付から Derived し、保存しない。
+- `artist_name` は持たない。
+- 保存済み `title` を優先し、未設定時のみ共通 Utility で個展・合同展タイトルを生成する。
+- 参照 Artist / Work の存在と、表示Workの所属Artistが `artists` に含まれることを検証する。
+
+---
+
+## 7. Journal
+
+Shared:
+
+| Field        | Type                | Required |
+| ------------ | ------------------- | -------- |
+| `date`       | `YYYY-MM-DD` String | Yes      |
+| `categories` | Enum[]              | Yes      |
+| `hero`       | Journal Hero        | Yes      |
+| `author`     | Contributor ID      | No       |
+| `credits`    | Credit[]            | No       |
+
+Localized:
+
+| Field         | Type     | Required |
+| ------------- | -------- | -------- |
+| `title`       | String   | Yes      |
+| `summary`     | String   | Yes      |
+| `hero_alt`    | String   | Yes      |
+| Markdown body | Markdown | No       |
+
+Allowed categories:
+
+- `interview`
+- `essay`
+- `report`
+
+Rules:
+
+- `date` は Required の有効な `YYYY-MM-DD` 文字列。
+- `categories` は Required で1件以上、`summary` は Required。
+- `author` / `credits` は両方 Optional で、同時指定は禁止する。
+- Credit は Required の `role` と、`person` または `member` の一方を持つ。両方の同時指定は禁止する。
+- `hero_caption` の画像クレジットを Contributor Credits へ移さない。
+
+---
+
+## 8. News
+
+News は短い告知モデルであり、Hero、画像、長文本文、Detail Page を持たない。
+
+Shared:
+
+| Field          | Type                         | Required |
+| -------------- | ---------------------------- | -------- |
+| `date`         | `YYYY-MM-DD` String          | Yes      |
+| `news_type`    | Enum                         | Yes      |
+| `link`         | Internal Path or HTTP(S) URL | No       |
+| `show_on_home` | Boolean                      | Yes      |
+
+Localized:
+
+| Field     | Type   | Required |
+| --------- | ------ | -------- |
+| `title`   | String | Yes      |
+| `summary` | String | No       |
+
+Allowed `news_type` values:
+
+- `exhibition`
+- `artist`
+- `general`
+
+Rules:
+
+- `date` は Required の有効な `YYYY-MM-DD` 文字列。
+- `news_type` / `title` は Required、`summary` / `link` は Optional。
+- `show_on_home` は Required Boolean。
+- `link` は `/` で始まる内部Path、または `http://` / `https://` URLに限定する。
+- News は `hero`、`image`、`body`、Detail Page を持たず、`/news/{id}` Route は生成しない。
+- 内部リンク先の画像と代替テキストは Home 表示時に Derived する。
+- `has_page`、`featured`、`published_at` は持たない。
+
+Home 掲載条件:
+
+1. `show_on_home === true`
+2. `link` が存在する。
+3. 既知の内部リンク先を解決できる。
+4. 参照先から Derived 画像を取得できる。
+
+外部URL、一般Path、画像を解決できないリンクは Home Stories へ掲載しない。既知Collectionを指す内部リンクの参照切れはBuildを失敗させる。
+
+---
+
+## 9. Home
+
+Home は Navigation / Composition Layer であり、独立した記事 Collection ではない。
+
+| Field         | Type           | Required |
+| ------------- | -------------- | -------- |
+| `home_hero`   | Home Hero      | No       |
+| `sections`    | Home Section[] | Yes      |
+| `title`       | String         | No       |
+| `description` | String         | No       |
+
+Home Section:
+
+| Field             | Type                      | Required |
+| ----------------- | ------------------------- | -------- |
+| `id`              | String                    | Yes      |
+| `title`           | English Navigation String | Yes      |
+| `href`            | Internal Path or URL      | Yes      |
+| `image.landscape` | Image Path                | Yes      |
+| `image.square`    | Image Path                | Yes      |
+| `image.portrait`  | Image Path                | Yes      |
+
+Rules:
+
+- `home_hero` は Optional。
+- `title` は Shared の英語 Navigation Language。
+- `sections` の順序はコンテンツが所有し、`id` は同一 Home Entry 内で一意とする。
+- 現在の表示実装では `artists` / `about` の固定構成を維持する。
+- 参照先 Collection の Canonical data を Home へ複製しない。
+- Fallback Hero は表示ロジック側で `/images/home/fallback-hero.webp` を使用する。
+
+---
+
+## 10. Validation
+
+Schema は Unknown Field を拒否する strict Schema とし、次を検証する。
+
+- Required / Optional / Conditional
+- Enum
+- Reference Exists
+- Unique
+- Optional XOR
+- Cross-field validation
+- Cross-collection validation
+- 空配列禁止、日付形式・順序、配列内重複
+
+Cross-collection validation:
+
+- Collection Referenceを `reference.id` で解決できること。
+- Artist–Work参照切れ、所属一致、Artist Detail内Work重複。
+- Workが参照するArtistの存在。
+- Exhibitionが参照するArtist / Workの存在と所属整合。
+- Newsの既知の内部リンク先をHome画像解決時に参照できること。
+
+Validation error がある場合、公開 Build を失敗させる。
+
+---
+
+## 11. Change Management
+
+- 本仕様を Schema、Editor、Astro 実装の正式な基準とする。
+- Content Model 変更時は仕様書と実装を同期する。
+- 将来 Publication Unit へ移行しても Canonical ID の責務を変えない。
+- 新しいFieldは既存FieldまたはDerived dataで表現できない場合にのみ追加する。
+- 未確定の抽象ObjectやEnumを先回りして追加しない。
+- Editor設計は別フェーズで正式文書化する。
+- 後方互換性を壊す変更はMigrationとして扱い、仕様書、Schema、コンテンツ、表示、Validationを同じ変更単位で更新する。
