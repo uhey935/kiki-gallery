@@ -1,20 +1,18 @@
 ---
 title: Roots
-artist: alana-wilson
-artist_name: アラーナ・ウィルソン
+artists:
+  - alana-wilson
 start_date: "2027-04-04"
 end_date: "2027-04-07"
-open_time: "13:00-17:00"
+opening_hours: "13:00-17:00"
 closed_days: "水曜・木曜"
-attendance: ""
 
-hero_image: /images/exhibitions/alana-wilson-2024-04.png
-hero_portrait: true
+hero:
+  image: /images/exhibitions/alana-wilson-2024-04.png
+  orientation: portrait
+hero_alt: 白い展示台に並ぶ、異なる形と質感を持つ複数の陶器
 
-published_at: "2027-04-04"
-venue:
-  name: KiKi Gallery
-  map: "https://maps.google.com"
+venue: KiKi Gallery
 ---
 
 GALLERY crossingは、2026年4⽉18⽇(土)〜5⽉3⽇(日)の会期にて、アラーナ・ウィルソン個展「Roots」を開催いたします。本展はウィルソンの当ギャラリーで5度目となる個展であり、本年3月までに行われた、滋賀県立陶芸の森（信楽）でのレジデンス制作を中心に構成されます。オーストラリアに生まれ、ニュージーランド国籍を持つウィルソンは、これまでにもヨーロッパや中東、アジアを訪れながら制作を行い、近年は特にアーティストの制作活動とルーツの関係性についてのリサーチを深め、論文執筆を行うなどの研究活動にも取り組んでいます。本展における「Roots（ルーツ）」は、起源や基盤を指すと同時に、素材や文化、思考が交差する地点として捉えられています。

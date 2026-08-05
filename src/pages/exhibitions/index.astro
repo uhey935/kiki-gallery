@@ -2,6 +2,12 @@
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import { getWeekday } from "../../utils/date";
+import {
+  getArtistDisplayName,
+  getExhibitionDisplayTitle,
+  resolveExhibitionArtists,
+} from "../../utils/exhibitionDisplay";
+import { getExhibitionStatus } from "../../utils/exhibitionStatus";
 
 // =====================
 // 1. データ取得
@@ -10,73 +16,28 @@ const exhibitions = await getCollection("exhibitions");
 const artists = await getCollection("artists");
 
 // 作家データを ID キーの Map に変換（計算量 O(N) に抑制）
-const artistMap = new Map(artists.map((a) => [a.id, a.data]));
+const artistMap = new Map(artists.map((artist) => [artist.id, artist]));
 
-// =====================
-// 2. ヘルパー関数（ロジックの共通化）
-// =====================
-const SEPARATOR = "、";
-
-// 作家名の配列を取得
-const getArtistDisplayNames = (artistIds: string[] | string | undefined) => {
-  const ids = Array.isArray(artistIds)
-    ? artistIds
-    : artistIds
-      ? [artistIds]
-      : [];
-
-  return ids
-    .map((id) => {
-      const data = artistMap.get(id);
-      return data?.nameJa || data?.name || id;
-    })
-    .filter(Boolean);
-};
-
-// 表示用タイトルの生成
-const getDisplayTitle = (title: string | undefined, names: string[]) => {
-  if (title && title.trim() !== "") return title;
-
-  if (names.length === 0) return "Exhibition";
-
-  return names.length > 1
-    ? `${names.join(SEPARATOR)} 合同展`
-    : `${names[0]} 個展`;
-};
-
-// ステータス判定（ビルド時の時刻基準）
-const getStatus = (start: Date | null, end: Date | null) => {
-  const today = new Date();
-
-  if (!start) return "past";
-
-  // 終了日の23:59:59と比較（endがなければstartを基準にする）
-  const compare = new Date(end ?? start);
-  compare.setHours(23, 59, 59, 999);
-
-  if (start > today) return "upcoming";
-  if (compare >= today) return "ongoing";
-
-  return "past";
-};
+const toDateInputValue = (date: Date) => date.toISOString().slice(0, 10);
 
 // =====================
 // 3. データ加工
 // =====================
 const formattedExhibitions = exhibitions.map((exh) => {
-  const names = getArtistDisplayNames(exh.data.artist);
-
-  const startDate = exh.data.start_date ? new Date(exh.data.start_date) : null;
-
-  const endDate = exh.data.end_date ? new Date(exh.data.end_date) : null;
+  const resolvedArtists = resolveExhibitionArtists(exh, artistMap);
+  const artistNames = resolvedArtists.map(getArtistDisplayName);
+  const startDate = exh.data.start_date;
+  const endDate = exh.data.end_date;
 
   return {
     ...exh,
-    artistNames: names,
-    displayTitle: getDisplayTitle(exh.data.title, names),
-    status: getStatus(startDate, endDate),
+    artistNames,
+    displayTitle: getExhibitionDisplayTitle(exh, resolvedArtists),
+    status: getExhibitionStatus(startDate, endDate),
     startDate,
     endDate,
+    startDateValue: toDateInputValue(startDate),
+    endDateValue: toDateInputValue(endDate),
   };
 });
 
@@ -96,22 +57,20 @@ formattedExhibitions.sort((a, b) => {
 
   // ongoing → 開始日が新しい順
   if (a.status === "ongoing") {
-    return (b.startDate?.getTime() ?? 0) - (a.startDate?.getTime() ?? 0);
+    return b.startDate.getTime() - a.startDate.getTime();
   }
 
   // upcoming → 開始日が近い順
   if (a.status === "upcoming") {
-    return (a.startDate?.getTime() ?? 0) - (b.startDate?.getTime() ?? 0);
+    return a.startDate.getTime() - b.startDate.getTime();
   }
 
   // past → 終了日が新しい順
-  return (b.endDate?.getTime() ?? 0) - (a.endDate?.getTime() ?? 0);
+  return b.endDate.getTime() - a.endDate.getTime();
 });
 ---
 
-<Layout
-  title="Exhibitions"
->
+<Layout title="Exhibitions">
   <section class="section exhibitions">
     <h1 class="index-h1">Exhibitions</h1>
 
@@ -128,9 +87,7 @@ formattedExhibitions.sort((a, b) => {
           >
             <a href={`/exhibitions/${exh.id}`} class="exhibitions-card__link">
               <div class="exhibitions-card__image">
-                {exh.data.hero_image && (
-                  <img src={exh.data.hero_image} alt={exh.displayTitle} />
-                )}
+                <img src={exh.data.hero.image} alt={exh.data.hero_alt} />
 
                 <span
                   class={`exhibitions-status exhibitions-status--${exh.status}`}
@@ -151,37 +108,31 @@ formattedExhibitions.sort((a, b) => {
                 </div>
 
                 <p class="exhibitions-date exhibitions-card__date">
-                  {exh.data.start_date && (
-                    <>
-                      <time
-                        class="exhibitions-date__value"
-                        datetime={exh.data.start_date}
-                      >
-                        {`${exh.startDate?.getFullYear()}.${String((exh.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exh.startDate?.getDate()).padStart(2, "0")}`}
-                      </time>
+                  <>
+                    <time
+                      class="exhibitions-date__value"
+                      datetime={exh.startDateValue}
+                    >
+                      {`${exh.startDate.getFullYear()}.${String(exh.startDate.getMonth() + 1).padStart(2, "0")}.${String(exh.startDate.getDate()).padStart(2, "0")}`}
+                    </time>
 
-                      <span class="exhibitions-date__weekday">
-                        {getWeekday(exh.data.start_date)}
-                      </span>
+                    <span class="exhibitions-date__weekday">
+                      {getWeekday(exh.startDateValue)}
+                    </span>
 
-                      {exh.data.end_date && (
-                        <>
-                          <span class="exhibitions-date__separator"> - </span>
+                    <span class="exhibitions-date__separator"> - </span>
 
-                          <time
-                            class="exhibitions-date__value"
-                            datetime={exh.data.end_date}
-                          >
-                            {`${String((exh.endDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exh.endDate?.getDate()).padStart(2, "0")}`}
-                          </time>
+                    <time
+                      class="exhibitions-date__value"
+                      datetime={exh.endDateValue}
+                    >
+                      {`${String(exh.endDate.getMonth() + 1).padStart(2, "0")}.${String(exh.endDate.getDate()).padStart(2, "0")}`}
+                    </time>
 
-                          <span class="exhibitions-date__weekday">
-                            {getWeekday(exh.data.end_date)}
-                          </span>
-                        </>
-                      )}
-                    </>
-                  )}
+                    <span class="exhibitions-date__weekday">
+                      {getWeekday(exh.endDateValue)}
+                    </span>
+                  </>
                 </p>
               </div>
             </a>

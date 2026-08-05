@@ -9,7 +9,7 @@ const artists = await getCollection("artists");
    英語（姓）ベースでソート
 ========================= */
 const sortedArtists = artists
-  .filter(artist => artist.data.name) // nameがないデータを除外して安全性を確保
+  .filter((artist) => artist.data.name) // nameがないデータを除外して安全性を確保
   .sort((a, b) => {
     const getLastName = (name: string = "") => {
       const parts = name.trim().split(/\s+/);
@@ -32,27 +32,23 @@ const sortedArtists = artists
         sortedArtists.map((artist) => (
           <article class="artists-card">
             <a href={`/artists/${artist.id}`} class="artists-link">
-              {artist.data.image && (
+              {artist.data.hero.image && (
                 <div class="artists-image">
-                  <Image 
-                    src={artist.data.image} 
-                    alt={artist.data.name || "Artist photo"}
-                    width={600} 
-                    height={600} 
+                  <Image
+                    src={artist.data.hero.image}
+                    alt={artist.data.hero_alt}
+                    width={600}
+                    height={600}
                   />
                 </div>
               )}
 
               <div class="artists-meta">
                 <h2 class="artists-name">
-                  {artist.data.nameJa ?? artist.data.name}
+                  {artist.data.display_name ?? artist.data.name}
                 </h2>
 
-                <p class="artists-medium">
-                  {Array.isArray(artist.data.medium)
-                    ? artist.data.medium.join(" / ")
-                    : artist.data.medium}
-                </p>
+                <p class="artists-medium">{artist.data.medium.join(" / ")}</p>
               </div>
             </a>
           </article>

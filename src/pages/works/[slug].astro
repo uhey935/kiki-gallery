@@ -10,7 +10,14 @@ export async function getStaticPaths() {
   const artists = await getCollection("artists");
 
   return works.map((work) => {
-    const artist = artists.find((a) => a.id === work.data.artist);
+    const artistId = work.data.artist.id;
+    const artist = artists.find((candidate) => candidate.id === artistId);
+
+    if (!artist) {
+      throw new Error(
+        `Work "${work.id}" references missing artist "${artistId}".`,
+      );
+    }
 
     return {
       params: {
@@ -18,14 +25,14 @@ export async function getStaticPaths() {
       },
       props: {
         work,
-        artistName:
-          artist?.data.nameJa ?? artist?.data.name ?? work.data.artist,
+        artist,
       },
     };
   });
 }
 
-const { work, artistName } = Astro.props;
+const { work, artist } = Astro.props;
+const artistName = artist.data.display_name ?? artist.data.name;
 
 const { Content } = await render(work);
 
@@ -34,8 +41,12 @@ const hasStatement = (work.body ?? "").trim().length > 0;
 const workTitle = work.data.title;
 const description = `${workTitle} | KiKi Gallery`;
 
-const inquiryHref = "mailto:info@kiki-gallery.com";
-const artistHref = `/artists/${work.data.artist}`;
+const artistHref = `/artists/${artist.id}`;
+
+const inquiry = work.data.inquiry;
+const showInquiry = inquiry.type !== "none";
+const inquiryLabel = inquiry.type === "shop" ? "Shop" : "Inquire";
+const inquiryHref = "url" in inquiry ? inquiry.url : undefined;
 
 const images = work.data.images;
 
@@ -117,11 +128,15 @@ const isSingleLandscape =
               </div>
             )}
 
-            {work.data.inquiry && (
+            {showInquiry && (
               <p class="works-detail-inquiry">
-                <a href={inquiryHref} class="action-link">
-                  Inquire
-                </a>
+                {inquiryHref ? (
+                  <a href={inquiryHref} class="action-link">
+                    {inquiryLabel}
+                  </a>
+                ) : (
+                  <span class="action-link">{inquiryLabel}</span>
+                )}
               </p>
             )}
           </div>
@@ -179,11 +194,15 @@ const isSingleLandscape =
                 </div>
               )}
 
-              {work.data.inquiry && (
+              {showInquiry && (
                 <p class="works-detail-inquiry">
-                  <a href={inquiryHref} class="action-link">
-                    Inquire
-                  </a>
+                  {inquiryHref ? (
+                    <a href={inquiryHref} class="action-link">
+                      {inquiryLabel}
+                    </a>
+                  ) : (
+                    <span class="action-link">{inquiryLabel}</span>
+                  )}
                 </p>
               )}
             </div>

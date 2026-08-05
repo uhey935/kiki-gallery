@@ -10,4 +10,7 @@ size: H300 × W200mm
 material: アクリル、紙
 year: 2025
 
+inquiry:
+  type: none
+
 ---

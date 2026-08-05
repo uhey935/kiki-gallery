@@ -1,6 +1,4 @@
 ---
-hero_image: /images/home/fallback-hero.webp
-
 sections:
   - id: artists
     title: Artists

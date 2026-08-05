@@ -1,20 +1,17 @@
 ---
 name: Keisuke Matsuda
-nameJa: 松田啓佑
-image: /images/artists/keisuke-matsuda.png
+display_name: 松田啓佑
+hero:
+  image: /images/artists/keisuke-matsuda.png
+hero_alt: 松田啓佑によるモノクロの抽象画
 
-bio: |
+biography: |
   松田啓佑 （まつだ・けいすけ）。1984年、群馬県生まれ。京都府在住。2009年、京都市立芸術大学大学院美術研究科絵画専攻油画修了。
   
   「私は結果を意図するより手前の絵を描こうとしている」という松田は、目の前の現実が頭の中の言葉そのものだと感じる時に、自分の意識に先立ってイメージが起こるという。そのイメージを網膜的にではなく、イメージが体の動きや意図そのものとなって出来上がる絵を目指す。
 
-bio_short:  松田啓佑 （まつだ・けいすけ）。1984年、群馬県生まれ。京都府在住。2009年、京都市立芸術大学大学院美術研究科絵画専攻油画修了。
+short_bio: 松田啓佑 （まつだ・けいすけ）。1984年、群馬県生まれ。京都府在住。2009年、京都市立芸術大学大学院美術研究科絵画専攻油画修了。
 
-awards: []
-exhibitions:
-  - Undulation
-medium: 日本画
-region: 京都
-
-works_layout: []
+medium:
+  - Nihonga
 ---

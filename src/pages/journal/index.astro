@@ -7,18 +7,6 @@ import { getCollection } from "astro:content";
 ========================= */
 const journal = await getCollection("journal");
 
-/* =========================
-   2. ヘルパー関数（将来のutils候補）
-========================= */
-// HTMLタグを除去
-const stripHtml = (text: string) => text.replace(/<[^>]+>/g, "");
-
-// 文字列を丸める
-const truncate = (text: string, limit: number) => {
-  const clean = stripHtml(text).replace(/\n/g, "").trim();
-  return clean.length > limit ? clean.slice(0, limit) + "..." : clean;
-};
-
 // 日付の表示用フォーマット（Template側で使用）
 const formatDate = (date: Date) =>
   date.toLocaleDateString("en-US", {
@@ -36,27 +24,17 @@ const items = journal
     // 日付オブジェクトの生成（不正な日付はnull）
     const date = item.data.date ? new Date(item.data.date) : null;
 
-    // hrefの判定
-    const href =
-      item.data.link ||
-      (item.data.has_page !== false ? `/journal/${item.id}` : null);
-
-    // 抜粋文の生成（生テキストを安全に確保してから処理）
-    const rawText = item.body ?? "";
-    const excerpt = item.data.excerpt || truncate(rawText, 80);
-
     return {
       id: item.id,
-      href,
+      href: `/journal/${item.id}`,
       title: item.data.title,
       date, // 派生データ（ISO文字列等）は持たせずDateオブジェクトのみ
-      excerpt,
+      summary: item.data.summary,
       categories: item.data.categories ?? [], // 配列として保持
-      hero_image: item.data.hero_image,
+      hero: item.data.hero,
+      hero_alt: item.data.hero_alt,
     };
   })
-  // リンクがない記事は一覧に出さない
-  .filter((item) => item.href !== null)
   // 新しい順にソート
   .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
 
@@ -79,11 +57,9 @@ const restItems = items.slice(5);
         hero && (
           <article class="card journal-card journal-card--hero">
             <a href={hero.href} class="card-link">
-              {hero.hero_image && (
-                <div class="card-image journal-image">
-                  <img src={hero.hero_image} alt={hero.title} />
-                </div>
-              )}
+              <div class="card-image journal-image">
+                <img src={hero.hero.image} alt={hero.hero_alt} />
+              </div>
               <div class="card-meta journal-meta">
                 {/* カテゴリ判定（配列の1番目がある場合のみ） */}
                 {hero.categories[0] && (
@@ -109,11 +85,9 @@ const restItems = items.slice(5);
         topItems.map((item, index) => (
           <article class={`card journal-card journal-card--item-${index + 1}`}>
             <a href={item.href} class="card-link">
-              {item.hero_image && (
-                <div class="card-image journal-image">
-                  <img src={item.hero_image} alt={item.title} />
-                </div>
-              )}
+              <div class="card-image journal-image">
+                <img src={item.hero.image} alt={item.hero_alt} />
+              </div>
               <div class="card-meta journal-meta">
                 {item.categories[0] && (
                   <p class="journal-category">{item.categories[0]}</p>
@@ -138,11 +112,9 @@ const restItems = items.slice(5);
           {restItems.map((item) => (
             <article class="card journal-card">
               <a href={item.href} class="card-link">
-                {item.hero_image && (
-                  <div class="card-image journal-image">
-                    <img src={item.hero_image} alt={item.title} />
-                  </div>
-                )}
+                <div class="card-image journal-image">
+                  <img src={item.hero.image} alt={item.hero_alt} />
+                </div>
                 <div class="card-meta journal-meta">
                   {item.categories[0] && (
                     <p class="journal-category">{item.categories[0]}</p>

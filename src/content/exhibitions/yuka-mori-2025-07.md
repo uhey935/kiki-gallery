@@ -1,24 +1,24 @@
 ---
 title: Intertwined ー 戯れるメッシュ
 
-artist: yuka-mori
-artist_name: 森夕香
+artists:
+  - yuka-mori
 display_artists: true
 
 start_date: "2025-07-02"
 end_date: "2025-07-26"
-open_time: "13:00-17:00"
+opening_hours: "13:00-17:00"
 closed_days: "水曜・木曜"
 attendance: "7月17、18日"
 
-hero_image: /images/exhibitions/yuka-mori-2025-07.jpg
-hero_portrait: true
+hero:
+  image: /images/exhibitions/yuka-mori-2025-07.jpg
+  orientation: portrait
+hero_alt: 淡い青灰色の面に虹色を帯びた光が弧を描く様子
 
-published_at: "2025-06-20"
-venue:
-  name: KiKi Gallery
-  address: 神奈川県横浜市西区北幸2-10-48　むつみビル3階
-  map: "https://maps.google.com"
+venue: |
+  KiKi Gallery
+  神奈川県横浜市西区北幸2-10-48　むつみビル3階
 ---
 
 土壌を潤す穀雨の頃の、しっとりと静かな森の中。ご案内状の写真は、枯淡な木の上で、光がやわらかに揺れるような、春の余韻と初夏の爽やかな兆しがひとつに重なる景色となりました。

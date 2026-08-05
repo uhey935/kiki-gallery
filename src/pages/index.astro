@@ -1,7 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
-import { formatDateRangeJa, getWeekday } from "../utils/date";
+import { getWeekday } from "../utils/date";
+import {
+  getArtistDisplayName,
+  getExhibitionDisplayTitle,
+  resolveExhibitionArtists,
+} from "../utils/exhibitionDisplay";
+import { getExhibitionStatus } from "../utils/exhibitionStatus";
+import { resolveNewsImage } from "../utils/resolveNewsImage";
 
 /* =========================
    Home
@@ -26,34 +33,17 @@ const news = await getCollection("news");
    Helpers
 ========================= */
 
-const artistMap = new Map(artists.map((artist) => [artist.id, artist.data]));
+const artistMap = new Map(artists.map((artist) => [artist.id, artist]));
+const newsImageCollections = {
+  exhibitions: new Map(
+    exhibitions.map((exhibition) => [exhibition.id, exhibition]),
+  ),
+  artists: artistMap,
+  journal: new Map(journal.map((item) => [item.id, item])),
+};
 
 const SEPARATOR = "、";
-const HERO_FALLBACK_FIRST = true; // false = 個展ファースト, true = fallbackファースト
-
-const getArtistDisplayNames = (artistIds: string[] | string | undefined) => {
-  const ids = Array.isArray(artistIds)
-    ? artistIds
-    : artistIds
-      ? [artistIds]
-      : [];
-
-  return ids
-    .map((id) => {
-      const data = artistMap.get(id);
-      return data?.nameJa || data?.name || id;
-    })
-    .filter(Boolean);
-};
-
-const getDisplayTitle = (title: string | undefined, names: string[]) => {
-  if (title && title.trim() !== "") return title;
-  if (names.length === 0) return "Exhibition";
-
-  return names.length > 1
-    ? `${names.join(SEPARATOR)} 合同展`
-    : `${names[0]} 個展`;
-};
+const homeHeroMedia = home.data.home_hero?.media;
 
 const parseDate = (date: string | undefined) => {
   if (!date) return null;
@@ -63,52 +53,31 @@ const parseDate = (date: string | undefined) => {
   return new Date(year, month - 1, day);
 };
 
-const today = new Date();
-today.setHours(0, 0, 0, 0);
-
-const getStatus = (start: Date | null, end: Date | null) => {
-  if (!start) return "past";
-
-  const compare = new Date(end ?? start);
-  compare.setHours(23, 59, 59, 999);
-
-  if (start > today) return "upcoming";
-  if (compare >= today) return "ongoing";
-
-  return "past";
-};
-
 /* =========================
    Exhibitions
 ========================= */
 
 const formattedExhibitions = exhibitions
   .map((exh) => {
-    const names = getArtistDisplayNames(exh.data.artist);
-    const startDate = parseDate(exh.data.start_date);
-    const endDate = parseDate(exh.data.end_date);
+    const resolvedArtists = resolveExhibitionArtists(exh, artistMap);
+    const artistNames = resolvedArtists.map(getArtistDisplayName);
+    const startDate = exh.data.start_date;
+    const endDate = exh.data.end_date;
 
     return {
       ...exh,
-      artistNames: names,
-      displayTitle: getDisplayTitle(exh.data.title, names),
-      status: getStatus(startDate, endDate),
+      artistNames,
+      displayTitle: getExhibitionDisplayTitle(exh, resolvedArtists),
+      status: getExhibitionStatus(startDate, endDate),
       startDate,
       endDate,
+      startDateValue: startDate.toISOString().slice(0, 10),
+      endDateValue: endDate.toISOString().slice(0, 10),
     };
   })
   .sort((a, b) => {
-    if (!a.startDate) return 1;
-    if (!b.startDate) return -1;
-
     return b.startDate.getTime() - a.startDate.getTime();
   });
-
-const heroExhibition = HERO_FALLBACK_FIRST
-  ? null
-  : formattedExhibitions.find((exh) => exh.status === "ongoing") ||
-    formattedExhibitions.find((exh) => exh.status === "upcoming") ||
-    null;
 
 const ongoingExhibitions = formattedExhibitions.filter(
   (exh) => exh.status === "ongoing",
@@ -133,29 +102,33 @@ const homeExhibitions = [
 ========================= */
 
 const newsStories = news
-  .filter(
-    (item) =>
-      item.data.show_on_home !== false &&
-      item.data.image &&
-      (item.data.link || item.data.has_page),
-  )
-  .map((item) => ({
-    id: item.id,
-    title: item.data.title,
-    date: item.data.date,
-    type: item.data.type,
-    image: item.data.image,
-    href: item.data.has_page ? `/news/${item.id}` : item.data.link || "#",
-  }));
+  .filter((item) => item.data.show_on_home === true && item.data.link)
+  .map((item) => {
+    const image = resolveNewsImage(item, newsImageCollections);
+
+    if (!image || !item.data.link) return null;
+
+    return {
+      id: item.id,
+      title: item.data.title,
+      date: item.data.date,
+      type: item.data.news_type,
+      image: image.image,
+      alt: image.alt,
+      href: item.data.link,
+    };
+  })
+  .filter((item) => item !== null);
 
 const journalStories = journal
-  .filter((item) => item.data.hero_image && item.data.categories?.length)
+  .filter((item) => item.data.hero.image && item.data.categories?.length)
   .map((item) => ({
     id: item.id,
     title: item.data.title,
     date: item.data.date,
     type: item.data.categories?.[0],
-    image: item.data.hero_image,
+    image: item.data.hero.image,
+    alt: item.data.hero_alt,
     href: `/journal/${item.id}`,
   }));
 
@@ -186,88 +159,42 @@ if (!artistsSection || !aboutSection) {
 
 <Layout flush={true}>
   <div class="home">
-    <section
-      class:list={[
-        "home-hero",
-        {
-          "home-hero--light": heroExhibition?.data.hero_text_color === "light",
-
-          "home-hero--dark": heroExhibition?.data.hero_text_color === "dark",
-        },
-      ]}
-    >
-      {
-        heroExhibition ? (
-          <a
-            href={`/exhibitions/${heroExhibition!.id}`}
-            class="home-hero__link"
-          >
-            <figure class="home-hero__media">
+    <section class="home-hero">
+      <div class="home-hero__fallback">
+        <div class="home-hero__fallback-image-wrap">
+          {
+            homeHeroMedia?.type === "video" ? (
+              <video
+                src={homeHeroMedia.video}
+                poster={homeHeroMedia.poster}
+                class="home-hero__fallback-image"
+                autoplay
+                muted
+                loop
+                playsinline
+              />
+            ) : (
               <img
                 src={
-                  heroExhibition!.data.hero_media ||
-                  heroExhibition!.data.image ||
-                  "/images/home/fallback-hero.webp"
+                  homeHeroMedia?.type === "image"
+                    ? homeHeroMedia.image
+                    : "/images/home/fallback-hero.webp"
                 }
-                alt={heroExhibition!.displayTitle}
-              />
-
-              <span class="home-hero__cover home-hero__cover--1" />
-              <span class="home-hero__cover home-hero__cover--2" />
-              <span class="home-hero__cover home-hero__cover--3" />
-            </figure>
-
-            <div
-              class:list={[
-                "home-hero__content",
-                {
-                  "home-hero__content--left-center":
-                    heroExhibition?.data.hero_text_position === "left-center",
-
-                  "home-hero__content--right-bottom":
-                    heroExhibition?.data.hero_text_position === "right-bottom",
-
-                  "home-hero__content--right-center":
-                    heroExhibition?.data.hero_text_position === "right-center",
-                },
-              ]}
-            >
-              <p class="home-hero__artist">
-                {heroExhibition.artistNames.join(SEPARATOR)}
-              </p>
-
-              <h1 class="home-hero__title">{heroExhibition.displayTitle}</h1>
-
-              <p class="home-hero__date">
-                {heroExhibition.data.start_date
-                  ? formatDateRangeJa(
-                      heroExhibition.data.start_date,
-                      heroExhibition.data.end_date,
-                    )
-                  : ""}
-              </p>
-            </div>
-          </a>
-        ) : (
-          <div class="home-hero__fallback">
-            <div class="home-hero__fallback-image-wrap">
-              <img
-                src={home.data.hero_image}
                 alt="KiKi Gallery"
                 class="home-hero__fallback-image"
               />
+            )
+          }
 
-              <span class="home-hero__cover home-hero__cover--1" />
-              <span class="home-hero__cover home-hero__cover--2" />
-              <span class="home-hero__cover home-hero__cover--3" />
-            </div>
+          <span class="home-hero__cover home-hero__cover--1"></span>
+          <span class="home-hero__cover home-hero__cover--2"></span>
+          <span class="home-hero__cover home-hero__cover--3"></span>
+        </div>
 
-            <div class="home-hero__content">
-              <h1 class="home-hero__title">KiKi Gallery</h1>
-            </div>
-          </div>
-        )
-      }
+        <div class="home-hero__content">
+          <h1 class="home-hero__title">KiKi Gallery</h1>
+        </div>
+      </div>
     </section>
 
     <section class="home-exhibition" aria-labelledby="home-exhibition-heading">
@@ -292,8 +219,8 @@ if (!artistsSection || !aboutSection) {
                     <div class="home-exhibition__image">
                       <figure class="home-exhibition__media">
                         <img
-                          src={exhibition.data.hero_image}
-                          alt={exhibition.displayTitle}
+                          src={exhibition.data.hero.image}
+                          alt={exhibition.data.hero_alt}
                         />
                       </figure>
 
@@ -307,9 +234,11 @@ if (!artistsSection || !aboutSection) {
                     <div class="home-exhibition__content">
                       <div class="home-exhibition__heading-row">
                         <div class="home-exhibition__heading-left">
-                          <p class="home-exhibition__artist">
-                            {exhibition.artistNames.join(SEPARATOR)}
-                          </p>
+                          {exhibition.data.display_artists !== false && (
+                            <p class="home-exhibition__artist">
+                              {exhibition.artistNames.join(SEPARATOR)}
+                            </p>
+                          )}
 
                           <h3 class="home-exhibition__title">
                             {exhibition.displayTitle}
@@ -317,34 +246,26 @@ if (!artistsSection || !aboutSection) {
                         </div>
 
                         <p class="home-exhibition__date">
-                          {exhibition.data.start_date && (
-                            <>
-                              <span class="home-exhibition__date-value">
-                                {`${exhibition.startDate?.getFullYear()}.${String((exhibition.startDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.startDate?.getDate()).padStart(2, "0")}`}
-                              </span>
+                          <span class="home-exhibition__date-value">
+                            {`${exhibition.startDate.getFullYear()}.${String(exhibition.startDate.getMonth() + 1).padStart(2, "0")}.${String(exhibition.startDate.getDate()).padStart(2, "0")}`}
+                          </span>
 
-                              <span class="home-exhibition__date-weekday">
-                                {getWeekday(exhibition.data.start_date)}
-                              </span>
+                          <span class="home-exhibition__date-weekday">
+                            {getWeekday(exhibition.startDateValue)}
+                          </span>
 
-                              {exhibition.data.end_date && (
-                                <>
-                                  <span class="home-exhibition__date-separator">
-                                    {" "}
-                                    -{" "}
-                                  </span>
+                          <span class="home-exhibition__date-separator">
+                            {" "}
+                            -{" "}
+                          </span>
 
-                                  <span class="home-exhibition__date-value">
-                                    {`${String((exhibition.endDate?.getMonth() ?? 0) + 1).padStart(2, "0")}.${String(exhibition.endDate?.getDate()).padStart(2, "0")}`}
-                                  </span>
+                          <span class="home-exhibition__date-value">
+                            {`${String(exhibition.endDate.getMonth() + 1).padStart(2, "0")}.${String(exhibition.endDate.getDate()).padStart(2, "0")}`}
+                          </span>
 
-                                  <span class="home-exhibition__date-weekday">
-                                    {getWeekday(exhibition.data.end_date)}
-                                  </span>
-                                </>
-                              )}
-                            </>
-                          )}
+                          <span class="home-exhibition__date-weekday">
+                            {getWeekday(exhibition.endDateValue)}
+                          </span>
                         </p>
                       </div>
                     </div>
@@ -407,7 +328,7 @@ if (!artistsSection || !aboutSection) {
               <article class="home-stories__item">
                 <a href={story.href} class="home-stories__link">
                   <figure class="home-stories__media">
-                    <img src={story.image} alt={story.title} loading="lazy" />
+                    <img src={story.image} alt={story.alt} loading="lazy" />
                   </figure>
 
                   <div class="home-stories__body">

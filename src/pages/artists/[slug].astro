@@ -3,12 +3,20 @@ import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import { formatDateRangeJa } from "../../utils/date";
+import { validateArtistWorkReferences } from "../../utils/validateArtistWorkReferences";
+import {
+  getExhibitionDisplayTitle,
+  resolveExhibitionArtists,
+} from "../../utils/exhibitionDisplay";
 
 /* =========================
    getStaticPaths
 ========================= */
 export async function getStaticPaths() {
   const artists = await getCollection("artists");
+  const works = await getCollection("works");
+
+  validateArtistWorkReferences(artists, works);
 
   return artists.map((artist) => ({
     params: { slug: artist.id },
@@ -23,44 +31,48 @@ const { artist } = Astro.props as {
   artist: CollectionEntry<"artists">;
 };
 
-const artistName = artist.data.nameJa || artist.data.name;
+const artistName = artist.data.display_name || artist.data.name;
 
 /* =========================
    description
 ========================= */
-const description = artist.data.bio_short
+const description = artist.data.short_bio
   ? `${artistName}の作品・経歴を紹介｜KiKi Gallery`
   : artistName;
-
-/* =========================
-   Date安全処理
-========================= */
-const parseDate = (value: string | undefined) => {
-  return value ? new Date(value) : null;
-};
 
 /* =========================
    works
 ========================= */
 const allWorks = await getCollection("works");
 
-const works = allWorks.filter((work) => {
-  return work.data.artist === artist.id;
-});
+const workById = new Map(allWorks.map((work) => [work.id, work]));
+const displayedWorkIds = new Set<string>();
 
-const workById = new Map(works.map((work) => [work.id, work]));
-
-const workSections = artist.data.works_layout.map((section) => ({
-  template: section.template,
-  works: section.works.map((workId) => {
+const workSections = (artist.data.works_layout ?? []).map((section) => ({
+  layout: section.layout,
+  works: section.works.map((workReference) => {
+    const workId = workReference.id;
     const work = workById.get(workId);
 
     if (!work) {
       throw new Error(
-        `Artist "${artist.id}" references missing or unrelated work "${workId}".`
+        `Artist "${artist.id}" references missing work "${workId}".`,
       );
     }
 
+    if (work.data.artist.id !== artist.id) {
+      throw new Error(
+        `Artist "${artist.id}" references work "${workId}" owned by "${work.data.artist.id}".`,
+      );
+    }
+
+    if (displayedWorkIds.has(workId)) {
+      throw new Error(
+        `Artist "${artist.id}" references work "${workId}" more than once.`,
+      );
+    }
+
+    displayedWorkIds.add(workId);
     return work;
   }),
 }));
@@ -70,21 +82,28 @@ const hasWorkSections = workSections.length > 0;
 /* =========================
    exhibitions
 ========================= */
-const rawExhibitions = await getCollection("exhibitions", ({ data }) =>
-  Array.isArray(data.artist)
-    ? data.artist.includes(artist.id)
-    : data.artist === artist.id
-);
+const rawExhibitions = await getCollection("exhibitions", ({ data }) => {
+  return data.artists.some(
+    (artistReference) => artistReference.id === artist.id,
+  );
+});
+const allArtists = await getCollection("artists");
+const artistMap = new Map(allArtists.map((item) => [item.id, item]));
 
 /* ▼ 日付ソート */
 rawExhibitions.sort((a, b) => {
-  const dateA = parseDate(a.data.start_date);
-  const dateB = parseDate(b.data.start_date);
+  return b.data.start_date.getTime() - a.data.start_date.getTime();
+});
 
-  const timeA = dateA ? dateA.getTime() : 0;
-  const timeB = dateB ? dateB.getTime() : 0;
+const formattedExhibitions = rawExhibitions.map((exhibition) => {
+  const exhibitionArtists = resolveExhibitionArtists(exhibition, artistMap);
 
-  return timeB - timeA;
+  return {
+    ...exhibition,
+    displayTitle: getExhibitionDisplayTitle(exhibition, exhibitionArtists),
+    startDateValue: exhibition.data.start_date.toISOString().slice(0, 10),
+    endDateValue: exhibition.data.end_date.toISOString().slice(0, 10),
+  };
 });
 
 /* =========================
@@ -101,56 +120,58 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
   name: artistName,
-  description: artist.data.bio_short,
+  description: artist.data.short_bio,
   ...(siteUrl && { url: siteUrl }),
+};
+
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Artists",
+      item: `${Astro.site}/artists`,
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: artistName,
+      item: `${Astro.site}/artists/${artist.id}`,
+    },
+  ],
 };
 ---
 
 <!-- ▼ Breadcrumb -->
-<script type="application/ld+json">
-  {JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Artists",
-        item: `${Astro.site}/artists`,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: artistName,
-        item: `${Astro.site}/artists/${artist.id}`,
-      },
-    ],
-  })}
-</script>
+<script
+  type="application/ld+json"
+  set:html={JSON.stringify(breadcrumbJsonLd)}
+/>
 
 <!-- ▼ Person -->
 <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-<Layout
-  title={artistName}
-  description={description}
->
+<Layout title={artistName} description={description}>
   <article>
     <section class="section artists-intro">
       <div class="artists-intro__left">
         <h1 class="artists-h1-title">{artistName}</h1>
 
-        {artist.data.medium && (
-          <p class="artists-intro__medium">
-            {Array.isArray(artist.data.medium)
-              ? artist.data.medium.join(", ")
-              : artist.data.medium}
-          </p>
-        )}
+        {
+          artist.data.medium && (
+            <p class="artists-intro__medium">
+              {Array.isArray(artist.data.medium)
+                ? artist.data.medium.join(", ")
+                : artist.data.medium}
+            </p>
+          )
+        }
       </div>
 
       <div class="artists-intro__right">
-        <p class="artists-bio-short">{artist.data.bio_short}</p>
+        <p class="artists-bio-short">{artist.data.short_bio}</p>
 
         <a href="#full-biography" class="artists-biography-link">
           Read full biography
@@ -158,142 +179,125 @@ const jsonLd = {
       </div>
     </section>
 
-{/* =========================
+    {
+      /* =========================
    Works
-========================= */}
-<section class="section artists-works">
-  <h2 class="detail-h2-title">Works</h2>
+========================= */
+    }
+    <section class="section artists-works">
+      <h2 class="detail-h2-title">Works</h2>
 
-  {hasWorkSections ? (
-    workSections.map((section) => (
-      <div
-        class={`artists-works-section artists-works-section--${section.template}`}
-        data-template={section.template}
-      >
-        {section.works.map((work) => (
-            <figure class="artists-works-section__item">
-              <a
-                href={`/works/${work.id}`}
-                class="artists-works-link"
-              >
-                <img
-                  class="artists-works-image"
-                  src={work.data.images[0].src}
-                  alt={work.data.images[0].alt ?? work.data.title}
-                />
+      {
+        hasWorkSections ? (
+          workSections.map((section) => (
+            <div
+              class={`artists-works-section artists-works-section--${section.layout}`}
+              data-layout={section.layout}
+            >
+              {section.works.map((work) => (
+                <figure class="artists-works-section__item">
+                  <a href={`/works/${work.id}`} class="artists-works-link">
+                    <img
+                      class="artists-works-image"
+                      src={work.data.images[0].src}
+                      alt={work.data.images[0].alt ?? work.data.title}
+                    />
 
-                <figcaption class="artists-works-caption">
-                  <p class="artists-works-title">
-                    {work.data.year
-                      ? `${work.data.title.trim()}, ${work.data.year}`
-                      : work.data.title.trim()}
-                  </p>
+                    <figcaption class="artists-works-caption">
+                      <p class="artists-works-title">
+                        {work.data.year
+                          ? `${work.data.title.trim()}, ${work.data.year}`
+                          : work.data.title.trim()}
+                      </p>
 
-                  {(work.data.size || work.data.material) && (
-                    <p class="artists-works-meta">
-                      {[work.data.size, work.data.material]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </p>
-                  )}
-                </figcaption>
-              </a>
-            </figure>
-        ))}
-      </div>
-    ))
-  ) : (
-    <p class="artists-exhibitions-empty">No works available.</p>
-  )}
-</section>
+                      {(work.data.size || work.data.material) && (
+                        <p class="artists-works-meta">
+                          {[work.data.size, work.data.material]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                      )}
+                    </figcaption>
+                  </a>
+                </figure>
+              ))}
+            </div>
+          ))
+        ) : (
+          <p class="artists-exhibitions-empty">No works available.</p>
+        )
+      }
+    </section>
 
-    {/* =========================
-       Shop
-    ========================= */}
-    {artist.data.shop_url && (
-      <p class="shop-link">
-        <a
-          href={artist.data.shop_url}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Explore available works
-        </a>
-      </p>
-    )}
-
-    {/* =========================
+    {
+      /* =========================
        Biography
-    ========================= */}
+    ========================= */
+    }
     <section class="section artists-bio" id="full-biography">
       <h2 class="detail-h2-title">Biography</h2>
 
       <div class="artists-bio-layout">
-        {artist.data.image && (
-          <div class="artists-bio-image">
-            <img src={artist.data.image} alt={artistName} width="400" />
-          </div>
-        )}
+        <div class="artists-bio-image">
+          <img
+            src={artist.data.hero.image}
+            alt={artist.data.hero_alt}
+            width="400"
+          />
+        </div>
 
-        <p class="artists-bio-text">{artist.data.bio}</p>
+        <p class="artists-bio-text">{artist.data.biography}</p>
       </div>
     </section>
 
-    {/* =========================
+    {
+      /* =========================
        Exhibitions
-    ========================= */}
+    ========================= */
+    }
     <section class="section artists-exhibitions">
       <h2 class="detail-h2-title">Exhibitions</h2>
 
       <div class="artists-exhibitions-list">
-        {rawExhibitions.length > 0 ? (
-          rawExhibitions.map((exh) => (
-            <article class="artists-exhibitions-card">
-              <a href={`/exhibitions/${exh.id}`}>
-                {/* 画像 */}
-                {exh.data.hero_image && (
+        {
+          formattedExhibitions.length > 0 ? (
+            formattedExhibitions.map((exh) => (
+              <article class="artists-exhibitions-card">
+                <a href={`/exhibitions/${exh.id}`}>
+                  {/* 画像 */}
                   <div class="artists-exhibitions-card-image">
-                    <img
-                      src={exh.data.hero_image}
-                      alt={exh.data.title || ""}
-                    />
+                    <img src={exh.data.hero.image} alt={exh.data.hero_alt} />
                   </div>
-                )}
 
-                {/* テキスト */}
-                <div class="artists-exhibitions-card-meta">
-                  <h3 class="artists-exhibitions-card-title">
-                    {exh.data.title || artistName}
-                  </h3>
+                  {/* テキスト */}
+                  <div class="artists-exhibitions-card-meta">
+                    <h3 class="artists-exhibitions-card-title">
+                      {exh.displayTitle}
+                    </h3>
 
-                  <p class="artists-exhibitions-card-date">
-                    {formatDateRangeJa(
-                      exh.data.start_date ?? "",
-                      exh.data.end_date ?? ""
-                    )}
-                  </p>
-
-                  {exh.data.venue?.name && (
-                    <p class="artists-exhibitions-card-venue">
-                      {exh.data.venue.name}
+                    <p class="artists-exhibitions-card-date">
+                      {formatDateRangeJa(exh.startDateValue, exh.endDateValue)}
                     </p>
-                  )}
-                </div>
-              </a>
-            </article>
-          ))
-        ) : (
-          <p class="artists-exhibitions-empty">No exhibitions available.</p>
-        )}
+
+                    {exh.data.venue && (
+                      <p class="artists-exhibitions-card-venue">
+                        {exh.data.venue}
+                      </p>
+                    )}
+                  </div>
+                </a>
+              </article>
+            ))
+          ) : (
+            <p class="artists-exhibitions-empty">No exhibitions available.</p>
+          )
+        }
       </div>
     </section>
 
     <nav class="detail-navigation" aria-label="All artists">
-      <a href="/artists" class="action-link">
-        View All Artists
-      </a>
+      <a href="/artists" class="action-link"> View All Artists </a>
     </nav>
-    
   </article>
 </Layout>
 
@@ -312,7 +316,7 @@ const jsonLd = {
       },
       {
         threshold: 0.4,
-      }
+      },
     );
 
     observer.observe(bioImage);

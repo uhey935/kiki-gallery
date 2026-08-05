@@ -1,23 +1,22 @@
 ---
 name: Yuka Mori
-nameJa: 森夕香
-image: /images/artists/yuka-mori.webp
+display_name: 森夕香
+hero:
+  image: /images/artists/yuka-mori.webp
+hero_alt: 森夕香による植物と人物を描いた絵画
 
-bio: |
+biography: |
   1991年 滋賀県出身。2014年 京都市立芸術大学 美術科日本画専攻 卒業。2015年 パリ国立高等美術学校 派遣交換留学。2016年 京都市立芸術大学大学院修士課程 日本画専攻 修了。幼少期から仏教美術の影響を受け、日本画を出自とする背景を持つ森は、自らの体験や感覚を元に身体と環境の境界を探り、両者が内包し合い流動的に変化し続けるさまを絵画における図と地の関係を用いて描く。
   
   2019年より植物の写生を始め、植物を「置かれている環境と地続きで人間とは異なった感覚で境界を行き来する存在」として、植物の身体性からインスピレーションを得た絵画作品も制作する。
 
-bio_short:  パリ国立高等美術学校 派遣交換留学。2016年 京都市立芸術大学大学院修士課程 日本画専攻 修了。
+short_bio: パリ国立高等美術学校 派遣交換留学。2016年 京都市立芸術大学大学院修士課程 日本画専攻 修了。
 
-awards: []
-exhibitions:
-  - Intertwined ー 戯れるメッシュ
-medium: 油絵
-region: 滋賀
+medium:
+  - Painting
 
 works_layout:
-  - template: single-a
+  - layout: single-a
     works:
       - yuka-mori-01
 ---

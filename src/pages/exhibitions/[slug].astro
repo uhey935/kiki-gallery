@@ -2,18 +2,21 @@
 import { getCollection, render } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import { formatDateRangeJa } from "../../utils/date";
+import {
+  getArtistDisplayName,
+  getExhibitionDisplayTitle,
+  resolveExhibitionArtists,
+} from "../../utils/exhibitionDisplay";
+import { getExhibitionStatus } from "../../utils/exhibitionStatus";
 
 // getStaticPaths
 export async function getStaticPaths() {
   const exhibitions = await getCollection("exhibitions");
   const allArtists = await getCollection("artists");
+  const artistMap = new Map(allArtists.map((artist) => [artist.id, artist]));
 
   return exhibitions.map((exh) => {
-    const artistIds = Array.isArray(exh.data.artist)
-      ? exh.data.artist
-      : [exh.data.artist];
-
-    const artists = allArtists.filter((a) => artistIds.includes(a.id));
+    const artists = resolveExhibitionArtists(exh, artistMap);
 
     return {
       params: { slug: exh.id },
@@ -26,22 +29,30 @@ export async function getStaticPaths() {
 const { exh, artists } = Astro.props;
 
 const allWorks = await getCollection("works");
-
-if (!exh.data.start_date) {
-  throw new Error(`Missing exhibition date: ${exh.id}`);
-}
-
 const exhibitionDate = exh.data.start_date;
+const exhibitionEndDate = exh.data.end_date;
+const toDateInputValue = (date: Date) => date.toISOString().slice(0, 10);
+const exhibitionDateValue = toDateInputValue(exhibitionDate);
+const exhibitionEndDateValue = toDateInputValue(exhibitionEndDate);
 
 const getFamilyName = (name: string) => name.trim().split(/\s+/).pop() ?? "";
 
 const exhibitionWorks = (exh.data.works ?? [])
-  .map((workId) => allWorks.find((work) => work.id === workId))
-  .filter((work): work is (typeof allWorks)[number] => Boolean(work))
-  .sort((a, b) => {
-    const artistA = artists.find((artist) => artist.id === a.data.artist);
+  .map((workReference) => {
+    const work = allWorks.find((item) => item.id === workReference.id);
 
-    const artistB = artists.find((artist) => artist.id === b.data.artist);
+    if (!work) {
+      throw new Error(
+        `Exhibition "${exh.id}" references missing Work "${workReference.id}".`,
+      );
+    }
+
+    return work;
+  })
+  .sort((a, b) => {
+    const artistA = artists.find((artist) => artist.id === a.data.artist.id);
+
+    const artistB = artists.find((artist) => artist.id === b.data.artist.id);
 
     const familyA = getFamilyName(artistA?.data.name ?? "");
 
@@ -52,46 +63,18 @@ const exhibitionWorks = (exh.data.works ?? [])
 
 const { Content } = await render(exh);
 
-const artistNames = artists
-  .map((artist) => artist.data.nameJa || artist.data.name)
-  .join("、");
-
-const displayTitle =
-  exh.data.title && exh.data.title !== ""
-    ? exh.data.title
-    : artistNames
-      ? artists.length > 1
-        ? `${artistNames} 合同展`
-        : `${artistNames} 個展`
-      : "Exhibition";
-
+const artistNames = artists.map(getArtistDisplayName).join("、");
+const displayTitle = getExhibitionDisplayTitle(exh, artists);
 const dateString = formatDateRangeJa(
-  exhibitionDate,
-  exh.data.end_date || exhibitionDate,
+  exhibitionDateValue,
+  exhibitionEndDateValue,
 );
 
 const description = artistNames
   ? `${artistNames}の展覧会｜${dateString}`
   : displayTitle;
 
-const today = new Date();
-today.setHours(0, 0, 0, 0);
-
-const start = new Date(exhibitionDate);
-
-const end = exh.data.end_date
-  ? new Date(`${exh.data.end_date}T23:59:59`)
-  : new Date(`${exhibitionDate}T23:59:59`);
-
-let status: "upcoming" | "ongoing" | "past";
-
-if (start > today) {
-  status = "upcoming";
-} else if (end >= today) {
-  status = "ongoing";
-} else {
-  status = "past";
-}
+const status = getExhibitionStatus(exhibitionDate, exhibitionEndDate);
 ---
 
 <script
@@ -101,8 +84,8 @@ if (start > today) {
     "@type": "Event",
     name: displayTitle,
     description,
-    startDate: exhibitionDate,
-    endDate: exh.data.end_date || exhibitionDate,
+    startDate: exhibitionDateValue,
+    endDate: exhibitionEndDateValue,
     eventStatus:
       status === "upcoming"
         ? "https://schema.org/EventScheduled"
@@ -120,10 +103,7 @@ if (start > today) {
   })}
 />
 
-<Layout
-  title={displayTitle}
-  description={description}
->
+<Layout title={displayTitle} description={description}>
   <section class="section exhibitions-detail">
     <header class="exhibitions-heading">
       {
@@ -148,20 +128,22 @@ if (start > today) {
     </header>
   </section>
 
-  {
-    exh.data.hero_image && (
-      <figure
-        class:list={[
-          "exhibitions-detail-image",
-          {
-            "exhibitions-detail-image--portrait": exh.data.hero_portrait,
-          },
-        ]}
-      >
-        <img src={exh.data.hero_image} alt={displayTitle} />
-      </figure>
-    )
-  }
+  <figure
+    class:list={[
+      "exhibitions-detail-image",
+      {
+        "exhibitions-detail-image--portrait":
+          exh.data.hero.orientation === "portrait",
+      },
+    ]}
+  >
+    <img src={exh.data.hero.image} alt={exh.data.hero_alt} />
+    {
+      exh.data.hero.hero_caption && (
+        <figcaption>{exh.data.hero.hero_caption}</figcaption>
+      )
+    }
+  </figure>
 
   <section class="section exhibitions-content">
     <div class="exhibitions-main">
@@ -184,10 +166,10 @@ if (start > today) {
           }
 
           {
-            exh.data.open_time && (
+            exh.data.opening_hours && (
               <>
                 <dt>開催時間</dt>
-                <dd>{exh.data.open_time.replace("-", " - ")}</dd>
+                <dd>{exh.data.opening_hours.replace("-", " - ")}</dd>
               </>
             )
           }
@@ -197,26 +179,16 @@ if (start > today) {
       <article class="exhibitions-article">
         <h2 class="visually-hidden">Exhibition Overview</h2>
 
+        {exh.data.summary && <p>{exh.data.summary}</p>}
+
         <Content />
 
         <section class="exhibitions-venue">
           <h3 class="exhibitions-venue-title">会場</h3>
 
-          {exh.data.venue?.name && <p>{exh.data.venue.name}</p>}
-
           {
-            /* 【修正3】address と map の両方が存在する場合のみリンク付きで表示 */
-            exh.data.venue?.address && exh.data.venue?.map && (
-              <p>
-                <a
-                  href={exh.data.venue.map}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="exhibitions-address-link"
-                >
-                  {exh.data.venue.address}
-                </a>
-              </p>
+            exh.data.venue && (
+              <p class="exhibitions-venue-address">{exh.data.venue}</p>
             )
           }
 
@@ -244,7 +216,15 @@ if (start > today) {
 
           <div class="exhibitions-works-list">
             {exhibitionWorks.map((work) => {
-              const workArtist = artists.find((a) => a.id === work.data.artist);
+              const workArtist = artists.find(
+                (artist) => artist.id === work.data.artist.id,
+              );
+
+              if (!workArtist) {
+                throw new Error(
+                  `Exhibition "${exh.id}" work "${work.id}" references Artist "${work.data.artist.id}" outside the Exhibition artist list.`,
+                );
+              }
 
               return (
                 <figure class="exhibitions-work">
@@ -256,10 +236,8 @@ if (start > today) {
                   <figcaption class="exhibitions-work-caption">
                     {artists.length > 1 && (
                       <p class="exhibitions-work-artist">
-                        <a href={`/artists/${work.data.artist}`}>
-                          {workArtist?.data.nameJa ||
-                            workArtist?.data.name ||
-                            work.data.artist}
+                        <a href={`/artists/${work.data.artist.id}`}>
+                          {getArtistDisplayName(workArtist)}
                         </a>
                       </p>
                     )}
@@ -292,7 +270,7 @@ if (start > today) {
           artists.map((artist) => (
             <li class="exhibitions-artist-item">
               <a href={`/artists/${artist.id}`} class="action-link">
-                {artist.data.nameJa || artist.data.name}
+                {getArtistDisplayName(artist)}
               </a>
             </li>
           ))

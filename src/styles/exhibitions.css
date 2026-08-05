@@ -265,8 +265,12 @@
   margin: 0;
 }
 
-.exhibitions-article .exhibitions-venue .exhibitions-venue-closed {
-  margin-top: 0;
+.exhibitions-article .exhibitions-venue-address {
+  white-space: pre-line;
+}
+
+.exhibitions-article .exhibitions-venue-closed {
+  margin-top: clamp(8px, 1vw, 12px);
 }
 
 /* =========================

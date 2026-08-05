@@ -11,4 +11,7 @@ orientation: landscape
 size: H300 × W200 mm
 material: アクリル、紙
 
+inquiry:
+  type: none
+
 ---

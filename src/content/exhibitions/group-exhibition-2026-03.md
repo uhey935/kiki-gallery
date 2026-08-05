@@ -1,36 +1,31 @@
 ---
 title: "合同展"
 
-artist:
+artists:
   - reiko-kinoshita
   - yuka-mori
-artist_name:
-  - 木下令子
-  - 森夕香
 display_artists: true
 
 start_date: "2026-03-05"
 end_date: "2026-07-09"
 
-hero_image: /images/exhibitions/group-exhibition-2026-03.jpg
+hero:
+  image: /images/exhibitions/group-exhibition-2026-03.jpg
+  orientation: landscape
+hero_alt: 強い光と影の中に置かれた、黒と灰色の複数の器
 
-lead: "GALLERY crossingは、2026年4⽉18⽇(土)〜5⽉3⽇(日)の会期にて、アラーナ・ウィルソン個展「Roots」を開催いたします。本展はウィルソンの当ギャラリーで5度目となる個展であり、本年3月までに行われた、滋賀県立陶芸の森（信楽）でのレジデンス制作を中心に構成されます。"
+summary: "GALLERY crossingは、2026年4⽉18⽇(土)〜5⽉3⽇(日)の会期にて、アラーナ・ウィルソン個展「Roots」を開催いたします。本展はウィルソンの当ギャラリーで5度目となる個展であり、本年3月までに行われた、滋賀県立陶芸の森（信楽）でのレジデンス制作を中心に構成されます。"
 
-open_time: "13:00-17:00"
+opening_hours: "13:00-17:00"
 closed_days: "水曜・木曜"
-attendance: ""
 
-venue:
-  name: KiKi Gallery
-  address: 神奈川県横浜市西区北幸2-10-48　むつみビル3階
-  map: "https://maps.google.com"
+venue: |
+  KiKi Gallery
+  神奈川県横浜市西区北幸2-10-48　むつみビル3階
 
 works:
   - yuka-mori-01
   - reiko-kinoshita-01
-
-hero_text_position: "right-center"
-hero_text_color: "light"
 ---
 
 GALLERY crossingは、2026年4⽉18⽇(土)〜5⽉3⽇(日)の会期にて、アラーナ・ウィルソン個展「Roots」を開催いたします。本展はウィルソンの当ギャラリーで5度目となる個展であり、本年3月までに行われた、滋賀県立陶芸の森（信楽）でのレジデンス制作を中心に構成されます。

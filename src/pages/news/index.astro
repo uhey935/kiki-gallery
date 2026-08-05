@@ -7,9 +7,9 @@ type NewsItem = {
   id: string;
   href: string | null;
   title: string;
-  date: Date | null;
-  type: "News" | "Exhibition" | "Journal";
-  excerpt: string;
+  date: Date;
+  type: "exhibition" | "artist" | "general" | "Journal";
+  summary: string;
 };
 
 // 2. データ取得
@@ -18,63 +18,45 @@ const [news, journal] = await Promise.all([
   getCollection("journal"),
 ]);
 
-// ヘルパー: テキスト丸め
-const truncate = (text: string, limit: number) => {
-  const cleanText = text.replace(/\n/g, " ");
-
-  return cleanText.length > limit
-    ? cleanText.slice(0, limit) + "..."
-    : cleanText;
-};
-
 // 3. Newsの整形
 const newsItems: NewsItem[] = news.map((item) => ({
   id: item.id,
-  href:
-    item.data.link ||
-    (item.data.has_page !== false ? `/news/${item.id}` : null),
+  href: item.data.link ?? null,
   title: item.data.title,
-  date: item.data.date ? new Date(item.data.date) : null,
-  type: "News",
-  excerpt: item.data.excerpt || truncate(item.body || "", 80),
+  date: new Date(item.data.date),
+  type: item.data.news_type,
+  summary: item.data.summary ?? "",
 }));
 
 // 4. Journalの整形
 const journalItems: NewsItem[] = journal.map((item) => ({
   id: item.id,
-  href:
-    item.data.link ||
-    (item.data.has_page !== false ? `/journal/${item.id}` : null),
+  href: `/journal/${item.id}`,
   title: item.data.title,
-  date: item.data.date ? new Date(item.data.date) : null,
+  date: new Date(item.data.date),
   type: "Journal",
-  excerpt: item.data.excerpt || truncate(item.body || "", 80),
+  summary: item.data.summary,
 }));
 
 // 5. 統合 + ソート
-const sortedItems: NewsItem[] = [
-  ...newsItems,
-  ...journalItems,
-].sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
+const sortedItems: NewsItem[] = [...newsItems, ...journalItems].sort(
+  (a, b) => b.date.getTime() - a.date.getTime(),
+);
 
 // 6. 年でグループ化
-const groupedByYear: Record<string, NewsItem[]> =
-  sortedItems.reduce<Record<string, NewsItem[]>>((acc, item) => {
-    const year = item.date
-      ? String(item.date.getFullYear())
-      : "Unknown";
+const groupedByYear: Record<string, NewsItem[]> = sortedItems.reduce<
+  Record<string, NewsItem[]>
+>((acc, item) => {
+  const year = String(item.date.getFullYear());
 
-    acc[year] ??= [];
-    acc[year].push(item);
+  acc[year] ??= [];
+  acc[year].push(item);
 
-    return acc;
-  }, {});
+  return acc;
+}, {});
 
-// 7. 年配列（降順 + Unknown最後）
+// 7. 年配列（降順）
 const years: string[] = Object.keys(groupedByYear).sort((a, b) => {
-  if (a === "Unknown") return 1;
-  if (b === "Unknown") return -1;
-
   return Number(b) - Number(a);
 });
 
@@ -88,14 +70,13 @@ const formatDate = (date: Date) => {
 
 // 8. リンク
 const categoryLinks = {
-  Exhibition: "/exhibitions",
+  exhibition: "/exhibitions",
+  artist: "/artists",
   Journal: "/journal",
 };
 ---
 
-<Layout
-  title="News"
->
+<Layout title="News">
   <section class="news-index section">
     <h1 class="index-h1">News</h1>
 
@@ -111,50 +92,38 @@ const categoryLinks = {
             {/* 右（list） */}
             <div class="news-year-right">
               <ul class="news-list">
-                {
-                  groupedByYear[year].map((item) => (
-                    <li class="news-item">
-                      <article class="news-card">
-                        {/* 上段メタ */}
-                        <div class="news-meta">
-                          {item.date && (
-                            <span class="news-date">
-                              {formatDate(item.date)}
-                            </span>
-                          )}
+                {groupedByYear[year].map((item) => (
+                  <li class="news-item">
+                    <article class="news-card">
+                      {/* 上段メタ */}
+                      <div class="news-meta">
+                        <span class="news-date">{formatDate(item.date)}</span>
 
-                          <span class="news-separator"> | </span>
+                        <span class="news-separator"> | </span>
 
-                          <span class="news-category">
-                            {item.type === "News" ? (
-                              item.type
-                            ) : (
-                              <a href={categoryLinks[item.type]}>
-                                {item.type}
-                              </a>
-                            )}
-                          </span>
-                        </div>
-
-                        {/* タイトル */}
-                        <h3 class="news-card-title">
-                          {item.href ? (
-                            <a href={item.href}>
-                              {item.title}
-                            </a>
+                        <span class="news-category">
+                          {item.type === "general" ? (
+                            item.type
                           ) : (
-                            item.title
+                            <a href={categoryLinks[item.type]}>{item.type}</a>
                           )}
-                        </h3>
+                        </span>
+                      </div>
 
-                        {/* 本文 */}
-                        <p class="news-excerpt">
-                          {item.excerpt}
-                        </p>
-                      </article>
-                    </li>
-                  ))
-                }
+                      {/* タイトル */}
+                      <h3 class="news-card-title">
+                        {item.href ? (
+                          <a href={item.href}>{item.title}</a>
+                        ) : (
+                          item.title
+                        )}
+                      </h3>
+
+                      {/* 本文 */}
+                      <p class="news-excerpt">{item.summary}</p>
+                    </article>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>

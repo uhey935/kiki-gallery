@@ -2,9 +2,11 @@
 title: 松田啓佑の絵画における「結果以前」の思考
 date: "2025-08-19"
 categories: ["essay"]
-excerpt: 松田啓佑の制作に見られる「意図以前」の絵画的思考についての考察。
-hero_image: "/images/journal/interview-keisuke-matsuda-2026-02-1.jpg"
-hero_caption: "Photo: Kristy Sparow"
+summary: 松田啓佑の制作に見られる「意図以前」の絵画的思考についての考察。
+hero:
+  image: "/images/journal/interview-keisuke-matsuda-2026-02-1.jpg"
+  hero_caption: "Photo: Kristy Sparow"
+hero_alt: 赤いジャケットを着て木枠のそばに立つ男性の肖像
 ---
 
 田啓佑 （まつだ・けいすけ）。1984年、群馬県生まれ。京都府在住。2009年、京都市立芸術大学大学院美術研究科絵画専攻油画修了。「私は結果を意図するより手前の絵を描こうとしている」という松田は、目の前の現実が頭の中の言葉そのものだと感じる時に、自分の意識に先立ってイメージが起こるという。
