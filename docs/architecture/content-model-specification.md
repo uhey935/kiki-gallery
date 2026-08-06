@@ -2,22 +2,32 @@
 
 Version: v1.0
 Status: Approved
-Last Updated: 2026-08-01
+Last Updated: 2026-08-06
 
 ---
 
-## 1. Overview and Canonical ID
+## 1. Overview and Content ID
 
 本仕様は KiKi Gallery の Schema、Editor、Astro、および将来の CMS 実装における正式な Content Model の基準である。対象は Artist、Work、Exhibition、Journal、News、Home とする。
 
-すべての Collection Entry の Canonical ID は Astro の `entry.id` とする。
+Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Content ID は Content Unit のディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。
 
-- 現在の単一ファイル構成では、拡張子を除いたファイル名を ID とする。
-- 将来 Publication Unit 化した場合はディレクトリ名を ID とする。
-- `slug` を frontmatter へ重複保存しない。
-- URL、Route、Map key は `entry.id` を基準に生成する。
-- Collection Reference は `reference.id` で解決する。
-- Publication Unit へ移行しても Canonical ID の責務は変更しない。
+```text
+Collection
+└── Content ID
+    ├── index.yaml
+    ├── ja.md
+    └── en.md
+```
+
+- Repository、Editor、および将来の CMS は、Content Unit のディレクトリ名を Content ID の Single Source of Truth とする。
+- Astro Adapter は導出した Content ID を locale-specific Entry の `entry.data.contentId` へ付与する。
+- Astro の `entry.id` は Store 内で Entry を一意に参照するための内部 lookup key とする。Consumer はその文字列形式を解析せず、Content ID、Route、または外部 Reference として使用しない。
+- Presentation、Route Helper、Map key、および Content Reference の解決は `entry.data.contentId`、または Repository／Editor 境界で同じ規則から導出した Content ID を基準にする。
+- URL と Route は locale、collection、および Content ID から生成する Derived data とする。
+- `slug` や Content ID を frontmatter へ重複保存しない。
+
+保存構造と Astro Store の変換境界、Entry ID の生成規則、および Query／Route の責務は Loader Architecture Specification v1.0 に従う。
 
 ---
 
@@ -438,7 +448,7 @@ Schema は Unknown Field を拒否する strict Schema とし、次を検証す�
 
 Cross-collection validation:
 
-- Collection Referenceを `reference.id` で解決できること。
+- Collection Reference が保持する論理 ID を、参照先 Entry の `entry.data.contentId`、または Repository 境界で導出した同等の Content ID として解決できること。Astro `entry.id` の encoding には依存しない。
 - Artist–Work参照切れ、所属一致、Artist Detail内Work重複。
 - Workが参照するArtistの存在。
 - Exhibitionが参照するArtist / Workの存在と所属整合。
@@ -452,7 +462,7 @@ Validation error がある場合、公開 Build を失敗させる。
 
 - 本仕様を Schema、Editor、Astro 実装の正式な基準とする。
 - Content Model 変更時は仕様書と実装を同期する。
-- 将来 Publication Unit へ移行しても Canonical ID の責務を変えない。
+- Content Unit の保存形式や Astro Entry ID の encoding を変更しても、ディレクトリ名から導出する Content ID の責務を変えない。
 - 新しいFieldは既存FieldまたはDerived dataで表現できない場合にのみ追加する。
 - 未確定の抽象ObjectやEnumを先回りして追加しない。
 - Editor設計は別フェーズで正式文書化する。

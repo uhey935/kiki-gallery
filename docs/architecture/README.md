@@ -12,12 +12,13 @@ The documentation is intended to evolve alongside the project while preserving a
 
 The documents are designed to be read in the following order.
 
-| Document | Purpose |
-| --- | --- |
-| **Content Model Specification** | Defines the canonical content architecture and data model. |
-| **CSS Style Guide** | Defines the presentation architecture and CSS conventions. |
-| **Architecture Audit** | Evaluates the current implementation and identifies improvements. |
-| **Architecture Review Report** | Verifies architectural consistency before implementation. |
+| Document                              | Purpose                                                                                            |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Content Model Specification**       | Defines the canonical content architecture and data model.                                         |
+| **Loader Architecture Specification** | Defines how Content Units are loaded and adapted for Astro while preserving validation boundaries. |
+| **CSS Style Guide**                   | Defines the presentation architecture and CSS conventions.                                         |
+| **Architecture Audit**                | Evaluates the current implementation and identifies improvements.                                  |
+| **Architecture Review Report**        | Verifies architectural consistency before implementation.                                          |
 
 ---
 
@@ -39,6 +40,30 @@ Topics include:
 - Validation Rules
 - Naming Conventions
 - Decision Log
+
+---
+
+### Loader Architecture Specification
+
+**loader-architecture-specification-v1.0.md**
+
+Defines the target read architecture for three-file Content Units and the boundaries between the Loader, Astro Adapter, Validation, Migration, and Editor.
+
+Topics include:
+
+- Content Unit identity and file structure
+- Shared Schema strategy
+- Astro 6 Content Layer integration
+- Partial loading and error recovery
+- Consumer isolation and Markdown rendering boundary
+- Query Adapter と Site Content Service の renderability boundary
+- Astro dev watcher、collection rescan、stale Entry deletion
+- Astro digest と Editor conflict token の分離
+- Content ID を基準にした JA／EN Route Helper boundary
+- Migration の予約済み EN Placeholder Token と Preview／Publish gate
+- Responsibility map and unresolved implementation contracts
+
+Decisions 008–012 の監査では Astro 6 Content Loader API と現行 Journal consumer／Schema を照合している。Content Model と Loader target は、Content Unit のディレクトリ名から Content ID を導出し、`entry.id` は Astro Store の opaque lookup key、公開 identity と route は `entry.data.contentId` を基準とする境界で整合している。
 
 ---
 
@@ -124,6 +149,7 @@ docs/
 └── architecture/
     ├── README.md
     ├── content-model-specification.md
+    ├── loader-architecture-specification-v1.0.md
     ├── css-style-guide.md
     ├── architecture-audit.md
     └── architecture-review-report.md
