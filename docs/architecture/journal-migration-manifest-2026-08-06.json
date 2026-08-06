@@ -1,0 +1,340 @@
+{
+  "version": 1,
+  "mode": "dry-run",
+  "sourceRoot": "/Users/reset/kiki-gallery/src/content/journal",
+  "count": 9,
+  "entries": [
+    {
+      "contentId": "essay-keisuke-matsuda",
+      "source": "/Users/reset/kiki-gallery/src/content/journal/essay-keisuke-matsuda.md",
+      "destinations": {
+        "shared": "/Users/reset/kiki-gallery/src/content/journal/essay-keisuke-matsuda/index.yaml",
+        "ja": "/Users/reset/kiki-gallery/src/content/journal/essay-keisuke-matsuda/ja.md",
+        "en": "/Users/reset/kiki-gallery/src/content/journal/essay-keisuke-matsuda/en.md"
+      },
+      "shared": {
+        "visibility": "public",
+        "date": "2025-08-19",
+        "categories": [
+          "essay"
+        ],
+        "hero": {
+          "image": "/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+          "hero_caption": "Photo: Kristy Sparow"
+        }
+      },
+      "localized": {
+        "title": "松田啓佑の絵画における「結果以前」の思考",
+        "summary": "松田啓佑の制作に見られる「意図以前」の絵画的思考についての考察。",
+        "hero_alt": "赤いジャケットを着て木枠のそばに立つ男性の肖像"
+      },
+      "enPlaceholder": {
+        "title": "__TODO_EN_TITLE__",
+        "summary": "__TODO_EN_SUMMARY__",
+        "hero_alt": "__TODO_EN_HERO_ALT__",
+        "body": "__TODO_EN_BODY__"
+      },
+      "originalByteLength": 2093,
+      "originalSha256": "a1a3c7f0129939b8c881fb02e36e17effbaf70333a71701165fee9781a2b2ca6",
+      "originalBase64": "LS0tCnRpdGxlOiDmnb7nlLDllZPkvZHjga7ntbXnlLvjgavjgYrjgZHjgovjgIzntZDmnpzku6XliY3jgI3jga7mgJ3ogIMKZGF0ZTogIjIwMjUtMDgtMTkiCmNhdGVnb3JpZXM6IFsiZXNzYXkiXQpzdW1tYXJ5OiDmnb7nlLDllZPkvZHjga7liLbkvZzjgavopovjgonjgozjgovjgIzmhI/lm7Pku6XliY3jgI3jga7ntbXnlLvnmoTmgJ3ogIPjgavjgaTjgYTjgabjga7ogIPlr5/jgIIKaGVybzoKICBpbWFnZTogIi9pbWFnZXMvam91cm5hbC9pbnRlcnZpZXcta2Vpc3VrZS1tYXRzdWRhLTIwMjYtMDItMS5qcGciCiAgaGVyb19jYXB0aW9uOiAiUGhvdG86IEtyaXN0eSBTcGFyb3ciCmhlcm9fYWx0OiDotaTjgYTjgrjjg6PjgrHjg4Pjg4jjgpLnnYDjgabmnKjmnqDjga7jgZ3jgbDjgavnq4vjgaTnlLfmgKfjga7ogpblg48KLS0tCgrnlLDllZPkvZEg77yI44G+44Gk44Gg44O744GR44GE44GZ44GR77yJ44CCMTk4NOW5tOOAgee+pOmmrOecjOeUn+OBvuOCjOOAguS6rOmDveW6nOWcqOS9j+OAgjIwMDnlubTjgIHkuqzpg73luILnq4voirjooZPlpKflrablpKflrabpmaLnvo7ooZPnoJTnqbbnp5HntbXnlLvlsILmlLvmsrnnlLvkv67kuobjgILjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgI3jgajjgYTjgYbmnb7nlLDjga/jgIHnm67jga7liY3jga7nj77lrp/jgYzpoK3jga7kuK3jga7oqIDokYnjgZ3jga7jgoLjga7jgaDjgajmhJ/jgZjjgovmmYLjgavjgIHoh6rliIbjga7mhI/orZjjgavlhYjnq4vjgaPjgabjgqTjg6Hjg7zjgrjjgYzotbfjgZPjgovjgajjgYTjgYbjgIIKCuOBneOBruOCpOODoeODvOOCuOOCkue2suiGnOeahOOBq+OBp+OBr+OBquOBj+OAgeOCpOODoeODvOOCuOOBjOS9k+OBruWLleOBjeOChOaEj+Wbs+OBneOBruOCguOBruOBqOOBquOBo+OBpuWHuuadpeS4iuOBjOOCi+e1teOCkuebruaMh+OBmeOAgiDnlLDllZPkvZEg77yI44G+44Gk44Gg44O744GR44GE44GZ44GR77yJ44CCMTk4NOW5tOOAgee+pOmmrOecjOeUn+OBvuOCjOOAguS6rOmDveW6nOWcqOS9j+OAgjIwMDnlubTjgIHkuqzpg73luILnq4voirjooZPlpKflrablpKflrabpmaLnvo7ooZPnoJTnqbbnp5HntbXnlLvlsILmlLvmsrnnlLvkv67kuobjgILjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgI3jgajjgYTjgYbmnb7nlLDjga/jgIHnm67jga7liY3jga7nj77lrp/jgYzpoK3jga7kuK3jga7oqIDokYnjgZ3jga7jgoLjga7jgaDjgajmhJ/jgZjjgovmmYLjgavjgIHoh6rliIbjga7mhI/orZjjgavlhYjnq4vjgaPjgabjgqTjg6Hjg7zjgrjjgYzotbfjgZPjgovjgajjgYTjgYbjgIIKCjxmaWd1cmU+CiAgPGltZyBzcmM9Ii9pbWFnZXMvam91cm5hbC9pbnRlcnZpZXcta2Vpc3VrZS1tYXRzdWRhLTIwMjYtMDItMi5qcGciIGFsdD0iIiAvPgogIDxmaWdjYXB0aW9uPuODhuOCueODiDwvZmlnY2FwdGlvbj4KPC9maWd1cmU+CgrnlLDllZPkvZEg77yI44G+44Gk44Gg44O744GR44GE44GZ44GR77yJ44CCMTk4NOW5tOOAgee+pOmmrOecjOeUn+OBvuOCjOOAguS6rOmDveW6nOWcqOS9j+OAgjIwMDnlubTjgIHkuqzpg73luILnq4voirjooZPlpKflrablpKflrabpmaLnvo7ooZPnoJTnqbbnp5HntbXnlLvlsILmlLvmsrnnlLvkv67kuobjgILjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgI3jgajjgYTjgYbmnb7nlLDjga/jgIHnm67jga7liY3jga7nj77lrp/jgYzpoK3jga7kuK3jga7oqIDokYnjgZ3jga7jgoLjga7jgaDjgajmhJ/jgZjjgovmmYLjgavjgIHoh6rliIbjga7mhI/orZjjgavlhYjnq4vjgaPjgabjgqTjg6Hjg7zjgrjjgYzotbfjgZPjgovjgajjgYTjgYbjgIIKCuOBneOBruOCpOODoeODvOOCuOOCkue2suiGnOeahOOBq+OBp+OBr+OBquOBj+OAgeOCpOODoeODvOOCuOOBjOS9k+OBruWLleOBjeOChOaEj+Wbs+OBneOBruOCguOBruOBqOOBquOBo+OBpuWHuuadpeS4iuOBjOOCi+e1teOCkuebruaMh+OBmeOAggo=",
+      "bodyByteLength": 1678,
+      "bodySha256": "22c55576a9b03e0854c6cbe08cfd3954e87c8c36ab5455ab182edc91ed1060ac",
+      "bodyBase64": "CueUsOWVk+S9kSDvvIjjgb7jgaTjgaDjg7vjgZHjgYTjgZnjgZHvvInjgIIxOTg05bm044CB576k6aas55yM55Sf44G+44KM44CC5Lqs6YO95bqc5Zyo5L2P44CCMjAwOeW5tOOAgeS6rOmDveW4gueri+iKuOihk+Wkp+WtpuWkp+WtpumZoue+juihk+eglOeptuenkee1teeUu+WwguaUu+ayueeUu+S/ruS6huOAguOAjOengeOBr+e1kOaenOOCkuaEj+Wbs+OBmeOCi+OCiOOCiuaJi+WJjeOBrue1teOCkuaPj+OBk+OBhuOBqOOBl+OBpuOBhOOCi+OAjeOBqOOBhOOBhuadvueUsOOBr+OAgeebruOBruWJjeOBruePvuWun+OBjOmgreOBruS4reOBruiogOiRieOBneOBruOCguOBruOBoOOBqOaEn+OBmOOCi+aZguOBq+OAgeiHquWIhuOBruaEj+itmOOBq+WFiOeri+OBo+OBpuOCpOODoeODvOOCuOOBjOi1t+OBk+OCi+OBqOOBhOOBhuOAggoK44Gd44Gu44Kk44Oh44O844K444KS57ay6Iac55qE44Gr44Gn44Gv44Gq44GP44CB44Kk44Oh44O844K444GM5L2T44Gu5YuV44GN44KE5oSP5Zuz44Gd44Gu44KC44Gu44Go44Gq44Gj44Gm5Ye65p2l5LiK44GM44KL57W144KS55uu5oyH44GZ44CCIOeUsOWVk+S9kSDvvIjjgb7jgaTjgaDjg7vjgZHjgYTjgZnjgZHvvInjgIIxOTg05bm044CB576k6aas55yM55Sf44G+44KM44CC5Lqs6YO95bqc5Zyo5L2P44CCMjAwOeW5tOOAgeS6rOmDveW4gueri+iKuOihk+Wkp+WtpuWkp+WtpumZoue+juihk+eglOeptuenkee1teeUu+WwguaUu+ayueeUu+S/ruS6huOAguOAjOengeOBr+e1kOaenOOCkuaEj+Wbs+OBmeOCi+OCiOOCiuaJi+WJjeOBrue1teOCkuaPj+OBk+OBhuOBqOOBl+OBpuOBhOOCi+OAjeOBqOOBhOOBhuadvueUsOOBr+OAgeebruOBruWJjeOBruePvuWun+OBjOmgreOBruS4reOBruiogOiRieOBneOBruOCguOBruOBoOOBqOaEn+OBmOOCi+aZguOBq+OAgeiHquWIhuOBruaEj+itmOOBq+WFiOeri+OBo+OBpuOCpOODoeODvOOCuOOBjOi1t+OBk+OCi+OBqOOBhOOBhuOAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL2ludGVydmlldy1rZWlzdWtlLW1hdHN1ZGEtMjAyNi0wMi0yLmpwZyIgYWx0PSIiIC8+CiAgPGZpZ2NhcHRpb24+44OG44K544OIPC9maWdjYXB0aW9uPgo8L2ZpZ3VyZT4KCueUsOWVk+S9kSDvvIjjgb7jgaTjgaDjg7vjgZHjgYTjgZnjgZHvvInjgIIxOTg05bm044CB576k6aas55yM55Sf44G+44KM44CC5Lqs6YO95bqc5Zyo5L2P44CCMjAwOeW5tOOAgeS6rOmDveW4gueri+iKuOihk+Wkp+WtpuWkp+WtpumZoue+juihk+eglOeptuenkee1teeUu+WwguaUu+ayueeUu+S/ruS6huOAguOAjOengeOBr+e1kOaenOOCkuaEj+Wbs+OBmeOCi+OCiOOCiuaJi+WJjeOBrue1teOCkuaPj+OBk+OBhuOBqOOBl+OBpuOBhOOCi+OAjeOBqOOBhOOBhuadvueUsOOBr+OAgeebruOBruWJjeOBruePvuWun+OBjOmgreOBruS4reOBruiogOiRieOBneOBruOCguOBruOBoOOBqOaEn+OBmOOCi+aZguOBq+OAgeiHquWIhuOBruaEj+itmOOBq+WFiOeri+OBo+OBpuOCpOODoeODvOOCuOOBjOi1t+OBk+OCi+OBqOOBhOOBhuOAggoK44Gd44Gu44Kk44Oh44O844K444KS57ay6Iac55qE44Gr44Gn44Gv44Gq44GP44CB44Kk44Oh44O844K444GM5L2T44Gu5YuV44GN44KE5oSP5Zuz44Gd44Gu44KC44Gu44Go44Gq44Gj44Gm5Ye65p2l5LiK44GM44KL57W144KS55uu5oyH44GZ44CCCg=="
+    },
+    {
+      "contentId": "interview-keisuke-matsuda-2020-02",
+      "source": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-02.md",
+      "destinations": {
+        "shared": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-02/index.yaml",
+        "ja": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-02/ja.md",
+        "en": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-02/en.md"
+      },
+      "shared": {
+        "visibility": "public",
+        "date": "2020-08-19",
+        "categories": [
+          "interview"
+        ],
+        "hero": {
+          "image": "/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+          "hero_caption": "Photo: Kristy Sparow"
+        }
+      },
+      "localized": {
+        "title": "「私は結果を意図するより手前の絵を描こうとしている。」松田啓佑インタビュー",
+        "summary": "松田啓佑の制作姿勢と絵画観に迫るインタビュー。",
+        "hero_alt": "赤いジャケットを着て木枠のそばに立つ男性の肖像"
+      },
+      "enPlaceholder": {
+        "title": "__TODO_EN_TITLE__",
+        "summary": "__TODO_EN_SUMMARY__",
+        "hero_alt": "__TODO_EN_HERO_ALT__",
+        "body": "__TODO_EN_BODY__"
+      },
+      "originalByteLength": 624,
+      "originalSha256": "d599878afafa16dc3503822aae4c368901cb9e8b079ff210813f456727ff5092",
+      "originalBase64": "LS0tCnRpdGxlOiDjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgILjgI3mnb7nlLDllZPkvZHjgqTjg7Pjgr/jg5Pjg6Xjg7wKZGF0ZTogIjIwMjAtMDgtMTkiCmNhdGVnb3JpZXM6IFsiaW50ZXJ2aWV3Il0Kc3VtbWFyeTog5p2+55Sw5ZWT5L2R44Gu5Yi25L2c5ae/5Yui44Go57W155S76Kaz44Gr6L+r44KL44Kk44Oz44K/44OT44Ol44O844CCCmhlcm86CiAgaW1hZ2U6ICIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTEuanBnIgogIGhlcm9fY2FwdGlvbjogIlBob3RvOiBLcmlzdHkgU3Bhcm93IgpoZXJvX2FsdDog6LWk44GE44K444Oj44Kx44OD44OI44KS552A44Gm5pyo5p6g44Gu44Gd44Gw44Gr56uL44Gk55S35oCn44Gu6IKW5YOPCi0tLQoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCgo8ZmlndXJlPgogIDxpbWcgc3JjPSIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTIuanBnIiBhbHQ9IiIgLz4KPC9maWd1cmU+Cgrjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjgIIK",
+      "bodyByteLength": 181,
+      "bodySha256": "cd0b7d6f4844a958ad1b56ff5f9aa586959c3fd2d97dda6d1a7c0a9794879a4c",
+      "bodyBase64": "CuODhuOCreOCueODiOODhuOCreOCueODiOODhuOCreOCueODiOOAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL2ludGVydmlldy1rZWlzdWtlLW1hdHN1ZGEtMjAyNi0wMi0yLmpwZyIgYWx0PSIiIC8+CjwvZmlndXJlPgoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCg=="
+    },
+    {
+      "contentId": "interview-keisuke-matsuda-2020-03",
+      "source": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-03.md",
+      "destinations": {
+        "shared": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-03/index.yaml",
+        "ja": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-03/ja.md",
+        "en": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-03/en.md"
+      },
+      "shared": {
+        "visibility": "public",
+        "date": "2020-08-19",
+        "categories": [
+          "interview"
+        ],
+        "hero": {
+          "image": "/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+          "hero_caption": "Photo: Kristy Sparow"
+        }
+      },
+      "localized": {
+        "title": "「私は結果を意図するより手前の絵を描こうとしている。」松田啓佑インタビュー",
+        "summary": "松田啓佑の制作姿勢と絵画観に迫るインタビュー。",
+        "hero_alt": "赤いジャケットを着て木枠のそばに立つ男性の肖像"
+      },
+      "enPlaceholder": {
+        "title": "__TODO_EN_TITLE__",
+        "summary": "__TODO_EN_SUMMARY__",
+        "hero_alt": "__TODO_EN_HERO_ALT__",
+        "body": "__TODO_EN_BODY__"
+      },
+      "originalByteLength": 624,
+      "originalSha256": "d599878afafa16dc3503822aae4c368901cb9e8b079ff210813f456727ff5092",
+      "originalBase64": "LS0tCnRpdGxlOiDjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgILjgI3mnb7nlLDllZPkvZHjgqTjg7Pjgr/jg5Pjg6Xjg7wKZGF0ZTogIjIwMjAtMDgtMTkiCmNhdGVnb3JpZXM6IFsiaW50ZXJ2aWV3Il0Kc3VtbWFyeTog5p2+55Sw5ZWT5L2R44Gu5Yi25L2c5ae/5Yui44Go57W155S76Kaz44Gr6L+r44KL44Kk44Oz44K/44OT44Ol44O844CCCmhlcm86CiAgaW1hZ2U6ICIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTEuanBnIgogIGhlcm9fY2FwdGlvbjogIlBob3RvOiBLcmlzdHkgU3Bhcm93IgpoZXJvX2FsdDog6LWk44GE44K444Oj44Kx44OD44OI44KS552A44Gm5pyo5p6g44Gu44Gd44Gw44Gr56uL44Gk55S35oCn44Gu6IKW5YOPCi0tLQoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCgo8ZmlndXJlPgogIDxpbWcgc3JjPSIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTIuanBnIiBhbHQ9IiIgLz4KPC9maWd1cmU+Cgrjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjgIIK",
+      "bodyByteLength": 181,
+      "bodySha256": "cd0b7d6f4844a958ad1b56ff5f9aa586959c3fd2d97dda6d1a7c0a9794879a4c",
+      "bodyBase64": "CuODhuOCreOCueODiOODhuOCreOCueODiOODhuOCreOCueODiOOAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL2ludGVydmlldy1rZWlzdWtlLW1hdHN1ZGEtMjAyNi0wMi0yLmpwZyIgYWx0PSIiIC8+CjwvZmlndXJlPgoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCg=="
+    },
+    {
+      "contentId": "interview-keisuke-matsuda-2020-04",
+      "source": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-04.md",
+      "destinations": {
+        "shared": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-04/index.yaml",
+        "ja": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-04/ja.md",
+        "en": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-04/en.md"
+      },
+      "shared": {
+        "visibility": "public",
+        "date": "2020-08-19",
+        "categories": [
+          "interview"
+        ],
+        "hero": {
+          "image": "/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+          "hero_caption": "Photo: Kristy Sparow"
+        }
+      },
+      "localized": {
+        "title": "「私は結果を意図するより手前の絵を描こうとしている。」松田啓佑インタビュー",
+        "summary": "松田啓佑の制作姿勢と絵画観に迫るインタビュー。",
+        "hero_alt": "赤いジャケットを着て木枠のそばに立つ男性の肖像"
+      },
+      "enPlaceholder": {
+        "title": "__TODO_EN_TITLE__",
+        "summary": "__TODO_EN_SUMMARY__",
+        "hero_alt": "__TODO_EN_HERO_ALT__",
+        "body": "__TODO_EN_BODY__"
+      },
+      "originalByteLength": 624,
+      "originalSha256": "d599878afafa16dc3503822aae4c368901cb9e8b079ff210813f456727ff5092",
+      "originalBase64": "LS0tCnRpdGxlOiDjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgILjgI3mnb7nlLDllZPkvZHjgqTjg7Pjgr/jg5Pjg6Xjg7wKZGF0ZTogIjIwMjAtMDgtMTkiCmNhdGVnb3JpZXM6IFsiaW50ZXJ2aWV3Il0Kc3VtbWFyeTog5p2+55Sw5ZWT5L2R44Gu5Yi25L2c5ae/5Yui44Go57W155S76Kaz44Gr6L+r44KL44Kk44Oz44K/44OT44Ol44O844CCCmhlcm86CiAgaW1hZ2U6ICIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTEuanBnIgogIGhlcm9fY2FwdGlvbjogIlBob3RvOiBLcmlzdHkgU3Bhcm93IgpoZXJvX2FsdDog6LWk44GE44K444Oj44Kx44OD44OI44KS552A44Gm5pyo5p6g44Gu44Gd44Gw44Gr56uL44Gk55S35oCn44Gu6IKW5YOPCi0tLQoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCgo8ZmlndXJlPgogIDxpbWcgc3JjPSIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTIuanBnIiBhbHQ9IiIgLz4KPC9maWd1cmU+Cgrjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjgIIK",
+      "bodyByteLength": 181,
+      "bodySha256": "cd0b7d6f4844a958ad1b56ff5f9aa586959c3fd2d97dda6d1a7c0a9794879a4c",
+      "bodyBase64": "CuODhuOCreOCueODiOODhuOCreOCueODiOODhuOCreOCueODiOOAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL2ludGVydmlldy1rZWlzdWtlLW1hdHN1ZGEtMjAyNi0wMi0yLmpwZyIgYWx0PSIiIC8+CjwvZmlndXJlPgoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCg=="
+    },
+    {
+      "contentId": "interview-keisuke-matsuda-2020-06",
+      "source": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-06.md",
+      "destinations": {
+        "shared": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-06/index.yaml",
+        "ja": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-06/ja.md",
+        "en": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-06/en.md"
+      },
+      "shared": {
+        "visibility": "public",
+        "date": "2020-08-19",
+        "categories": [
+          "interview"
+        ],
+        "hero": {
+          "image": "/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+          "hero_caption": "Photo: Kristy Sparow"
+        }
+      },
+      "localized": {
+        "title": "「私は結果を意図するより手前の絵を描こうとしている。」松田啓佑インタビュー",
+        "summary": "松田啓佑の制作姿勢と絵画観に迫るインタビュー。",
+        "hero_alt": "赤いジャケットを着て木枠のそばに立つ男性の肖像"
+      },
+      "enPlaceholder": {
+        "title": "__TODO_EN_TITLE__",
+        "summary": "__TODO_EN_SUMMARY__",
+        "hero_alt": "__TODO_EN_HERO_ALT__",
+        "body": "__TODO_EN_BODY__"
+      },
+      "originalByteLength": 624,
+      "originalSha256": "d599878afafa16dc3503822aae4c368901cb9e8b079ff210813f456727ff5092",
+      "originalBase64": "LS0tCnRpdGxlOiDjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgILjgI3mnb7nlLDllZPkvZHjgqTjg7Pjgr/jg5Pjg6Xjg7wKZGF0ZTogIjIwMjAtMDgtMTkiCmNhdGVnb3JpZXM6IFsiaW50ZXJ2aWV3Il0Kc3VtbWFyeTog5p2+55Sw5ZWT5L2R44Gu5Yi25L2c5ae/5Yui44Go57W155S76Kaz44Gr6L+r44KL44Kk44Oz44K/44OT44Ol44O844CCCmhlcm86CiAgaW1hZ2U6ICIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTEuanBnIgogIGhlcm9fY2FwdGlvbjogIlBob3RvOiBLcmlzdHkgU3Bhcm93IgpoZXJvX2FsdDog6LWk44GE44K444Oj44Kx44OD44OI44KS552A44Gm5pyo5p6g44Gu44Gd44Gw44Gr56uL44Gk55S35oCn44Gu6IKW5YOPCi0tLQoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCgo8ZmlndXJlPgogIDxpbWcgc3JjPSIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTIuanBnIiBhbHQ9IiIgLz4KPC9maWd1cmU+Cgrjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjgIIK",
+      "bodyByteLength": 181,
+      "bodySha256": "cd0b7d6f4844a958ad1b56ff5f9aa586959c3fd2d97dda6d1a7c0a9794879a4c",
+      "bodyBase64": "CuODhuOCreOCueODiOODhuOCreOCueODiOODhuOCreOCueODiOOAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL2ludGVydmlldy1rZWlzdWtlLW1hdHN1ZGEtMjAyNi0wMi0yLmpwZyIgYWx0PSIiIC8+CjwvZmlndXJlPgoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCg=="
+    },
+    {
+      "contentId": "interview-keisuke-matsuda-2020-07",
+      "source": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-07.md",
+      "destinations": {
+        "shared": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-07/index.yaml",
+        "ja": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-07/ja.md",
+        "en": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-07/en.md"
+      },
+      "shared": {
+        "visibility": "public",
+        "date": "2020-08-19",
+        "categories": [
+          "interview"
+        ],
+        "hero": {
+          "image": "/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+          "hero_caption": "Photo: Kristy Sparow"
+        }
+      },
+      "localized": {
+        "title": "「私は結果を意図するより手前の絵を描こうとしている。」松田啓佑インタビュー",
+        "summary": "松田啓佑の制作姿勢と絵画観に迫るインタビュー。",
+        "hero_alt": "赤いジャケットを着て木枠のそばに立つ男性の肖像"
+      },
+      "enPlaceholder": {
+        "title": "__TODO_EN_TITLE__",
+        "summary": "__TODO_EN_SUMMARY__",
+        "hero_alt": "__TODO_EN_HERO_ALT__",
+        "body": "__TODO_EN_BODY__"
+      },
+      "originalByteLength": 624,
+      "originalSha256": "d599878afafa16dc3503822aae4c368901cb9e8b079ff210813f456727ff5092",
+      "originalBase64": "LS0tCnRpdGxlOiDjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgILjgI3mnb7nlLDllZPkvZHjgqTjg7Pjgr/jg5Pjg6Xjg7wKZGF0ZTogIjIwMjAtMDgtMTkiCmNhdGVnb3JpZXM6IFsiaW50ZXJ2aWV3Il0Kc3VtbWFyeTog5p2+55Sw5ZWT5L2R44Gu5Yi25L2c5ae/5Yui44Go57W155S76Kaz44Gr6L+r44KL44Kk44Oz44K/44OT44Ol44O844CCCmhlcm86CiAgaW1hZ2U6ICIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTEuanBnIgogIGhlcm9fY2FwdGlvbjogIlBob3RvOiBLcmlzdHkgU3Bhcm93IgpoZXJvX2FsdDog6LWk44GE44K444Oj44Kx44OD44OI44KS552A44Gm5pyo5p6g44Gu44Gd44Gw44Gr56uL44Gk55S35oCn44Gu6IKW5YOPCi0tLQoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCgo8ZmlndXJlPgogIDxpbWcgc3JjPSIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTIuanBnIiBhbHQ9IiIgLz4KPC9maWd1cmU+Cgrjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjgIIK",
+      "bodyByteLength": 181,
+      "bodySha256": "cd0b7d6f4844a958ad1b56ff5f9aa586959c3fd2d97dda6d1a7c0a9794879a4c",
+      "bodyBase64": "CuODhuOCreOCueODiOODhuOCreOCueODiOODhuOCreOCueODiOOAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL2ludGVydmlldy1rZWlzdWtlLW1hdHN1ZGEtMjAyNi0wMi0yLmpwZyIgYWx0PSIiIC8+CjwvZmlndXJlPgoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCg=="
+    },
+    {
+      "contentId": "interview-keisuke-matsuda-2020-09",
+      "source": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-09.md",
+      "destinations": {
+        "shared": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-09/index.yaml",
+        "ja": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-09/ja.md",
+        "en": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2020-09/en.md"
+      },
+      "shared": {
+        "visibility": "public",
+        "date": "2020-08-19",
+        "categories": [
+          "interview"
+        ],
+        "hero": {
+          "image": "/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+          "hero_caption": "Photo: Kristy Sparow"
+        }
+      },
+      "localized": {
+        "title": "「私は結果を意図するより手前の絵を描こうとしている。」松田啓佑インタビュー",
+        "summary": "松田啓佑の制作姿勢と絵画観に迫るインタビュー。",
+        "hero_alt": "赤いジャケットを着て木枠のそばに立つ男性の肖像"
+      },
+      "enPlaceholder": {
+        "title": "__TODO_EN_TITLE__",
+        "summary": "__TODO_EN_SUMMARY__",
+        "hero_alt": "__TODO_EN_HERO_ALT__",
+        "body": "__TODO_EN_BODY__"
+      },
+      "originalByteLength": 624,
+      "originalSha256": "d599878afafa16dc3503822aae4c368901cb9e8b079ff210813f456727ff5092",
+      "originalBase64": "LS0tCnRpdGxlOiDjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgILjgI3mnb7nlLDllZPkvZHjgqTjg7Pjgr/jg5Pjg6Xjg7wKZGF0ZTogIjIwMjAtMDgtMTkiCmNhdGVnb3JpZXM6IFsiaW50ZXJ2aWV3Il0Kc3VtbWFyeTog5p2+55Sw5ZWT5L2R44Gu5Yi25L2c5ae/5Yui44Go57W155S76Kaz44Gr6L+r44KL44Kk44Oz44K/44OT44Ol44O844CCCmhlcm86CiAgaW1hZ2U6ICIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTEuanBnIgogIGhlcm9fY2FwdGlvbjogIlBob3RvOiBLcmlzdHkgU3Bhcm93IgpoZXJvX2FsdDog6LWk44GE44K444Oj44Kx44OD44OI44KS552A44Gm5pyo5p6g44Gu44Gd44Gw44Gr56uL44Gk55S35oCn44Gu6IKW5YOPCi0tLQoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCgo8ZmlndXJlPgogIDxpbWcgc3JjPSIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTIuanBnIiBhbHQ9IiIgLz4KPC9maWd1cmU+Cgrjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjgIIK",
+      "bodyByteLength": 181,
+      "bodySha256": "cd0b7d6f4844a958ad1b56ff5f9aa586959c3fd2d97dda6d1a7c0a9794879a4c",
+      "bodyBase64": "CuODhuOCreOCueODiOODhuOCreOCueODiOODhuOCreOCueODiOOAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL2ludGVydmlldy1rZWlzdWtlLW1hdHN1ZGEtMjAyNi0wMi0yLmpwZyIgYWx0PSIiIC8+CjwvZmlndXJlPgoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCg=="
+    },
+    {
+      "contentId": "interview-keisuke-matsuda-2026-02",
+      "source": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2026-02.md",
+      "destinations": {
+        "shared": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2026-02/index.yaml",
+        "ja": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2026-02/ja.md",
+        "en": "/Users/reset/kiki-gallery/src/content/journal/interview-keisuke-matsuda-2026-02/en.md"
+      },
+      "shared": {
+        "visibility": "public",
+        "date": "2025-08-19",
+        "categories": [
+          "interview"
+        ],
+        "hero": {
+          "image": "/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+          "hero_caption": "Photo: Kristy Sparow"
+        }
+      },
+      "localized": {
+        "title": "「私は結果を意図するより手前の絵を描こうとしている。」松田啓佑インタビュー",
+        "summary": "松田啓佑の制作姿勢と絵画観に迫るインタビュー。",
+        "hero_alt": "赤いジャケットを着て木枠のそばに立つ男性の肖像"
+      },
+      "enPlaceholder": {
+        "title": "__TODO_EN_TITLE__",
+        "summary": "__TODO_EN_SUMMARY__",
+        "hero_alt": "__TODO_EN_HERO_ALT__",
+        "body": "__TODO_EN_BODY__"
+      },
+      "originalByteLength": 624,
+      "originalSha256": "a2abddfaf9af73c9f7a97724cbba21955f3071ea5268226b00e7723a6f8522b9",
+      "originalBase64": "LS0tCnRpdGxlOiDjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgILjgI3mnb7nlLDllZPkvZHjgqTjg7Pjgr/jg5Pjg6Xjg7wKZGF0ZTogIjIwMjUtMDgtMTkiCmNhdGVnb3JpZXM6IFsiaW50ZXJ2aWV3Il0Kc3VtbWFyeTog5p2+55Sw5ZWT5L2R44Gu5Yi25L2c5ae/5Yui44Go57W155S76Kaz44Gr6L+r44KL44Kk44Oz44K/44OT44Ol44O844CCCmhlcm86CiAgaW1hZ2U6ICIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTEuanBnIgogIGhlcm9fY2FwdGlvbjogIlBob3RvOiBLcmlzdHkgU3Bhcm93IgpoZXJvX2FsdDog6LWk44GE44K444Oj44Kx44OD44OI44KS552A44Gm5pyo5p6g44Gu44Gd44Gw44Gr56uL44Gk55S35oCn44Gu6IKW5YOPCi0tLQoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCgo8ZmlndXJlPgogIDxpbWcgc3JjPSIvaW1hZ2VzL2pvdXJuYWwvaW50ZXJ2aWV3LWtlaXN1a2UtbWF0c3VkYS0yMDI2LTAyLTIuanBnIiBhbHQ9IiIgLz4KPC9maWd1cmU+Cgrjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjg4bjgq3jgrnjg4jjgIIK",
+      "bodyByteLength": 181,
+      "bodySha256": "cd0b7d6f4844a958ad1b56ff5f9aa586959c3fd2d97dda6d1a7c0a9794879a4c",
+      "bodyBase64": "CuODhuOCreOCueODiOODhuOCreOCueODiOODhuOCreOCueODiOOAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL2ludGVydmlldy1rZWlzdWtlLW1hdHN1ZGEtMjAyNi0wMi0yLmpwZyIgYWx0PSIiIC8+CjwvZmlndXJlPgoK44OG44Kt44K544OI44OG44Kt44K544OI44OG44Kt44K544OI44CCCg=="
+    },
+    {
+      "contentId": "report-yuka-mori-2025-07",
+      "source": "/Users/reset/kiki-gallery/src/content/journal/report-yuka-mori-2025-07.md",
+      "destinations": {
+        "shared": "/Users/reset/kiki-gallery/src/content/journal/report-yuka-mori-2025-07/index.yaml",
+        "ja": "/Users/reset/kiki-gallery/src/content/journal/report-yuka-mori-2025-07/ja.md",
+        "en": "/Users/reset/kiki-gallery/src/content/journal/report-yuka-mori-2025-07/en.md"
+      },
+      "shared": {
+        "visibility": "public",
+        "date": "2025-08-13",
+        "categories": [
+          "report"
+        ],
+        "hero": {
+          "image": "/images/journal/report-yuka-mori-2025-07-1.webp"
+        }
+      },
+      "localized": {
+        "title": "森由香展レポート",
+        "summary": "森由香の個展を訪れ、作品と空間の関係性を記録したレポート。",
+        "hero_alt": "黒い画面に赤い花と植物、人のような形が描かれた作品"
+      },
+      "enPlaceholder": {
+        "title": "__TODO_EN_TITLE__",
+        "summary": "__TODO_EN_SUMMARY__",
+        "hero_alt": "__TODO_EN_HERO_ALT__",
+        "body": "__TODO_EN_BODY__"
+      },
+      "originalByteLength": 1154,
+      "originalSha256": "35718990b9c805925516c0f92d69d7488f8e83a79b8bd903a95957de90950293",
+      "originalBase64": "LS0tCnRpdGxlOiDmo67nlLHpppnlsZXjg6zjg53jg7zjg4gKZGF0ZTogIjIwMjUtMDgtMTMiCmNhdGVnb3JpZXM6IFsicmVwb3J0Il0Kc3VtbWFyeTog5qOu55Sx6aaZ44Gu5YCL5bGV44KS6Kiq44KM44CB5L2c5ZOB44Go56m66ZaT44Gu6Zai5L+C5oCn44KS6KiY6Yyy44GX44Gf44Os44Od44O844OI44CCCmhlcm86CiAgaW1hZ2U6ICIvaW1hZ2VzL2pvdXJuYWwvcmVwb3J0LXl1a2EtbW9yaS0yMDI1LTA3LTEud2VicCIKaGVyb19hbHQ6IOm7kuOBhOeUu+mdouOBq+i1pOOBhOiKseOBqOakjeeJqeOAgeS6uuOBruOCiOOBhuOBquW9ouOBjOaPj+OBi+OCjOOBn+S9nOWTgQotLS0KCuajrueUsemmmeOBruWAi+WxleOCkuioquOCjOOBn+OAguacrOWxleOBp+OBr+OAgei/keW5tOOBruWItuS9nOOCkuS4reW/g+OBq+ani+aIkOOBleOCjOOBpuOBiuOCiuOAgeeZveOCkuWfuuiqv+OBqOOBl+OBn+mdmeOBi+OBque3iuW8teaEn+OBruOBguOCi+S9nOWTgee+pOOBjOS4puOCk+OBp+OBhOOBn+OAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL3JlcG9ydC15dWthLW1vcmktMjAyNS0wNy0xLndlYnAiIGFsdD0iIiAvPgo8L2ZpZ3VyZT4KCuWZqOW9ouOBr+aKkeWItuOBleOCjOOBpOOBpOOCguOAgeOCj+OBmuOBi+OBquaPuuOCieOBjuOChOatquOBv+OBjOOBguOCiuOAgeaJi+OBrueXlei3oeOBjOaOp+OBiOOCgeOBq+aui+OBleOCjOOBpuOBhOOCi+OAgueJueOBq+WNsOixoeeahOOBoOOBo+OBn+OBruOBr+OAgemHieiqv+OBruWkieWMluOBqOWFieOBruWPl+OBkeaWueOBq+OCiOOCi+ihqOaDheOBruW3rueVsOOBp+OBguOCi+OAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL3JlcG9ydC15dWthLW1vcmktMjAyNS0wNy0yLndlYnAiIGFsdD0iIiAvPgo8L2ZpZ3VyZT4KCuepuumWk+WFqOS9k+OBqOOBl+OBpuOBr+ODn+ODi+ODnuODq+OBoOOBjOOAgeWAi+OAheOBruS9nOWTgeOBq+ebruOCkuWQkeOBkeOCi+OBqOOAgeW+rue0sOOBquW3rueVsOOBruepjeOBv+mHjeOBreOBq+OCiOOBo+OBpuaIkOeri+OBl+OBpuOBhOOCi+OBk+OBqOOBjOWIhuOBi+OCi+OAgumdmeOBkeOBleOBruS4reOBq+aZgumWk+OBruiThOepjeOCkuaEn+OBmOOBleOBm+OCi+WxleekuuOBoOOBo+OBn+OAggo=",
+      "bodyByteLength": 824,
+      "bodySha256": "1108f6a36c53443bcc2bf8bfcfd6cff567cbd1101da3bc3f6e586c41910c0a27",
+      "bodyBase64": "CuajrueUsemmmeOBruWAi+WxleOCkuioquOCjOOBn+OAguacrOWxleOBp+OBr+OAgei/keW5tOOBruWItuS9nOOCkuS4reW/g+OBq+ani+aIkOOBleOCjOOBpuOBiuOCiuOAgeeZveOCkuWfuuiqv+OBqOOBl+OBn+mdmeOBi+OBque3iuW8teaEn+OBruOBguOCi+S9nOWTgee+pOOBjOS4puOCk+OBp+OBhOOBn+OAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL3JlcG9ydC15dWthLW1vcmktMjAyNS0wNy0xLndlYnAiIGFsdD0iIiAvPgo8L2ZpZ3VyZT4KCuWZqOW9ouOBr+aKkeWItuOBleOCjOOBpOOBpOOCguOAgeOCj+OBmuOBi+OBquaPuuOCieOBjuOChOatquOBv+OBjOOBguOCiuOAgeaJi+OBrueXlei3oeOBjOaOp+OBiOOCgeOBq+aui+OBleOCjOOBpuOBhOOCi+OAgueJueOBq+WNsOixoeeahOOBoOOBo+OBn+OBruOBr+OAgemHieiqv+OBruWkieWMluOBqOWFieOBruWPl+OBkeaWueOBq+OCiOOCi+ihqOaDheOBruW3rueVsOOBp+OBguOCi+OAggoKPGZpZ3VyZT4KICA8aW1nIHNyYz0iL2ltYWdlcy9qb3VybmFsL3JlcG9ydC15dWthLW1vcmktMjAyNS0wNy0yLndlYnAiIGFsdD0iIiAvPgo8L2ZpZ3VyZT4KCuepuumWk+WFqOS9k+OBqOOBl+OBpuOBr+ODn+ODi+ODnuODq+OBoOOBjOOAgeWAi+OAheOBruS9nOWTgeOBq+ebruOCkuWQkeOBkeOCi+OBqOOAgeW+rue0sOOBquW3rueVsOOBruepjeOBv+mHjeOBreOBq+OCiOOBo+OBpuaIkOeri+OBl+OBpuOBhOOCi+OBk+OBqOOBjOWIhuOBi+OCi+OAgumdmeOBkeOBleOBruS4reOBq+aZgumWk+OBruiThOepjeOCkuaEn+OBmOOBleOBm+OCi+WxleekuuOBoOOBo+OBn+OAggo="
+    }
+  ]
+}

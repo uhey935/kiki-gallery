@@ -10,13 +10,17 @@
     "build": "astro build",
     "check": "astro check",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "prototype:test": "node --experimental-strip-types --test src/content-loaders/journal/*.test.ts src/content-boundaries/journal.test.ts",
+    "journal:migration:manifest": "node --experimental-strip-types src/content-loaders/journal/migration-manifest.ts"
   },
   "dependencies": {
-    "astro": "^6.0.4"
+    "astro": "^6.0.4",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@types/node": "^24.13.3",
     "prettier": "^3.8.1",
     "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.3"

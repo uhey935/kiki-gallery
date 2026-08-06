@@ -10,7 +10,7 @@ Last Updated: 2026-08-06
 
 本仕様は KiKi Gallery の Schema、Editor、Astro、および将来の CMS 実装における正式な Content Model の基準である。対象は Artist、Work、Exhibition、Journal、News、Home とする。
 
-Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Content ID は Content Unit のディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。
+Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Journal で最初に検証し、Work、Home、その他の Collection へ一括適用しない。各 Collection の保存 adapter は Journal prototype 後に個別判断する。
 
 ```text
 Collection
@@ -26,6 +26,7 @@ Collection
 - Presentation、Route Helper、Map key、および Content Reference の解決は `entry.data.contentId`、または Repository／Editor 境界で同じ規則から導出した Content ID を基準にする。
 - URL と Route は locale、collection、および Content ID から生成する Derived data とする。
 - `slug` や Content ID を frontmatter へ重複保存しない。
+- `visibility` の canonical field は Decisions 029–031 で責務と Journal matrix のみを承認済みとする。現行 strict Schema、migration、Site Content Service、および全 affected consumer を同じ実装 slice で変更するまでは保存 model へ追加しない。
 
 保存構造と Astro Store の変換境界、Entry ID の生成規則、および Query／Route の責務は Loader Architecture Specification v1.0 に従う。
 

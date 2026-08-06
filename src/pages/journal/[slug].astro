@@ -1,15 +1,26 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection, render } from "astro:content";
+import {
+  journalRouteRegistry,
+  selectJournalDetailEntries,
+} from "../../content-boundaries/journal";
 
 /* =========================
    getStaticPaths
 ========================= */
 export async function getStaticPaths() {
-  const journal = await getCollection("journal");
+  const journal = selectJournalDetailEntries(
+    await getCollection("journal"),
+    "ja",
+  );
 
   return journal.map((item) => ({
-    params: { slug: item.id },
+    params: journalRouteRegistry.params({
+      collection: "journal",
+      contentId: item.data.contentId,
+      locale: "ja",
+    }),
     props: { item },
   }));
 }

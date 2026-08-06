@@ -1,10 +1,6 @@
 ---
 title: 森由香展レポート
-date: "2025-08-13"
-categories: ["report"]
 summary: 森由香の個展を訪れ、作品と空間の関係性を記録したレポート。
-hero:
-  image: "/images/journal/report-yuka-mori-2025-07-1.webp"
 hero_alt: 黒い画面に赤い花と植物、人のような形が描かれた作品
 ---
 

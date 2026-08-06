@@ -1,5 +1,7 @@
 import { defineCollection, reference, z } from "astro:content";
 import { glob } from "astro/loaders";
+import { journalPrototypeLoader } from "./prototype/journal/astro-loader";
+import { journalThreeFileLoader } from "./content-loaders/journal/astro-loader";
 
 const HOME_HERO_LAYOUTS = ["default", "portrait", "alternate"] as const;
 const HERO_ORIENTATIONS = ["portrait", "landscape"] as const;
@@ -350,8 +352,11 @@ const exhibitionSchema = z
     }
   });
 
-const journalSchema = z
+const journalPrototypeSchema = z
   .object({
+    contentId: slugSchema,
+    locale: z.enum(["ja", "en"]),
+    visibility: z.enum(["public", "hidden"]),
     categories: z.array(journalCategorySchema).min(1),
     hero: journalHeroSchema,
     date: journalDateSchema,
@@ -364,17 +369,7 @@ const journalSchema = z
   .strict()
   .superRefine((journal, context) => {
     if (journal.author !== undefined && journal.credits !== undefined) {
-      context.addIssue({
-        code: "custom",
-        path: ["author"],
-        message: "Journal must not define both author and credits.",
-      });
-
-      context.addIssue({
-        code: "custom",
-        path: ["credits"],
-        message: "Journal must not define both author and credits.",
-      });
+      context.addIssue({ code: "custom", path: ["author"], message: "Journal must not define both author and credits." });
     }
   });
 
@@ -410,8 +405,13 @@ const exhibitions = defineCollection({
 });
 
 const journal = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "./src/content/journal" }),
-  schema: journalSchema,
+  loader: journalThreeFileLoader({ root: "./src/content/journal" }),
+  schema: journalPrototypeSchema,
+});
+
+const journalPrototype = defineCollection({
+  loader: journalPrototypeLoader(),
+  schema: journalPrototypeSchema,
 });
 
 const news = defineCollection({
@@ -425,5 +425,6 @@ export const collections = {
   works,
   exhibitions,
   journal,
+  journalPrototype,
   news,
 };

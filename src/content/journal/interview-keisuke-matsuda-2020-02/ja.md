@@ -1,11 +1,6 @@
 ---
 title: 「私は結果を意図するより手前の絵を描こうとしている。」松田啓佑インタビュー
-date: "2025-08-19"
-categories: ["interview"]
 summary: 松田啓佑の制作姿勢と絵画観に迫るインタビュー。
-hero:
-  image: "/images/journal/interview-keisuke-matsuda-2026-02-1.jpg"
-  hero_caption: "Photo: Kristy Sparow"
 hero_alt: 赤いジャケットを着て木枠のそばに立つ男性の肖像
 ---
 

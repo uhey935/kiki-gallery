@@ -194,7 +194,7 @@ type JournalAstroData = {
 
 ### Decision 012 — Placeholder strategy
 
-- 通常運用と Migration の双方で、正規 Content Unit は常に `index.yaml + ja.md + en.md` の3ファイルを持つ。
+- Journal の通常運用と Migration では、正規 Content Unit は常に `index.yaml + ja.md + en.md` の3ファイルを持つ。この Loader v1.0 contract を他 Collection へ一括適用しない。
 - EN source が存在しない Migration でも `en.md` を生成し、未翻訳 required field と body に field-specific な予約済み Placeholder Token を設定する。AI 翻訳や JA fallback は行わない。
 - 予約 token は `__TODO_EN_TITLE__`、`__TODO_EN_SUMMARY__`、`__TODO_EN_HERO_ALT__`、`__TODO_EN_BODY__` とする。`__TODO_` namespace は通常 content で使用できない。
 - Loader と Structural Schema は token を非空の通常文字列として忠実に扱い、変換、削除、fallback を行わない。
@@ -384,7 +384,7 @@ type LoadedContentUnit<TShared, TLocalized> = {
 
 ## 9. File presence and incomplete units
 
-正規 Content Unit は `index.yaml + ja.md + en.md` の3ファイルで構成する。これは恒常運用モデルである。
+Journal の正規 Content Unit は `index.yaml + ja.md + en.md` の3ファイルで構成する。これは Journal の恒常運用モデルであり、他 Collection の保存形式を決定しない。
 
 ただし、Loader が読み取れる状態と正規状態は同義ではない。`index.yaml` またはいずれかの locale file が欠損していても、directory を認識できる限り部分結果を返す。
 
@@ -529,7 +529,7 @@ Editor が読み込んだ後に Repository file が変更された状態。File 
 
 content root 全体へアクセス不能、Schema Registry 初期化不能、Loader configuration 破損等。安全に scan を継続できないため Loader operation を失敗させる。
 
-Issue の `ruleId`、severity、location、blocked action、および localization contract は未決であり、Issue Model Specification で固定する。
+Issue の `ruleId`、severity、category、location、message localization、および recovery hint は Decision 029 で固定する。blocked action は Issue に保存せず、Capability Evaluator が operation／locale context から導出する。
 
 ---
 
@@ -612,7 +612,7 @@ Journal 1件の prototype で、少なくとも次を確認してから全件移
 以下は v1.0 Draft で意図的に未固定とする。
 
 1. **Astro Entry ID encoding** — locale と Content ID から作ることだけを固定し、区切り文字等は prototype 後に決定する。
-2. **Issue Model** — rule taxonomy、severity、source range、blocked action、message localization を別仕様で決定する。
+2. **Issue Model implementation detail** — Decision 029 の契約は固定済み。具体的な rule registry、message catalog、source range 精度は prototype／実装で検証する。
 3. **Watcher lifecycle details** — listener teardown、debounce interval、full clear と set-diff の選択、atomic rename の挙動を prototype 後に決定する。
 4. **Digest serialization and Editor conflict token** — Astro digest の正規化対象と、File Writer が checksum、mtime、または両方を使うかを各実装仕様で決定する。
 5. **Content Reference migration** — 現行 News `link` を正規 Content Reference へ移す時期と legacy Route Parser の廃止条件を決定する。
@@ -655,5 +655,8 @@ Journal 1件の prototype で、少なくとも次を確認してから全件移
 | 010 Change detection   | Fixed with implementation detail deferred | Astro digest 要件は固定、具体方式と Editor conflict token は保留          |
 | 011 Routing            | Fixed                                     | Route Helper、Content ID 基準、JA／EN route、`entry.id` 非依存            |
 | 012 Placeholder        | Fixed                                     | 常に `en.md`、予約 token は structural valid、EN Preview／Publish blocker |
+| 029 Issue / Capability | Fixed                                     | Issue は事実、operation blocker は locale-aware Capability が導出         |
+| 030 Visibility         | Fixed for Journal prototype               | Site Content Service が surface policy を所有、crawler 実装は将来          |
+| 031 Route Registry     | Fixed                                     | Content ID 基準の build／exact parse、`entry.id` は opaque                  |
 
 本書が Draft である理由は Decisions 001–012 が未承認だからではなく、Section 17 の実装 contract が prototype または別仕様を必要とするためである。

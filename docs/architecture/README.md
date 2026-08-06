@@ -16,6 +16,9 @@ The documents are designed to be read in the following order.
 | ------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | **Content Model Specification**       | Defines the canonical content architecture and data model.                                         |
 | **Loader Architecture Specification** | Defines how Content Units are loaded and adapted for Astro while preserving validation boundaries. |
+| **Workflow Architecture Audit**       | Audits Editor save, rename, removal, and Git publish workflows before implementation.              |
+| **Cross-Architecture Review**         | Sets the prototype gate across content, Editor, infrastructure, routing, migration, and consumers. |
+| **Decisions 029–031**                 | Fixes Issue/Capability, surface visibility, Route Registry, and the exact Journal prototype gate.  |
 | **CSS Style Guide**                   | Defines the presentation architecture and CSS conventions.                                         |
 | **Architecture Audit**                | Evaluates the current implementation and identifies improvements.                                  |
 | **Architecture Review Report**        | Verifies architectural consistency before implementation.                                          |
@@ -88,6 +91,40 @@ Topics include:
 
 ---
 
+### Workflow Architecture Audit
+
+**workflow-architecture-audit.md**
+
+Audits the agreed Editor workflows against the current repository, Astro 6, Git semantics, the canonical specifications, and current Journal/News consumers.
+
+Topics include:
+
+- New Content and Editor State write boundaries
+- Rename, asset ownership, and bounded reference rewrites
+- Visibility, safe removal, and dependency-aware Delete
+- staged, unstaged, untracked, and externally committed Git states
+- commit identity and push retry behavior
+- News-specific explicit-reference validation
+- rollback requirements and prototype-only items
+
+---
+
+### Cross-Architecture Review
+
+**cross-architecture-review-2026-08-06.md**
+
+Reviews the complete target architecture against the repository baseline and current Astro 6 consumers. It classifies blockers, prototype validation items, implementation details, intentional deferrals, and low-severity CMS migration portability.
+
+---
+
+### Decisions 029–031
+
+**decisions-029-031-prototype-contracts.md**
+
+Defines the authoritative Issue / Capability contract, Journal Surface Visibility Matrix, future crawler-surface extension points without implementation, Content-ID-based Route Registry, and the exact read-only prototype scope.
+
+---
+
 ### Architecture Audit
 
 **architecture-audit.md**
@@ -137,8 +174,11 @@ The KiKi Gallery architecture is built upon the following principles.
 - Readability over Cleverness
 - Consistency over Convenience
 - Long-term Maintainability
+- Design for extension, not anticipation
 
 These principles are shared across all architectural documents.
+
+将来の拡張に必要な責務境界は残すが、具体的な要求がない infrastructure や policy は実装しない。
 
 ---
 
@@ -150,6 +190,8 @@ docs/
     ├── README.md
     ├── content-model-specification.md
     ├── loader-architecture-specification-v1.0.md
+    ├── workflow-architecture-audit.md
+    ├── cross-architecture-review-2026-08-06.md
     ├── css-style-guide.md
     ├── architecture-audit.md
     └── architecture-review-report.md

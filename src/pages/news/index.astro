@@ -1,6 +1,10 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import {
+  journalRouteRegistry,
+  selectJournalNewsIntegrationEntries,
+} from "../../content-boundaries/journal";
 
 // 1. 型定義
 type NewsItem = {
@@ -29,9 +33,16 @@ const newsItems: NewsItem[] = news.map((item) => ({
 }));
 
 // 4. Journalの整形
-const journalItems: NewsItem[] = journal.map((item) => ({
-  id: item.id,
-  href: `/journal/${item.id}`,
+const journalItems: NewsItem[] = selectJournalNewsIntegrationEntries(
+  journal,
+  "ja",
+).map((item) => ({
+  id: item.data.contentId,
+  href: journalRouteRegistry.build({
+    collection: "journal",
+    contentId: item.data.contentId,
+    locale: "ja",
+  }),
   title: item.data.title,
   date: new Date(item.data.date),
   type: "Journal",

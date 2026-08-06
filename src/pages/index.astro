@@ -9,6 +9,11 @@ import {
 } from "../utils/exhibitionDisplay";
 import { getExhibitionStatus } from "../utils/exhibitionStatus";
 import { resolveNewsImage } from "../utils/resolveNewsImage";
+import {
+  journalRouteRegistry,
+  selectJournalHomeStoryEntries,
+  selectJournalNewsIntegrationEntries,
+} from "../content-boundaries/journal";
 
 /* =========================
    Home
@@ -39,7 +44,7 @@ const newsImageCollections = {
     exhibitions.map((exhibition) => [exhibition.id, exhibition]),
   ),
   artists: artistMap,
-  journal: new Map(journal.map((item) => [item.id, item])),
+  journal: selectJournalNewsIntegrationEntries(journal, "ja"),
 };
 
 const SEPARATOR = "、";
@@ -120,16 +125,20 @@ const newsStories = news
   })
   .filter((item) => item !== null);
 
-const journalStories = journal
+const journalStories = selectJournalHomeStoryEntries(journal, "ja")
   .filter((item) => item.data.hero.image && item.data.categories?.length)
   .map((item) => ({
-    id: item.id,
+    id: item.data.contentId,
     title: item.data.title,
     date: item.data.date,
     type: item.data.categories?.[0],
     image: item.data.hero.image,
     alt: item.data.hero_alt,
-    href: `/journal/${item.id}`,
+    href: journalRouteRegistry.build({
+      collection: "journal",
+      contentId: item.data.contentId,
+      locale: "ja",
+    }),
   }));
 
 const stories = [...newsStories, ...journalStories]

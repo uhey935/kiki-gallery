@@ -1,11 +1,15 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import { selectJournalIndexEntries } from "../../content-boundaries/journal";
 
 /* =========================
    1. データ取得
 ========================= */
-const journal = await getCollection("journal");
+const journal = selectJournalIndexEntries(
+  await getCollection("journal"),
+  "ja",
+);
 
 // 日付の表示用フォーマット（Template側で使用）
 const formatDate = (date: Date) =>
@@ -19,24 +23,21 @@ const formatDate = (date: Date) =>
 /* =========================
    3. データ整形（Mapping）
 ========================= */
-const items = journal
-  .map((item) => {
-    // 日付オブジェクトの生成（不正な日付はnull）
-    const date = item.data.date ? new Date(item.data.date) : null;
+const items = journal.map((item) => {
+  // 日付オブジェクトの生成（不正な日付はnull）
+  const date = item.data.date ? new Date(item.data.date) : null;
 
-    return {
-      id: item.id,
-      href: `/journal/${item.id}`,
-      title: item.data.title,
-      date, // 派生データ（ISO文字列等）は持たせずDateオブジェクトのみ
-      summary: item.data.summary,
-      categories: item.data.categories ?? [], // 配列として保持
-      hero: item.data.hero,
-      hero_alt: item.data.hero_alt,
-    };
-  })
-  // 新しい順にソート
-  .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
+  return {
+    id: item.data.contentId,
+    href: `/journal/${item.data.contentId}`,
+    title: item.data.title,
+    date, // 派生データ（ISO文字列等）は持たせずDateオブジェクトのみ
+    summary: item.data.summary,
+    categories: item.data.categories ?? [], // 配列として保持
+    hero: item.data.hero,
+    hero_alt: item.data.hero_alt,
+  };
+});
 
 // 表示エリアごとに分割
 const hero = items[0];
