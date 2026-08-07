@@ -5,12 +5,21 @@ import type { JournalEditorDraftState } from "./journal-draft-state.ts";
 
 import {
   editorFailureGuidance,
+  flatIssueFieldCandidates,
   isEditorSaveShortcut,
   journalDraftDirtyFields,
   journalIssueFieldName,
   journalIssueLocation,
   worksWorkspaceUxState,
 } from "./ux.ts";
+
+test("flat validation field guidance resolves nested Home controls", () => {
+  assert.deepEqual(flatIssueFieldCandidates("sections.1.href"), [
+    "sections.1.href",
+    "sections_1_href",
+    "section_1_href",
+  ]);
+});
 
 test("Works workspace explains dirty, blocked, and unpublished states", () => {
   const dirty = worksWorkspaceUxState({

@@ -73,6 +73,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   import {
     editorFailureGuidance,
     isEditorSaveShortcut,
+    renderFlatValidationPanel,
     worksWorkspaceUxState,
   } from "../../../../editor/ux";
   const raw =
@@ -119,7 +120,9 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     };
     const render = () => {
       const dirty = isNewsEditorDraftDirty(baseline, draft);
-      const capabilities = validateNewsEditorDraft(draft).capabilities;
+      const validation = validateNewsEditorDraft(draft);
+      const capabilities = validation.capabilities;
+      renderFlatValidationPanel(form, validation);
       const locked = pending !== null || recoveryRequired;
       save.disabled = locked || !dirty || !capabilities.save;
       preview.disabled = locked || !capabilities.preview;

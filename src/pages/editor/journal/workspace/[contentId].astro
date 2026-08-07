@@ -156,7 +156,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         actionStatus.textContent = recoveryRequired
           ? (statusMessage ?? "Operations stopped · manual recovery required")
           : (statusMessage ??
-            (dirty ? "Unsaved changes" : "Saved · ready to publish"));
+            (dirty
+              ? "Unsaved changes"
+              : result.capabilities.publish
+                ? "Saved · publish available"
+                : "Saved · Publish blocked by validation"));
         actionStatus.dataset.state = pending
           ? "pending"
           : dirty

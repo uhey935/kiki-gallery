@@ -76,6 +76,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   import {
     editorFailureGuidance,
     isEditorSaveShortcut,
+    renderFlatValidationPanel,
     worksWorkspaceUxState,
   } from "../../../../editor/ux";
   const raw = document.querySelector<HTMLScriptElement>(
@@ -146,12 +147,33 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     };
     const render = () => {
       const dirty = isArtistsEditorDraftDirty(baseline, draft) || inputInvalid;
-      const validated = validateArtistsEditorDraft(draft).capabilities;
+      const validation = validateArtistsEditorDraft(draft);
+      if (inputInvalid) {
+        validation.issues = [
+          {
+            ruleId: "content.artist.works-layout-json",
+            severity: "error",
+            category: "structure",
+            collection: "artists",
+            contentId: draft.contentId,
+            fieldPath: "works_layout",
+            messageKey: "Works layout must be valid JSON",
+            recovery: { kind: "edit-field", fieldPath: "works_layout" },
+          },
+        ];
+        validation.capabilities = {
+          save: false,
+          preview: false,
+          publish: false,
+        };
+      }
+      const validated = validation.capabilities;
       const capabilities = {
         save: validated.save && !inputInvalid,
         preview: validated.preview && !inputInvalid,
         publish: validated.publish && !inputInvalid,
       };
+      renderFlatValidationPanel(form, validation);
       const locked = pending !== null || recoveryRequired;
       save.disabled = locked || !dirty || !capabilities.save;
       preview.disabled = locked || !capabilities.preview;
@@ -264,6 +286,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       }
     });
     read();
+    baseline = structuredClone(draft);
     render();
   }
 </script>

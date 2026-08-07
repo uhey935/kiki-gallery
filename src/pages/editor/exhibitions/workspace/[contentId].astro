@@ -82,6 +82,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   import {
     editorFailureGuidance,
     isEditorSaveShortcut,
+    renderFlatValidationPanel,
     worksWorkspaceUxState,
   } from "../../../../editor/ux";
   const raw = document.querySelector<HTMLScriptElement>(
@@ -150,7 +151,9 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     };
     const render = () => {
       const dirty = isExhibitionsEditorDraftDirty(baseline, draft);
-      const capabilities = validateExhibitionsEditorDraft(draft).capabilities;
+      const validation = validateExhibitionsEditorDraft(draft);
+      const capabilities = validation.capabilities;
+      renderFlatValidationPanel(form, validation);
       const locked = pending !== null || recoveryRequired;
       save.disabled = locked || !dirty || !capabilities.save;
       preview.disabled = locked || !capabilities.preview;
@@ -263,6 +266,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       }
     });
     read();
+    baseline = structuredClone(draft);
     render();
   }
 </script>

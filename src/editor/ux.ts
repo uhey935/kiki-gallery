@@ -11,6 +11,73 @@ export type EditorFailureGuidance = {
   message: string;
 };
 
+export function flatIssueFieldCandidates(fieldPath: string): string[] {
+  const candidates = [fieldPath, fieldPath.replaceAll(".", "_")];
+  const section = /^sections\.(\d+)\.(.+)$/.exec(fieldPath);
+  if (section) candidates.push(`section_${section[1]}_${section[2]}`);
+  return [...new Set(candidates)];
+}
+
+export function renderFlatValidationPanel(
+  form: HTMLFormElement,
+  result: {
+    issues: ContentIssue[];
+    capabilities: { save: boolean; preview: boolean; publish: boolean };
+  },
+) {
+  const panel = document.querySelector<HTMLElement>(".editor-validation");
+  if (!panel) return;
+  const blocked = result.issues.length > 0;
+  const badge = panel.querySelector<HTMLElement>("[data-validation-status]");
+  const summary = panel.querySelector<HTMLElement>("[data-issue-summary]");
+  const issues = panel.querySelector<HTMLUListElement>("[data-issues]");
+  if (badge) {
+    badge.textContent = blocked ? "blocked" : "valid";
+    badge.classList.toggle("editor-status--blocked", blocked);
+    badge.classList.toggle("editor-status--valid", !blocked);
+  }
+  if (summary)
+    summary.textContent = blocked
+      ? `${result.issues.length} draft issues`
+      : "No draft issues";
+  for (const action of ["save", "preview", "publish"] as const) {
+    const value = panel.querySelector<HTMLElement>(`[data-${action}]`);
+    if (value)
+      value.textContent = result.capabilities[action] ? "Available" : "Blocked";
+  }
+  if (!issues) return;
+  issues.replaceChildren();
+  issues.hidden = !blocked;
+  for (const issue of result.issues) {
+    const item = document.createElement("li");
+    const severity = document.createElement("strong");
+    severity.textContent = issue.severity;
+    const field = document.createElement("span");
+    field.textContent = issue.fieldPath ?? "Source";
+    const message = document.createElement("small");
+    message.textContent = issue.messageKey;
+    item.append(severity, " ", field, " ", message);
+    const target = issue.fieldPath
+      ? flatIssueFieldCandidates(issue.fieldPath)
+          .map((name) => form.elements.namedItem(name))
+          .find(
+            (control): control is HTMLElement => control instanceof HTMLElement,
+          )
+      : undefined;
+    if (target) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Go to field";
+      button.addEventListener("click", () => {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.focus({ preventScroll: true });
+      });
+      item.append(" ", button);
+    }
+    issues.append(item);
+  }
+}
+
 export function worksWorkspaceUxState(input: {
   pending: "save" | "preview" | "publish" | "upload" | null;
   dirty: boolean;

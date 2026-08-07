@@ -1,46 +1,55 @@
-# Astro Starter Kit: Basics
+# KiKi Gallery
+
+Astro site and local-only content Editor for Works, Journal, Exhibitions,
+Artists, News, and Home.
+
+## Requirements
+
+- Node.js 22.12.0 or newer (Node 24 LTS is also supported by the current
+  toolchain)
+- npm and Git
+- A clean branch with an upstream remote before using Publish
+
+Confirm the runtime with `node --version` before installing. The Editor writes
+canonical repository files and Publish creates and pushes a Git commit, so do
+not run it from a shared or unexpectedly dirty checkout.
+
+## Setup and commands
 
 ```sh
-npm create astro@latest -- --template basics
+npm ci
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Open the public site at `http://localhost:4321/` and the Editor at
+`http://localhost:4321/editor/`.
 
-## 🚀 Project Structure
+| Command                | Purpose                                             |
+| ---------------------- | --------------------------------------------------- |
+| `npm run dev`          | Development site and local Editor                   |
+| `npm run check`        | Astro and TypeScript diagnostics                    |
+| `npm run build`        | Production static build in `dist/`                  |
+| `npm run preview`      | Serve the production build locally                  |
+| `npm run editor:test`  | Editor, Publish, preview, and asset lifecycle tests |
+| `npm run journal:test` | Journal loader and production-boundary tests        |
 
-Inside of your Astro project, you'll see the following folders and files:
+If the user-level npm cache is not writable, use an isolated cache rather than
+changing machine-wide ownership as part of a release:
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+```sh
+npm ci --cache /tmp/kiki-gallery-npm-cache
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## Editor operations
 
-## 🧞 Commands
+The supported v1 workflow is edit existing content only:
 
-All commands are run from the root of the project, from a terminal:
+`load → edit → validate → Draft Preview → Save → Publish`
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+Create, delete, rename, batch Replace, non-Works asset management, storage
+migration, cross-collection ownership, and derivatives are outside v1.
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Read [Editor v1 Operations](docs/operations/editor-v1-operations.md) before
+operating Save, Publish, or asset lifecycle recovery. Architecture authority
+and reading order are listed there. Phase 4 evidence is recorded in
+[Editor v1 Release Readiness](docs/architecture/editor-v1-release-readiness-2026-08-07.md).
