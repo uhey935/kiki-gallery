@@ -343,6 +343,7 @@ The first slice replaces one selected existing image. It retains that image's lo
 6. A failed materialization or Markdown commit preserves the prior Markdown reference to A, rolls back only transaction-created B, and retains B's temporary token for retry.
 7. A successful Save releases B's token, returns a new existing-reference Asset Draft, and publishes only the Markdown plus B's exact manifest entry.
 8. Replace does not imply orphan status, physical deletion, cleanup scheduling, storage migration, or locale splitting.
+9. Cancelling an unsaved replacement removes its temporary preview/reference and restores the selected prior canonical reference and localized `alt` exactly. The temporary token remains available until normal TTL expiry.
 
 ### Failure semantics
 

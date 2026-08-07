@@ -313,11 +313,34 @@ test("asset Draft replacement substitutes exactly one existing image and preserv
     alt: "One alt",
   });
   assert.deepEqual(replaced.images, [
-    { kind: "temporary", token: "b".repeat(64), alt: "One alt" },
+    {
+      kind: "temporary",
+      token: "b".repeat(64),
+      alt: "One alt",
+      replaced: {
+        kind: "existing",
+        src: "/images/works/one.png",
+        alt: "One alt",
+      },
+    },
     { kind: "existing", src: "/images/works/two.png", alt: "Two alt" },
   ]);
   assert.throws(
     () => replaceExistingWorksAsset(replaced, 0, { token: "c".repeat(64) }),
     TypeError,
   );
+});
+
+test("cancelling a replacement restores the exact selected reference without affecting an equal reference", () => {
+  const initial = createWorksAssetDraftState("test-work", "workspace-1", [
+    { src: "/images/works/shared.png", alt: "First alt" },
+    { src: "/images/works/shared.png", alt: "Second alt" },
+  ]);
+  const token = "d".repeat(64);
+  const replaced = replaceExistingWorksAsset(initial, 1, { token });
+  const cancelled = removeTemporaryWorksAssetFromDraft(replaced, token);
+
+  assert.deepEqual(cancelled, initial);
+  assert.deepEqual(replaced.images[0], initial.images[0]);
+  assert.equal(replaced.images[1].kind, "temporary");
 });

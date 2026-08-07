@@ -8,6 +8,7 @@ export type TemporaryWorksAssetDraftImage = {
   kind: "temporary";
   token: string;
   alt: string;
+  replaced?: ExistingWorksAssetDraftImage;
 };
 
 export type WorksAssetDraftImage =
@@ -77,6 +78,7 @@ export function replaceExistingWorksAsset(
     // Replacement changes shared asset identity only. Localized alt text is
     // retained unless the editor changes it explicitly.
     alt: state.images[index].alt,
+    replaced: structuredClone(state.images[index]),
   };
   return next;
 }
@@ -118,8 +120,9 @@ export function removeTemporaryWorksAssetFromDraft(
   token: string,
 ): WorksAssetDraftState {
   const next = clone(state);
-  next.images = next.images.filter(
-    (image) => image.kind !== "temporary" || image.token !== token,
-  );
+  next.images = next.images.flatMap((image) => {
+    if (image.kind !== "temporary" || image.token !== token) return [image];
+    return image.replaced ? [structuredClone(image.replaced)] : [];
+  });
   return next;
 }

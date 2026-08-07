@@ -214,7 +214,9 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
             const remove = document.createElement("button");
             remove.type = "button";
             remove.dataset.assetRemove = image.token;
-            remove.textContent = "Remove temporary image";
+            remove.textContent = image.replaced
+              ? "Cancel replacement"
+              : "Remove temporary image";
             actions.append(remove);
           } else {
             const replace = document.createElement("button");
@@ -437,7 +439,8 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
           target.dataset.assetRemove,
         );
         if (assetStatus)
-          assetStatus.textContent = "Temporary image removed from this Draft.";
+          assetStatus.textContent =
+            "Temporary image removed and any replaced reference restored.";
       } else return;
       statusMessage = null;
       renderAssets();
