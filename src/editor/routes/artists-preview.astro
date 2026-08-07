@@ -1,0 +1,75 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { artistsPreviewStore, ArtistsPreviewError } from "../artists-preview";
+import "../../styles/artists.css";
+const { token, contentId } = Astro.params;
+let preview;
+let previewError;
+try {
+  if (!token || !contentId)
+    throw new ArtistsPreviewError("Invalid preview URL", "preview-not-found");
+  preview = artistsPreviewStore.read(token, contentId);
+} catch (error) {
+  Astro.response.status =
+    error instanceof ArtistsPreviewError && error.code === "preview-expired"
+      ? 410
+      : 404;
+  previewError = error instanceof Error ? error.message : "Preview unavailable";
+}
+---
+
+{
+  preview ? (
+    <Layout
+      title={`${preview.data.display_name ?? preview.data.name} · Draft Preview`}
+    >
+      <>
+        <figure class="artists-bio-image">
+          <img src={preview.data.hero.image} alt={preview.data.hero_alt} />
+        </figure>
+        {preview.data.biography && (
+          <section class="section artists-bio">
+            <h2>Biography</h2>
+            <p class="artists-bio-text">{preview.data.biography}</p>
+          </section>
+        )}
+        <section class="section artists-works">
+          <>
+            <h2>Works layout</h2>
+            <p>
+              {preview.data.works_layout
+                ?.flatMap((section) => section.works.map(({ id }) => id))
+                .join(" · ") || "No works selected"}
+            </p>
+          </>
+        </section>
+      </>
+    </Layout>
+  ) : (
+    <main class="editor-preview-error">
+      <>
+        <h1>Draft preview unavailable</h1>
+        <p>{previewError}</p>
+      </>
+    </main>
+  )
+}
+<style>
+  .editor-preview-banner {
+    position: sticky;
+    z-index: 10;
+    top: 0;
+    padding: 10px 20px;
+    background: #fff4c2;
+    color: #594c18;
+    text-align: center;
+    font:
+      600 0.78rem/1.4 system-ui,
+      sans-serif;
+  }
+  .editor-preview-error {
+    margin: 10vh auto;
+    width: min(640px, calc(100% - 40px));
+    font-family: system-ui, sans-serif;
+  }
+</style>

@@ -1,0 +1,120 @@
+---
+import { createMarkdownProcessor } from "@astrojs/markdown-remark";
+import Layout from "../../layouts/Layout.astro";
+import {
+  exhibitionsPreviewStore,
+  ExhibitionsPreviewError,
+} from "../exhibitions-preview";
+import { formatDateRangeJa } from "../../utils/date";
+import "../../styles/exhibitions.css";
+const { token, contentId } = Astro.params;
+let preview;
+let previewError;
+try {
+  if (!token || !contentId)
+    throw new ExhibitionsPreviewError(
+      "Invalid preview URL",
+      "preview-not-found",
+    );
+  preview = exhibitionsPreviewStore.read(token, contentId);
+} catch (error) {
+  Astro.response.status =
+    error instanceof ExhibitionsPreviewError && error.code === "preview-expired"
+      ? 410
+      : 404;
+  previewError = error instanceof Error ? error.message : "Preview unavailable";
+}
+const rendered = preview
+  ? await (await createMarkdownProcessor()).render(preview.body)
+  : undefined;
+const date = preview
+  ? formatDateRangeJa(
+      new Date(preview.data.start_date).toISOString().slice(0, 10),
+      new Date(preview.data.end_date).toISOString().slice(0, 10),
+    )
+  : "";
+---
+
+{
+  preview && rendered ? (
+    <Layout
+      title={`${preview.data.title ?? preview.contentId} · Draft Preview`}
+    >
+      <>
+        <aside class="editor-preview-banner">
+          Exhibitions draft preview · not saved
+        </aside>
+        <section class="section exhibitions-detail">
+          <header class="exhibitions-heading">
+            <>
+              <p class="exhibitions-heading-artist">
+                {preview.data.artists.map(({ id }) => id).join("、")}
+              </p>
+              <h1 class="exhibitions-h1-title">
+                {preview.data.title ?? preview.contentId}
+              </h1>
+            </>
+          </header>
+        </section>
+        <figure
+          class:list={[
+            "exhibitions-detail-image",
+            {
+              "exhibitions-detail-image--portrait":
+                preview.data.hero.orientation === "portrait",
+            },
+          ]}
+        >
+          <img src={preview.data.hero.image} alt={preview.data.hero_alt} />
+          {preview.data.hero.hero_caption && (
+            <figcaption>{preview.data.hero.hero_caption}</figcaption>
+          )}
+        </figure>
+        <section class="section exhibitions-content">
+          <div class="exhibitions-main">
+            <>
+              <section class="exhibitions-info">
+                <dl class="exhibitions-info-list">
+                  <>
+                    <dt>開催期間</dt>
+                    <dd>{date}</dd>
+                  </>
+                </dl>
+              </section>
+              <article class="exhibitions-article">
+                {preview.data.summary && <p>{preview.data.summary}</p>}
+                <div set:html={rendered.code} />
+              </article>
+            </>
+          </div>
+        </section>
+      </>
+    </Layout>
+  ) : (
+    <main class="editor-preview-error">
+      <>
+        <h1>Draft preview unavailable</h1>
+        <p>{previewError}</p>
+      </>
+    </main>
+  )
+}
+<style>
+  .editor-preview-banner {
+    position: sticky;
+    z-index: 10;
+    top: 0;
+    padding: 10px 20px;
+    background: #fff4c2;
+    color: #594c18;
+    text-align: center;
+    font:
+      600 0.78rem/1.4 system-ui,
+      sans-serif;
+  }
+  .editor-preview-error {
+    margin: 10vh auto;
+    width: min(640px, calc(100% - 40px));
+    font-family: system-ui, sans-serif;
+  }
+</style>

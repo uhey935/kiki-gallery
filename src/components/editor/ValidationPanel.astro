@@ -1,11 +1,9 @@
 ---
 import type { JournalEditorEntryState } from "../../editor/journal-state";
 import { journalIssueFieldName, journalIssueLocation } from "../../editor/ux";
-
 interface Props {
   entry: JournalEditorEntryState;
 }
-
 const { entry } = Astro.props;
 const state = entry.structuralStatus === "valid" ? "valid" : "blocked";
 ---
@@ -13,10 +11,12 @@ const state = entry.structuralStatus === "valid" ? "valid" : "blocked";
 <aside class="editor-validation" aria-labelledby="validation-heading">
   <div class="editor-panel__heading">
     <div>
-      <p class="editor-eyebrow">Issues & capabilities</p>
-      <h2 id="validation-heading">Validation</h2>
-    </div>
-    <span class:list={["editor-status", `editor-status--${state}`]}
+      <p class="editor-eyebrow">Issues & capabilities</p><h2
+        id="validation-heading"
+      >
+        Validation
+      </h2>
+    </div><span class:list={["editor-status", `editor-status--${state}`]}
       >{state}</span
     >
   </div>
@@ -32,18 +32,15 @@ const state = entry.structuralStatus === "valid" ? "valid" : "blocked";
       <dt>Save</dt><dd data-save>
         {entry.capabilities.save ? "Available" : "Blocked"}
       </dd>
-    </div>
-    <div>
+    </div><div>
       <dt>Preview JA</dt><dd data-preview-ja>
         {entry.capabilities.preview.ja ? "Available" : "Blocked"}
       </dd>
-    </div>
-    <div>
+    </div><div>
       <dt>Preview EN</dt><dd data-preview-en>
         {entry.capabilities.preview.en ? "Available" : "Blocked"}
       </dd>
-    </div>
-    <div>
+    </div><div>
       <dt>Publish</dt><dd data-publish>
         {entry.capabilities.publish ? "Available" : "Blocked"}
       </dd>

@@ -12,6 +12,7 @@ import type {
   JournalShared,
 } from "../content-loaders/journal/schema.ts";
 import { loadJournalRepository } from "../content-loaders/journal/repository.ts";
+import { isContentId } from "./content-id.ts";
 
 export type JournalEditorSourceStatus = SourceState<unknown>["state"];
 
@@ -45,8 +46,6 @@ export class JournalEditorEntryNotFoundError extends Error {
     this.name = "JournalEditorEntryNotFoundError";
   }
 }
-
-const contentIdPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const canonicalJournalRoot = path.resolve("src/content/journal");
 
@@ -106,7 +105,7 @@ export async function readJournalEditorEntry(
   contentId: string,
   root = canonicalJournalRoot,
 ): Promise<JournalEditorEntryState> {
-  if (!contentIdPattern.test(contentId)) {
+  if (!isContentId(contentId)) {
     throw new JournalEditorEntryNotFoundError(contentId);
   }
 

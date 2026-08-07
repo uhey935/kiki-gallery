@@ -1,0 +1,7 @@
+---
+import type { ArtistsEditorEntryState } from "../../editor/artists-state";
+import FlatValidationPanel from "./FlatValidationPanel.astro";
+const { entry } = Astro.props as { entry: ArtistsEditorEntryState };
+---
+
+<FlatValidationPanel issues={entry.issues} />

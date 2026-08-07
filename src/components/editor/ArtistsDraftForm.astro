@@ -1,0 +1,96 @@
+---
+import type { ArtistsEditorDraftState } from "../../editor/artists-draft-state";
+const { draft } = Astro.props as { draft: ArtistsEditorDraftState };
+const { data } = draft;
+---
+
+<form class="editor-draft-form" data-artists-draft-form>
+  <section class="editor-entry-section">
+    <header>
+      <div><p class="editor-eyebrow">Identity</p><h2>Artist</h2></div>
+    </header>
+    <div class="editor-entry-section__content editor-detail-list">
+      <label>Name<input name="name" value={data.name} /></label>
+      <label
+        >Display name<input
+          name="display_name"
+          value={data.display_name ?? ""}
+        /></label
+      >
+      <label
+        >Medium (one English term per line)<textarea name="medium"
+          >{data.medium.join("\n")}</textarea
+        ></label
+      >
+      <label
+        >Short biography<textarea name="short_bio">{data.short_bio}</textarea
+        ></label
+      >
+      <label
+        >Biography<textarea name="biography">{data.biography ?? ""}</textarea
+        ></label
+      >
+    </div>
+  </section>
+  <section class="editor-entry-section">
+    <header>
+      <div>
+        <p class="editor-eyebrow">Existing asset reference</p><h2>Hero</h2>
+      </div>
+    </header>
+    <p>
+      Asset upload and replacement are outside this milestone. Edit the
+      canonical public path only.
+    </p>
+    <div class="editor-entry-section__content editor-detail-list">
+      <label
+        >Image path<input name="hero.image" value={data.hero.image} /></label
+      >
+      <label>Alt text<textarea name="hero_alt">{data.hero_alt}</textarea></label
+      >
+    </div>
+  </section>
+  <section class="editor-entry-section">
+    <header>
+      <div>
+        <p class="editor-eyebrow">Work Content IDs</p><h2>Works layout</h2>
+      </div>
+    </header>
+    <p>
+      JSON array using single-a, single-b, double-a, or double-b layouts.
+      Referenced assets remain managed by Works.
+    </p>
+    <div class="editor-entry-section__content editor-detail-list">
+      <label
+        >Layout sections<textarea name="works_layout" rows="14"
+          >{
+            JSON.stringify(
+              data.works_layout?.map((section) => ({
+                layout: section.layout,
+                works: section.works.map(({ id }) => id),
+              })) ?? [],
+              null,
+              2,
+            )
+          }</textarea
+        ></label
+      >
+    </div>
+  </section>
+  <section class="editor-entry-section">
+    <header>
+      <div><p class="editor-eyebrow">Metadata</p><h2>SEO & body</h2></div>
+    </header>
+    <div class="editor-entry-section__content editor-detail-list">
+      <label
+        >SEO title<input name="seo_title" value={data.seo_title ?? ""} /></label
+      >
+      <label
+        >Description<textarea name="description"
+          >{data.description ?? ""}</textarea
+        ></label
+      >
+      <label>Body<textarea name="body">{draft.body}</textarea></label>
+    </div>
+  </section>
+</form>

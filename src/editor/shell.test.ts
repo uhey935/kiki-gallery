@@ -3,10 +3,10 @@ import test from "node:test";
 
 import { editorCollections, editorRoutes } from "./shell.ts";
 
-test("the shell exposes the registered Journal and Works collections", () => {
+test("the shell exposes the registered Editor collections", () => {
   assert.deepEqual(
     editorCollections.map(({ id }) => id),
-    ["journal", "works"],
+    ["home", "artists", "exhibitions", "journal", "news", "works"],
   );
 });
 

@@ -1,15 +1,37 @@
 import type { EditorCollectionState } from "./collection-contracts.ts";
 import { readJournalEditorState } from "./journal-state.ts";
 import { readWorksEditorState } from "./works-state.ts";
+import { readExhibitionsEditorState } from "./exhibitions-state.ts";
+import { readArtistsEditorState } from "./artists-state.ts";
+import { readNewsEditorState } from "./news-state.ts";
+import { readHomeEditorState } from "./home-state.ts";
 
 export type EditorCollectionAdapter = {
-  id: "journal" | "works";
+  id: "journal" | "works" | "exhibitions" | "artists" | "news" | "home";
   label: string;
   description: string;
   readState: () => Promise<EditorCollectionState>;
 };
 
 export const editorCollectionRegistry = {
+  home: {
+    id: "home",
+    label: "Home",
+    description: "Singleton · hero and nested responsive sections",
+    readState: readHomeEditorState,
+  },
+  artists: {
+    id: "artists",
+    label: "Artists",
+    description: "Flat Markdown · identity, biography, and Work references",
+    readState: readArtistsEditorState,
+  },
+  exhibitions: {
+    id: "exhibitions",
+    label: "Exhibitions",
+    description: "Flat Markdown · schedule, references, and presentation",
+    readState: readExhibitionsEditorState,
+  },
   journal: {
     id: "journal",
     label: "Journal",
@@ -27,6 +49,12 @@ export const editorCollectionRegistry = {
         })),
       };
     },
+  },
+  news: {
+    id: "news",
+    label: "News",
+    description: "Flat Markdown · announcements and optional links",
+    readState: readNewsEditorState,
   },
   works: {
     id: "works",

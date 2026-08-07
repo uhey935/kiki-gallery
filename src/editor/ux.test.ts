@@ -148,6 +148,27 @@ test("rollback failure tells the operator to stop before another operation", () 
     message:
       "Stop editing and request manual recovery before trying another operation.",
   });
+  assert.deepEqual(editorFailureGuidance("journal-save-rollback-failed"), {
+    action: "review",
+    message:
+      "Stop editing and request manual recovery before trying another operation.",
+  });
+});
+
+test("Works recovery-required state keeps every operation stopped", () => {
+  const state = worksWorkspaceUxState({
+    pending: null,
+    dirty: true,
+    canSave: true,
+    canPreview: true,
+    canPublish: true,
+    savedSincePublish: false,
+    recoveryRequired: true,
+  });
+  assert.equal(state.status, "Operations stopped · manual recovery required");
+  assert.match(state.saveTitle, /Manual recovery/);
+  assert.match(state.previewTitle, /Manual recovery/);
+  assert.match(state.publishTitle, /Manual recovery/);
 });
 
 test("issue location exposes locale and field with useful fallbacks", () => {

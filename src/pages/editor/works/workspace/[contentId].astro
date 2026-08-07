@@ -109,6 +109,8 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
   } from "../../../../editor/works-asset-draft";
   import {
     editorFailureGuidance,
+    isEditorManualRecoveryFailure,
+    isEditorSaveShortcut,
     worksWorkspaceUxState,
   } from "../../../../editor/ux";
   const raw = document.querySelector<HTMLScriptElement>(
@@ -161,6 +163,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
     let publishManifest: WorksAssetPublishManifest | undefined;
     let savedSincePublish = false;
     let pending: "save" | "preview" | "publish" | "upload" | null = null;
+    let recoveryRequired = false;
     let statusMessage: string | null = null;
     const failureMessage = (error: unknown, fallback: string) => {
       const response = error as Error & { code?: string };
@@ -259,17 +262,20 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
       };
       const capabilities =
         validateWorksEditorDraft(validationDraft).capabilities;
-      button.disabled = pending !== null || !dirty || !capabilities.save;
-      previewButton.disabled = pending !== null || !capabilities.preview;
+      const operationLocked = pending !== null || recoveryRequired;
+      button.disabled = operationLocked || !dirty || !capabilities.save;
+      previewButton.disabled = operationLocked || !capabilities.preview;
       publishButton.disabled =
-        pending !== null || dirty || !capabilities.publish;
-      uploadButton.disabled = pending !== null || assetFile.files?.length === 0;
-      assetFile.disabled = pending !== null;
-      uploadButton.title = pending
-        ? "Another action is in progress"
-        : assetFile.files?.length
-          ? "Upload selected files as temporary images"
-          : "Choose one or more images first";
+        operationLocked || dirty || !capabilities.publish;
+      uploadButton.disabled = operationLocked || assetFile.files?.length === 0;
+      assetFile.disabled = operationLocked;
+      uploadButton.title = recoveryRequired
+        ? "Manual recovery is required before uploading can continue"
+        : pending
+          ? "Another action is in progress"
+          : assetFile.files?.length
+            ? "Upload selected files as temporary images"
+            : "Choose one or more images first";
       const ux = worksWorkspaceUxState({
         pending,
         dirty,
@@ -277,11 +283,20 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
         canPreview: capabilities.preview,
         canPublish: capabilities.publish,
         savedSincePublish,
+        recoveryRequired,
         statusMessage,
       });
       button.title = ux.saveTitle;
       previewButton.title = ux.previewTitle;
       publishButton.title = ux.publishTitle;
+      form
+        .querySelectorAll<
+          HTMLInputElement | HTMLTextAreaElement
+        >("input, textarea")
+        .forEach((control) => {
+          if (control === assetFile || assetList.contains(control)) return;
+          control.disabled = operationLocked;
+        });
       assetList
         .querySelectorAll<
           HTMLInputElement | HTMLTextAreaElement | HTMLButtonElement
@@ -299,9 +314,55 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
               control.dataset.assetMove === "up"
                 ? index === 0
                 : index === assetDraft.images.length - 1;
-            control.disabled = pending !== null || atEdge;
-          } else control.disabled = pending !== null;
+            control.disabled = operationLocked || atEdge;
+          } else control.disabled = operationLocked;
         });
+      const validation =
+        document.querySelector<HTMLElement>(".editor-validation");
+      if (validation) {
+        const result = validateWorksEditorDraft(validationDraft);
+        const validationStatus =
+          validation.querySelector<HTMLElement>(".editor-status");
+        const state = result.issues.length === 0 ? "valid" : "blocked";
+        if (validationStatus) {
+          validationStatus.textContent = state;
+          validationStatus.className = `editor-status editor-status--${state}`;
+        }
+        const label = (allowed: boolean) => (allowed ? "Available" : "Blocked");
+        const summary = validation.querySelector<HTMLElement>(
+          "[data-issue-summary]",
+        );
+        if (summary)
+          summary.textContent = result.issues.length
+            ? `${result.issues.length} draft issues`
+            : "No draft issues";
+        for (const [name, allowed] of [
+          ["save", result.capabilities.save],
+          ["preview", result.capabilities.preview],
+          ["publish", result.capabilities.publish],
+        ] as const) {
+          const value = validation.querySelector<HTMLElement>(`[data-${name}]`);
+          if (value) value.textContent = label(allowed);
+        }
+        const issues =
+          validation.querySelector<HTMLUListElement>("[data-issues]");
+        if (issues) {
+          issues.hidden = result.issues.length === 0;
+          issues.replaceChildren(
+            ...result.issues.map((issue) => {
+              const item = document.createElement("li");
+              const severity = document.createElement("strong");
+              const field = document.createElement("span");
+              const message = document.createElement("small");
+              severity.textContent = issue.severity;
+              field.textContent = issue.fieldPath ?? "Source";
+              message.textContent = issue.messageKey;
+              item.append(severity, " ", field, message);
+              return item;
+            }),
+          );
+        }
+      }
       if (status) status.textContent = ux.status;
     };
     form.addEventListener("input", (event) => {
@@ -547,6 +608,12 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
         statusMessage = "Saved · unpublished changes ready to publish";
         savedSincePublish = true;
       } catch (error) {
+        if (
+          isEditorManualRecoveryFailure(
+            (error as Error & { code?: string }).code,
+          )
+        )
+          recoveryRequired = true;
         statusMessage = failureMessage(error, "Works save failed");
       } finally {
         pending = null;
@@ -619,6 +686,11 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
         event.preventDefault();
         (event as unknown as { returnValue: string }).returnValue = "";
       }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (!isEditorSaveShortcut(event)) return;
+      event.preventDefault();
+      button.click();
     });
     renderAssets();
     render();

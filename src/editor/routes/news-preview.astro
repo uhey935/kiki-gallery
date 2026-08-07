@@ -1,0 +1,53 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { newsPreviewStore, NewsPreviewError } from "../news-preview";
+const { token, contentId } = Astro.params;
+let preview;
+let previewError;
+try {
+  if (!token || !contentId)
+    throw new NewsPreviewError("Invalid preview URL", "preview-not-found");
+  preview = newsPreviewStore.read(token, contentId);
+} catch (error) {
+  Astro.response.status =
+    error instanceof NewsPreviewError && error.code === "preview-expired"
+      ? 410
+      : 404;
+  previewError = error instanceof Error ? error.message : "Preview unavailable";
+}
+const formatDate = (date: string) => date.slice(5).replace("-", ".");
+---
+
+{
+  preview ? (
+    <Layout title={`${preview.data.title} · Draft Preview`}>
+      <section class="news-index section">
+        <h1 class="index-h1">News Draft Preview</h1>
+        <article class="news-card">
+          <div class="news-meta">
+            <>
+              <span class="news-date">{formatDate(preview.data.date)}</span>
+              <span class="news-separator"> | </span>
+              <span class="news-category">{preview.data.news_type}</span>
+            </>
+          </div>
+          <h3 class="news-card-title">
+            {preview.data.link ? (
+              <a href={preview.data.link}>{preview.data.title}</a>
+            ) : (
+              preview.data.title
+            )}
+          </h3>
+          <p class="news-excerpt">{preview.data.summary ?? ""}</p>
+        </article>
+      </section>
+    </Layout>
+  ) : (
+    <main class="editor-preview-error">
+      <>
+        <h1>Draft preview unavailable</h1>
+        <p>{previewError}</p>
+      </>
+    </main>
+  )
+}

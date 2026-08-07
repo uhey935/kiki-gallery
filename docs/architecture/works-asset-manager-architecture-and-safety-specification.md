@@ -356,3 +356,15 @@ Batch replacement, replacement of a still-temporary image, undo with immediate t
 ## Editor UX hardening
 
 The Workspace names canonical, new temporary, and replacement-pending images explicitly. Its action status distinguishes unsaved, validation-blocked, saved-unpublished, and publishable states. Save, Preview, Publish, upload, and per-image controls expose their disabled reason and all asset editing controls are locked while an asynchronous action is active. These are presentation safeguards only; they do not change materialization, rollback, manifest, deletion, or cleanup semantics.
+
+## Works Editor completion audit
+
+The complete content load → field edit → asset edit → validation → Preview → Save → Publish workflow has no remaining finalization Blocker. Content and asset controls are locked for the duration of every asynchronous operation so a successful Save cannot overwrite edits made after its request snapshot. A rollback failure enters a terminal manual-recovery state that disables all further editing and operations in that workspace. Draft validation status and capability labels are derived from the current combined content-and-asset Draft rather than the initial canonical entry.
+
+The audit classifications are:
+
+- **Blocker — resolved:** field edits remained enabled while Save was in flight, allowing a successful response to replace input made after the request snapshot; rollback-failure guidance did not enforce its required terminal stop.
+- **Should-fix-before-Works-Editor-final — resolved:** the Works Validation panel described only the initially loaded canonical entry instead of the current combined Draft; Works now also consumes the established Editor save shortcut, and Journal uses the same asynchronous form-lock boundary.
+- **Follow-up-after-final:** existing filename/format compatibility debt, physical deletion and orphan cleanup policy, batch Replace, storage migration, locale splitting, create/delete/rename flows, derivative generation, and generic Editor/asset abstractions that still lack another concrete consumer.
+
+Physical deletion, orphan cleanup, batch Replace, storage migration, and locale splitting remain post-final follow-ups and are not authorized by this audit.

@@ -52,6 +52,7 @@ Save is a local mutation boundary with these invariants:
 - canonical raw bytes are checked again while replacements are prepared;
 - Content ID traversal, symlinked entry directories, symlinked sources, and non-regular sources are rejected;
 - all three files are staged, backed up, and replaced as one operation, with rollback of completed replacements on failure;
+- a rollback failure is reported distinctly and stops the active workspace for manual recovery;
 - success returns a fresh canonical reread, which becomes the next UI baseline;
 - Save follows the shared Save capability, so content-quality Issues may be saved while Publish remains blocked.
 
@@ -59,7 +60,7 @@ Preview is created only from the unsaved Draft and one explicit locale. It has n
 
 Publish requires a clean Draft, Publish capability, and equality with a fresh canonical reread. Repository inspection rejects detached HEAD, missing or branch-mismatched upstream, a repository-root mismatch, pre-existing staged changes, invalid/non-regular canonical sources, and an empty target diff. Only the canonical three-file paths are staged. The staged blobs are byte-compared with the canonical snapshot taken after baseline validation before commit. Commit messages use `Publish journal: <contentId>`. A successful commit followed by a failed push returns `committed-push-failed`, preserving the commit and distinguishing it from pre-commit failure.
 
-Save, Preview, and Publish failures cross the API boundary with stable codes and messages. The workspace displays the returned message; codes remain available for future recovery-specific UI without reclassifying failures in the client.
+Save, Preview, and Publish failures cross the API boundary with stable codes and messages. The workspace maps shared failure meanings to recovery guidance. In particular, `journal-save-rollback-failed` disables editing and every operation in the active workspace until manual recovery and reload; retryable failures do not enter that terminal state.
 
 ## Development-only route boundary
 

@@ -1,0 +1,39 @@
+---
+import type { ContentIssue } from "../../content-loaders/journal/contracts";
+const { issues } = Astro.props as { issues: ContentIssue[] };
+const blocked = issues.length > 0;
+const label = blocked ? "Blocked" : "Available";
+---
+
+<aside class="editor-validation" aria-labelledby="validation-heading">
+  <div class="editor-panel__heading">
+    <div>
+      <p class="editor-eyebrow">Canonical schema</p><h2 id="validation-heading">
+        Validation
+      </h2>
+    </div><span
+      class:list={[
+        "editor-status",
+        blocked ? "editor-status--blocked" : "editor-status--valid",
+      ]}>{blocked ? "blocked" : "valid"}</span
+    >
+  </div>
+  <p data-issue-summary>
+    {blocked ? `${issues.length} draft issues` : "No draft issues"}
+  </p>
+  <dl class="editor-detail-list">
+    <div><dt>Save</dt><dd data-save>{label}</dd></div><div>
+      <dt>Preview</dt><dd data-preview>{label}</dd>
+    </div><div><dt>Publish</dt><dd data-publish>{label}</dd></div>
+  </dl>
+  <ul class="editor-issues" data-issues hidden={!blocked}>
+    {
+      issues.map((item) => (
+        <li>
+          <strong>{item.severity}</strong> <span>{item.fieldPath}</span>
+          <small>{item.messageKey}</small>
+        </li>
+      ))
+    }
+  </ul>
+</aside>

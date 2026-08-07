@@ -1,0 +1,230 @@
+---
+import NewsDraftForm from "../../../../components/editor/NewsDraftForm.astro";
+import NewsValidationPanel from "../../../../components/editor/NewsValidationPanel.astro";
+import { createNewsEditorDraft } from "../../../../editor/news-draft-state";
+import {
+  readNewsEditorEntry,
+  readNewsEditorState,
+} from "../../../../editor/news-state";
+import EditorLayout from "../../../../layouts/EditorLayout.astro";
+export async function getStaticPaths() {
+  const state = await readNewsEditorState();
+  return Promise.all(
+    state.entries.map(async ({ contentId }) => ({
+      params: { contentId },
+      props: { entry: await readNewsEditorEntry(contentId) },
+    })),
+  );
+}
+const { entry } = Astro.props;
+const draft = createNewsEditorDraft(entry);
+const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
+---
+
+<EditorLayout title={entry.data?.title ?? entry.contentId} section="News">
+  <header class="editor-page-heading">
+    <p class="editor-eyebrow">News workspace</p><h1>
+      {entry.data?.title ?? entry.contentId}
+    </h1><p>{entry.contentId} · Current flat Markdown</p>
+  </header>
+  <div class="editor-workspace">
+    <main class="editor-panel editor-canvas">
+      {
+        draft ? (
+          <NewsDraftForm draft={draft} />
+        ) : (
+          <p>
+            Source cannot be represented as a Draft until validation issues are
+            fixed.
+          </p>
+        )
+      }
+    </main><NewsValidationPanel entry={entry} />
+  </div>
+  <footer class="editor-action-bar" aria-label="Editor actions">
+    <span data-news-action-status role="status">Saved · ready</span><div
+      class="editor-action-bar__actions"
+    >
+      <button
+        class="editor-button editor-button--secondary"
+        type="button"
+        data-preview-news
+        disabled>Preview</button
+      ><button class="editor-button" type="button" data-save-news disabled
+        >Save</button
+      ><button class="editor-button" type="button" data-publish-news disabled
+        >Publish</button
+      >
+    </div>
+  </footer>
+</EditorLayout>
+<script
+  type="application/json"
+  is:inline
+  id="news-editor-draft"
+  set:html={serializedDraft}
+/>
+<script>
+  import {
+    isNewsEditorDraftDirty,
+    validateNewsEditorDraft,
+    type NewsEditorDraftState,
+  } from "../../../../editor/news-draft-state";
+  import {
+    editorFailureGuidance,
+    isEditorSaveShortcut,
+    worksWorkspaceUxState,
+  } from "../../../../editor/ux";
+  const raw =
+    document.querySelector<HTMLScriptElement>(
+      "#news-editor-draft",
+    )?.textContent;
+  const form = document.querySelector<HTMLFormElement>(
+    "[data-news-draft-form]",
+  );
+  const save = document.querySelector<HTMLButtonElement>("[data-save-news]");
+  const preview = document.querySelector<HTMLButtonElement>(
+    "[data-preview-news]",
+  );
+  const publish = document.querySelector<HTMLButtonElement>(
+    "[data-publish-news]",
+  );
+  const status = document.querySelector<HTMLElement>(
+    "[data-news-action-status]",
+  );
+  if (raw && form && save && preview && publish && status) {
+    let baseline = JSON.parse(raw) as NewsEditorDraftState;
+    let draft = structuredClone(baseline);
+    let pending: "save" | "preview" | "publish" | null = null;
+    let savedSincePublish = false;
+    let statusMessage: string | null = null;
+    let recoveryRequired = false;
+    const optional = (value: string) => value.trim() || undefined;
+    const read = () => {
+      const data = new FormData(form);
+      const value = (name: string) => String(data.get(name) ?? "");
+      draft = {
+        ...draft,
+        data: {
+          title: value("title"),
+          date: value("date"),
+          news_type: value(
+            "news_type",
+          ) as NewsEditorDraftState["data"]["news_type"],
+          summary: optional(value("summary")),
+          link: optional(value("link")),
+          show_on_home: data.get("show_on_home") === "on",
+        },
+      };
+    };
+    const render = () => {
+      const dirty = isNewsEditorDraftDirty(baseline, draft);
+      const capabilities = validateNewsEditorDraft(draft).capabilities;
+      const locked = pending !== null || recoveryRequired;
+      save.disabled = locked || !dirty || !capabilities.save;
+      preview.disabled = locked || !capabilities.preview;
+      publish.disabled = locked || dirty || !capabilities.publish;
+      form
+        .querySelectorAll<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >("input, textarea, select")
+        .forEach((control) => (control.disabled = locked));
+      const ux = worksWorkspaceUxState({
+        pending,
+        dirty,
+        canSave: capabilities.save,
+        canPreview: capabilities.preview,
+        canPublish: capabilities.publish,
+        savedSincePublish,
+        recoveryRequired,
+        statusMessage,
+      });
+      status.textContent = ux.status;
+      save.title = ux.saveTitle;
+      preview.title = ux.previewTitle;
+      publish.title = ux.publishTitle;
+    };
+    const request = async (url: string, body: unknown) => {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw Object.assign(new Error(result.error), { code: result.code });
+      return result;
+    };
+    form.addEventListener("input", () => {
+      read();
+      statusMessage = null;
+      render();
+    });
+    save.addEventListener("click", async () => {
+      pending = "save";
+      render();
+      try {
+        const result = await request(
+          `/editor/api/news/${encodeURIComponent(draft.contentId)}`,
+          { draft, baseline },
+        );
+        baseline = result.draft;
+        draft = structuredClone(baseline);
+        savedSincePublish = true;
+        statusMessage = "Saved · unpublished changes ready to publish";
+      } catch (error) {
+        const value = error as Error & { code?: string };
+        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
+      } finally {
+        pending = null;
+        render();
+      }
+    });
+    preview.addEventListener("click", async () => {
+      pending = "preview";
+      render();
+      try {
+        const result = await request("/editor/api/news-preview/create", {
+          draft,
+        });
+        window.open(result.url, "_blank", "noopener,noreferrer");
+        statusMessage = "Draft preview opened";
+      } catch (error) {
+        const value = error as Error & { code?: string };
+        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
+      } finally {
+        pending = null;
+        render();
+      }
+    });
+    publish.addEventListener("click", async () => {
+      pending = "publish";
+      render();
+      try {
+        const result = await request(
+          `/editor/api/news-publish/${encodeURIComponent(draft.contentId)}`,
+          { draft, baseline, dirty: isNewsEditorDraftDirty(baseline, draft) },
+        );
+        recoveryRequired = result.state === "committed-push-failed";
+        savedSincePublish = recoveryRequired;
+        statusMessage =
+          result.state === "published"
+            ? `Published · ${result.commit.slice(0, 7)}`
+            : `Committed · push failed · manual recovery required · ${result.error}`;
+      } catch (error) {
+        const value = error as Error & { code?: string };
+        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
+      } finally {
+        pending = null;
+        render();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (isEditorSaveShortcut(event) && !save.disabled) {
+        event.preventDefault();
+        save.click();
+      }
+    });
+    render();
+  }
+</script>

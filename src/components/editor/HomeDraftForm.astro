@@ -1,0 +1,130 @@
+---
+import type { HomeEditorDraftState } from "../../editor/home-draft-state";
+const { draft } = Astro.props as { draft: HomeEditorDraftState };
+const { data } = draft;
+---
+
+<form class="editor-draft-form" data-home-draft-form>
+  <section class="editor-entry-section">
+    <header>
+      <div><p class="editor-eyebrow">Singleton</p><h2>Home settings</h2></div>
+    </header>
+    <div class="editor-entry-section__content editor-detail-list">
+      <label>Title<input name="title" value={data.title ?? ""} /></label><label
+        >Description<textarea name="description"
+          >{data.description ?? ""}</textarea
+        ></label
+      >
+      <label
+        ><input
+          name="hero_enabled"
+          type="checkbox"
+          checked={Boolean(data.home_hero)}
+        /> Custom hero media</label
+      >
+      <label
+        >Hero type<select name="hero_type"
+          ><option
+            value="image"
+            selected={data.home_hero?.media.type !== "video"}>image</option
+          ><option
+            value="video"
+            selected={data.home_hero?.media.type === "video"}>video</option
+          ></select
+        ></label
+      >
+      <label
+        >Hero image<input
+          name="hero_image"
+          value={data.home_hero?.media.image ?? ""}
+          placeholder="/images/home/…"
+        /></label
+      ><label
+        >Hero video<input
+          name="hero_video"
+          value={data.home_hero?.media.video ?? ""}
+        /></label
+      ><label
+        >Hero poster<input
+          name="hero_poster"
+          value={data.home_hero?.media.poster ?? ""}
+        /></label
+      >
+      <label
+        >Hero layout<select name="hero_layout"
+          ><option value="">default (omitted)</option>{
+            (["default", "portrait", "alternate"] as const).map((layout) => (
+              <option
+                value={layout}
+                selected={data.home_hero?.layout === layout}
+              >
+                {layout}
+              </option>
+            ))
+          }</select
+        ></label
+      >
+    </div>
+  </section>
+  {
+    data.sections.map((section, index) => (
+      <section class="editor-entry-section">
+        <>
+          <header>
+            <div>
+              <>
+                <p class="editor-eyebrow">Section {index + 1}</p>
+                <h2>{section.id}</h2>
+              </>
+            </div>
+          </header>
+          <div class="editor-entry-section__content editor-detail-list">
+            <>
+              <label>
+                ID
+                <select name={`section_${index}_id`}>
+                  {(["artists", "about"] as const).map((id) => (
+                    <option value={id} selected={section.id === id}>
+                      {id}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Title
+                <input name={`section_${index}_title`} value={section.title} />
+              </label>
+              <label>
+                Href
+                <input name={`section_${index}_href`} value={section.href} />
+              </label>
+            </>
+            <>
+              <label>
+                Landscape image
+                <input
+                  name={`section_${index}_landscape`}
+                  value={section.image.landscape}
+                />
+              </label>
+              <label>
+                Square image
+                <input
+                  name={`section_${index}_square`}
+                  value={section.image.square}
+                />
+              </label>
+              <label>
+                Portrait image
+                <input
+                  name={`section_${index}_portrait`}
+                  value={section.image.portrait}
+                />
+              </label>
+            </>
+          </div>
+        </>
+      </section>
+    ))
+  }
+</form>

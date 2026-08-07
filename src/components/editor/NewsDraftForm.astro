@@ -1,0 +1,49 @@
+---
+import type { NewsEditorDraftState } from "../../editor/news-draft-state";
+const { draft } = Astro.props as { draft: NewsEditorDraftState };
+const { data } = draft;
+---
+
+<form class="editor-draft-form" data-news-draft-form>
+  <section class="editor-entry-section">
+    <header>
+      <div><p class="editor-eyebrow">Announcement</p><h2>News</h2></div>
+    </header>
+    <p>
+      News has no image, body, or Detail page. Internal links may provide a
+      derived Home image.
+    </p>
+    <div class="editor-entry-section__content editor-detail-list">
+      <label>Title<input name="title" value={data.title} /></label>
+      <label>Date<input name="date" type="date" value={data.date} /></label>
+      <label
+        >Type<select name="news_type">
+          {
+            (["exhibition", "artist", "general"] as const).map((type) => (
+              <option value={type} selected={data.news_type === type}>
+                {type}
+              </option>
+            ))
+          }
+        </select></label
+      >
+      <label
+        >Summary<textarea name="summary">{data.summary ?? ""}</textarea></label
+      >
+      <label
+        >Link<input
+          name="link"
+          value={data.link ?? ""}
+          placeholder="/artists/example or https://…"
+        /></label
+      >
+      <label
+        ><input
+          name="show_on_home"
+          type="checkbox"
+          checked={data.show_on_home}
+        /> Show on Home</label
+      >
+    </div>
+  </section>
+</form>

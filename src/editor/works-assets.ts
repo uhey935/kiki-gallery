@@ -32,7 +32,11 @@ export type WorksAssetInventoryItem = WorksAssetInspection & {
 };
 export type WorksAssetAuditEntry = {
   name: string;
-  code: "asset-unsafe-path" | "asset-decode-failed" | "asset-reference-invalid";
+  code:
+    | "asset-unsafe-path"
+    | "asset-decode-failed"
+    | "asset-reference-invalid"
+    | "asset-reference-missing";
 };
 export type WorksAssetInventory = {
   assets: WorksAssetInventoryItem[];
@@ -316,6 +320,16 @@ export async function readWorksAssetInventory(
     } catch {
       audit.push({ name, code: "asset-decode-failed" });
     }
+  }
+  const availableUrls = new Set(assets.map(({ publicUrl }) => publicUrl));
+  for (const url of [...graph.keys()].sort()) {
+    if (!availableUrls.has(url)) {
+      referenceGraphComplete = false;
+      audit.push({ name: url, code: "asset-reference-missing" });
+    }
+  }
+  if (!referenceGraphComplete) {
+    for (const asset of assets) asset.orphan = "unknown";
   }
   return { assets, audit, referenceGraphComplete };
 }

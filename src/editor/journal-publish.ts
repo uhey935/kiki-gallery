@@ -3,6 +3,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 
+import { isContentId } from "./content-id.ts";
 import type { JournalEditorDraftState } from "./journal-draft-state.ts";
 import {
   createJournalEditorDraft,
@@ -12,7 +13,6 @@ import { readJournalEditorEntry } from "./journal-state.ts";
 
 const execFile = promisify(execFileCallback);
 const fileNames = ["index.yaml", "ja.md", "en.md"] as const;
-const contentIdPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export type JournalPublishResult =
   | { state: "published"; commit: string; branch: string; remote: string }
@@ -113,7 +113,7 @@ export async function inspectJournalPublish(
   repositoryRoot = path.resolve("."),
   git = createGit(repositoryRoot),
 ): Promise<JournalPublishInspection> {
-  if (!contentIdPattern.test(contentId)) {
+  if (!isContentId(contentId)) {
     throw new JournalPublishError(
       `Invalid Journal Content ID: ${contentId}`,
       "unsafe-repository",

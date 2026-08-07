@@ -367,6 +367,64 @@ test("a replacement failure rolls already replaced files back", async () => {
   });
 });
 
+test("a rollback failure requires manual recovery", async () => {
+  await withTemporaryJournal(async (root) => {
+    const initial = createJournalEditorDraft(
+      await readJournalEditorEntry("valid-public", root),
+    );
+    const edited = updateJournalEditorDraft(initial, (draft) => {
+      if (draft.locales.ja.state === "editable")
+        draft.locales.ja.value.title = "未保存";
+    });
+    let stagedRenameCount = 0;
+    const failingFileSystem: JournalSaveFileSystem = {
+      ...fs,
+      async rename(oldPath, newPath) {
+        if (String(oldPath).includes("-stage")) {
+          stagedRenameCount += 1;
+          if (stagedRenameCount === 2) throw new Error("save failure");
+        }
+        if (String(oldPath).includes("-backup"))
+          throw new Error("rollback failure");
+        await fs.rename(oldPath, newPath);
+      },
+    };
+
+    await assert.rejects(
+      saveJournalEditorDraft(edited, initial, root, failingFileSystem),
+      (error: unknown) =>
+        error instanceof JournalSaveError &&
+        error.code === "journal-save-rollback-failed",
+    );
+  });
+});
+
+test("cleanup failure after replacement does not misreport a successful save", async () => {
+  await withTemporaryJournal(async (root) => {
+    const initial = createJournalEditorDraft(
+      await readJournalEditorEntry("valid-public", root),
+    );
+    const edited = updateJournalEditorDraft(initial, (draft) => {
+      if (draft.locales.en.state === "editable")
+        draft.locales.en.value.title = "Saved despite cleanup failure";
+    });
+    const cleanupFailingFileSystem: JournalSaveFileSystem = {
+      ...fs,
+      async rm() {
+        throw new Error("cleanup failure");
+      },
+    };
+
+    const saved = await saveJournalEditorDraft(
+      edited,
+      initial,
+      root,
+      cleanupFailingFileSystem,
+    );
+    assert.deepEqual(saved, edited);
+  });
+});
+
 test("save rejects a stale baseline without overwriting canonical files", async () => {
   await withTemporaryJournal(async (root) => {
     const initial = createJournalEditorDraft(

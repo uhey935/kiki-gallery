@@ -1,0 +1,7 @@
+---
+import type { HomeEditorEntryState } from "../../editor/home-state";
+import FlatValidationPanel from "./FlatValidationPanel.astro";
+const { entry } = Astro.props as { entry: HomeEditorEntryState };
+---
+
+<FlatValidationPanel issues={entry.issues} />

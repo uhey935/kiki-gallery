@@ -87,6 +87,21 @@ test("inventory isolates symlinks and makes orphan state unknown when references
   assert.equal(result.assets[0].orphan, "unknown");
 });
 
+test("inventory reports referenced URLs whose canonical files are missing", async () => {
+  const { assets, works } = await fixture();
+  await writeFile(path.join(assets, "unreferenced.png"), png);
+  await writeFile(
+    path.join(works, "broken-reference.md"),
+    work(["/images/works/missing.png"]),
+  );
+  const result = await readWorksAssetInventory(assets, works);
+  assert.equal(result.referenceGraphComplete, false);
+  assert.deepEqual(result.audit, [
+    { name: "/images/works/missing.png", code: "asset-reference-missing" },
+  ]);
+  assert.equal(result.assets[0].orphan, "unknown");
+});
+
 test("admission accepts a safe new image and returns stable rejection codes", () => {
   const accepted = admitWorksAssetUpload({
     filename: "artist-new.png",

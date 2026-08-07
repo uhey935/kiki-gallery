@@ -1,0 +1,97 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { homePreviewStore, HomePreviewError } from "../home-preview";
+const { token, contentId } = Astro.params;
+let preview;
+let previewError;
+try {
+  if (!token || !contentId)
+    throw new HomePreviewError("Invalid preview URL", "preview-not-found");
+  preview = homePreviewStore.read(token, contentId);
+} catch (error) {
+  Astro.response.status =
+    error instanceof HomePreviewError && error.code === "preview-expired"
+      ? 410
+      : 404;
+  previewError = error instanceof Error ? error.message : "Preview unavailable";
+}
+const artists = preview?.data.sections.find(
+  (section) => section.id === "artists",
+);
+const about = preview?.data.sections.find((section) => section.id === "about");
+const hero = preview?.data.home_hero?.media;
+---
+
+{
+  preview ? (
+    <Layout title="Home · Draft Preview">
+      <div class="home">
+        <>
+          <section class="home-hero">
+            <div class="home-hero__fallback">
+              <>
+                <div class="home-hero__fallback-image-wrap">
+                  {hero?.type === "video" ? (
+                    <video
+                      src={hero.video}
+                      poster={hero.poster}
+                      class="home-hero__fallback-image"
+                      autoplay
+                      muted
+                      loop
+                      playsinline
+                    />
+                  ) : (
+                    <img
+                      src={
+                        hero?.type === "image"
+                          ? hero.image
+                          : "/images/home/fallback-hero.webp"
+                      }
+                      alt="KiKi Gallery"
+                      class="home-hero__fallback-image"
+                    />
+                  )}
+                </div>
+                <div class="home-hero__content">
+                  <h1 class="home-hero__title">KiKi Gallery</h1>
+                </div>
+              </>
+            </div>
+          </section>
+          <section class="home-sections">
+            <div class="home-sections__inner">
+              <>
+                <div class="home-sections__artists">
+                  <>
+                    <h2 class="home-sections__artists-title">
+                      {artists?.title}
+                    </h2>
+                    <a href={artists?.href}>
+                      <img src={artists?.image.square} alt="" />
+                    </a>
+                  </>
+                </div>
+                <div class="home-sections__about">
+                  <a href={about?.href}>
+                    <>
+                      <img src={about?.image.landscape} alt="" />
+                      <h2>{about?.title}</h2>
+                    </>
+                  </a>
+                </div>
+              </>
+            </div>
+          </section>
+        </>
+      </div>
+    </Layout>
+  ) : (
+    <main class="editor-preview-error">
+      <>
+        <h1>Draft preview unavailable</h1>
+        <p>{previewError}</p>
+      </>
+    </main>
+  )
+}

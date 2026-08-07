@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
+import { isContentId } from "./content-id.ts";
 import type { JournalEditorDraftState } from "./journal-draft-state.ts";
 import {
   createJournalEditorDraft,
@@ -13,7 +14,6 @@ import {
 } from "./journal-serializer.ts";
 import { readJournalEditorEntry } from "./journal-state.ts";
 
-const contentIdPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const fileNames = ["index.yaml", "ja.md", "en.md"] as const;
 const canonicalJournalRoot = path.resolve("src/content/journal");
 
@@ -22,6 +22,7 @@ export class JournalSaveError extends Error {
     | "invalid-content-id"
     | "invalid-draft"
     | "canonical-mismatch"
+    | "journal-save-rollback-failed"
     | "save-failed";
 
   constructor(
@@ -30,6 +31,7 @@ export class JournalSaveError extends Error {
       | "invalid-content-id"
       | "invalid-draft"
       | "canonical-mismatch"
+      | "journal-save-rollback-failed"
       | "save-failed",
     options?: ErrorOptions,
   ) {
@@ -45,7 +47,7 @@ export type JournalSaveFileSystem = Pick<
 >;
 
 async function resolveEntryDirectory(contentId: string, root: string) {
-  if (!contentIdPattern.test(contentId)) {
+  if (!isContentId(contentId)) {
     throw new JournalSaveError(
       `Invalid Journal Content ID: ${contentId}`,
       "invalid-content-id",
@@ -121,14 +123,23 @@ export async function writeJournalSerializedFiles(
       replaced.push(fileName);
     }
   } catch (error) {
+    const rollbackFailures: unknown[] = [];
     for (const fileName of replaced.reverse()) {
-      await fileSystem
-        .rename(
+      try {
+        await fileSystem.rename(
           path.join(backupDirectory, fileName),
           path.join(directory, fileName),
-        )
-        .catch(() => undefined);
+        );
+      } catch (rollbackError) {
+        rollbackFailures.push(rollbackError);
+      }
     }
+    if (rollbackFailures.length > 0)
+      throw new JournalSaveError(
+        `Failed to restore the prior Journal files after Save failed: ${contentId}`,
+        "journal-save-rollback-failed",
+        { cause: new AggregateError([error, ...rollbackFailures]) },
+      );
     if (error instanceof JournalSaveError) throw error;
     throw new JournalSaveError(
       `Failed to save Journal entry: ${contentId}`,
@@ -137,8 +148,12 @@ export async function writeJournalSerializedFiles(
     );
   } finally {
     await Promise.all([
-      fileSystem.rm(stageDirectory, { recursive: true, force: true }),
-      fileSystem.rm(backupDirectory, { recursive: true, force: true }),
+      fileSystem
+        .rm(stageDirectory, { recursive: true, force: true })
+        .catch(() => undefined),
+      fileSystem
+        .rm(backupDirectory, { recursive: true, force: true })
+        .catch(() => undefined),
     ]);
   }
 }
@@ -149,7 +164,7 @@ export async function saveJournalEditorDraft(
   root = canonicalJournalRoot,
   fileSystem: JournalSaveFileSystem = fs,
 ): Promise<JournalEditorDraftState> {
-  if (!contentIdPattern.test(draft.contentId)) {
+  if (!isContentId(draft.contentId)) {
     throw new JournalSaveError(
       `Invalid Journal Content ID: ${draft.contentId}`,
       "invalid-content-id",

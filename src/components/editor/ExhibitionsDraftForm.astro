@@ -1,0 +1,122 @@
+---
+import type { ExhibitionsEditorDraftState } from "../../editor/exhibitions-draft-state";
+const { draft } = Astro.props as { draft: ExhibitionsEditorDraftState };
+const { data } = draft;
+const date = (value: Date) => value.toISOString().slice(0, 10);
+---
+
+<form class="editor-draft-form" data-exhibitions-draft-form>
+  <section class="editor-entry-section">
+    <header>
+      <div>
+        <p class="editor-eyebrow">Shared</p><h2>Schedule & references</h2>
+      </div>
+    </header>
+    <div class="editor-entry-section__content editor-detail-list">
+      <label
+        >Artists (one Content ID per line)<textarea name="artists"
+          >{data.artists.map(({ id }) => id).join("\n")}</textarea
+        ></label
+      >
+      <label
+        >Works (one Content ID per line)<textarea name="works"
+          >{data.works?.map(({ id }) => id).join("\n") ?? ""}</textarea
+        ></label
+      >
+      <label
+        >Start date<input
+          name="start_date"
+          type="date"
+          value={date(data.start_date)}
+        /></label
+      >
+      <label
+        >End date<input
+          name="end_date"
+          type="date"
+          value={date(data.end_date)}
+        /></label
+      >
+      <label
+        >Display artists<select name="display_artists"
+          ><option value="default" selected={data.display_artists === undefined}
+            >Default</option
+          ><option value="true" selected={data.display_artists === true}
+            >Yes</option
+          ><option value="false" selected={data.display_artists === false}
+            >No</option
+          ></select
+        ></label
+      >
+    </div>
+  </section>
+  <section class="editor-entry-section">
+    <header>
+      <div>
+        <p class="editor-eyebrow">Existing asset reference</p><h2>Hero</h2>
+      </div>
+    </header>
+    <p>
+      Asset upload and replacement are outside this milestone. Edit the
+      canonical public path only.
+    </p>
+    <div class="editor-entry-section__content editor-detail-list">
+      <label
+        >Image path<input name="hero.image" value={data.hero.image} /></label
+      ><label
+        >Orientation<select name="hero.orientation"
+          ><option selected={data.hero.orientation === "portrait"}
+            >portrait</option
+          ><option selected={data.hero.orientation === "landscape"}
+            >landscape</option
+          ></select
+        ></label
+      >
+      <label
+        >Position<input
+          name="hero.position"
+          value={data.hero.position ?? ""}
+        /></label
+      ><label
+        >Treatment<input
+          name="hero.treatment"
+          value={data.hero.treatment ?? ""}
+        /></label
+      ><label
+        >Caption<input
+          name="hero.hero_caption"
+          value={data.hero.hero_caption ?? ""}
+        /></label
+      >
+      <label>Alt text<textarea name="hero_alt">{data.hero_alt}</textarea></label
+      >
+    </div>
+  </section>
+  <section class="editor-entry-section">
+    <header>
+      <div><p class="editor-eyebrow">Current locale</p><h2>Content</h2></div>
+    </header>
+    <div class="editor-entry-section__content editor-readonly-fields">
+      <label>Title<input name="title" value={data.title ?? ""} /></label><label
+        >Summary<textarea name="summary">{data.summary ?? ""}</textarea></label
+      >
+      <label>Venue<input name="venue" value={data.venue ?? ""} /></label><label
+        >Opening hours<input
+          name="opening_hours"
+          value={data.opening_hours ?? ""}
+        /></label
+      ><label
+        >Closed days<input
+          name="closed_days"
+          value={data.closed_days ?? ""}
+        /></label
+      ><label
+        >Attendance<input
+          name="attendance"
+          value={data.attendance ?? ""}
+        /></label
+      >
+      <label>Body<textarea name="body">{draft.body}</textarea></label>
+    </div>
+  </section>
+</form>

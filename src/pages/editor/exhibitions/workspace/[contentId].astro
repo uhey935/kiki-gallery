@@ -1,0 +1,268 @@
+---
+import ExhibitionsDraftForm from "../../../../components/editor/ExhibitionsDraftForm.astro";
+import ExhibitionsValidationPanel from "../../../../components/editor/ExhibitionsValidationPanel.astro";
+import { createExhibitionsEditorDraft } from "../../../../editor/exhibitions-draft-state";
+import {
+  readExhibitionsEditorEntry,
+  readExhibitionsEditorState,
+} from "../../../../editor/exhibitions-state";
+import EditorLayout from "../../../../layouts/EditorLayout.astro";
+export async function getStaticPaths() {
+  const state = await readExhibitionsEditorState();
+  return Promise.all(
+    state.entries.map(async ({ contentId }) => ({
+      params: { contentId },
+      props: { entry: await readExhibitionsEditorEntry(contentId) },
+    })),
+  );
+}
+const { entry } = Astro.props;
+const draft = createExhibitionsEditorDraft(entry);
+const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
+---
+
+<EditorLayout
+  title={entry.data?.title ?? entry.contentId}
+  section="Exhibitions"
+>
+  <header class="editor-page-heading">
+    <p class="editor-eyebrow">Exhibitions workspace</p><h1>
+      {entry.data?.title ?? entry.contentId}
+    </h1><p>{entry.contentId} · Current flat Markdown</p>
+  </header>
+  <div class="editor-workspace">
+    <main class="editor-panel editor-canvas">
+      {
+        draft ? (
+          <ExhibitionsDraftForm draft={draft} />
+        ) : (
+          <p>
+            Source cannot be represented as a Draft until validation issues are
+            fixed.
+          </p>
+        )
+      }
+    </main><ExhibitionsValidationPanel entry={entry} />
+  </div>
+  <footer class="editor-action-bar" aria-label="Editor actions">
+    <span data-exhibitions-action-status role="status">Saved · ready</span><div
+      class="editor-action-bar__actions"
+    >
+      <button
+        class="editor-button editor-button--secondary"
+        type="button"
+        data-preview-exhibitions
+        disabled>Preview</button
+      ><button
+        class="editor-button"
+        type="button"
+        data-save-exhibitions
+        disabled>Save</button
+      ><button
+        class="editor-button"
+        type="button"
+        data-publish-exhibitions
+        disabled>Publish</button
+      >
+    </div>
+  </footer>
+</EditorLayout>
+<script
+  type="application/json"
+  is:inline
+  id="exhibitions-editor-draft"
+  set:html={serializedDraft}
+/>
+<script>
+  import {
+    isExhibitionsEditorDraftDirty,
+    validateExhibitionsEditorDraft,
+    type ExhibitionsEditorDraftState,
+  } from "../../../../editor/exhibitions-draft-state";
+  import {
+    editorFailureGuidance,
+    isEditorSaveShortcut,
+    worksWorkspaceUxState,
+  } from "../../../../editor/ux";
+  const raw = document.querySelector<HTMLScriptElement>(
+    "#exhibitions-editor-draft",
+  )?.textContent;
+  const form = document.querySelector<HTMLFormElement>(
+    "[data-exhibitions-draft-form]",
+  );
+  const save = document.querySelector<HTMLButtonElement>(
+    "[data-save-exhibitions]",
+  );
+  const preview = document.querySelector<HTMLButtonElement>(
+    "[data-preview-exhibitions]",
+  );
+  const publish = document.querySelector<HTMLButtonElement>(
+    "[data-publish-exhibitions]",
+  );
+  const status = document.querySelector<HTMLElement>(
+    "[data-exhibitions-action-status]",
+  );
+  if (raw && form && save && preview && publish && status) {
+    let baseline = JSON.parse(raw) as ExhibitionsEditorDraftState;
+    let draft = structuredClone(baseline);
+    let pending: "save" | "preview" | "publish" | null = null;
+    let savedSincePublish = false;
+    let statusMessage: string | null = null;
+    let recoveryRequired = false;
+    const optional = (value: string) => value.trim() || undefined;
+    const list = (value: string, collection: "artists" | "works") =>
+      value
+        .split("\n")
+        .map((id) => id.trim())
+        .filter(Boolean)
+        .map((id) => ({ id, collection }));
+    const read = () => {
+      const data = new FormData(form);
+      const value = (name: string) => String(data.get(name) ?? "");
+      const display = value("display_artists");
+      draft = {
+        ...draft,
+        body: value("body"),
+        data: {
+          ...draft.data,
+          artists: list(value("artists"), "artists"),
+          works: list(value("works"), "works"),
+          start_date: value("start_date") as unknown as Date,
+          end_date: value("end_date") as unknown as Date,
+          display_artists:
+            display === "default" ? undefined : display === "true",
+          title: optional(value("title")),
+          summary: optional(value("summary")),
+          venue: optional(value("venue")),
+          opening_hours: optional(value("opening_hours")),
+          closed_days: optional(value("closed_days")),
+          attendance: optional(value("attendance")),
+          hero_alt: value("hero_alt"),
+          hero: {
+            image: value("hero.image"),
+            orientation: value("hero.orientation") as "portrait" | "landscape",
+            position: optional(value("hero.position")) as never,
+            treatment: optional(value("hero.treatment")) as never,
+            hero_caption: optional(value("hero.hero_caption")),
+          },
+        },
+      };
+    };
+    const render = () => {
+      const dirty = isExhibitionsEditorDraftDirty(baseline, draft);
+      const capabilities = validateExhibitionsEditorDraft(draft).capabilities;
+      const locked = pending !== null || recoveryRequired;
+      save.disabled = locked || !dirty || !capabilities.save;
+      preview.disabled = locked || !capabilities.preview;
+      publish.disabled = locked || dirty || !capabilities.publish;
+      form
+        .querySelectorAll<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >("input, textarea, select")
+        .forEach((control) => (control.disabled = locked));
+      const ux = worksWorkspaceUxState({
+        pending,
+        dirty,
+        ...{
+          canSave: capabilities.save,
+          canPreview: capabilities.preview,
+          canPublish: capabilities.publish,
+        },
+        savedSincePublish,
+        recoveryRequired,
+        statusMessage,
+      });
+      status.textContent = ux.status;
+      save.title = ux.saveTitle;
+      preview.title = ux.previewTitle;
+      publish.title = ux.publishTitle;
+    };
+    const request = async (url: string, body: unknown) => {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw Object.assign(new Error(result.error), { code: result.code });
+      return result;
+    };
+    form.addEventListener("input", () => {
+      read();
+      statusMessage = null;
+      render();
+    });
+    save.addEventListener("click", async () => {
+      pending = "save";
+      render();
+      try {
+        const result = await request(
+          `/editor/api/exhibitions/${encodeURIComponent(draft.contentId)}`,
+          { draft, baseline },
+        );
+        baseline = result.draft;
+        draft = structuredClone(baseline);
+        savedSincePublish = true;
+        statusMessage = "Saved · unpublished changes ready to publish";
+      } catch (error) {
+        const value = error as Error & { code?: string };
+        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
+      } finally {
+        pending = null;
+        render();
+      }
+    });
+    preview.addEventListener("click", async () => {
+      pending = "preview";
+      render();
+      try {
+        const result = await request("/editor/api/exhibitions-preview/create", {
+          draft,
+        });
+        window.open(result.url, "_blank", "noopener,noreferrer");
+        statusMessage = "Draft preview opened";
+      } catch (error) {
+        const value = error as Error & { code?: string };
+        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
+      } finally {
+        pending = null;
+        render();
+      }
+    });
+    publish.addEventListener("click", async () => {
+      pending = "publish";
+      render();
+      try {
+        const result = await request(
+          `/editor/api/exhibitions-publish/${encodeURIComponent(draft.contentId)}`,
+          {
+            draft,
+            baseline,
+            dirty: isExhibitionsEditorDraftDirty(baseline, draft),
+          },
+        );
+        recoveryRequired = result.state === "committed-push-failed";
+        savedSincePublish = recoveryRequired;
+        statusMessage =
+          result.state === "published"
+            ? `Published · ${result.commit.slice(0, 7)}`
+            : `Committed · push failed · manual recovery required · ${result.error}`;
+      } catch (error) {
+        const value = error as Error & { code?: string };
+        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
+      } finally {
+        pending = null;
+        render();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (isEditorSaveShortcut(event) && !save.disabled) {
+        event.preventDefault();
+        save.click();
+      }
+    });
+    read();
+    render();
+  }
+</script>

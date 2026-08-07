@@ -18,12 +18,14 @@ export function worksWorkspaceUxState(input: {
   canPreview: boolean;
   canPublish: boolean;
   savedSincePublish: boolean;
+  recoveryRequired?: boolean;
   statusMessage?: string | null;
 }) {
   const { pending, dirty, canSave, canPreview, canPublish } = input;
   const busy = pending !== null;
-  const status =
-    pending === "save"
+  const status = input.recoveryRequired
+    ? (input.statusMessage ?? "Operations stopped · manual recovery required")
+    : pending === "save"
       ? "Saving…"
       : pending === "preview"
         ? "Preparing preview…"
@@ -44,29 +46,35 @@ export function worksWorkspaceUxState(input: {
                     : "Saved · publish available";
   return {
     status,
-    saveTitle: busy
-      ? "Another action is in progress"
-      : !dirty
-        ? "No unsaved changes"
-        : canSave
-          ? "Save changes to the canonical Work"
-          : "Save is blocked by draft validation",
-    previewTitle: busy
-      ? "Another action is in progress"
-      : canPreview
-        ? dirty
-          ? "Preview the current unsaved draft"
-          : "Preview the saved draft"
-        : "Preview is blocked by draft validation",
-    publishTitle: busy
-      ? "Another action is in progress"
-      : dirty
-        ? "Save changes before publishing"
-        : canPublish
-          ? input.savedSincePublish
-            ? "Publish the saved unpublished changes"
-            : "Publish the saved canonical Work"
-          : "Publish is blocked by draft validation",
+    saveTitle: input.recoveryRequired
+      ? "Manual recovery is required before editing can continue"
+      : busy
+        ? "Another action is in progress"
+        : !dirty
+          ? "No unsaved changes"
+          : canSave
+            ? "Save changes to the canonical Work"
+            : "Save is blocked by draft validation",
+    previewTitle: input.recoveryRequired
+      ? "Manual recovery is required before preview can continue"
+      : busy
+        ? "Another action is in progress"
+        : canPreview
+          ? dirty
+            ? "Preview the current unsaved draft"
+            : "Preview the saved draft"
+          : "Preview is blocked by draft validation",
+    publishTitle: input.recoveryRequired
+      ? "Manual recovery is required before publishing can continue"
+      : busy
+        ? "Another action is in progress"
+        : dirty
+          ? "Save changes before publishing"
+          : canPublish
+            ? input.savedSincePublish
+              ? "Publish the saved unpublished changes"
+              : "Publish the saved canonical Work"
+            : "Publish is blocked by draft validation",
   };
 }
 
@@ -91,12 +99,21 @@ const reviewCodes = new Set([
 ]);
 
 const reuploadCodes = new Set(["asset-temp-not-found", "asset-temp-expired"]);
-const manualRecoveryCodes = new Set(["asset-save-rollback-failed"]);
+const manualRecoveryCodes = new Set([
+  "asset-save-rollback-failed",
+  "journal-save-rollback-failed",
+]);
+
+export function isEditorManualRecoveryFailure(
+  code: string | undefined,
+): boolean {
+  return Boolean(code && manualRecoveryCodes.has(code));
+}
 
 export function editorFailureGuidance(
   code: string | undefined,
 ): EditorFailureGuidance {
-  if (code && manualRecoveryCodes.has(code)) {
+  if (isEditorManualRecoveryFailure(code)) {
     return {
       action: "review",
       message:
