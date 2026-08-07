@@ -1,0 +1,56 @@
+---
+import WorksDraftForm from "../../../../components/editor/WorksDraftForm.astro";
+import WorksValidationPanel from "../../../../components/editor/WorksValidationPanel.astro";
+import { createWorksEditorDraft } from "../../../../editor/works-draft-state";
+import {
+  readWorksEditorEntry,
+  readWorksEditorState,
+} from "../../../../editor/works-state";
+import EditorLayout from "../../../../layouts/EditorLayout.astro";
+
+export async function getStaticPaths() {
+  const state = await readWorksEditorState();
+  return Promise.all(
+    state.entries.map(async ({ contentId }) => ({
+      params: { contentId },
+      props: { entry: await readWorksEditorEntry(contentId) },
+    })),
+  );
+}
+const { entry } = Astro.props;
+const draft = createWorksEditorDraft(entry);
+---
+
+<EditorLayout title={entry.data?.title ?? entry.contentId} section="Works">
+  <header class="editor-page-heading">
+    <p class="editor-eyebrow">Works workspace</p><h1>
+      {entry.data?.title ?? entry.contentId}
+    </h1><p>{entry.contentId} · Current flat Markdown · read-only</p>
+  </header>
+  <div class="editor-workspace">
+    <main class="editor-panel editor-canvas">
+      {
+        draft ? (
+          <WorksDraftForm draft={draft} />
+        ) : (
+          <p>
+            Source cannot be represented as a Draft until validation issues are
+            fixed.
+          </p>
+        )
+      }
+    </main><WorksValidationPanel entry={entry} />
+  </div>
+  <footer class="editor-action-bar" aria-label="Editor actions">
+    <span>Read-only vertical slice</span><div
+      class="editor-action-bar__actions"
+    >
+      <button class="editor-button editor-button--secondary" disabled
+        >Preview</button
+      ><button class="editor-button" disabled>Save</button><button
+        class="editor-button"
+        disabled>Publish</button
+      >
+    </div>
+  </footer>
+</EditorLayout>

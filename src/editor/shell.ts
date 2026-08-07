@@ -1,11 +1,8 @@
-export const editorCollections = [
-  {
-    id: "journal",
-    label: "Journal",
-    description: "Three-file Content Units",
-    state: "ready-for-editor-state",
-  },
-] as const;
+import { editorCollectionAdapters } from "./collection-registry.ts";
+
+export const editorCollections = editorCollectionAdapters.map(
+  ({ id, label, description }) => ({ id, label, description }),
+);
 
 export type EditorCollection = (typeof editorCollections)[number];
 

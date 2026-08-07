@@ -1,18 +1,17 @@
 ---
 import EntryList from "../../components/editor/EntryList.astro";
-import { readJournalEditorState } from "../../editor/journal-state";
-import { editorCollections } from "../../editor/shell";
+import { editorCollectionAdapters } from "../../editor/collection-registry";
 import EditorLayout from "../../layouts/EditorLayout.astro";
 
 export function getStaticPaths() {
-  return editorCollections.map((collection) => ({
+  return editorCollectionAdapters.map((collection) => ({
     params: { collection: collection.id },
     props: { collection },
   }));
 }
 
 const { collection } = Astro.props;
-const state = await readJournalEditorState();
+const state = await collection.readState();
 ---
 
 <EditorLayout title={collection.label} section={collection.label}>

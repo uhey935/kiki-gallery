@@ -5,6 +5,7 @@ import {
   journalDateSchema,
   journalSchema,
 } from "./content-loaders/journal/schema";
+import { createWorkSchema } from "./content-schemas/work";
 
 const HOME_HERO_LAYOUTS = ["default", "portrait", "alternate"] as const;
 const HERO_ORIENTATIONS = ["portrait", "landscape"] as const;
@@ -150,33 +151,6 @@ const workLayoutSectionSchema = z
     }
   });
 
-const workImageSchema = z
-  .object({
-    src: imagePathSchema,
-    alt: nonEmptyStringSchema,
-  })
-  .strict();
-
-const inquirySchema = z.discriminatedUnion("type", [
-  z
-    .object({
-      type: z.literal("inquiry"),
-      url: linkSchema.optional(),
-    })
-    .strict(),
-  z
-    .object({
-      type: z.literal("shop"),
-      url: linkSchema,
-    })
-    .strict(),
-  z
-    .object({
-      type: z.literal("none"),
-    })
-    .strict(),
-]);
-
 const seoFieldsSchema = {
   seo_title: nonEmptyStringSchema.optional(),
   description: nonEmptyStringSchema.optional(),
@@ -235,33 +209,7 @@ const artistSchema = z
     });
   });
 
-const workSchema = z
-  .object({
-    artist: reference("artists"),
-    images: z.array(workImageSchema).min(1),
-    year: z.number().int().positive().optional(),
-    size: nonEmptyStringSchema.optional(),
-    inquiry: inquirySchema,
-    orientation: z.literal("landscape").optional(),
-    title: nonEmptyStringSchema,
-    material: nonEmptyStringSchema.optional(),
-    ...seoFieldsSchema,
-  })
-  .strict()
-  .superRefine((work, context) => {
-    const seenImagePaths = new Set<string>();
-
-    work.images.forEach((image, index) => {
-      if (seenImagePaths.has(image.src)) {
-        context.addIssue({
-          code: "custom",
-          path: ["images", index, "src"],
-          message: `Duplicate Work image path: ${image.src}.`,
-        });
-      }
-      seenImagePaths.add(image.src);
-    });
-  });
+const workSchema = createWorkSchema(reference("artists"));
 
 const exhibitionSchema = z
   .object({

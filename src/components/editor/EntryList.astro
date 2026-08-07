@@ -1,11 +1,11 @@
 ---
 import { editorRoutes } from "../../editor/shell";
-import type { JournalEditorEntrySummary } from "../../editor/journal-state";
+import type { EditorEntrySummary } from "../../editor/collection-contracts";
 
 interface Props {
   collectionId: string;
   collectionLabel: string;
-  entries: JournalEditorEntrySummary[];
+  entries: EditorEntrySummary[];
 }
 
 const { collectionId, collectionLabel, entries } = Astro.props;
@@ -31,24 +31,19 @@ const { collectionId, collectionLabel, entries } = Astro.props;
             <div>
               <strong>{entry.title}</strong>
               <small>
-                {entry.contentId} · {entry.date ?? "Invalid shared data"}
+                {entry.contentId} · {entry.detail}
               </small>
             </div>
             <div class="editor-entry-meta">
-              <small>
-                JA {entry.localeStatus.ja} · EN {entry.localeStatus.en}
-              </small>
               <span
                 class:list={[
                   "editor-status",
-                  entry.structuralStatus === "valid"
+                  entry.status === "valid"
                     ? "editor-status--valid"
                     : "editor-status--blocked",
                 ]}
               >
-                {entry.structuralStatus === "valid"
-                  ? "Ready"
-                  : `${entry.issueCount} issues`}
+                {entry.statusLabel}
               </span>
             </div>
           </a>

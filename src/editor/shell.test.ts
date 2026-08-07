@@ -3,10 +3,10 @@ import test from "node:test";
 
 import { editorCollections, editorRoutes } from "./shell.ts";
 
-test("the initial shell exposes only the approved Journal collection", () => {
+test("the shell exposes the registered Journal and Works collections", () => {
   assert.deepEqual(
     editorCollections.map(({ id }) => id),
-    ["journal"],
+    ["journal", "works"],
   );
 });
 
@@ -18,4 +18,5 @@ test("editor routes stay under the isolated editor boundary", () => {
     editorRoutes.workspace("journal", "valid-public"),
     "/editor/journal/workspace/valid-public/",
   );
+  assert.equal(editorRoutes.collection("works"), "/editor/works/");
 });

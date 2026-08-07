@@ -1,0 +1,85 @@
+---
+import type { WorksEditorDraftState } from "../../editor/works-draft-state";
+
+interface Props {
+  draft: WorksEditorDraftState;
+}
+const { draft } = Astro.props;
+const { data } = draft;
+---
+
+<form class="editor-draft-form" aria-label="Works draft (read-only)">
+  <section class="editor-entry-section">
+    <header>
+      <div>
+        <p class="editor-eyebrow">Shared</p><h2>Identity & presentation</h2>
+      </div>
+    </header>
+    <div class="editor-entry-section__content editor-detail-list">
+      <div><dt>Artist</dt><dd>{data.artist.id}</dd></div>
+      <div><dt>Year</dt><dd>{data.year ?? "—"}</dd></div>
+      <div><dt>Size</dt><dd>{data.size ?? "—"}</dd></div>
+      <div><dt>Orientation</dt><dd>{data.orientation ?? "default"}</dd></div>
+    </div>
+  </section>
+  <section class="editor-entry-section">
+    <header>
+      <div><p class="editor-eyebrow">Shared / Localized</p><h2>Images</h2></div>
+    </header>
+    <p>
+      <code>src</code> is Shared. <code>alt</code> is Localized in the Works Content
+      Model; both remain together in the current flat source.
+    </p>
+    <div class="editor-entry-section__content">
+      {
+        data.images.map((image, index) => (
+          <fieldset class="editor-readonly-group">
+            <legend>Image {index + 1}</legend>
+            <label>
+              Shared · src
+              <input value={image.src} readonly />
+            </label>
+            <label>
+              Localized · alt<textarea readonly>{image.alt}</textarea>
+            </label>
+          </fieldset>
+        ))
+      }
+    </div>
+  </section>
+  <section class="editor-entry-section">
+    <header>
+      <div><p class="editor-eyebrow">Shared</p><h2>Inquiry</h2></div>
+    </header>
+    <div class="editor-entry-section__content editor-detail-list">
+      <div><dt>Type</dt><dd>{data.inquiry.type}</dd></div>
+      <div>
+        <dt>URL</dt><dd>
+          {
+            "url" in data.inquiry
+              ? (data.inquiry.url ?? "—")
+              : "Forbidden for none"
+          }
+        </dd>
+      </div>
+    </div>
+  </section>
+  <section class="editor-entry-section">
+    <header>
+      <div><p class="editor-eyebrow">Localized</p><h2>Content</h2></div>
+    </header>
+    <p>
+      Current flat storage has one localized source; no JA/EN parity is implied.
+    </p>
+    <div class="editor-entry-section__content editor-readonly-fields">
+      <label>Title<input value={data.title} readonly /></label>
+      <label>Material<input value={data.material ?? ""} readonly /></label>
+      <label>SEO title<input value={data.seo_title ?? ""} readonly /></label>
+      <label
+        >Description<textarea readonly>{data.description ?? ""}</textarea
+        ></label
+      >
+      <label>Body<textarea readonly>{draft.body}</textarea></label>
+    </div>
+  </section>
+</form>

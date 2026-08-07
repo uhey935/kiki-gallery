@@ -139,3 +139,5 @@ The accepted production-equivalence baseline is 72 generated files. The final bu
 - `loader-architecture-specification-v1.0.md` remains the detailed target contract. Prototype-dependent implementation questions resolved by the current code are governed by this document.
 
 Editor v1 covers editing existing valid canonical Journal units. Creating, deleting, renaming, or moving Content Units; bulk Repository Index operations; collaborative locking; authentication; and production-hosted mutation remain outside scope.
+
+Collection-level reuse and the gate for the first Works Editor slice are governed by [Collection Framework Audit](./collection-framework-audit-2026-08-07.md). Journal's three-file shape, schemas, routes, serializer, production facade, and render model remain Journal-owned; shared extraction requires a second concrete consumer and must preserve this specification's production-equivalence baseline.

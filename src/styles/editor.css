@@ -204,6 +204,33 @@ button {
 .editor-entry-section__content {
   margin-top: 18px;
 }
+.editor-readonly-group,
+.editor-readonly-fields {
+  display: grid;
+  gap: 16px;
+}
+.editor-readonly-group {
+  margin: 0 0 18px;
+  padding: 18px;
+  border: 1px solid #e2e6e1;
+}
+.editor-readonly-group label,
+.editor-readonly-fields label {
+  display: grid;
+  gap: 6px;
+  color: #65706a;
+  font-size: 0.78rem;
+}
+.editor-readonly-group input,
+.editor-readonly-group textarea,
+.editor-readonly-fields input,
+.editor-readonly-fields textarea {
+  padding: 10px 12px;
+  border: 1px solid #d5dbd4;
+  background: #f7f8f5;
+  color: #253029;
+  font: inherit;
+}
 .editor-detail-list {
   margin: 0;
 }

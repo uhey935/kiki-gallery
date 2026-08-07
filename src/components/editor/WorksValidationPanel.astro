@@ -1,0 +1,49 @@
+---
+import type { WorksEditorEntryState } from "../../editor/works-state";
+interface Props {
+  entry: WorksEditorEntryState;
+}
+const { entry } = Astro.props;
+---
+
+<aside class="editor-validation" aria-labelledby="validation-heading">
+  <div class="editor-panel__heading">
+    <div>
+      <p class="editor-eyebrow">Canonical schema</p><h2 id="validation-heading">
+        Validation
+      </h2>
+    </div><span
+      class:list={[
+        "editor-status",
+        entry.issueCount === 0
+          ? "editor-status--valid"
+          : "editor-status--blocked",
+      ]}>{entry.issueCount === 0 ? "valid" : "blocked"}</span
+    >
+  </div>
+  <p>
+    {
+      entry.issueCount === 0
+        ? "No draft issues"
+        : `${entry.issueCount} draft issues`
+    }
+  </p>
+  <dl class="editor-detail-list">
+    <div><dt>Save</dt><dd>Not connected</dd></div><div>
+      <dt>Preview</dt><dd>Not connected</dd>
+    </div><div><dt>Publish</dt><dd>Not connected</dd></div>
+  </dl>
+  <ul class="editor-issues" hidden={entry.issues.length === 0}>
+    {
+      entry.issues.map((issue) => (
+        <li>
+          <strong>{issue.severity}</strong>{" "}
+          <>
+            <span>{issue.fieldPath}</span>
+            <small>{issue.messageKey}</small>
+          </>
+        </li>
+      ))
+    }
+  </ul>
+</aside>
