@@ -1,0 +1,55 @@
+---
+interface Props {
+  dirty?: boolean;
+  loaded?: boolean;
+  preview?: { ja: boolean; en: boolean };
+  save?: boolean;
+  publish?: boolean;
+}
+
+const {
+  dirty = false,
+  loaded = false,
+  preview = { ja: false, en: false },
+  save = false,
+  publish = false,
+} = Astro.props;
+---
+
+<footer class="editor-action-bar" aria-label="Editor actions">
+  <span
+    >{
+      dirty
+        ? "Unsaved changes"
+        : loaded
+          ? "Read-only Editor State"
+          : "No Editor State loaded"
+    }</span
+  >
+  <div>
+    <button
+      class="editor-button editor-button--secondary"
+      type="button"
+      data-preview-journal="ja"
+      disabled={!preview.ja}>Preview JA</button
+    >
+    <button
+      class="editor-button editor-button--secondary"
+      type="button"
+      data-preview-journal="en"
+      disabled={!preview.en}>Preview EN</button
+    >
+    <button
+      class="editor-button"
+      type="button"
+      data-save-journal
+      disabled={!loaded || !dirty || !save}>Save</button
+    >
+    <button
+      class="editor-button"
+      type="button"
+      data-publish-journal
+      disabled={!loaded || dirty || !publish}>Publish</button
+    >
+  </div>
+</footer>

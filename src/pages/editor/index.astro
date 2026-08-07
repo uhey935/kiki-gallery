@@ -1,0 +1,9 @@
+---
+import Dashboard from "../../components/editor/Dashboard.astro";
+import { editorCollections } from "../../editor/shell";
+import EditorLayout from "../../layouts/EditorLayout.astro";
+---
+
+<EditorLayout title="Dashboard">
+  <Dashboard collections={editorCollections} />
+</EditorLayout>

@@ -1,30 +1,110 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  createJournalProductionFacade,
   findJournalEntry,
   journalRouteRegistry,
-  selectJournalDetailEntries,
-  selectJournalHomeStoryEntries,
-  selectJournalIndexEntries,
-  selectJournalNewsIntegrationEntries,
+  type JournalIndexIssue,
 } from "./journal.ts";
 import { resolveNewsImage } from "../utils/resolveNewsImage.ts";
 
+const production = <
+  T extends {
+    data: {
+      contentId: string;
+      locale: "ja" | "en";
+      visibility: "public" | "hidden";
+      date: string;
+    };
+  },
+>(
+  entries: T[],
+  issuesByContentId = new Map<string, JournalIndexIssue[]>(),
+) => {
+  const completeIssues = new Map<string, JournalIndexIssue[]>(
+    entries.map((entry) => [entry.data.contentId, []] as const),
+  );
+  for (const [contentId, issues] of issuesByContentId) {
+    completeIssues.set(contentId, issues);
+  }
+  return createJournalProductionFacade({
+    entries,
+    issuesByContentId: completeIssues,
+  });
+};
+
+test("Production facade rejects a read model with missing Issue ownership", () => {
+  const entry = {
+    data: {
+      contentId: "unowned",
+      locale: "ja" as const,
+      visibility: "public" as const,
+      date: "2026-01-01",
+    },
+  };
+
+  assert.throws(
+    () =>
+      createJournalProductionFacade({
+        entries: [entry],
+        issuesByContentId: new Map(),
+      }).forIndex("ja"),
+    /Missing Journal issues for Content ID: unowned/,
+  );
+});
+
 test("production query consumes native canonical locale entries", () => {
   const entries = [
-    { id: "opaque-ja-zeta", data: { contentId: "zeta", locale: "ja" as const, visibility: "public" as const, date: "2026-01-01" } },
-    { id: "opaque-ja-alpha", data: { contentId: "alpha", locale: "ja" as const, visibility: "public" as const, date: "2026-01-01" } },
-    { id: "opaque-ja-newest", data: { contentId: "newest", locale: "ja" as const, visibility: "public" as const, date: "2026-02-01" } },
-    { id: "opaque-en-newest", data: { contentId: "newest", locale: "en" as const, visibility: "public" as const, date: "2026-02-01" } },
+    {
+      id: "opaque-ja-zeta",
+      data: {
+        contentId: "zeta",
+        locale: "ja" as const,
+        visibility: "public" as const,
+        date: "2026-01-01",
+      },
+    },
+    {
+      id: "opaque-ja-alpha",
+      data: {
+        contentId: "alpha",
+        locale: "ja" as const,
+        visibility: "public" as const,
+        date: "2026-01-01",
+      },
+    },
+    {
+      id: "opaque-ja-newest",
+      data: {
+        contentId: "newest",
+        locale: "ja" as const,
+        visibility: "public" as const,
+        date: "2026-02-01",
+      },
+    },
+    {
+      id: "opaque-en-newest",
+      data: {
+        contentId: "newest",
+        locale: "en" as const,
+        visibility: "public" as const,
+        date: "2026-02-01",
+      },
+    },
   ];
 
   assert.deepEqual(
-    selectJournalIndexEntries(entries, "ja").map(
-      (entry) => entry.data.contentId,
-    ),
+    production(entries)
+      .forIndex("ja")
+      .map((entry) => entry.data.contentId),
     ["newest", "alpha", "zeta"],
   );
-  assert.deepEqual(selectJournalIndexEntries(entries, "en").map((entry) => entry.id), ["opaque-en-newest"]);
+  assert.deepEqual(
+    production(entries)
+      .forIndex("en")
+      .map((entry) => entry.id),
+    ["opaque-en-newest"],
+  );
 });
 
 test("Journal Index excludes hidden and non-renderable locale states", () => {
@@ -67,9 +147,9 @@ test("Journal Index excludes hidden and non-renderable locale states", () => {
   ]);
 
   assert.deepEqual(
-    selectJournalIndexEntries(entries, "ja", issues).map(
-      (entry) => entry.data.contentId,
-    ),
+    production(entries, issues)
+      .forIndex("ja")
+      .map((entry) => entry.data.contentId),
     ["public"],
   );
 });
@@ -118,9 +198,9 @@ test("Journal Detail enumerates only public renderable JA Content IDs", () => {
   ]);
 
   assert.deepEqual(
-    selectJournalDetailEntries(entries, "ja", issues).map(
-      (entry) => entry.data.contentId,
-    ),
+    production(entries, issues)
+      .forDetail("ja")
+      .map((entry) => entry.data.contentId),
     ["public-entry"],
   );
 });
@@ -173,9 +253,9 @@ test("Home Stories selects public renderable JA entries in stable query order", 
   ]);
 
   assert.deepEqual(
-    selectJournalHomeStoryEntries(entries, "ja", issues).map(
-      (entry) => entry.data.contentId,
-    ),
+    production(entries, issues)
+      .forHomeStories("ja")
+      .map((entry) => entry.data.contentId),
     ["alpha", "zeta"],
   );
 });
@@ -220,9 +300,9 @@ test("News integration excludes hidden, EN, and unrenderable Journal entries", (
   ]);
 
   assert.deepEqual(
-    selectJournalNewsIntegrationEntries(entries, "ja", issues).map(
-      (entry) => entry.data.contentId,
-    ),
+    production(entries, issues)
+      .forNewsIntegration("ja")
+      .map((entry) => entry.data.contentId),
     ["public"],
   );
 });

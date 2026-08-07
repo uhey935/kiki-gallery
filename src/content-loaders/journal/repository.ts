@@ -1,39 +1,24 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { parseDocument } from "yaml";
-import {
-  decideJournalSurface,
-  findJournalEntry,
-  journalRouteRegistry,
-  queryJournalEntries,
-  type JournalSurface,
-} from "../../content-boundaries/journal.ts";
 import type {
-  ContentCapabilities,
   ContentIssue,
-  JournalEntry,
-  JournalEntryData,
   JournalLocalized,
   JournalShared,
   LoadedJournalUnit,
   Locale,
   SourceState,
 } from "./contracts.ts";
+import { journalLocalizedSchema, journalSharedSchema } from "./schema.ts";
 
 const LOCALES = ["ja", "en"] as const;
-const CATEGORIES = new Set(["interview", "essay", "report"]);
 const CONTENT_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 function issue(
   contentId: string,
   partial: Omit<ContentIssue, "collection" | "contentId">,
 ): ContentIssue {
   return { collection: "journal", contentId, ...partial };
-}
-
-function nonEmpty(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0;
 }
 
 function parseYaml(raw: string, contentId: string, file: string) {
@@ -61,87 +46,26 @@ function parseShared(
 ): { value?: JournalShared; issues: ContentIssue[] } {
   const parsed = parseYaml(raw, contentId, file);
   if (parsed.error) return { issues: [parsed.error] };
-  const value = parsed.value as Record<string, unknown>;
-  const issues: ContentIssue[] = [];
-  const allowed = new Set([
-    "date",
-    "categories",
-    "hero",
-    "author",
-    "credits",
-    "visibility",
-  ]);
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    issues.push(
-      issue(contentId, {
-        ruleId: "content.shared.structure",
-        severity: "error",
-        category: "structure",
-        file,
-        messageKey: "content.shared.objectRequired",
-      }),
-    );
-    return { issues };
-  }
-  const unknown = Object.keys(value).filter((key) => !allowed.has(key));
-  const hero = value.hero as Record<string, unknown> | undefined;
-  const categories = value.categories;
-  const dateValid =
-    nonEmpty(value.date) &&
-    ISO_DATE.test(value.date) &&
-    !Number.isNaN(Date.parse(`${value.date}T00:00:00Z`));
-  const categoryValid =
-    Array.isArray(categories) &&
-    categories.length > 0 &&
-    categories.every(
-      (item) => typeof item === "string" && CATEGORIES.has(item),
-    );
-  const heroValid =
-    hero &&
-    nonEmpty(hero.image) &&
-    Object.keys(hero).every(
-      (key) => key === "image" || key === "hero_caption",
-    ) &&
-    (hero.hero_caption === undefined || nonEmpty(hero.hero_caption));
-  const visibilityValid =
-    value.visibility === "public" || value.visibility === "hidden";
-  const creditValid =
-    value.credits === undefined ||
-    (Array.isArray(value.credits) &&
-      value.credits.every((credit) => {
-        if (!credit || typeof credit !== "object" || Array.isArray(credit))
-          return false;
-        const item = credit as Record<string, unknown>;
-        return (
-          nonEmpty(item.role) &&
-          ((nonEmpty(item.person) && item.member === undefined) ||
-            (nonEmpty(item.member) && item.person === undefined))
-        );
-      }));
-  if (
-    unknown.length ||
-    !dateValid ||
-    !categoryValid ||
-    !heroValid ||
-    !visibilityValid ||
-    !creditValid ||
-    (value.author !== undefined && value.credits !== undefined) ||
-    (value.author !== undefined && !nonEmpty(value.author))
-  ) {
-    issues.push(
+  const result = journalSharedSchema.safeParse(parsed.value);
+  if (result.success) return { value: result.data, issues: [] };
+  return {
+    issues: [
       issue(contentId, {
         ruleId: "content.shared.structure",
         severity: "error",
         category: "structure",
         file,
         messageKey: "content.shared.invalid",
-        params: { unknownFields: unknown.join(",") },
+        params: {
+          fields: result.error.issues
+            .map((item) => item.path.join("."))
+            .filter(Boolean)
+            .join(","),
+        },
         recovery: { kind: "edit-source" },
       }),
-    );
-    return { issues };
-  }
-  return { value: value as JournalShared, issues };
+    ],
+  };
 }
 
 function parseMarkdown(
@@ -168,17 +92,8 @@ function parseMarkdown(
   }
   const parsed = parseYaml(match[1], contentId, file);
   if (parsed.error) return { issues: [{ ...parsed.error, locale }] };
-  const data = parsed.value as Record<string, unknown>;
-  const allowed = new Set(["title", "summary", "hero_alt"]);
-  if (
-    !data ||
-    typeof data !== "object" ||
-    Array.isArray(data) ||
-    Object.keys(data).some((key) => !allowed.has(key)) ||
-    !nonEmpty(data.title) ||
-    !nonEmpty(data.summary) ||
-    !nonEmpty(data.hero_alt)
-  ) {
+  const localized = journalLocalizedSchema.safeParse(parsed.value);
+  if (!localized.success) {
     return {
       issues: [
         issue(contentId, {
@@ -193,7 +108,7 @@ function parseMarkdown(
       ],
     };
   }
-  const value = { ...(data as JournalLocalized), body: match[2] };
+  const value = { ...localized.data, body: match[2] };
   const issues: ContentIssue[] = [];
   for (const [fieldPath, candidate] of Object.entries(value)) {
     if (typeof candidate === "string" && candidate.includes("__TODO_")) {
@@ -304,114 +219,3 @@ export async function loadJournalRepository(
     .sort();
   return Promise.all(directories.map(loadJournalUnit));
 }
-
-export function journalEntryId(contentId: string, locale: Locale): string {
-  return `${locale}::${contentId}`;
-}
-
-export function entriesFromUnits(units: LoadedJournalUnit[]): JournalEntry[] {
-  const entries: JournalEntry[] = [];
-  for (const unit of units) {
-    if (unit.shared.state !== "valid") continue;
-    for (const locale of LOCALES) {
-      const localized = unit.locales[locale];
-      if (localized.state !== "valid") continue;
-      const { body, ...data } = localized.value;
-      entries.push({
-        id: journalEntryId(unit.contentId, locale),
-        data: {
-          ...unit.shared.value,
-          ...data,
-          contentId: unit.contentId,
-          locale,
-        },
-        body,
-        filePath: path.join(unit.directory, `${locale}.md`),
-      });
-    }
-  }
-  return entries;
-}
-
-export function synchronizeEntryMap(
-  store: Map<string, JournalEntry>,
-  units: LoadedJournalUnit[],
-): void {
-  const entries = entriesFromUnits(units);
-  const nextIds = new Set(entries.map((entry) => entry.id));
-  for (const id of store.keys()) {
-    if (!nextIds.has(id)) store.delete(id);
-  }
-  for (const entry of entries) store.set(entry.id, entry);
-}
-
-function result(blockers: ContentIssue[], all: ContentIssue[]) {
-  return {
-    allowed: blockers.length === 0,
-    blockers,
-    warnings: all.filter((item) => item.severity === "warning"),
-  };
-}
-
-export function evaluateJournalCapabilities(
-  unit: LoadedJournalUnit,
-): ContentCapabilities {
-  const saveBlockers = unit.issues.filter(
-    (item) =>
-      item.category === "parse" ||
-      item.category === "structure" ||
-      item.category === "conflict" ||
-      item.category === "infrastructure",
-  );
-  const preview = (locale: Locale) =>
-    unit.issues.filter(
-      (item) =>
-        item.severity === "error" &&
-        (item.locale === locale || item.locale === undefined) &&
-        (item.category === "parse" ||
-          item.category === "structure" ||
-          item.category === "unit-integrity" ||
-          item.ruleId === "content.placeholder.unresolved"),
-    );
-  const publishBlockers = unit.issues.filter(
-    (item) => item.severity === "error",
-  );
-  return {
-    save: result(saveBlockers, unit.issues),
-    preview: {
-      ja: result(preview("ja"), unit.issues),
-      en: result(preview("en"), unit.issues),
-    },
-    publish: result(publishBlockers, unit.issues),
-  };
-}
-
-export function selectJournalForSurface(
-  entries: JournalEntry[],
-  units: LoadedJournalUnit[],
-  locale: Locale,
-  surface: Exclude<JournalSurface, "detail">,
-): JournalEntry[] {
-  const issuesById = new Map(
-    units.map((unit) => [unit.contentId, unit.issues]),
-  );
-  return queryJournalEntries(entries, locale).filter(
-    (entry) =>
-      decideJournalSurface(
-        entry,
-        issuesById.get(entry.data.contentId) ?? [],
-        surface,
-      ).kind === "render",
-  );
-}
-
-export function flattenForAstro(entry: JournalEntry): JournalEntryData {
-  return entry.data;
-}
-
-export {
-  decideJournalSurface,
-  findJournalEntry,
-  journalRouteRegistry,
-  queryJournalEntries,
-};

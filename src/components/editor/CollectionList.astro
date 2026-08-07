@@ -1,0 +1,39 @@
+---
+import type { EditorCollection } from "../../editor/shell";
+import { editorRoutes } from "../../editor/shell";
+
+interface Props {
+  collections: readonly EditorCollection[];
+}
+
+const { collections } = Astro.props;
+---
+
+<section class="editor-panel" aria-labelledby="collections-heading">
+  <div class="editor-panel__heading">
+    <div>
+      <p class="editor-eyebrow">Content</p>
+      <h2 id="collections-heading">Collections</h2>
+    </div>
+    <span class="editor-count">{collections.length}</span>
+  </div>
+
+  <ul class="editor-list">
+    {
+      collections.map((collection) => (
+        <li>
+          <a
+            class="editor-list-row"
+            href={editorRoutes.collection(collection.id)}
+          >
+            <span>
+              <strong>{collection.label}</strong>
+              <small>{collection.description}</small>
+            </span>
+            <span aria-hidden="true">→</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>

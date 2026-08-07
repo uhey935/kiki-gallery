@@ -1,0 +1,271 @@
+---
+import ActionBar from "../../../../components/editor/ActionBar.astro";
+import EntryDraftForm from "../../../../components/editor/EntryDraftForm.astro";
+import ValidationPanel from "../../../../components/editor/ValidationPanel.astro";
+import { createJournalEditorDraft } from "../../../../editor/journal-draft-state";
+import {
+  readJournalEditorEntry,
+  readJournalEditorState,
+} from "../../../../editor/journal-state";
+import EditorLayout from "../../../../layouts/EditorLayout.astro";
+
+export async function getStaticPaths() {
+  const state = await readJournalEditorState();
+  return Promise.all(
+    state.entries.map(async ({ contentId }) => ({
+      params: { contentId },
+      props: { entry: await readJournalEditorEntry(contentId) },
+    })),
+  );
+}
+
+const { entry } = Astro.props;
+const draft = createJournalEditorDraft(entry);
+const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
+---
+
+<EditorLayout title={entry.title} section="Journal">
+  <header class="editor-page-heading">
+    <p class="editor-eyebrow">Journal workspace</p>
+    <h1>{entry.title}</h1>
+    <p>{entry.contentId} · Canonical three-file editor</p>
+  </header>
+  <div class="editor-workspace">
+    <main class="editor-panel editor-canvas">
+      <EntryDraftForm draft={draft} />
+    </main>
+    <ValidationPanel entry={entry} />
+  </div>
+  <ActionBar
+    loaded
+    save={entry.capabilities.save}
+    preview={entry.capabilities.preview}
+    publish={entry.capabilities.publish}
+  />
+</EditorLayout>
+
+<script
+  type="application/json"
+  is:inline
+  id="journal-editor-draft"
+  set:html={serializedDraft}
+/>
+<script>
+  import {
+    isJournalEditorDraftDirty,
+    updateJournalEditorDraft,
+    validateJournalEditorDraft,
+    type JournalEditorDraftState,
+  } from "../../../../editor/journal-draft-state";
+
+  const serialized = document.querySelector<HTMLScriptElement>(
+    "#journal-editor-draft",
+  )?.textContent;
+  const form = document.querySelector<HTMLFormElement>(
+    "[data-editor-draft-form]",
+  );
+  const actionStatus = document.querySelector<HTMLElement>(
+    ".editor-action-bar > span",
+  );
+  const validation = document.querySelector<HTMLElement>(".editor-validation");
+  const saveButton = document.querySelector<HTMLButtonElement>(
+    "[data-save-journal]",
+  );
+  const publishButton = document.querySelector<HTMLButtonElement>(
+    "[data-publish-journal]",
+  );
+  const previewButtons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-preview-journal]"),
+  );
+
+  if (serialized && form) {
+    let initial = JSON.parse(serialized) as JournalEditorDraftState;
+    let current = initial;
+    for (const button of previewButtons) {
+      button.addEventListener("click", async () => {
+        const locale = button.dataset.previewJournal as "ja" | "en";
+        const previewWindow = window.open("", "_blank");
+        button.disabled = true;
+        if (actionStatus)
+          actionStatus.textContent = `Preparing ${locale.toUpperCase()} preview…`;
+        try {
+          const response = await fetch("/editor/api/journal-preview/create", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ draft: current, locale }),
+          });
+          const result = (await response.json()) as {
+            url?: string;
+            error?: string;
+          };
+          if (!response.ok || !result.url)
+            throw new Error(result.error ?? "Journal preview failed");
+          if (previewWindow) previewWindow.location.href = result.url;
+          else window.open(result.url, "_blank", "noopener");
+          if (actionStatus) actionStatus.textContent = "Draft preview opened";
+        } catch (error) {
+          previewWindow?.close();
+          if (actionStatus)
+            actionStatus.textContent =
+              error instanceof Error ? error.message : "Journal preview failed";
+        } finally {
+          button.disabled =
+            !validateJournalEditorDraft(current).capabilities.preview[locale];
+        }
+      });
+    }
+    saveButton?.addEventListener("click", async () => {
+      if (!isJournalEditorDraftDirty(initial, current)) return;
+      saveButton.disabled = true;
+      if (actionStatus) actionStatus.textContent = "Saving…";
+      try {
+        const response = await fetch(
+          `/editor/api/journal/${encodeURIComponent(current.contentId)}`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ draft: current, baseline: initial }),
+          },
+        );
+        const result = (await response.json()) as {
+          draft?: JournalEditorDraftState;
+          error?: string;
+        };
+        if (!response.ok || !result.draft)
+          throw new Error(result.error ?? "Journal save failed");
+        initial = result.draft;
+        current = result.draft;
+        if (actionStatus) actionStatus.textContent = "Saved to canonical files";
+      } catch (error) {
+        if (actionStatus)
+          actionStatus.textContent =
+            error instanceof Error ? error.message : "Journal save failed";
+      } finally {
+        const result = validateJournalEditorDraft(current);
+        saveButton.disabled =
+          !isJournalEditorDraftDirty(initial, current) ||
+          !result.capabilities.save;
+        if (publishButton)
+          publishButton.disabled = !result.capabilities.publish;
+      }
+    });
+    publishButton?.addEventListener("click", async () => {
+      const dirty = isJournalEditorDraftDirty(initial, current);
+      if (dirty || !validateJournalEditorDraft(current).capabilities.publish)
+        return;
+      publishButton.disabled = true;
+      if (actionStatus) actionStatus.textContent = "Publishing…";
+      try {
+        const response = await fetch(
+          `/editor/api/journal-publish/${encodeURIComponent(current.contentId)}`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ draft: current, dirty }),
+          },
+        );
+        const result = (await response.json()) as {
+          state?: "published" | "committed-push-failed";
+          commit?: string;
+          error?: string;
+        };
+        if (!response.ok || !result.state)
+          throw new Error(result.error ?? "Journal publish failed");
+        if (actionStatus)
+          actionStatus.textContent =
+            result.state === "published"
+              ? `Published ${result.commit?.slice(0, 7) ?? "commit"}`
+              : `Committed ${result.commit?.slice(0, 7) ?? "commit"}; push failed`;
+      } catch (error) {
+        if (actionStatus)
+          actionStatus.textContent =
+            error instanceof Error ? error.message : "Journal publish failed";
+      } finally {
+        publishButton.disabled =
+          isJournalEditorDraftDirty(initial, current) ||
+          !validateJournalEditorDraft(current).capabilities.publish;
+      }
+    });
+    form.addEventListener("input", (event) => {
+      const field = event.target as
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | HTMLSelectElement;
+      if (!field.name) return;
+      current = updateJournalEditorDraft(current, (next) => {
+        const [scope, key, nested] = field.name.split(".");
+        if (scope === "shared" && next.shared.state === "editable") {
+          const shared = next.shared.value;
+          if (key === "categories")
+            shared.categories = field.value
+              .split(",")
+              .map((value) => value.trim())
+              .filter(Boolean) as typeof shared.categories;
+          else if (key === "hero" && nested)
+            shared.hero[nested as "image" | "hero_caption"] =
+              field.value || (undefined as never);
+          else if (key === "author") shared.author = field.value || undefined;
+          else if (key === "date" || key === "visibility")
+            Object.assign(shared, { [key]: field.value });
+        } else if (
+          (scope === "ja" || scope === "en") &&
+          next.locales[scope].state === "editable"
+        ) {
+          Object.assign(next.locales[scope].value, { [key]: field.value });
+        }
+      });
+      if (actionStatus)
+        actionStatus.textContent = isJournalEditorDraftDirty(initial, current)
+          ? "Unsaved changes"
+          : "Draft matches canonical state";
+      const dirty = isJournalEditorDraftDirty(initial, current);
+      if (validation) {
+        const result = validateJournalEditorDraft(current);
+        const status = validation.querySelector<HTMLElement>(".editor-status")!;
+        const state = result.issues.length === 0 ? "valid" : "blocked";
+        status.textContent = state;
+        status.className = `editor-status editor-status--${state}`;
+        validation.querySelector<HTMLElement>(
+          "[data-issue-summary]",
+        )!.textContent =
+          result.issues.length === 0
+            ? "No draft issues"
+            : `${result.issues.length} draft issues`;
+        for (const locale of ["ja", "en"] as const) {
+          validation.querySelector<HTMLElement>(
+            `[data-preview-${locale}]`,
+          )!.textContent = result.capabilities.preview[locale]
+            ? "Available"
+            : "Blocked";
+          const previewButton = document.querySelector<HTMLButtonElement>(
+            `[data-preview-journal="${locale}"]`,
+          );
+          if (previewButton)
+            previewButton.disabled = !result.capabilities.preview[locale];
+        }
+        validation.querySelector<HTMLElement>("[data-publish]")!.textContent =
+          result.capabilities.publish ? "Available" : "Blocked";
+        validation.querySelector<HTMLElement>("[data-save]")!.textContent =
+          result.capabilities.save ? "Available" : "Blocked";
+        if (saveButton)
+          saveButton.disabled = !dirty || !result.capabilities.save;
+        if (publishButton)
+          publishButton.disabled = dirty || !result.capabilities.publish;
+        const issueList =
+          validation.querySelector<HTMLUListElement>("[data-issues]")!;
+        issueList.hidden = result.issues.length === 0;
+        issueList.replaceChildren(
+          ...result.issues.map((issue) => {
+            const item = document.createElement("li");
+            const severity = document.createElement("strong");
+            const message = document.createElement("small");
+            severity.textContent = issue.severity;
+            message.textContent = issue.messageKey;
+            item.append(severity, ` ${issue.ruleId}`, message);
+            return item;
+          }),
+        );
+      }
+    });
+  }
+</script>

@@ -1,15 +1,11 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection } from "astro:content";
-import { selectJournalIndexEntries } from "../../content-boundaries/journal";
+import { getJournalProductionFacade } from "../../content-boundaries/journal-production";
 
 /* =========================
    1. データ取得
 ========================= */
-const journal = selectJournalIndexEntries(
-  await getCollection("journal"),
-  "ja",
-);
+const journal = (await getJournalProductionFacade()).forIndex("ja");
 
 // 日付の表示用フォーマット（Template側で使用）
 const formatDate = (date: Date) =>

@@ -1,0 +1,20 @@
+---
+import type { EditorCollection } from "../../editor/shell";
+import CollectionList from "./CollectionList.astro";
+
+interface Props {
+  collections: readonly EditorCollection[];
+}
+
+const { collections } = Astro.props;
+---
+
+<div class="editor-dashboard">
+  <header class="editor-page-heading">
+    <p class="editor-eyebrow">Overview</p>
+    <h1>Dashboard</h1>
+    <p>Select a collection to enter its content workspace.</p>
+  </header>
+
+  <CollectionList collections={collections} />
+</div>

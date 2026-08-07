@@ -1,5 +1,7 @@
 # KiKi Gallery Cross-Architecture Review
 
+> Status: Historical pre-implementation review — gate satisfied and superseded for current-state claims. Production Journal consumers have migrated to the Production facade and prototype cleanup is complete. See [Journal Architecture — Current](./journal-architecture-current.md).
+
 Version: v1.0  
 Status: Prototype gate  
 Reviewed: 2026-08-06  

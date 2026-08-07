@@ -1,8 +1,10 @@
 # Journal Read-only Prototype Findings
 
 Date: 2026-08-06  
-Status: Implemented, verified, and reviewed for production migration  
-Scope: Journal-only prototype, completed production-consumer boundary migration, and post-migration consolidation audit
+Status: Historical evidence; implemented and superseded by Architecture Finalization
+Scope: Journal prototype evidence plus the completed production migration and cleanup record
+
+> Current authority: [Journal Architecture — Current](./journal-architecture-current.md). References below to a separate `journalPrototype` collection, `/prototype/journal/`, unchanged Production consumers, `npm run prototype:test`, or future prototype cleanup describe the state at the time of the experiment. The prototype collection/page/code and command have since been removed; all four Production consumers now use the Production facade.
 
 ## Result
 
@@ -10,7 +12,7 @@ The approved read-only boundaries are implementable with Astro 6. The prototype 
 
 Four fixtures prove public, hidden, missing-EN, and unresolved-EN-placeholder states. A missing or invalid locale does not discard its valid sibling. Issues contain facts only; the Journal Capability Evaluator separately derives Save, locale Preview, and Publish availability.
 
-## Proven boundaries
+## Proven prototype boundaries (historical)
 
 - The custom `journalPrototype` collection is separate from the production `journal` collection.
 - Entry data is flat and consumer-compatible while adding `contentId`, `locale`, and prototype-only `visibility`.
@@ -72,9 +74,9 @@ Both items can remain deferred without blocking the static production migration:
 
 These deferrals must not weaken the fixed requirements: a build starts from repository truth, data/body/identity changes invalidate the stored Entry, and delete/rename/valid-to-invalid transitions remove stale entries.
 
-## Staged Journal production migration plan
+## Staged Journal production migration plan (implemented)
 
-Each stage is a separate reviewable slice. Production consumers remain unchanged until its preceding data, route, and visibility tests pass.
+Each stage was delivered as a separate reviewable slice. The list is retained as the executed migration plan; all four stages are complete.
 
 1. **Journal Index**
    - Introduce the production three-file Journal collection, migration default `visibility: public`, private Entry ID helper, Query Adapter, Site Content Service, and Route Registry together.
@@ -105,7 +107,7 @@ After every slice, run focused boundary tests plus `astro check`, `astro build`,
 - Watcher listener accumulation may affect long-running development sessions. Escalate it from deferred to blocking only if the production Loader shows duplicate rescans, retained listeners, or unstable hot reload.
 - Non-canonical digest serialization may cause unnecessary Store updates across implementation/runtime changes. It becomes blocking only if it affects reproducible output or is proposed for a cross-process contract.
 
-## Deviations and exclusions
+## Deviations and exclusions at prototype completion
 
 There are no architecture-contract deviations. One isolated diagnostic page is generated so `astro build` executes the real render path; production Journal, Home, and News consumers are unchanged. No Save, Rename, Delete, Publish workflow, File Writer, Git Publisher, crawler behavior, full-collection migration, or UI work was added.
 
@@ -113,7 +115,7 @@ The prototype adds direct runtime dependency `yaml` and development dependency `
 
 ## Verification
 
-Run with a Node version accepted by Astro 6 (verified with Node 24.14.0):
+Historical prototype verification used a Node version accepted by Astro 6 (then verified with Node 24.14.0):
 
 ```text
 npm run prototype:test
@@ -126,6 +128,8 @@ Results on 2026-08-06:
 - Prototype tests: 7 passed, 0 failed.
 - Astro check: 0 errors, 0 warnings, 65 pre-existing/deprecation hints.
 - Astro build: successful, including `/prototype/journal/` and the existing static routes.
+
+`npm run prototype:test` and `/prototype/journal/` are historical names. After cleanup, use `npm run journal:test`; the current verification contract and Node version are recorded in [Journal Architecture — Current](./journal-architecture-current.md).
 
 ## Production migration: Journal Index
 
@@ -284,3 +288,21 @@ The production `journal` collection now uses `journalThreeFileLoader` and the ca
 There were no migration-contract deviations. The first local verification attempt used the machine default Node 20 and stopped before executing tests because that runtime does not support the configured TypeScript stripping flag; all reported verification used the already-installed compatible Node 22.22.1 runtime.
 
 Active-production equivalence is now proven, so prototype cleanup is safe as a separate next slice. It must remain separately reviewable and retain the production Loader fixtures and regression coverage.
+
+## Cleanup and Architecture Finalization result
+
+Implementation date: 2026-08-07
+Status: complete
+
+The cleanup and structural finalization described as future work in the earlier sections are complete:
+
+- the `journalPrototype` collection, `/prototype/journal/` page, prototype-only schema, and `src/prototype/journal/` code are removed;
+- `npm run prototype:test` is replaced by `npm run journal:test`;
+- the canonical schema is `src/content-loaders/journal/schema.ts` and is shared by the production collection, repository, and Entry adapter;
+- repository code is limited to source IO, parsing, normalization, and `LoadedJournalUnit` construction, with no Boundary dependency or re-export;
+- Capability evaluation, Entry adaptation, read-model construction, Production composition, surface policy, and routing have distinct owners in the dependency direction recorded by the current specification;
+- repository and Astro adapter Issues reach the Production facade through `JournalReadModel.issuesByContentId`; absent ownership fails fast instead of becoming an empty Issue set;
+- known `parseData` and Markdown content failures use `content.adapter.parse-data` and `content.adapter.markdown-render`; unexpected adapter failures stop the build;
+- Journal Index, Detail, Home Stories, and News integration all use `getJournalProductionFacade()`, and Journal route build/parse uses `journalRouteRegistry`.
+
+Final Architecture Finalization verification uses Node.js v22.22.1. The focused suite has 21 tests, the build produces 34 pages and 72 production files, and the accepted baseline/current SHA-256 manifests contain the same 72 relative paths and hashes. Full byte comparison is therefore identical. See [Journal Architecture — Current](./journal-architecture-current.md) for the maintained contract; preceding migration stages remain historical evidence rather than current instructions.

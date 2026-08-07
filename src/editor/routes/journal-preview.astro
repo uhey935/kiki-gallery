@@ -1,0 +1,82 @@
+---
+import { createMarkdownProcessor } from "@astrojs/markdown-remark";
+
+import type { Locale } from "../../content-loaders/journal/contracts";
+import { JournalPreviewError, journalPreviewStore } from "../journal-preview";
+import Layout from "../../layouts/Layout.astro";
+
+const { token, locale } = Astro.params;
+let preview;
+let previewError: string | undefined;
+try {
+  if (!token || (locale !== "ja" && locale !== "en")) {
+    throw new JournalPreviewError("Invalid preview URL", "preview-not-found");
+  }
+  preview = journalPreviewStore.read(token, locale as Locale);
+} catch (error) {
+  Astro.response.status =
+    error instanceof JournalPreviewError && error.code === "preview-expired"
+      ? 410
+      : 404;
+  previewError =
+    error instanceof Error ? error.message : "Preview state is unavailable";
+}
+const rendered = preview
+  ? await (await createMarkdownProcessor()).render(preview.body)
+  : undefined;
+---
+
+{
+  preview && rendered ? (
+    <Layout
+      title={`${preview.localized.title} · Draft Preview`}
+      description={preview.localized.summary}
+      image={preview.shared.hero.image}
+    >
+      <aside class="editor-preview-banner">
+        Draft preview · {preview.locale.toUpperCase()} · not saved
+      </aside>
+      <article class="article" lang={preview.locale}>
+        <figure class="article-hero">
+          <img
+            src={preview.shared.hero.image}
+            alt={preview.localized.hero_alt}
+          />
+          {preview.shared.hero.hero_caption && (
+            <figcaption>{preview.shared.hero.hero_caption}</figcaption>
+          )}
+        </figure>
+        <h1 class="article-title">{preview.localized.title}</h1>
+        <time class="article-date" datetime={preview.shared.date}>
+          {preview.shared.date}
+        </time>
+        <div class="article-body" set:html={rendered.code} />
+      </article>
+    </Layout>
+  ) : (
+    <main class="editor-preview-error">
+      <h1>Draft preview unavailable</h1>
+      <p>{previewError}</p>
+    </main>
+  )
+}
+
+<style>
+  .editor-preview-banner {
+    position: sticky;
+    z-index: 10;
+    top: 0;
+    padding: 10px 20px;
+    background: #fff4c2;
+    color: #594c18;
+    text-align: center;
+    font:
+      600 0.78rem/1.4 system-ui,
+      sans-serif;
+  }
+  .editor-preview-error {
+    margin: 10vh auto;
+    width: min(640px, calc(100% - 40px));
+    font-family: system-ui, sans-serif;
+  }
+</style>

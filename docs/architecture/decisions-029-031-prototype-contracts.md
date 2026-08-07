@@ -1,5 +1,7 @@
 # KiKi Gallery Prototype Boundary Contracts
 
+> Status: Historical decision record — implemented. The read-only prototype gate is closed and the prototype artifacts are removed. See [Journal Architecture — Current](./journal-architecture-current.md) for the implemented architecture and current commands. Sections describing future production migration are retained as decision context and are superseded where the current specification differs.
+
 Version: v1.0  
 Status: Approved for Journal read-only prototype  
 Last Updated: 2026-08-06  

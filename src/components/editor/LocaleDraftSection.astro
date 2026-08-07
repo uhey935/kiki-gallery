@@ -1,0 +1,59 @@
+---
+import type { Locale } from "../../content-loaders/journal/contracts";
+import type { JournalLocalized } from "../../content-loaders/journal/schema";
+import type { JournalEditorDraftSource } from "../../editor/journal-draft-state";
+
+interface Props {
+  locale: Locale;
+  source: JournalEditorDraftSource<JournalLocalized & { body: string }>;
+}
+
+const { locale, source } = Astro.props;
+---
+
+<section class="editor-entry-section">
+  <header>
+    <div>
+      <p class="editor-eyebrow">Draft locale</p><h2>{locale.toUpperCase()}</h2>
+    </div>
+    <span class="editor-status">{source.state}</span>
+  </header>
+  <div class="editor-entry-section__content">
+    {
+      source.state === "editable" ? (
+        <div class="editor-field-grid">
+          <label class="editor-field-wide">
+            Title
+            <input name={`${locale}.title`} value={source.value.title} />
+          </label>
+          <label class="editor-field-wide">
+            Summary
+            <textarea
+              name={`${locale}.summary`}
+              rows="3"
+              set:text={source.value.summary}
+            />
+          </label>
+          <label class="editor-field-wide">
+            Hero alt
+            <input name={`${locale}.hero_alt`} value={source.value.hero_alt} />
+          </label>
+          <label class="editor-field-wide">
+            Markdown body
+            <textarea
+              class="editor-markdown-input"
+              name={`${locale}.body`}
+              rows="14"
+              set:text={source.value.body}
+            />
+          </label>
+        </div>
+      ) : (
+        <p>
+          Locale source is {source.sourceState}; structured editing is
+          unavailable.
+        </p>
+      )
+    }
+  </div>
+</section>

@@ -1,5 +1,7 @@
 # KiKi Gallery Loader Architecture Specification
 
+> Implementation status (2026-08-07): the Journal read architecture is implemented. Prototype-dependent current-state details, including canonical schema sharing, Issue transport, adapter failure taxonomy, read-model composition, Production facade use, and cleanup, are governed by [Journal Architecture — Current](./journal-architecture-current.md). Remaining “prototype” language in this specification records the design-time contract or deferred non-blocking work.
+
 Version: v1.0 Draft  
 Status: Draft for implementation review  
 Last Updated: 2026-08-05  

@@ -3,18 +3,22 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { stringify } from "yaml";
+import { loadJournalRepository } from "./repository.ts";
+import { entriesFromUnits } from "./entry-adapter.ts";
+import { evaluateJournalCapabilities } from "./capabilities.ts";
 import {
-  decideJournalSurface,
-  entriesFromUnits,
-  evaluateJournalCapabilities,
+  createJournalProductionFacade,
   findJournalEntry,
   journalRouteRegistry,
-  loadJournalRepository,
   queryJournalEntries,
-  selectJournalForSurface,
-  synchronizeEntryMap,
-} from "./repository.ts";
-import { synchronizeJournalStore } from "./astro-loader.ts";
+} from "../../content-boundaries/journal.ts";
+import { createJournalReadModel } from "../../content-services/journal-read-model.ts";
+import {
+  JournalAdapterFailure,
+  synchronizeJournalStore,
+} from "./astro-loader.ts";
+import { journalSchema } from "./schema.ts";
 
 const fixtures = path.resolve("src/content-loaders/journal/fixtures");
 
@@ -40,7 +44,82 @@ test("loads three-file units as locale entries and retains raw Markdown", async 
   );
 });
 
-test("production fixtures report broken shared data without creating stale entries", async () => {
+test("repository and canonical Astro schema accept the same integrated entries", async () => {
+  const shared = {
+    date: "2026-01-31",
+    categories: ["interview"],
+    hero: { image: "/images/journal/parity.jpg" },
+    author: "valid-author",
+    visibility: "public",
+  };
+  const localized = {
+    title: "Parity test",
+    summary: "Canonical schema parity",
+    hero_alt: "Parity test image",
+  };
+  const cases = [
+    { name: "valid entry", shared },
+    {
+      name: "invalid calendar date",
+      shared: { ...shared, date: "2026-02-30" },
+    },
+    {
+      name: "invalid author slug",
+      shared: { ...shared, author: "Invalid Author" },
+    },
+    {
+      name: "unknown credit field",
+      shared: {
+        ...shared,
+        author: undefined,
+        credits: [
+          { role: "Photography", person: "valid-author", note: "unknown" },
+        ],
+      },
+    },
+    {
+      name: "author and credits together",
+      shared: {
+        ...shared,
+        credits: [{ role: "Photography", person: "valid-author" }],
+      },
+    },
+  ];
+
+  for (const parityCase of cases) {
+    const temporaryRoot = await fs.mkdtemp(
+      path.join(os.tmpdir(), "kiki-journal-schema-parity-"),
+    );
+    const directory = path.join(temporaryRoot, "schema-parity");
+    try {
+      await fs.mkdir(directory);
+      await fs.writeFile(
+        path.join(directory, "index.yaml"),
+        stringify(parityCase.shared),
+      );
+      const markdown = `---\n${stringify(localized)}---\nBody\n`;
+      await Promise.all(
+        ["ja", "en"].map((locale) =>
+          fs.writeFile(path.join(directory, `${locale}.md`), markdown),
+        ),
+      );
+
+      const units = await loadJournalRepository(temporaryRoot);
+      const repositoryAccepted = entriesFromUnits(units).length === 2;
+      const schemaAccepted = journalSchema.safeParse({
+        ...parityCase.shared,
+        ...localized,
+        contentId: "schema-parity",
+        locale: "ja",
+      }).success;
+      assert.equal(repositoryAccepted, schemaAccepted, parityCase.name);
+    } finally {
+      await fs.rm(temporaryRoot, { recursive: true, force: true });
+    }
+  }
+});
+
+test("journal fixtures report broken shared data without creating stale entries", async () => {
   const units = await loadJournalRepository(fixtures);
   const broken = units.find((unit) => unit.contentId === "broken-shared")!;
   assert.equal(broken.shared.state, "invalid");
@@ -99,27 +178,41 @@ test("query adapter filters locales, finds by Content ID, and sorts stably", asy
   );
 });
 
-test("Site Content Service owns all four Journal surface decisions", async () => {
+test("Production facade transports repository issues to all four Journal surfaces", async () => {
   const units = await loadJournalRepository(fixtures);
   const entries = entriesFromUnits(units);
-  for (const surface of [
-    "index",
-    "home-stories",
-    "news-integration",
-  ] as const) {
+  const production = createJournalProductionFacade(
+    createJournalReadModel(entries, units),
+  );
+  for (const select of [
+    production.forIndex,
+    production.forDetail,
+    production.forHomeStories,
+    production.forNewsIntegration,
+  ]) {
     assert.deepEqual(
-      selectJournalForSurface(entries, units, "en", surface).map(
-        (entry) => entry.data.contentId,
-      ),
+      select("en").map((entry) => entry.data.contentId),
       ["valid-public"],
     );
+    assert.deepEqual(
+      select("ja").map((entry) => entry.data.contentId),
+      ["valid-public", "missing-en", "placeholder-en"],
+    );
   }
-  const hidden = findJournalEntry(entries, "ja", "hidden")!;
-  const hiddenUnit = units.find((unit) => unit.contentId === "hidden")!;
-  assert.deepEqual(decideJournalSurface(hidden, hiddenUnit.issues, "detail"), {
-    kind: "unavailable",
-    reason: "hidden",
-  });
+
+  assert.ok(
+    units
+      .find((unit) => unit.contentId === "placeholder-en")
+      ?.issues.some(
+        (issue) => issue.ruleId === "content.placeholder.unresolved",
+      ),
+  );
+  assert.equal(
+    production
+      .forDetail("ja")
+      .some((entry) => entry.data.contentId === "hidden"),
+    false,
+  );
 });
 
 test("Route Registry normalizes generated routes and accepts either trailing-slash input", () => {
@@ -134,36 +227,6 @@ test("Route Registry normalizes generated routes and accepts either trailing-sla
   assert.deepEqual(journalRouteRegistry.parse("/en/journal/valid-public/"), en);
   assert.deepEqual(journalRouteRegistry.parse("/journal/valid-public"), ja);
   assert.equal(journalRouteRegistry.parse("/news/valid-public/"), undefined);
-});
-
-test("full-set synchronization removes delete, rename, and valid-to-invalid stale entries", async () => {
-  const temporaryRoot = await fs.mkdtemp(
-    path.join(os.tmpdir(), "kiki-journal-prototype-"),
-  );
-  try {
-    await fs.cp(fixtures, temporaryRoot, { recursive: true });
-    const store = new Map();
-    synchronizeEntryMap(store, await loadJournalRepository(temporaryRoot));
-    assert.ok(store.has("ja::valid-public"));
-    await fs.rm(path.join(temporaryRoot, "valid-public"), { recursive: true });
-    synchronizeEntryMap(store, await loadJournalRepository(temporaryRoot));
-    assert.equal(store.has("ja::valid-public"), false);
-    await fs.rename(
-      path.join(temporaryRoot, "hidden"),
-      path.join(temporaryRoot, "hidden-renamed"),
-    );
-    synchronizeEntryMap(store, await loadJournalRepository(temporaryRoot));
-    assert.equal(store.has("ja::hidden"), false);
-    assert.ok(store.has("ja::hidden-renamed"));
-    await fs.writeFile(
-      path.join(temporaryRoot, "missing-en", "index.yaml"),
-      "date: [broken",
-    );
-    synchronizeEntryMap(store, await loadJournalRepository(temporaryRoot));
-    assert.equal(store.has("ja::missing-en"), false);
-  } finally {
-    await fs.rm(temporaryRoot, { recursive: true, force: true });
-  }
 });
 
 test("Astro Store synchronization removes stale entries after repository changes", async () => {
@@ -203,37 +266,158 @@ test("Astro Store synchronization removes stale entries after repository changes
   }
 });
 
-test("consumer harness can map Index, Detail, Home, News, and parsed News references", async () => {
+test("parseData content failure becomes a render-blocking owned Issue", async () => {
+  const records = new Map<string, { id: string }>();
+  const parseFailure = new Error("Astro schema rejected source data");
+  parseFailure.name = "InvalidContentEntryDataError";
+  const context = {
+    store: {
+      keys: () => records.keys(),
+      delete: (id: string) => records.delete(id),
+      set: (entry: { id: string }) => records.set(entry.id, entry),
+    },
+    parseData: async ({ id, data }: { id: string; data: unknown }) => {
+      if (id === "en::valid-public") throw parseFailure;
+      return data;
+    },
+    renderMarkdown: async () => ({ metadata: { imagePaths: [] } }),
+    generateDigest: (value: string) => value,
+    config: { root: new URL(`file://${process.cwd()}/`) },
+  };
+
+  const units = await synchronizeJournalStore(context as never, fixtures);
+  const unit = units.find(
+    (candidate) => candidate.contentId === "valid-public",
+  )!;
+  const failure = unit.issues.find(
+    (issue) => issue.ruleId === "content.adapter.parse-data",
+  );
+  assert.deepEqual(
+    {
+      contentId: failure?.contentId,
+      locale: failure?.locale,
+      stage: failure?.stage,
+      severity: failure?.severity,
+      renderBlocking: failure?.renderBlocking,
+      diagnostic: failure?.diagnostic,
+    },
+    {
+      contentId: "valid-public",
+      locale: "en",
+      stage: "parseData",
+      severity: "error",
+      renderBlocking: true,
+      diagnostic: {
+        name: "InvalidContentEntryDataError",
+        message: "Astro schema rejected source data",
+      },
+    },
+  );
+  assert.equal(records.has("en::valid-public"), false);
+  const production = createJournalProductionFacade(
+    createJournalReadModel(entriesFromUnits(units), units),
+  );
+  assert.equal(
+    production
+      .forIndex("en")
+      .some((entry) => entry.data.contentId === "valid-public"),
+    false,
+  );
+  assert.ok(
+    production
+      .forIndex("ja")
+      .some((entry) => entry.data.contentId === "valid-public"),
+  );
+});
+
+test("Markdown content failure becomes a locale-scoped adapter Issue", async () => {
+  const records = new Map<string, { id: string }>();
+  const markdownFailure = Object.assign(new Error("Broken Markdown source"), {
+    type: "MarkdownError",
+  });
+  const context = {
+    store: {
+      keys: () => records.keys(),
+      delete: (id: string) => records.delete(id),
+      set: (entry: { id: string }) => records.set(entry.id, entry),
+    },
+    parseData: async ({ data }: { data: unknown }) => data,
+    renderMarkdown: async (_body: string, options: { fileURL: URL }) => {
+      if (options.fileURL.pathname.endsWith("/valid-public/ja.md")) {
+        throw markdownFailure;
+      }
+      return { metadata: { imagePaths: [] } };
+    },
+    generateDigest: (value: string) => value,
+    config: { root: new URL(`file://${process.cwd()}/`) },
+  };
+
+  const units = await synchronizeJournalStore(context as never, fixtures);
+  const failure = units
+    .find((unit) => unit.contentId === "valid-public")
+    ?.issues.find(
+      (issue) => issue.ruleId === "content.adapter.markdown-render",
+    );
+  assert.equal(failure?.locale, "ja");
+  assert.equal(failure?.stage, "render");
+  assert.equal(failure?.diagnostic?.message, "Broken Markdown source");
+  assert.equal(records.has("ja::valid-public"), false);
+  assert.equal(records.has("en::valid-public"), true);
+});
+
+test("unexpected adapter failure is contextualized and fails fast", async () => {
+  const context = {
+    store: {
+      keys: () => [][Symbol.iterator](),
+      delete: () => false,
+      set: () => undefined,
+    },
+    parseData: async ({ id, data }: { id: string; data: unknown }) => {
+      if (id === "ja::valid-public") throw new TypeError("adapter bug");
+      return data;
+    },
+    renderMarkdown: async () => ({ metadata: { imagePaths: [] } }),
+    generateDigest: (value: string) => value,
+    config: { root: new URL(`file://${process.cwd()}/`) },
+  };
+
+  await assert.rejects(
+    synchronizeJournalStore(context as never, fixtures),
+    (error: unknown) => {
+      assert.ok(error instanceof JournalAdapterFailure);
+      assert.equal(error.contentId, "valid-public");
+      assert.equal(error.locale, "ja");
+      assert.equal(error.stage, "parseData");
+      assert.match(error.message, /TypeError: adapter bug/);
+      return true;
+    },
+  );
+});
+
+test("Production facade and Route Registry cover all consumer integration paths", async () => {
   const units = await loadJournalRepository(fixtures);
   const entries = entriesFromUnits(units);
-  const index = selectJournalForSurface(entries, units, "ja", "index").map(
-    (entry) => ({
-      title: entry.data.title,
-      href: journalRouteRegistry.build({
-        collection: "journal",
-        contentId: entry.data.contentId,
-        locale: "ja",
-      }),
+  const production = createJournalProductionFacade(
+    createJournalReadModel(entries, units),
+  );
+  const index = production.forIndex("ja").map((entry) => ({
+    title: entry.data.title,
+    href: journalRouteRegistry.build({
+      collection: "journal",
+      contentId: entry.data.contentId,
+      locale: "ja",
     }),
-  );
-  const detail = findJournalEntry(entries, "ja", "valid-public");
-  const home = selectJournalForSurface(
-    entries,
-    units,
-    "ja",
-    "home-stories",
-  ).slice(0, 6);
-  const news = selectJournalForSurface(
-    entries,
-    units,
-    "ja",
-    "news-integration",
-  );
+  }));
+  const detail = production
+    .forDetail("ja")
+    .find((entry) => entry.data.contentId === "valid-public");
+  const home = production.forHomeStories("ja").slice(0, 6);
+  const news = production.forNewsIntegration("ja");
   const parsedReference = journalRouteRegistry.parse(index[0].href);
   const referenced =
     parsedReference &&
     findJournalEntry(
-      entries,
+      production.forNewsIntegration(parsedReference.locale),
       parsedReference.locale,
       parsedReference.contentId,
     );

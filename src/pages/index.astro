@@ -9,11 +9,8 @@ import {
 } from "../utils/exhibitionDisplay";
 import { getExhibitionStatus } from "../utils/exhibitionStatus";
 import { resolveNewsImage } from "../utils/resolveNewsImage";
-import {
-  journalRouteRegistry,
-  selectJournalHomeStoryEntries,
-  selectJournalNewsIntegrationEntries,
-} from "../content-boundaries/journal";
+import { journalRouteRegistry } from "../content-boundaries/journal";
+import { getJournalProductionFacade } from "../content-boundaries/journal-production";
 
 /* =========================
    Home
@@ -31,7 +28,7 @@ if (!home) {
 
 const exhibitions = await getCollection("exhibitions");
 const artists = await getCollection("artists");
-const journal = await getCollection("journal");
+const journal = await getJournalProductionFacade();
 const news = await getCollection("news");
 
 /* =========================
@@ -44,7 +41,7 @@ const newsImageCollections = {
     exhibitions.map((exhibition) => [exhibition.id, exhibition]),
   ),
   artists: artistMap,
-  journal: selectJournalNewsIntegrationEntries(journal, "ja"),
+  journal: journal.forNewsIntegration("ja"),
 };
 
 const SEPARATOR = "、";
@@ -125,7 +122,8 @@ const newsStories = news
   })
   .filter((item) => item !== null);
 
-const journalStories = selectJournalHomeStoryEntries(journal, "ja")
+const journalStories = journal
+  .forHomeStories("ja")
   .filter((item) => item.data.hero.image && item.data.categories?.length)
   .map((item) => ({
     id: item.data.contentId,

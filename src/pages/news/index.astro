@@ -1,10 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
-import {
-  journalRouteRegistry,
-  selectJournalNewsIntegrationEntries,
-} from "../../content-boundaries/journal";
+import { journalRouteRegistry } from "../../content-boundaries/journal";
+import { getJournalProductionFacade } from "../../content-boundaries/journal-production";
 
 // 1. 型定義
 type NewsItem = {
@@ -17,9 +15,9 @@ type NewsItem = {
 };
 
 // 2. データ取得
-const [news, journal] = await Promise.all([
+const [news, journalContent] = await Promise.all([
   getCollection("news"),
-  getCollection("journal"),
+  getJournalProductionFacade(),
 ]);
 
 // 3. Newsの整形
@@ -33,21 +31,20 @@ const newsItems: NewsItem[] = news.map((item) => ({
 }));
 
 // 4. Journalの整形
-const journalItems: NewsItem[] = selectJournalNewsIntegrationEntries(
-  journal,
-  "ja",
-).map((item) => ({
-  id: item.data.contentId,
-  href: journalRouteRegistry.build({
-    collection: "journal",
-    contentId: item.data.contentId,
-    locale: "ja",
-  }),
-  title: item.data.title,
-  date: new Date(item.data.date),
-  type: "Journal",
-  summary: item.data.summary,
-}));
+const journalItems: NewsItem[] = journalContent
+  .forNewsIntegration("ja")
+  .map((item) => ({
+    id: item.data.contentId,
+    href: journalRouteRegistry.build({
+      collection: "journal",
+      contentId: item.data.contentId,
+      locale: "ja",
+    }),
+    title: item.data.title,
+    date: new Date(item.data.date),
+    type: "Journal",
+    summary: item.data.summary,
+  }));
 
 // 5. 統合 + ソート
 const sortedItems: NewsItem[] = [...newsItems, ...journalItems].sort(

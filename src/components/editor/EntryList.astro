@@ -1,0 +1,64 @@
+---
+import { editorRoutes } from "../../editor/shell";
+import type { JournalEditorEntrySummary } from "../../editor/journal-state";
+
+interface Props {
+  collectionId: string;
+  collectionLabel: string;
+  entries: JournalEditorEntrySummary[];
+}
+
+const { collectionId, collectionLabel, entries } = Astro.props;
+---
+
+<section class="editor-panel" aria-labelledby="entries-heading">
+  <div class="editor-panel__heading">
+    <div>
+      <p class="editor-eyebrow">{collectionLabel}</p>
+      <h2 id="entries-heading">Entries</h2>
+    </div>
+    <span class="editor-count">{entries.length} entries</span>
+  </div>
+
+  <ul class="editor-list">
+    {
+      entries.map((entry) => (
+        <li>
+          <a
+            class="editor-list-row"
+            href={editorRoutes.workspace(collectionId, entry.contentId)}
+          >
+            <div>
+              <strong>{entry.title}</strong>
+              <small>
+                {entry.contentId} · {entry.date ?? "Invalid shared data"}
+              </small>
+            </div>
+            <div class="editor-entry-meta">
+              <small>
+                JA {entry.localeStatus.ja} · EN {entry.localeStatus.en}
+              </small>
+              <span
+                class:list={[
+                  "editor-status",
+                  entry.structuralStatus === "valid"
+                    ? "editor-status--valid"
+                    : "editor-status--blocked",
+                ]}
+              >
+                {entry.structuralStatus === "valid"
+                  ? "Ready"
+                  : `${entry.issueCount} issues`}
+              </span>
+            </div>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="editor-panel__footer">
+    <small>Repository content is read-only in this phase.</small>
+    <span>Select an entry to open its workspace.</span>
+  </div>
+</section>

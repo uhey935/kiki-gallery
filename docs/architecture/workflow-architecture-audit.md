@@ -1,5 +1,7 @@
 # KiKi Gallery Editor Workflow Architecture Audit
 
+> Journal read-path status (2026-08-07): statements in this audit that the Journal prototype gate, strict schema, or Production consumer migration remain pending are historical. Those read-only requirements are implemented and superseded by [Journal Architecture — Current](./journal-architecture-current.md). Editor mutation workflows audited here remain unimplemented and in scope for the next phase.
+
 Version: v1.0  
 Status: Pre-implementation audit  
 Last Updated: 2026-08-06  

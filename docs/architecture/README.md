@@ -14,6 +14,7 @@ The documents are designed to be read in the following order.
 
 | Document                              | Purpose                                                                                            |
 | ------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Journal Architecture — Current**    | Current authority for the implemented Journal read path and production boundaries.                |
 | **Content Model Specification**       | Defines the canonical content architecture and data model.                                         |
 | **Loader Architecture Specification** | Defines how Content Units are loaded and adapted for Astro while preserving validation boundaries. |
 | **Workflow Architecture Audit**       | Audits Editor save, rename, removal, and Git publish workflows before implementation.              |
@@ -26,6 +27,12 @@ The documents are designed to be read in the following order.
 ---
 
 ## Documents
+
+### Journal Architecture — Current
+
+**journal-architecture-current.md**
+
+Defines the implemented Journal canonical schema, Issue transport, Astro adapter failure taxonomy, dependency direction, Production facade, Route Registry use, prototype cleanup, and production-equivalence verification. Read this before the dated prototype and migration records.
 
 ### Content Model Specification
 
@@ -188,6 +195,7 @@ These principles are shared across all architectural documents.
 docs/
 └── architecture/
     ├── README.md
+    ├── journal-architecture-current.md
     ├── content-model-specification.md
     ├── loader-architecture-specification-v1.0.md
     ├── workflow-architecture-audit.md

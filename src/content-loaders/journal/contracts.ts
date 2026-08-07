@@ -1,3 +1,14 @@
+import type {
+  JournalEntryData,
+  JournalLocalized,
+  JournalShared,
+} from "./schema.ts";
+export type {
+  JournalEntryData,
+  JournalLocalized,
+  JournalShared,
+} from "./schema.ts";
+
 export type Locale = "ja" | "en";
 export type Visibility = "public" | "hidden";
 
@@ -11,12 +22,19 @@ export type ContentIssue = {
     | "repository-integrity"
     | "content-quality"
     | "conflict"
+    | "adapter"
     | "infrastructure";
   collection?: string;
   contentId?: string;
   locale?: Locale;
   file?: string;
   fieldPath?: string;
+  stage?: "parseData" | "render";
+  renderBlocking?: boolean;
+  diagnostic?: {
+    name: string;
+    message: string;
+  };
   messageKey: string;
   params?: Record<string, string | number | boolean>;
   recovery?: {
@@ -29,27 +47,6 @@ export type ContentIssue = {
       | "manual-review";
     fieldPath?: string;
   };
-};
-
-export type JournalCredit = {
-  role: string;
-  person?: string;
-  member?: string;
-};
-
-export type JournalShared = {
-  date: string;
-  categories: Array<"interview" | "essay" | "report">;
-  hero: { image: string; hero_caption?: string };
-  author?: string;
-  credits?: JournalCredit[];
-  visibility: Visibility;
-};
-
-export type JournalLocalized = {
-  title: string;
-  summary: string;
-  hero_alt: string;
 };
 
 export type SourceState<T> =
@@ -65,12 +62,6 @@ export type LoadedJournalUnit = {
   issues: ContentIssue[];
 };
 
-export type JournalEntryData = JournalShared &
-  JournalLocalized & {
-    contentId: string;
-    locale: Locale;
-  };
-
 export type JournalEntry = {
   id: string;
   data: JournalEntryData;
@@ -78,16 +69,4 @@ export type JournalEntry = {
   filePath?: string;
   digest?: string;
   rendered?: unknown;
-};
-
-export type CapabilityResult = {
-  allowed: boolean;
-  blockers: ContentIssue[];
-  warnings: ContentIssue[];
-};
-
-export type ContentCapabilities = {
-  save: CapabilityResult;
-  preview: Record<Locale, CapabilityResult>;
-  publish: CapabilityResult;
 };

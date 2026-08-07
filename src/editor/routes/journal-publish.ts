@@ -1,0 +1,44 @@
+import type { APIRoute } from "astro";
+
+import type { JournalEditorDraftState } from "../journal-draft-state.ts";
+import {
+  JournalPublishError,
+  publishSavedJournalEntry,
+} from "../journal-publish.ts";
+
+export const POST: APIRoute = async ({ params, request }) => {
+  try {
+    const body = (await request.json()) as {
+      draft?: JournalEditorDraftState;
+      dirty?: boolean;
+    };
+    if (
+      !params.contentId ||
+      !body?.draft ||
+      body.draft.contentId !== params.contentId ||
+      typeof body.dirty !== "boolean"
+    ) {
+      return Response.json(
+        { error: "Invalid publish request" },
+        { status: 400 },
+      );
+    }
+    return Response.json(
+      await publishSavedJournalEntry(body.draft, body.dirty),
+    );
+  } catch (error) {
+    const status =
+      error instanceof SyntaxError || error instanceof JournalPublishError
+        ? 400
+        : 500;
+    return Response.json(
+      {
+        error:
+          error instanceof Error ? error.message : "Journal publish failed",
+        code:
+          error instanceof JournalPublishError ? error.code : "publish-failed",
+      },
+      { status },
+    );
+  }
+};

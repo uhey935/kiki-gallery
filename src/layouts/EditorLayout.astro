@@ -1,0 +1,36 @@
+---
+import "../styles/editor.css";
+import { editorRoutes } from "../editor/shell";
+
+interface Props {
+  title: string;
+  section?: string;
+}
+
+const { title, section } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} | KiKi Editor</title>
+  </head>
+  <body class="editor-body">
+    <div class="editor-shell">
+      <header class="editor-header">
+        <a class="editor-brand" href={editorRoutes.dashboard}
+          >KiKi <span>Editor</span></a
+        >
+        <nav aria-label="Editor navigation">
+          <a href={editorRoutes.dashboard}>Dashboard</a>
+          {section && <span>{section}</span>}
+        </nav>
+        <span class="editor-environment">Local workspace</span>
+      </header>
+      <main class="editor-main"><slot /></main>
+    </div>
+  </body>
+</html>

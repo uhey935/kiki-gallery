@@ -1,3 +1,9 @@
+import type {
+  JournalReadModel,
+  JournalReadModelEntry,
+  JournalReadModelIssue,
+} from "../content-services/journal-read-model.ts";
+
 export type JournalLocale = "ja" | "en";
 export type JournalVisibility = "public" | "hidden";
 
@@ -8,20 +14,23 @@ export type JournalIndexData = {
   date: string;
 };
 
-export type JournalIndexEntry = {
-  data: JournalIndexData;
-};
-
-export type JournalIndexIssue = {
-  severity: "error" | "warning" | "info";
-  locale?: JournalLocale;
-};
+export type JournalIndexEntry = JournalReadModelEntry;
+export type JournalIndexIssue = JournalReadModelIssue;
 
 export type JournalSurface =
   | "index"
   | "detail"
   | "home-stories"
   | "news-integration";
+
+export type { JournalReadModel };
+
+export type JournalProductionFacade<T extends JournalIndexEntry> = {
+  forIndex(locale: JournalLocale): T[];
+  forDetail(locale: JournalLocale): T[];
+  forHomeStories(locale: JournalLocale): T[];
+  forNewsIntegration(locale: JournalLocale): T[];
+};
 
 export type JournalRenderDecision<T extends JournalIndexEntry> =
   | { kind: "render"; entry: T }
@@ -89,7 +98,7 @@ export function findJournalEntry<T extends JournalIndexEntry>(
   );
 }
 
-export function isJournalRenderable(
+function isJournalRenderable(
   entry: JournalIndexEntry,
   issues: JournalIndexIssue[],
 ): boolean {
@@ -100,7 +109,7 @@ export function isJournalRenderable(
   );
 }
 
-export function decideJournalSurface<T extends JournalIndexEntry>(
+function decideJournalSurface<T extends JournalIndexEntry>(
   entry: T,
   issues: JournalIndexIssue[],
   surface: JournalSurface,
@@ -122,56 +131,32 @@ function selectJournalForSurface<T extends JournalIndexEntry>(
   surface: JournalSurface,
   issuesByContentId: ReadonlyMap<string, JournalIndexIssue[]>,
 ): T[] {
-  return queryJournalEntries(entries, locale).filter(
-    (entry) =>
-      decideJournalSurface(
-        entry,
-        issuesByContentId.get(entry.data.contentId) ?? [],
-        surface,
-      ).kind === "render",
-  );
+  return queryJournalEntries(entries, locale).filter((entry) => {
+    const issues = issuesByContentId.get(entry.data.contentId);
+    if (!issues) {
+      throw new Error(
+        `Missing Journal issues for Content ID: ${entry.data.contentId}`,
+      );
+    }
+    return decideJournalSurface(entry, issues, surface).kind === "render";
+  });
 }
 
-export function selectJournalIndexEntries<T extends JournalIndexEntry>(
-  entries: T[],
-  locale: JournalLocale,
-  issuesByContentId: ReadonlyMap<string, JournalIndexIssue[]> = new Map(),
-): T[] {
-  return selectJournalForSurface(entries, locale, "index", issuesByContentId);
-}
+export function createJournalProductionFacade<T extends JournalIndexEntry>(
+  readModel: JournalReadModel<T>,
+): JournalProductionFacade<T> {
+  const select = (locale: JournalLocale, surface: JournalSurface) =>
+    selectJournalForSurface(
+      readModel.entries,
+      locale,
+      surface,
+      readModel.issuesByContentId,
+    );
 
-export function selectJournalDetailEntries<T extends JournalIndexEntry>(
-  entries: T[],
-  locale: JournalLocale,
-  issuesByContentId: ReadonlyMap<string, JournalIndexIssue[]> = new Map(),
-): T[] {
-  return selectJournalForSurface(entries, locale, "detail", issuesByContentId);
-}
-
-export function selectJournalHomeStoryEntries<T extends JournalIndexEntry>(
-  entries: T[],
-  locale: JournalLocale,
-  issuesByContentId: ReadonlyMap<string, JournalIndexIssue[]> = new Map(),
-): T[] {
-  return selectJournalForSurface(
-    entries,
-    locale,
-    "home-stories",
-    issuesByContentId,
-  );
-}
-
-export function selectJournalNewsIntegrationEntries<
-  T extends JournalIndexEntry,
->(
-  entries: T[],
-  locale: JournalLocale,
-  issuesByContentId: ReadonlyMap<string, JournalIndexIssue[]> = new Map(),
-): T[] {
-  return selectJournalForSurface(
-    entries,
-    locale,
-    "news-integration",
-    issuesByContentId,
-  );
+  return {
+    forIndex: (locale) => select(locale, "index"),
+    forDetail: (locale) => select(locale, "detail"),
+    forHomeStories: (locale) => select(locale, "home-stories"),
+    forNewsIntegration: (locale) => select(locale, "news-integration"),
+  };
 }

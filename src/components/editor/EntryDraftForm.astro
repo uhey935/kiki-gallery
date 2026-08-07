@@ -1,0 +1,73 @@
+---
+import type { JournalEditorDraftState } from "../../editor/journal-draft-state";
+import LocaleDraftSection from "./LocaleDraftSection.astro";
+
+interface Props {
+  draft: JournalEditorDraftState;
+}
+const { draft } = Astro.props;
+---
+
+<form class="editor-draft-form" data-editor-draft-form>
+  <section class="editor-entry-section">
+    <header>
+      <div><p class="editor-eyebrow">Draft</p><h2>Shared</h2></div><span
+        class="editor-status">{draft.shared.state}</span
+      >
+    </header>
+    <div class="editor-entry-section__content">
+      {
+        draft.shared.state === "editable" ? (
+          <div class="editor-field-grid">
+            <label>
+              Date
+              <input name="shared.date" value={draft.shared.value.date} />
+            </label>
+            <label>
+              Categories
+              <input
+                name="shared.categories"
+                value={draft.shared.value.categories.join(", ")}
+              />
+            </label>
+            <label>
+              Visibility
+              <input
+                name="shared.visibility"
+                value={draft.shared.value.visibility}
+              />
+            </label>
+            <label>
+              Hero image
+              <input
+                name="shared.hero.image"
+                value={draft.shared.value.hero.image}
+              />
+            </label>
+            <label class="editor-field-wide">
+              Hero caption
+              <input
+                name="shared.hero.hero_caption"
+                value={draft.shared.value.hero.hero_caption ?? ""}
+              />
+            </label>
+            <label>
+              Author
+              <input
+                name="shared.author"
+                value={draft.shared.value.author ?? ""}
+              />
+            </label>
+          </div>
+        ) : (
+          <p>
+            Shared source is {draft.shared.sourceState}; structured editing is
+            unavailable.
+          </p>
+        )
+      }
+    </div>
+  </section>
+  <LocaleDraftSection locale="ja" source={draft.locales.ja} />
+  <LocaleDraftSection locale="en" source={draft.locales.en} />
+</form>

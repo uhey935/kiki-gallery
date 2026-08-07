@@ -11,7 +11,8 @@
     "check": "astro check",
     "preview": "astro preview",
     "astro": "astro",
-    "prototype:test": "node --experimental-strip-types --test src/content-loaders/journal/*.test.ts src/content-boundaries/journal.test.ts",
+    "journal:test": "node --experimental-strip-types --test src/content-loaders/journal/*.test.ts src/content-boundaries/journal.test.ts",
+    "editor:test": "node --experimental-strip-types --test src/editor/*.test.ts",
     "journal:migration:manifest": "node --experimental-strip-types src/content-loaders/journal/migration-manifest.ts"
   },
   "dependencies": {

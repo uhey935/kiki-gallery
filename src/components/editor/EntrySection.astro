@@ -1,0 +1,22 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  state: "valid" | "invalid" | "missing";
+}
+
+const { eyebrow, title, state } = Astro.props;
+---
+
+<section class="editor-entry-section">
+  <header>
+    <div><p class="editor-eyebrow">{eyebrow}</p><h2>{title}</h2></div>
+    <span
+      class:list={[
+        "editor-status",
+        state === "valid" ? "editor-status--valid" : "editor-status--blocked",
+      ]}>{state}</span
+    >
+  </header>
+  <div class="editor-entry-section__content"><slot /></div>
+</section>

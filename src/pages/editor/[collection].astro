@@ -1,0 +1,29 @@
+---
+import EntryList from "../../components/editor/EntryList.astro";
+import { readJournalEditorState } from "../../editor/journal-state";
+import { editorCollections } from "../../editor/shell";
+import EditorLayout from "../../layouts/EditorLayout.astro";
+
+export function getStaticPaths() {
+  return editorCollections.map((collection) => ({
+    params: { collection: collection.id },
+    props: { collection },
+  }));
+}
+
+const { collection } = Astro.props;
+const state = await readJournalEditorState();
+---
+
+<EditorLayout title={collection.label} section={collection.label}>
+  <header class="editor-page-heading">
+    <p class="editor-eyebrow">Collection</p>
+    <h1>{collection.label}</h1>
+    <p>Browse and select content units from the Editor State boundary.</p>
+  </header>
+  <EntryList
+    collectionId={collection.id}
+    collectionLabel={collection.label}
+    entries={state.entries}
+  />
+</EditorLayout>

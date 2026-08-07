@@ -1,19 +1,14 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection, render } from "astro:content";
-import {
-  journalRouteRegistry,
-  selectJournalDetailEntries,
-} from "../../content-boundaries/journal";
+import { render } from "astro:content";
+import { journalRouteRegistry } from "../../content-boundaries/journal";
+import { getJournalProductionFacade } from "../../content-boundaries/journal-production";
 
 /* =========================
    getStaticPaths
 ========================= */
 export async function getStaticPaths() {
-  const journal = selectJournalDetailEntries(
-    await getCollection("journal"),
-    "ja",
-  );
+  const journal = (await getJournalProductionFacade()).forDetail("ja");
 
   return journal.map((item) => ({
     params: journalRouteRegistry.params({
