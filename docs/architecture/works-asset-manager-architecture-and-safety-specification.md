@@ -352,3 +352,7 @@ Upload/admission, temporary ownership/expiry, path collision, stale baseline, ma
 ### First-slice exclusions
 
 Batch replacement, replacement of a still-temporary image, undo with immediate token release, reuse from an asset library, old-asset orphan classification, physical deletion, and cleanup Publish are deferred.
+
+## Editor UX hardening
+
+The Workspace names canonical, new temporary, and replacement-pending images explicitly. Its action status distinguishes unsaved, validation-blocked, saved-unpublished, and publishable states. Save, Preview, Publish, upload, and per-image controls expose their disabled reason and all asset editing controls are locked while an asynchronous action is active. These are presentation safeguards only; they do not change materialization, rollback, manifest, deletion, or cleanup semantics.

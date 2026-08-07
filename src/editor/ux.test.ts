@@ -9,7 +9,46 @@ import {
   journalDraftDirtyFields,
   journalIssueFieldName,
   journalIssueLocation,
+  worksWorkspaceUxState,
 } from "./ux.ts";
+
+test("Works workspace explains dirty, blocked, and unpublished states", () => {
+  const dirty = worksWorkspaceUxState({
+    pending: null,
+    dirty: true,
+    canSave: true,
+    canPreview: true,
+    canPublish: true,
+    savedSincePublish: false,
+  });
+  assert.equal(dirty.status, "Unsaved changes · save required before publish");
+  assert.equal(dirty.publishTitle, "Save changes before publishing");
+  const blocked = worksWorkspaceUxState({
+    pending: null,
+    dirty: false,
+    canSave: false,
+    canPreview: false,
+    canPublish: false,
+    savedSincePublish: false,
+  });
+  assert.equal(blocked.status, "Saved · Publish blocked by validation");
+  const unpublished = worksWorkspaceUxState({
+    pending: null,
+    dirty: false,
+    canSave: true,
+    canPreview: true,
+    canPublish: true,
+    savedSincePublish: true,
+  });
+  assert.equal(
+    unpublished.status,
+    "Saved · unpublished changes ready to publish",
+  );
+  assert.equal(
+    unpublished.publishTitle,
+    "Publish the saved unpublished changes",
+  );
+});
 
 test("canonical mismatch tells the operator to reload", () => {
   assert.deepEqual(editorFailureGuidance("canonical-mismatch"), {
@@ -100,6 +139,14 @@ test("expired temporary assets tell the operator to upload again", () => {
     action: "review",
     message:
       "The temporary image is no longer available. Upload it again before saving.",
+  });
+});
+
+test("rollback failure tells the operator to stop before another operation", () => {
+  assert.deepEqual(editorFailureGuidance("asset-save-rollback-failed"), {
+    action: "review",
+    message:
+      "Stop editing and request manual recovery before trying another operation.",
   });
 });
 

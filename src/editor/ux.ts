@@ -11,6 +11,65 @@ export type EditorFailureGuidance = {
   message: string;
 };
 
+export function worksWorkspaceUxState(input: {
+  pending: "save" | "preview" | "publish" | "upload" | null;
+  dirty: boolean;
+  canSave: boolean;
+  canPreview: boolean;
+  canPublish: boolean;
+  savedSincePublish: boolean;
+  statusMessage?: string | null;
+}) {
+  const { pending, dirty, canSave, canPreview, canPublish } = input;
+  const busy = pending !== null;
+  const status =
+    pending === "save"
+      ? "Saving…"
+      : pending === "preview"
+        ? "Preparing preview…"
+        : pending === "publish"
+          ? "Publishing…"
+          : pending === "upload"
+            ? "Uploading asset…"
+            : input.statusMessage
+              ? input.statusMessage
+              : dirty
+                ? canSave
+                  ? "Unsaved changes · save required before publish"
+                  : "Unsaved changes · Save blocked by validation"
+                : !canPublish
+                  ? "Saved · Publish blocked by validation"
+                  : input.savedSincePublish
+                    ? "Saved · unpublished changes ready to publish"
+                    : "Saved · publish available";
+  return {
+    status,
+    saveTitle: busy
+      ? "Another action is in progress"
+      : !dirty
+        ? "No unsaved changes"
+        : canSave
+          ? "Save changes to the canonical Work"
+          : "Save is blocked by draft validation",
+    previewTitle: busy
+      ? "Another action is in progress"
+      : canPreview
+        ? dirty
+          ? "Preview the current unsaved draft"
+          : "Preview the saved draft"
+        : "Preview is blocked by draft validation",
+    publishTitle: busy
+      ? "Another action is in progress"
+      : dirty
+        ? "Save changes before publishing"
+        : canPublish
+          ? input.savedSincePublish
+            ? "Publish the saved unpublished changes"
+            : "Publish the saved canonical Work"
+          : "Publish is blocked by draft validation",
+  };
+}
+
 const reloadCodes = new Set(["canonical-mismatch"]);
 const reviewCodes = new Set([
   "asset-invalid-request",
@@ -32,10 +91,18 @@ const reviewCodes = new Set([
 ]);
 
 const reuploadCodes = new Set(["asset-temp-not-found", "asset-temp-expired"]);
+const manualRecoveryCodes = new Set(["asset-save-rollback-failed"]);
 
 export function editorFailureGuidance(
   code: string | undefined,
 ): EditorFailureGuidance {
+  if (code && manualRecoveryCodes.has(code)) {
+    return {
+      action: "review",
+      message:
+        "Stop editing and request manual recovery before trying another operation.",
+    };
+  }
   if (code && reuploadCodes.has(code)) {
     return {
       action: "review",

@@ -107,7 +107,10 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
     temporaryWorksAssetPreviewUrl,
     updateWorksAssetDraftAlt,
   } from "../../../../editor/works-asset-draft";
-  import { editorFailureGuidance } from "../../../../editor/ux";
+  import {
+    editorFailureGuidance,
+    worksWorkspaceUxState,
+  } from "../../../../editor/ux";
   const raw = document.querySelector<HTMLScriptElement>(
     "#works-editor-draft",
   )?.textContent;
@@ -156,6 +159,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
     let assetDraft = JSON.parse(rawAssetDraft) as WorksAssetDraftState;
     let assetBaseline = structuredClone(assetDraft);
     let publishManifest: WorksAssetPublishManifest | undefined;
+    let savedSincePublish = false;
     let pending: "save" | "preview" | "publish" | "upload" | null = null;
     let statusMessage: string | null = null;
     const failureMessage = (error: unknown, fallback: string) => {
@@ -172,7 +176,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
           fieldset.className = "editor-readonly-group";
           fieldset.dataset.assetIndex = String(index);
           const legend = document.createElement("legend");
-          legend.textContent = `Image ${index + 1}${image.kind === "temporary" ? " · Temporary" : ""}`;
+          legend.textContent = `Image ${index + 1} · ${image.kind === "existing" ? "Canonical · saved" : image.replaced ? "Replacement pending · temporary" : "New image · temporary"}`;
           const thumbnail = document.createElement("img");
           thumbnail.className = "editor-asset-thumbnail";
           thumbnail.src =
@@ -189,7 +193,11 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
           const sourceInput = document.createElement("input");
           sourceInput.readOnly = true;
           sourceInput.value =
-            image.kind === "existing" ? image.src : "Temporary until Save";
+            image.kind === "existing"
+              ? image.src
+              : image.replaced
+                ? `Temporary candidate (replaces ${image.replaced.src} after Save)`
+                : "Temporary candidate (canonical URL assigned after Save)";
           source.append(sourceInput);
           const alt = document.createElement("label");
           alt.textContent = "Localized · alt";
@@ -257,33 +265,44 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
         pending !== null || dirty || !capabilities.publish;
       uploadButton.disabled = pending !== null || assetFile.files?.length === 0;
       assetFile.disabled = pending !== null;
-      previewButton.title = pending
+      uploadButton.title = pending
         ? "Another action is in progress"
-        : capabilities.preview
-          ? "Preview the current unsaved draft"
-          : "Preview is blocked by draft validation";
-      publishButton.title = pending
-        ? "Another action is in progress"
-        : dirty
-          ? "Save changes before publishing"
-          : capabilities.publish
-            ? "Publish the saved canonical Work"
-            : "Publish is blocked by draft validation";
-      if (status)
-        status.textContent =
-          pending === "save"
-            ? "Saving…"
-            : pending === "preview"
-              ? "Preparing preview…"
-              : pending === "publish"
-                ? "Publishing…"
-                : pending === "upload"
-                  ? "Uploading asset…"
-                  : statusMessage
-                    ? statusMessage
-                    : dirty
-                      ? "Unsaved changes"
-                      : "Saved · ready";
+        : assetFile.files?.length
+          ? "Upload selected files as temporary images"
+          : "Choose one or more images first";
+      const ux = worksWorkspaceUxState({
+        pending,
+        dirty,
+        canSave: capabilities.save,
+        canPreview: capabilities.preview,
+        canPublish: capabilities.publish,
+        savedSincePublish,
+        statusMessage,
+      });
+      button.title = ux.saveTitle;
+      previewButton.title = ux.previewTitle;
+      publishButton.title = ux.publishTitle;
+      assetList
+        .querySelectorAll<
+          HTMLInputElement | HTMLTextAreaElement | HTMLButtonElement
+        >("input, textarea, button")
+        .forEach((control) => {
+          if (
+            control instanceof HTMLButtonElement &&
+            control.dataset.assetMove
+          ) {
+            const index = Number(
+              control.closest<HTMLElement>("[data-asset-index]")?.dataset
+                .assetIndex,
+            );
+            const atEdge =
+              control.dataset.assetMove === "up"
+                ? index === 0
+                : index === assetDraft.images.length - 1;
+            control.disabled = pending !== null || atEdge;
+          } else control.disabled = pending !== null;
+        });
+      if (status) status.textContent = ux.status;
     };
     form.addEventListener("input", (event) => {
       const field = event.target as HTMLInputElement | HTMLTextAreaElement;
@@ -373,6 +392,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
     });
     assetList.addEventListener("click", (event) => {
       const target = event.target as HTMLButtonElement;
+      if (pending) return;
       const container = target.closest<HTMLElement>("[data-asset-index]");
       if (!container) return;
       const index = Number(container.dataset.assetIndex);
@@ -524,7 +544,8 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
           assetBaseline = structuredClone(result.assetDraft);
           renderAssets();
         }
-        statusMessage = "Saved to canonical file";
+        statusMessage = "Saved · unpublished changes ready to publish";
+        savedSincePublish = true;
       } catch (error) {
         statusMessage = failureMessage(error, "Works save failed");
       } finally {
@@ -585,6 +606,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
             ? `Published ${result.commit?.slice(0, 7) ?? "commit"}`
             : `Committed ${result.commit?.slice(0, 7) ?? "commit"}; push failed. Retry push outside the Editor.`;
         publishManifest = undefined;
+        savedSincePublish = false;
       } catch (error) {
         statusMessage = failureMessage(error, "Works publish failed");
       } finally {
