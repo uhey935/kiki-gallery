@@ -16,13 +16,14 @@
     "journal:migration:manifest": "node --experimental-strip-types src/content-loaders/journal/migration-manifest.ts"
   },
   "dependencies": {
-    "astro": "^6.0.4",
+    "@astrojs/markdown-remark": "^7.2.2",
+    "astro": "^7.2.0",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@types/node": "^24.13.3",
-    "prettier": "^3.8.1",
+    "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.3"
   }
