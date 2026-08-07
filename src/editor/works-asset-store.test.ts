@@ -17,6 +17,7 @@ import {
   addTemporaryWorksAsset,
   createWorksAssetDraftState,
   removeTemporaryWorksAssetFromDraft,
+  replaceExistingWorksAsset,
   reorderWorksAssetDraftImage,
   updateWorksAssetDraftAlt,
 } from "./works-asset-draft.ts";
@@ -295,4 +296,28 @@ test("asset Draft operations preserve source state and distinguish existing from
     ["existing", "existing"],
   );
   assert.equal(withTemporary.images[2].alt, "Pending");
+});
+
+test("asset Draft replacement substitutes exactly one existing image and preserves alt", () => {
+  const initial = createWorksAssetDraftState("test-work", "workspace-1", [
+    { src: "/images/works/one.png", alt: "One alt" },
+    { src: "/images/works/two.png", alt: "Two alt" },
+  ]);
+  const replaced = replaceExistingWorksAsset(initial, 0, {
+    token: "b".repeat(64),
+  });
+
+  assert.deepEqual(initial.images[0], {
+    kind: "existing",
+    src: "/images/works/one.png",
+    alt: "One alt",
+  });
+  assert.deepEqual(replaced.images, [
+    { kind: "temporary", token: "b".repeat(64), alt: "One alt" },
+    { kind: "existing", src: "/images/works/two.png", alt: "Two alt" },
+  ]);
+  assert.throws(
+    () => replaceExistingWorksAsset(replaced, 0, { token: "c".repeat(64) }),
+    TypeError,
+  );
 });

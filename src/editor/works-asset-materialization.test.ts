@@ -15,6 +15,7 @@ import {
   addExistingWorksAsset,
   addTemporaryWorksAsset,
   createWorksAssetDraftState,
+  replaceExistingWorksAsset,
 } from "./works-asset-draft.ts";
 import {
   TemporaryWorksAssetStore,
@@ -134,6 +135,44 @@ test("Save materializes one temporary asset, canonicalizes Markdown, and release
     { src: "/images/works/existing.png", alt: "Existing" },
   ]);
   assert.equal(assets.images[1].kind, "temporary");
+});
+
+test("Replace materializes a new asset, substitutes one reference, and retains the old canonical asset", async () => {
+  const fixture = await saveFixture();
+  const pending = await register(fixture.store, "test-work-replacement.png");
+  const assets = replaceExistingWorksAsset(
+    createWorksAssetDraftState(
+      "test-work",
+      "workspace-1",
+      fixture.baseline.data.images,
+    ),
+    0,
+    { token: pending.token },
+  );
+
+  const result = await saveWorksEditorDraftWithAssets(
+    structuredClone(fixture.baseline),
+    fixture.baseline,
+    { assetDraft: assets, store: fixture.store, assetRoot: fixture.assetRoot },
+    fixture.worksRoot,
+  );
+
+  assert.deepEqual(result.draft.data.images, [
+    { src: "/images/works/test-work-replacement.png", alt: "Existing" },
+  ]);
+  assert.deepEqual((await readdir(fixture.assetRoot)).sort(), [
+    "existing.png",
+    "test-work-replacement.png",
+  ]);
+  assert.deepEqual(
+    await readFile(path.join(fixture.assetRoot, "existing.png")),
+    png,
+  );
+  assert.equal(result.publishManifest.assets.length, 1);
+  assert.equal(
+    result.publishManifest.assets[0].src,
+    "/images/works/test-work-replacement.png",
+  );
 });
 
 test("Save preserves mixed order and alt while materializing multiple distinct tokens", async () => {

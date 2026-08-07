@@ -323,4 +323,31 @@ It includes:
 - promote only referenced temporary assets, atomically replace Markdown with rollback, and release referenced tokens only after successful canonical reread;
 - accumulate newly materialized asset manifests across Saves and Publish only the explicit Markdown-plus-manifest path set.
 
-Replace, physical deletion, deferred cleanup, storage migration, and locale splitting remain explicitly outside v1.
+Physical deletion, deferred cleanup, storage migration, and locale splitting remain explicitly outside v1.
+
+## Works Asset Replace Semantics — first slice
+
+Replace is a Draft-level substitution, not a filesystem replacement:
+
+`existing reference A` → `temporary candidate B` → `materialize new canonical B` → `commit Markdown with B at A's former index`
+
+The first slice replaces one selected existing image. It retains that image's localized `alt` text, while the user may edit the text separately. The old canonical asset A is neither overwritten nor deleted and is not added to the new Publish manifest. B uses the existing upload admission, temporary-store ownership, Preview URL, materialization, Save transaction, and Publish-manifest boundaries.
+
+### Invariants
+
+1. Replace accepts an existing Draft image and substitutes only its selected array position.
+2. The replacement remains temporary until Save; Preview resolves it through the scoped temporary route.
+3. Save validates the unchanged Markdown baseline before any canonical asset mutation.
+4. B is created at a fresh canonical path with no-overwrite promotion and verified before Markdown can reference it.
+5. A remains byte-for-byte present regardless of Replace success or failure.
+6. A failed materialization or Markdown commit preserves the prior Markdown reference to A, rolls back only transaction-created B, and retains B's temporary token for retry.
+7. A successful Save releases B's token, returns a new existing-reference Asset Draft, and publishes only the Markdown plus B's exact manifest entry.
+8. Replace does not imply orphan status, physical deletion, cleanup scheduling, storage migration, or locale splitting.
+
+### Failure semantics
+
+Upload/admission, temporary ownership/expiry, path collision, stale baseline, materialization, Markdown commit, and rollback failures retain their v1 stable error codes and recovery guidance. No Replace-specific filesystem error exists because Replace introduces no new mutation primitive. Selecting a non-existing Draft item for Replace is rejected before upload state is substituted; a temporary replacement must be removed or saved before that position can be replaced again.
+
+### First-slice exclusions
+
+Batch replacement, replacement of a still-temporary image, undo with immediate token release, reuse from an asset library, old-asset orphan classification, physical deletion, and cleanup Publish are deferred.

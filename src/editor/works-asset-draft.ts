@@ -61,6 +61,26 @@ export function addTemporaryWorksAsset(
   return next;
 }
 
+export function replaceExistingWorksAsset(
+  state: WorksAssetDraftState,
+  index: number,
+  image: { token: string },
+): WorksAssetDraftState {
+  if (!Number.isInteger(index) || index < 0 || index >= state.images.length)
+    throw new RangeError("Works asset Draft image index is out of range");
+  if (state.images[index].kind !== "existing")
+    throw new TypeError("Only an existing Works asset can be replaced");
+  const next = clone(state);
+  next.images[index] = {
+    kind: "temporary",
+    token: image.token,
+    // Replacement changes shared asset identity only. Localized alt text is
+    // retained unless the editor changes it explicitly.
+    alt: state.images[index].alt,
+  };
+  return next;
+}
+
 export function reorderWorksAssetDraftImage(
   state: WorksAssetDraftState,
   from: number,

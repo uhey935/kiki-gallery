@@ -102,6 +102,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
   import {
     addTemporaryWorksAsset,
     removeTemporaryWorksAssetFromDraft,
+    replaceExistingWorksAsset,
     reorderWorksAssetDraftImage,
     temporaryWorksAssetPreviewUrl,
     updateWorksAssetDraftAlt,
@@ -215,6 +216,12 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
             remove.dataset.assetRemove = image.token;
             remove.textContent = "Remove temporary image";
             actions.append(remove);
+          } else {
+            const replace = document.createElement("button");
+            replace.type = "button";
+            replace.dataset.assetReplace = "";
+            replace.textContent = "Replace image";
+            actions.append(replace);
           }
           fieldset.append(legend, thumbnail, source, alt, actions);
           return fieldset;
@@ -367,6 +374,58 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
       const container = target.closest<HTMLElement>("[data-asset-index]");
       if (!container) return;
       const index = Number(container.dataset.assetIndex);
+      if (target.dataset.assetReplace !== undefined) {
+        const picker = document.createElement("input");
+        picker.type = "file";
+        picker.accept = "image/avif,image/jpeg,image/png,image/webp";
+        picker.addEventListener("change", async () => {
+          const file = picker.files?.[0];
+          if (!file || pending) return;
+          pending = "upload";
+          if (assetStatus)
+            assetStatus.textContent = `Uploading replacement for image ${index + 1}…`;
+          render();
+          try {
+            const body = new FormData();
+            body.set("workspaceId", assetDraft.workspaceId);
+            body.set("file", file);
+            const response = await fetch(
+              `/editor/api/works-assets/upload/${encodeURIComponent(draft.contentId)}`,
+              { method: "POST", body },
+            );
+            const result = (await response.json()) as {
+              asset?: { token: string };
+              error?: string;
+              code?: string;
+            };
+            if (!response.ok || !result.asset) {
+              const failure = new Error(
+                result.error ?? `Upload failed for ${file.name}`,
+              ) as Error & { code?: string };
+              failure.code = result.code;
+              throw failure;
+            }
+            assetDraft = replaceExistingWorksAsset(assetDraft, index, {
+              token: result.asset.token,
+            });
+            statusMessage = "Unsaved asset replacement";
+            if (assetStatus)
+              assetStatus.textContent = `Image ${index + 1} replacement is temporary. Save to make permanent.`;
+          } catch (error) {
+            if (assetStatus)
+              assetStatus.textContent = failureMessage(
+                error,
+                "Works asset replacement failed",
+              );
+          } finally {
+            pending = null;
+            renderAssets();
+            render();
+          }
+        });
+        picker.click();
+        return;
+      }
       if (target.dataset.assetMove) {
         const to = target.dataset.assetMove === "up" ? index - 1 : index + 1;
         assetDraft = reorderWorksAssetDraftImage(assetDraft, index, to);
