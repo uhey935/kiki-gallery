@@ -14,6 +14,7 @@ The documents are designed to be read in the following order.
 
 | Document                                                | Purpose                                                                                                                                              |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Backup & Recovery Architecture / Tooling**            | Defines Git versus explicit-backup protection, integrity verification, exact restore, lock evidence, retention boundary, and disaster recovery.      |
 | **Asset Lifecycle v2 — Physical Delete & Finalization** | Defines per-asset explicit confirmation, quarantine retention, final locked re-audit, quarantine-only physical deletion, and durable final evidence. |
 | **Asset Lifecycle v2 — Reversible Cleanup**             | Defines locked fresh re-audit, reversible quarantine/restore, crash recovery, and the continued no-delete boundary.                                  |
 | **Asset Lifecycle v2 — Second Milestone**               | Defines the durable candidate ledger, retention state, and continued no-delete boundary.                                                             |
@@ -37,6 +38,14 @@ The documents are designed to be read in the following order.
 ---
 
 ## Documents
+
+### Backup & Recovery Architecture / Tooling
+
+**backup-and-recovery-architecture-2026-08-07.md**
+
+Defines the backup generation scope for canonical content/assets and ignored
+Editor state, SHA-256 verification, lock handling, transactional root restore,
+failure behavior, retention-policy boundary, and disaster-recovery procedure.
 
 ### Asset Lifecycle v2 — Physical Delete & Finalization
 

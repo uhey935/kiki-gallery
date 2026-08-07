@@ -35,6 +35,36 @@ no unrelated staged files, a saved baseline, and publishable validation.
 
 Never discard or overwrite recovery evidence merely to clear a lock.
 
+## Backup and recovery
+
+Stop the Editor and lifecycle writers. Before quarantine, physical delete, or
+manual recovery, create and verify a generation outside the repository:
+
+```bash
+npm run backup -- create ../kiki-backup-YYYYMMDD-HHMMSS
+npm run backup -- verify ../kiki-backup-YYYYMMDD-HHMMSS
+```
+
+It binds `src/content`, `public/images`, and `.kiki-editor` in one SHA-256
+inventory. Git protects committed canonical files; this generation additionally
+protects ignored Editor state, quarantine bytes, and uncommitted or unpushed
+canonical work.
+
+After recovering the repository from Git, restore Editor-only state by default:
+
+```bash
+npm run backup -- restore ../kiki-backup-YYYYMMDD-HHMMSS
+```
+
+Use `--include-canonical` only for reviewed disaster recovery when backup
+content and images must exactly replace the Git checkout. Restore refuses a
+current lifecycle lock. A captured lock is verified but not reactivated;
+inspect it with ledger, quarantine, manifests, and actual bytes before resuming.
+
+The CLI does not prune, upload, encrypt, schedule, or authorize deletion. See
+`docs/architecture/backup-and-recovery-architecture-2026-08-07.md` for the
+integrity model, retention boundary, and disaster-recovery procedure.
+
 ## `.kiki-editor` and Asset Lifecycle v2
 
 `.kiki-editor/` is ignored by Git and is never production input. It may contain
@@ -70,3 +100,5 @@ canonical content/assets with the captured pre-check hashes.
 5. `docs/architecture/works-asset-manager-architecture-and-safety-specification.md`.
 6. The three Asset Lifecycle v2 milestone documents for quarantine and delete
    details. Older prototype and migration documents are historical evidence.
+7. `docs/architecture/backup-and-recovery-architecture-2026-08-07.md` for
+   backup scope, verification, restore, and disaster recovery.
