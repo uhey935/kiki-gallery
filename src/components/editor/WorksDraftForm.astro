@@ -8,7 +8,7 @@ const { draft } = Astro.props;
 const { data } = draft;
 ---
 
-<form class="editor-draft-form" aria-label="Works draft (read-only)">
+<form class="editor-draft-form" aria-label="Works draft" data-works-draft-form>
   <section class="editor-entry-section">
     <header>
       <div>
@@ -16,10 +16,17 @@ const { data } = draft;
       </div>
     </header>
     <div class="editor-entry-section__content editor-detail-list">
-      <div><dt>Artist</dt><dd>{data.artist.id}</dd></div>
-      <div><dt>Year</dt><dd>{data.year ?? "—"}</dd></div>
-      <div><dt>Size</dt><dd>{data.size ?? "—"}</dd></div>
-      <div><dt>Orientation</dt><dd>{data.orientation ?? "default"}</dd></div>
+      <label>Artist<input name="artist" value={data.artist.id} /></label>
+      <label
+        >Year<input name="year" type="number" value={data.year ?? ""} /></label
+      >
+      <label>Size<input name="size" value={data.size ?? ""} /></label>
+      <label
+        >Orientation<input
+          name="orientation"
+          value={data.orientation ?? ""}
+        /></label
+      >
     </div>
   </section>
   <section class="editor-entry-section">
@@ -37,10 +44,11 @@ const { data } = draft;
             <legend>Image {index + 1}</legend>
             <label>
               Shared · src
-              <input value={image.src} readonly />
+              <input name={`images.${index}.src`} value={image.src} />
             </label>
             <label>
-              Localized · alt<textarea readonly>{image.alt}</textarea>
+              Localized · alt
+              <textarea name={`images.${index}.alt`}>{image.alt}</textarea>
             </label>
           </fieldset>
         ))
@@ -52,16 +60,13 @@ const { data } = draft;
       <div><p class="editor-eyebrow">Shared</p><h2>Inquiry</h2></div>
     </header>
     <div class="editor-entry-section__content editor-detail-list">
-      <div><dt>Type</dt><dd>{data.inquiry.type}</dd></div>
-      <div>
-        <dt>URL</dt><dd>
-          {
-            "url" in data.inquiry
-              ? (data.inquiry.url ?? "—")
-              : "Forbidden for none"
-          }
-        </dd>
-      </div>
+      <label>Type<input name="inquiry.type" value={data.inquiry.type} /></label>
+      <label
+        >URL<input
+          name="inquiry.url"
+          value={"url" in data.inquiry ? (data.inquiry.url ?? "") : ""}
+        /></label
+      >
     </div>
   </section>
   <section class="editor-entry-section">
@@ -72,14 +77,19 @@ const { data } = draft;
       Current flat storage has one localized source; no JA/EN parity is implied.
     </p>
     <div class="editor-entry-section__content editor-readonly-fields">
-      <label>Title<input value={data.title} readonly /></label>
-      <label>Material<input value={data.material ?? ""} readonly /></label>
-      <label>SEO title<input value={data.seo_title ?? ""} readonly /></label>
+      <label>Title<input name="title" value={data.title} /></label>
       <label
-        >Description<textarea readonly>{data.description ?? ""}</textarea
+        >Material<input name="material" value={data.material ?? ""} /></label
+      >
+      <label
+        >SEO title<input name="seo_title" value={data.seo_title ?? ""} /></label
+      >
+      <label
+        >Description<textarea name="description"
+          >{data.description ?? ""}</textarea
         ></label
       >
-      <label>Body<textarea readonly>{draft.body}</textarea></label>
+      <label>Body<textarea name="body">{draft.body}</textarea></label>
     </div>
   </section>
 </form>

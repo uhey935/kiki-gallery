@@ -19,13 +19,14 @@ export async function getStaticPaths() {
 }
 const { entry } = Astro.props;
 const draft = createWorksEditorDraft(entry);
+const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
 ---
 
 <EditorLayout title={entry.data?.title ?? entry.contentId} section="Works">
   <header class="editor-page-heading">
     <p class="editor-eyebrow">Works workspace</p><h1>
       {entry.data?.title ?? entry.contentId}
-    </h1><p>{entry.contentId} · Current flat Markdown · read-only</p>
+    </h1><p>{entry.contentId} · Current flat Markdown</p>
   </header>
   <div class="editor-workspace">
     <main class="editor-panel editor-canvas">
@@ -42,15 +43,236 @@ const draft = createWorksEditorDraft(entry);
     </main><WorksValidationPanel entry={entry} />
   </div>
   <footer class="editor-action-bar" aria-label="Editor actions">
-    <span>Read-only vertical slice</span><div
+    <span data-works-action-status role="status">Saved · ready</span><div
       class="editor-action-bar__actions"
     >
-      <button class="editor-button editor-button--secondary" disabled
+      <button
+        class="editor-button editor-button--secondary"
+        type="button"
+        data-preview-works
+        disabled
+        title="Preview is unavailable until the draft passes validation"
         >Preview</button
-      ><button class="editor-button" disabled>Save</button><button
+      ><button class="editor-button" type="button" data-save-works disabled
+        >Save</button
+      ><button
         class="editor-button"
-        disabled>Publish</button
+        type="button"
+        data-publish-works
+        disabled
+        title="Publish is unavailable until the saved draft passes validation"
+        >Publish</button
       >
     </div>
   </footer>
 </EditorLayout>
+<script
+  type="application/json"
+  is:inline
+  id="works-editor-draft"
+  set:html={serializedDraft}
+/>
+<script>
+  import {
+    isWorksEditorDraftDirty,
+    updateWorksEditorDraft,
+    validateWorksEditorDraft,
+    type WorksEditorDraftState,
+  } from "../../../../editor/works-draft-state";
+  import { editorFailureGuidance } from "../../../../editor/ux";
+  const raw = document.querySelector<HTMLScriptElement>(
+    "#works-editor-draft",
+  )?.textContent;
+  const form = document.querySelector<HTMLFormElement>(
+    "[data-works-draft-form]",
+  );
+  const button = document.querySelector<HTMLButtonElement>("[data-save-works]");
+  const previewButton = document.querySelector<HTMLButtonElement>(
+    "[data-preview-works]",
+  );
+  const publishButton = document.querySelector<HTMLButtonElement>(
+    "[data-publish-works]",
+  );
+  const status = document.querySelector<HTMLElement>(
+    "[data-works-action-status]",
+  );
+  if (raw && form && button && previewButton && publishButton) {
+    let baseline = JSON.parse(raw) as WorksEditorDraftState;
+    let draft = baseline;
+    let pending: "save" | "preview" | "publish" | null = null;
+    let statusMessage: string | null = null;
+    const failureMessage = (error: unknown, fallback: string) => {
+      const response = error as Error & { code?: string };
+      return `${response.message || fallback} ${editorFailureGuidance(response.code).message}`;
+    };
+    const render = () => {
+      const dirty = isWorksEditorDraftDirty(baseline, draft);
+      const capabilities = validateWorksEditorDraft(draft).capabilities;
+      button.disabled = pending !== null || !dirty || !capabilities.save;
+      previewButton.disabled = pending !== null || !capabilities.preview;
+      publishButton.disabled =
+        pending !== null || dirty || !capabilities.publish;
+      previewButton.title = pending
+        ? "Another action is in progress"
+        : capabilities.preview
+          ? "Preview the current unsaved draft"
+          : "Preview is blocked by draft validation";
+      publishButton.title = pending
+        ? "Another action is in progress"
+        : dirty
+          ? "Save changes before publishing"
+          : capabilities.publish
+            ? "Publish the saved canonical Work"
+            : "Publish is blocked by draft validation";
+      if (status)
+        status.textContent =
+          pending === "save"
+            ? "Saving…"
+            : pending === "preview"
+              ? "Preparing preview…"
+              : pending === "publish"
+                ? "Publishing…"
+                : statusMessage
+                  ? statusMessage
+                  : dirty
+                    ? "Unsaved changes"
+                    : "Saved · ready";
+    };
+    form.addEventListener("input", (event) => {
+      const field = event.target as HTMLInputElement | HTMLTextAreaElement;
+      draft = updateWorksEditorDraft(draft, (next) => {
+        const [key, index, child] = field.name.split(".");
+        if (key === "body") next.body = field.value;
+        else if (key === "artist") next.data.artist.id = field.value;
+        else if (key === "images")
+          next.data.images[Number(index)][child as "src" | "alt"] = field.value;
+        else if (key === "year")
+          next.data.year = field.value ? Number(field.value) : undefined;
+        else if (key === "inquiry" && index === "type")
+          next.data.inquiry =
+            field.value === "none"
+              ? { type: "none" }
+              : field.value === "shop"
+                ? { type: "shop", url: "" }
+                : { type: "inquiry" };
+        else if (key === "inquiry" && next.data.inquiry.type !== "none")
+          next.data.inquiry = {
+            ...next.data.inquiry,
+            url: field.value || undefined,
+          } as typeof next.data.inquiry;
+        else if (key === "title") next.data.title = field.value;
+        else Object.assign(next.data, { [key]: field.value || undefined });
+      });
+      statusMessage = null;
+      render();
+    });
+    previewButton.addEventListener("click", async () => {
+      if (previewButton.disabled) return;
+      const previewWindow = window.open("", "_blank");
+      pending = "preview";
+      render();
+      try {
+        const response = await fetch("/editor/api/works-preview/create", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ draft }),
+        });
+        const result = (await response.json()) as {
+          url?: string;
+          error?: string;
+        };
+        if (!response.ok || !result.url)
+          throw new Error(result.error ?? "Works preview failed");
+        if (previewWindow) previewWindow.location.href = result.url;
+        else window.open(result.url, "_blank");
+      } catch (error) {
+        previewWindow?.close();
+        statusMessage = failureMessage(error, "Works preview failed");
+      } finally {
+        pending = null;
+        render();
+      }
+    });
+    button.addEventListener("click", async () => {
+      if (button.disabled) return;
+      pending = "save";
+      render();
+      try {
+        const response = await fetch(
+          `/editor/api/works/${encodeURIComponent(draft.contentId)}`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ draft, baseline }),
+          },
+        );
+        const result = (await response.json()) as {
+          draft?: WorksEditorDraftState;
+          error?: string;
+        };
+        if (!response.ok || !result.draft)
+          throw new Error(result.error ?? "Works save failed");
+        baseline = result.draft;
+        draft = result.draft;
+        statusMessage = "Saved to canonical file";
+      } catch (error) {
+        statusMessage = failureMessage(error, "Works save failed");
+      } finally {
+        pending = null;
+        render();
+      }
+    });
+    publishButton.addEventListener("click", async () => {
+      const dirty = isWorksEditorDraftDirty(baseline, draft);
+      if (
+        pending ||
+        dirty ||
+        !validateWorksEditorDraft(draft).capabilities.publish
+      )
+        return;
+      pending = "publish";
+      render();
+      try {
+        const response = await fetch(
+          `/editor/api/works-publish/${encodeURIComponent(draft.contentId)}`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ draft, baseline, dirty }),
+          },
+        );
+        const result = (await response.json()) as {
+          state?: "published" | "committed-push-failed";
+          commit?: string;
+          error?: string;
+          code?: string;
+        };
+        if (!response.ok || !result.state) {
+          const failure = new Error(
+            result.error ?? "Works publish failed",
+          ) as Error & {
+            code?: string;
+          };
+          failure.code = result.code;
+          throw failure;
+        }
+        statusMessage =
+          result.state === "published"
+            ? `Published ${result.commit?.slice(0, 7) ?? "commit"}`
+            : `Committed ${result.commit?.slice(0, 7) ?? "commit"}; push failed. Retry push outside the Editor.`;
+      } catch (error) {
+        statusMessage = failureMessage(error, "Works publish failed");
+      } finally {
+        pending = null;
+        render();
+      }
+    });
+    window.addEventListener("beforeunload", (event) => {
+      if (isWorksEditorDraftDirty(baseline, draft)) {
+        event.preventDefault();
+        (event as unknown as { returnValue: string }).returnValue = "";
+      }
+    });
+    render();
+  }
+</script>

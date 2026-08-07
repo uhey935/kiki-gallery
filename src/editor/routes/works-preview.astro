@@ -1,0 +1,133 @@
+---
+import { createMarkdownProcessor } from "@astrojs/markdown-remark";
+
+import WorkLayout from "../../layouts/WorkLayout.astro";
+import { WorksPreviewError, worksPreviewStore } from "../works-preview";
+import "../../styles/works.css";
+
+const { token, contentId } = Astro.params;
+let preview;
+let previewError: string | undefined;
+try {
+  if (!token || !contentId) {
+    throw new WorksPreviewError("Invalid preview URL", "preview-not-found");
+  }
+  preview = worksPreviewStore.read(token, contentId);
+} catch (error) {
+  Astro.response.status =
+    error instanceof WorksPreviewError && error.code === "preview-expired"
+      ? 410
+      : 404;
+  previewError =
+    error instanceof Error ? error.message : "Preview state is unavailable";
+}
+const rendered = preview
+  ? await (await createMarkdownProcessor()).render(preview.body)
+  : undefined;
+const images = preview?.data.images ?? [];
+const isSingleLandscape =
+  images.length === 1 && preview?.data.orientation === "landscape";
+const inquiry = preview?.data.inquiry;
+const inquiryLabel = inquiry?.type === "shop" ? "Shop" : "Inquire";
+const inquiryHref = inquiry && "url" in inquiry ? inquiry.url : undefined;
+---
+
+{
+  preview && rendered ? (
+    <WorkLayout
+      title={`${preview.data.seo_title ?? preview.data.title} · Draft Preview`}
+      description={
+        preview.data.description ?? `${preview.data.title} | KiKi Gallery`
+      }
+    >
+      <aside class="editor-preview-banner">
+        Works draft preview · not saved
+      </aside>
+      <main
+        class:list={[
+          "works-detail",
+          "is-ready",
+          { "works-detail--single": isSingleLandscape },
+        ]}
+      >
+        {images.map((image) => (
+          <section
+            class:list={[
+              "works-detail-section",
+              { "works-detail-section--single": isSingleLandscape },
+            ]}
+          >
+            <figure class="works-detail-image">
+              <img src={image.src} alt={image.alt ?? preview.data.title} />
+            </figure>
+          </section>
+        ))}
+        <section class="works-detail-section">
+          <div class="works-detail-meta">
+            <h1 class="works-detail-title">{preview.data.title}</h1>
+            <p class="works-detail-artist">{preview.data.artist.id}</p>
+            <dl class="works-detail-information">
+              {preview.data.material && (
+                <>
+                  <dt>Material</dt>
+                  <dd>{preview.data.material}</dd>
+                </>
+              )}
+              {preview.data.size && (
+                <>
+                  <dt>Size</dt>
+                  <dd>{preview.data.size}</dd>
+                </>
+              )}
+              {preview.data.year && (
+                <>
+                  <dt>Year</dt>
+                  <dd>{preview.data.year}</dd>
+                </>
+              )}
+            </dl>
+            {preview.body.trim() && (
+              <div class="works-detail-statement" set:html={rendered.code} />
+            )}
+            {inquiry?.type !== "none" && (
+              <p class="works-detail-inquiry">
+                {inquiryHref ? (
+                  <a href={inquiryHref} class="action-link">
+                    {inquiryLabel}
+                  </a>
+                ) : (
+                  <span class="action-link">{inquiryLabel}</span>
+                )}
+              </p>
+            )}
+          </div>
+        </section>
+      </main>
+    </WorkLayout>
+  ) : (
+    <main class="editor-preview-error">
+      <h1>Draft preview unavailable</h1>
+      <p>{previewError}</p>
+    </main>
+  )
+}
+
+<style>
+  .editor-preview-banner {
+    position: sticky;
+    z-index: 10;
+    top: 0;
+    padding: 10px 20px;
+    background: #fff4c2;
+    color: #594c18;
+    text-align: center;
+    font:
+      600 0.78rem/1.4 system-ui,
+      sans-serif;
+  }
+  .editor-preview-error {
+    margin: 10vh auto;
+    width: min(640px, calc(100% - 40px));
+    font-family: system-ui, sans-serif;
+  }
+</style>
