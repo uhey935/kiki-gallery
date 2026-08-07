@@ -204,6 +204,29 @@ button {
 .editor-entry-section__content {
   margin-top: 18px;
 }
+.editor-asset-upload,
+.editor-asset-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.editor-asset-thumbnail {
+  display: block;
+  width: min(180px, 100%);
+  max-height: 140px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #f1f3ef;
+}
+.editor-asset-actions button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #cbd1cb;
+  border-radius: 6px;
+  background: #fafbf9;
+  color: #18201d;
+}
 .editor-readonly-group,
 .editor-readonly-fields {
   display: grid;

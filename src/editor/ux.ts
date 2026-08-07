@@ -13,6 +13,14 @@ export type EditorFailureGuidance = {
 
 const reloadCodes = new Set(["canonical-mismatch"]);
 const reviewCodes = new Set([
+  "asset-invalid-request",
+  "asset-unsafe-path",
+  "asset-too-large",
+  "asset-unsupported-format",
+  "asset-type-mismatch",
+  "asset-decode-failed",
+  "asset-duplicate",
+  "asset-name-conflict",
   "invalid-content-id",
   "invalid-draft",
   "invalid-request",
@@ -23,9 +31,18 @@ const reviewCodes = new Set([
   "nothing-to-publish",
 ]);
 
+const reuploadCodes = new Set(["asset-temp-not-found", "asset-temp-expired"]);
+
 export function editorFailureGuidance(
   code: string | undefined,
 ): EditorFailureGuidance {
+  if (code && reuploadCodes.has(code)) {
+    return {
+      action: "review",
+      message:
+        "The temporary image is no longer available. Upload it again before saving.",
+    };
+  }
   if (code && reloadCodes.has(code)) {
     return {
       action: "reload",

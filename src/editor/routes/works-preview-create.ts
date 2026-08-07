@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 
 import type { WorksEditorDraftState } from "../works-draft-state.ts";
+import type { WorksAssetDraftState } from "../works-asset-draft.ts";
 import {
   createWorksPreviewModel,
   WorksPreviewError,
@@ -9,11 +10,14 @@ import {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const input = (await request.json()) as { draft?: WorksEditorDraftState };
+    const input = (await request.json()) as {
+      draft?: WorksEditorDraftState;
+      assetDraft?: WorksAssetDraftState;
+    };
     if (!input?.draft) {
       throw new WorksPreviewError("Draft is required", "invalid-request");
     }
-    const model = createWorksPreviewModel(input.draft);
+    const model = createWorksPreviewModel(input.draft, input.assetDraft);
     const token = worksPreviewStore.create(model);
     return Response.json({
       url: `/editor/preview/works/${token}/${encodeURIComponent(model.contentId)}`,

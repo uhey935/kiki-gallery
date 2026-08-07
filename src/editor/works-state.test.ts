@@ -21,9 +21,16 @@ import {
 } from "./works-save.ts";
 import {
   createWorksPreviewModel,
+  temporaryWorksAssetPreviewUrl,
   WorksPreviewError,
   WorksPreviewStore,
 } from "./works-preview.ts";
+import {
+  addTemporaryWorksAsset,
+  createWorksAssetDraftState,
+  reorderWorksAssetDraftImage,
+  updateWorksAssetDraftAlt,
+} from "./works-asset-draft.ts";
 import { readFile, mkdir, symlink } from "node:fs/promises";
 
 const validSource = `---
@@ -103,6 +110,38 @@ test("creates a complete Works preview model from an unsaved Draft", async () =>
   assert.equal(preview.data.year, 2026);
   assert.equal(preview.data.inquiry.type, "inquiry");
   assert.equal(preview.body, "Unsaved **body**");
+});
+
+test("Works preview resolves mixed existing and temporary Asset Draft images in Draft order", async () => {
+  const draft = createWorksEditorDraft(
+    await readWorksEditorEntry("test-work", await fixture()),
+  );
+  assert.ok(draft);
+  let assets = createWorksAssetDraftState(
+    draft.contentId,
+    "workspace-1",
+    draft.data.images,
+  );
+  assets = addTemporaryWorksAsset(assets, {
+    token: "a".repeat(64),
+    alt: "Pending image",
+  });
+  assets = reorderWorksAssetDraftImage(assets, 1, 0);
+  assets = updateWorksAssetDraftAlt(assets, 1, "Existing image");
+
+  const preview = createWorksPreviewModel(draft, assets);
+  assert.deepEqual(preview.data.images, [
+    {
+      src: temporaryWorksAssetPreviewUrl(
+        "a".repeat(64),
+        "test-work",
+        "workspace-1",
+      ),
+      alt: "Pending image",
+    },
+    { src: "/images/test.jpg", alt: "Existing image" },
+  ]);
+  assert.equal(draft.data.images[0].alt, "Test image");
 });
 
 test("Works preview follows capability gating", async () => {

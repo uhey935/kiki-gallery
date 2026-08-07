@@ -31,7 +31,7 @@ export const editorCollectionRegistry = {
   works: {
     id: "works",
     label: "Works",
-    description: "Flat Markdown · read-only slice",
+    description: "Flat Markdown · Save, Preview, and Publish",
     readState: readWorksEditorState,
   },
 } satisfies Record<string, EditorCollectionAdapter>;

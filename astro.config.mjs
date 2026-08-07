@@ -21,6 +21,11 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
+            pattern: "/editor/api/works-assets/upload/[contentId]",
+            entrypoint: "./src/editor/routes/works-asset-upload.ts",
+            prerender: false,
+          });
+          injectRoute({
             pattern: "/editor/api/journal-preview/create",
             entrypoint: "./src/editor/routes/journal-preview-create.ts",
             prerender: false,
@@ -28,6 +33,12 @@ export default defineConfig({
           injectRoute({
             pattern: "/editor/api/works-preview/create",
             entrypoint: "./src/editor/routes/works-preview-create.ts",
+            prerender: false,
+          });
+          injectRoute({
+            pattern:
+              "/editor/api/works-preview/assets/[contentId]/[workspaceId]/[token]",
+            entrypoint: "./src/editor/routes/works-preview-asset.ts",
             prerender: false,
           });
           injectRoute({

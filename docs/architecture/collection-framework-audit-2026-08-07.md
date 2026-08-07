@@ -2,7 +2,7 @@
 
 | Property      | Value                                        |
 | ------------- | -------------------------------------------- |
-| Status        | Reassessed after the Works read-only slice   |
+| Status        | Works Editor v1 finalization complete        |
 | Last reviewed | 2026-08-07                                   |
 | Scope         | Editor v1 boundaries after Journal and Works |
 
@@ -218,3 +218,20 @@ npm run check
 npm run build
 git diff --check
 ```
+
+## Works Editor v1 finalization
+
+The implementation gates above remain as the chronological decision record. They are complete: Works now owns a flat-Markdown reader and Draft, canonical validation, a byte-preserving serializer, baseline-checked single-file Save, Draft Preview, and single-file Publish.
+
+The finalization audit found no Blocker and confirms these boundaries:
+
+- Production and Editor share only the Work domain schema factory. Production supplies Astro content references; Editor supplies a normalized artist-reference parser. Draft, UI, filesystem, Preview, and Git policy do not enter the Production schema or consumers.
+- The collection registry contains declarations and collection-owned list readers, with no Journal/Works branch logic. Entry states, forms, serializers, render models, mutation targets, and Publish targets remain collection-owned.
+- Save compares the full baseline with a canonical reread, checks raw bytes immediately before replacement, writes an exclusive temporary regular file, and renames only the selected existing regular file. Unsafe IDs, symlinks, non-regular targets, and stale baselines are rejected.
+- Preview uses a Works-owned TTL store and model. Tokens are random UUIDs; invalid, expired, mismatched, and cross-store tokens are rejected, and expired records are cleaned on create or read.
+- Publish requires a clean saved Draft matching a canonical reread, refuses pre-staged state and unsafe repository context, stages one canonical Work path, verifies its staged blob byte-for-byte, commits with a fixed message, and reports push failure after commit as a distinct result.
+- Save, Preview, and Publish routes are injected only for `astro dev`; the Production build contains no mutation or Draft Preview server route.
+
+The final audit retains the A2/B2/C2 classification above. A generic repository, shared concrete Draft root, schema-driven form, shared Preview record/store, or universal capability policy is still not justified by two deliberately different collections.
+
+The next phase is an Asset Manager specification and safety-boundary audit. It must not implicitly authorize storage migration, locale splitting, create/delete flows, or asset mutation.

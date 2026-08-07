@@ -13,6 +13,10 @@ import {
   WorksPublishError,
 } from "./works-publish.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
+import {
+  sha256,
+  type WorksAssetPublishManifest,
+} from "./works-asset-publish-manifest.ts";
 
 const execFile = promisify(execFileCallback);
 const source = `---
@@ -46,6 +50,9 @@ async function withRepository(
     await fs.mkdir(path.join(repository, "src/content/works"), {
       recursive: true,
     });
+    await fs.mkdir(path.join(repository, "public/images/works"), {
+      recursive: true,
+    });
     await fs.writeFile(
       path.join(repository, "src/content/works/test-work.md"),
       source,
@@ -63,6 +70,25 @@ async function withRepository(
   } finally {
     await fs.rm(temporary, { recursive: true, force: true });
   }
+}
+
+function manifest(
+  draft: Awaited<ReturnType<typeof savedDraft>>,
+  assets: { name: string; bytes: Uint8Array }[],
+): WorksAssetPublishManifest {
+  return {
+    contentId: draft.contentId,
+    baselineSha256: sha256(draft.sourceRaw),
+    assets: assets.map(({ name, bytes }) => ({
+      src: `/images/works/${name}`,
+      sha256: sha256(bytes),
+      byteSize: bytes.byteLength,
+      format: "png",
+      mime: "image/png",
+      width: 1,
+      height: 1,
+    })),
+  };
 }
 
 async function savedDraft(repository: string) {
@@ -197,6 +223,135 @@ test("publish inspection rejects detached HEAD, missing upstream, and mismatch",
       (error: unknown) =>
         error instanceof WorksPublishError &&
         error.code === "unsafe-repository",
+    );
+  });
+});
+
+test("publish stages exactly the Markdown and saved asset manifest", async () => {
+  await withRepository(async (repository) => {
+    const worksRoot = path.join(repository, "src/content/works");
+    const target = path.join(worksRoot, "test-work.md");
+    const first = Buffer.from("first asset");
+    const second = Buffer.from("second asset");
+    await fs.writeFile(
+      target,
+      source.replace("Test Work", "Published with assets"),
+    );
+    await fs.writeFile(
+      path.join(repository, "public/images/works/first.png"),
+      first,
+    );
+    await fs.writeFile(
+      path.join(repository, "public/images/works/second.png"),
+      second,
+    );
+    await fs.writeFile(
+      path.join(repository, "public/images/works/unrelated.png"),
+      "unrelated",
+    );
+    const draft = await savedDraft(repository);
+    const result = await publishSavedWorksEntry(
+      draft,
+      structuredClone(draft),
+      false,
+      repository,
+      worksRoot,
+      manifest(draft, [
+        { name: "first.png", bytes: first },
+        { name: "second.png", bytes: second },
+      ]),
+    );
+    assert.equal(result.state, "published");
+    assert.deepEqual(
+      (await git(repository, "show", "--format=", "--name-only", "HEAD"))
+        .split("\n")
+        .sort(),
+      [
+        "public/images/works/first.png",
+        "public/images/works/second.png",
+        "src/content/works/test-work.md",
+      ],
+    );
+    assert.match(await git(repository, "status", "--short"), /unrelated.png/);
+  });
+});
+
+test("asset publish rejects stale bytes, missing files, and unsafe files", async () => {
+  await withRepository(async (repository) => {
+    const worksRoot = path.join(repository, "src/content/works");
+    await fs.writeFile(
+      path.join(worksRoot, "test-work.md"),
+      source.replace("Test Work", "Asset checks"),
+    );
+    const draft = await savedDraft(repository);
+    const bytes = Buffer.from("expected");
+    const target = path.join(repository, "public/images/works/check.png");
+    await fs.writeFile(target, "changed");
+    const savedManifest = manifest(draft, [{ name: "check.png", bytes }]);
+    await assert.rejects(
+      publishSavedWorksEntry(
+        draft,
+        draft,
+        false,
+        repository,
+        worksRoot,
+        savedManifest,
+      ),
+      (error: unknown) =>
+        error instanceof WorksPublishError &&
+        error.code === "asset-publish-canonical-mismatch",
+    );
+    await fs.rm(target);
+    await assert.rejects(
+      publishSavedWorksEntry(
+        draft,
+        draft,
+        false,
+        repository,
+        worksRoot,
+        savedManifest,
+      ),
+      WorksPublishError,
+    );
+    await fs.symlink(path.join(repository, "unrelated.txt"), target);
+    await assert.rejects(
+      publishSavedWorksEntry(
+        draft,
+        draft,
+        false,
+        repository,
+        worksRoot,
+        savedManifest,
+      ),
+      WorksPublishError,
+    );
+  });
+});
+
+test("already published manifest assets naturally fall out of the next publish", async () => {
+  await withRepository(async (repository) => {
+    const worksRoot = path.join(repository, "src/content/works");
+    const bytes = Buffer.from("published asset");
+    await fs.writeFile(
+      path.join(repository, "public/images/works/published.png"),
+      bytes,
+    );
+    await git(repository, "add", "--", "public/images/works/published.png");
+    await git(repository, "commit", "-m", "Published asset");
+    await git(repository, "push");
+    const draft = await savedDraft(repository);
+    await assert.rejects(
+      publishSavedWorksEntry(
+        draft,
+        draft,
+        false,
+        repository,
+        worksRoot,
+        manifest(draft, [{ name: "published.png", bytes }]),
+      ),
+      (error: unknown) =>
+        error instanceof WorksPublishError &&
+        error.code === "nothing-to-publish",
     );
   });
 });

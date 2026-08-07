@@ -10,6 +10,12 @@ import {
   type WorksEditorDraftState,
 } from "./works-draft-state.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
+import {
+  sha256,
+  type WorksAssetPublishManifest,
+  type WorksAssetPublishManifestEntry,
+} from "./works-asset-publish-manifest.ts";
+import { WORKS_ASSET_POLICY } from "./works-asset-policy.ts";
 
 const execFile = promisify(execFileCallback);
 
@@ -29,6 +35,7 @@ export type WorksPublishInspection = {
   file: string;
   diff: string;
   commitMessage: string;
+  files: string[];
 };
 
 export class WorksPublishError extends Error {
@@ -36,6 +43,8 @@ export class WorksPublishError extends Error {
     | "dirty-draft"
     | "publish-blocked"
     | "canonical-mismatch"
+    | "asset-publish-manifest-mismatch"
+    | "asset-publish-canonical-mismatch"
     | "unsafe-repository"
     | "nothing-to-publish"
     | "publish-failed";
@@ -65,6 +74,89 @@ function createGit(repositoryRoot: string): Git {
 
 function pathFor(contentId: string): string {
   return path.posix.join("src/content/works", `${contentId}.md`);
+}
+
+function repositoryPathForAsset(asset: WorksAssetPublishManifestEntry) {
+  if (!asset.src.startsWith(WORKS_ASSET_POLICY.publicPrefix)) return null;
+  const basename = asset.src.slice(WORKS_ASSET_POLICY.publicPrefix.length);
+  if (!basename || path.basename(basename) !== basename) return null;
+  return path.posix.join("public/images/works", basename);
+}
+
+async function verifyManifestAssets(
+  manifest: WorksAssetPublishManifest,
+  contentId: string,
+  repositoryRoot: string,
+) {
+  if (
+    !manifest ||
+    typeof manifest !== "object" ||
+    !Array.isArray(manifest.assets) ||
+    manifest.contentId !== contentId ||
+    typeof manifest.baselineSha256 !== "string" ||
+    manifest.assets.some(
+      (asset) =>
+        !asset ||
+        typeof asset.src !== "string" ||
+        typeof asset.sha256 !== "string" ||
+        !Number.isSafeInteger(asset.byteSize) ||
+        asset.byteSize < 0 ||
+        !Number.isSafeInteger(asset.width) ||
+        asset.width < 1 ||
+        !Number.isSafeInteger(asset.height) ||
+        asset.height < 1 ||
+        (
+          {
+            avif: "image/avif",
+            jpg: "image/jpeg",
+            png: "image/png",
+            webp: "image/webp",
+          } as const
+        )[asset.format] !== asset.mime,
+    ) ||
+    new Set(manifest.assets.map((asset) => asset.src)).size !==
+      manifest.assets.length
+  )
+    throw new WorksPublishError(
+      "Asset Publish manifest ownership or paths are invalid",
+      "asset-publish-manifest-mismatch",
+    );
+  const assetRoot = path.join(repositoryRoot, "public/images/works");
+  const rootStat = await fs.lstat(assetRoot).catch(() => null);
+  if (!rootStat?.isDirectory() || rootStat.isSymbolicLink())
+    throw new WorksPublishError(
+      "Canonical asset root is unsafe",
+      "asset-publish-canonical-mismatch",
+    );
+  const realRoot = await fs.realpath(assetRoot);
+  const verified: {
+    file: string;
+    asset: WorksAssetPublishManifestEntry;
+  }[] = [];
+  for (const asset of manifest.assets) {
+    const file = repositoryPathForAsset(asset);
+    if (!file)
+      throw new WorksPublishError(
+        "Asset Publish manifest path is invalid",
+        "asset-publish-manifest-mismatch",
+      );
+    const absolute = path.join(repositoryRoot, file);
+    const stat = await fs.lstat(absolute).catch(() => null);
+    const parent = await fs.realpath(path.dirname(absolute)).catch(() => null);
+    if (!stat?.isFile() || stat.isSymbolicLink() || parent !== realRoot)
+      throw new WorksPublishError(
+        "Canonical asset is missing or unsafe",
+        "asset-publish-canonical-mismatch",
+      );
+    const bytes = await fs.readFile(absolute);
+    if (bytes.byteLength !== asset.byteSize || sha256(bytes) !== asset.sha256)
+      throw new WorksPublishError(
+        "Canonical asset no longer matches its Save manifest",
+        "asset-publish-canonical-mismatch",
+      );
+    verified.push({ file, asset });
+  }
+  return verified;
 }
 
 export function worksPublishCommitMessage(contentId: string): string {
@@ -103,6 +195,7 @@ export async function inspectWorksPublish(
   contentId: string,
   repositoryRoot = path.resolve("."),
   git = createGit(repositoryRoot),
+  manifest?: WorksAssetPublishManifest,
 ): Promise<WorksPublishInspection> {
   if (!isContentId(contentId))
     throw new WorksPublishError(
@@ -124,7 +217,16 @@ export async function inspectWorksPublish(
       `Publish source is not a regular file: ${file}`,
       "unsafe-repository",
     );
-  if (!(await git(["diff", "--name-only", "--", file])))
+  const assetFiles = manifest
+    ? (await verifyManifestAssets(manifest, contentId, repositoryRoot)).map(
+        ({ file }) => file,
+      )
+    : [];
+  const files: string[] = [];
+  for (const candidate of [file, ...assetFiles])
+    if (await git(["status", "--porcelain", "--", candidate]))
+      files.push(candidate);
+  if (files.length === 0)
     throw new WorksPublishError(
       "Canonical Works entry has no changes to publish",
       "nothing-to-publish",
@@ -134,6 +236,7 @@ export async function inspectWorksPublish(
     file,
     diff: await git(["diff", "--", file]),
     commitMessage: worksPublishCommitMessage(contentId),
+    files,
   };
 }
 
@@ -143,6 +246,7 @@ export async function publishSavedWorksEntry(
   dirty: boolean,
   repositoryRoot = path.resolve("."),
   worksRoot = path.join(repositoryRoot, "src/content/works"),
+  manifest?: WorksAssetPublishManifest,
 ): Promise<WorksPublishResult> {
   if (dirty || JSON.stringify(draft) !== JSON.stringify(baseline))
     throw new WorksPublishError(
@@ -162,37 +266,83 @@ export async function publishSavedWorksEntry(
       "Saved Works baseline does not match the reread canonical file",
       "canonical-mismatch",
     );
+  if (
+    manifest &&
+    (manifest.contentId !== draft.contentId ||
+      manifest.baselineSha256 !== sha256(canonical.sourceRaw))
+  )
+    throw new WorksPublishError(
+      "Asset Publish manifest does not belong to the saved Markdown baseline",
+      "asset-publish-manifest-mismatch",
+    );
 
   const git = createGit(repositoryRoot);
+  const verifiedAssets = manifest
+    ? await verifyManifestAssets(manifest, draft.contentId, repositoryRoot)
+    : [];
   const inspection = await inspectWorksPublish(
     draft.contentId,
     repositoryRoot,
     git,
+    manifest,
   );
   const expected = canonical.sourceRaw;
   try {
-    await git(["add", "--", inspection.file]);
+    await git(["add", "--", ...inspection.files]);
     const staged = (await git(["diff", "--cached", "--name-only"]))
       .split("\n")
       .filter(Boolean);
-    if (staged.length !== 1 || staged[0] !== inspection.file)
+    if (
+      JSON.stringify(staged.sort()) !==
+      JSON.stringify([...inspection.files].sort())
+    )
       throw new WorksPublishError(
         "Staged files escaped the Works publish boundary",
         "unsafe-repository",
       );
-    const { stdout: stagedContent } = await execFile(
-      "git",
-      ["show", `:${inspection.file}`],
-      { cwd: repositoryRoot, encoding: "utf8" },
-    );
-    if (stagedContent !== expected)
-      throw new WorksPublishError(
-        "Canonical Works file changed while Publish was staging it",
-        "canonical-mismatch",
+    if (inspection.files.includes(inspection.file)) {
+      const { stdout: stagedContent } = await execFile(
+        "git",
+        ["show", `:${inspection.file}`],
+        { cwd: repositoryRoot, encoding: "utf8" },
       );
+      if (stagedContent !== expected)
+        throw new WorksPublishError(
+          "Canonical Works file changed while Publish was staging it",
+          "canonical-mismatch",
+        );
+    }
+    for (const verified of verifiedAssets) {
+      const reread = await fs.readFile(
+        path.join(repositoryRoot, verified.file),
+      );
+      if (
+        reread.byteLength !== verified.asset.byteSize ||
+        sha256(reread) !== verified.asset.sha256
+      )
+        throw new WorksPublishError(
+          "Canonical asset changed while Publish was staging it",
+          "asset-publish-canonical-mismatch",
+        );
+      if (inspection.files.includes(verified.file)) {
+        const { stdout: stagedBytes } = await execFile(
+          "git",
+          ["show", `:${verified.file}`],
+          { cwd: repositoryRoot, encoding: "buffer" },
+        );
+        if (
+          stagedBytes.byteLength !== verified.asset.byteSize ||
+          sha256(stagedBytes) !== verified.asset.sha256
+        )
+          throw new WorksPublishError(
+            "Staged asset does not match its Save manifest",
+            "asset-publish-canonical-mismatch",
+          );
+      }
+    }
     await git(["commit", "-m", inspection.commitMessage]);
   } catch (error) {
-    await git(["reset", "--", inspection.file]).catch(() => undefined);
+    await git(["reset", "--", ...inspection.files]).catch(() => undefined);
     if (error instanceof WorksPublishError) throw error;
     throw new WorksPublishError(
       "Failed to commit Works entry",

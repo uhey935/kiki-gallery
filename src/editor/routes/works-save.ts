@@ -1,13 +1,20 @@
 import type { APIRoute } from "astro";
 
 import type { WorksEditorDraftState } from "../works-draft-state.ts";
-import { saveWorksEditorDraft, WorksSaveError } from "../works-save.ts";
+import type { WorksAssetDraftState } from "../works-asset-draft.ts";
+import { temporaryWorksAssetStore } from "../works-asset-store.ts";
+import {
+  saveWorksEditorDraft,
+  saveWorksEditorDraftWithAssets,
+  WorksSaveError,
+} from "../works-save.ts";
 
 export const POST: APIRoute = async ({ params, request }) => {
   try {
     const body = (await request.json()) as {
       draft?: WorksEditorDraftState;
       baseline?: WorksEditorDraftState;
+      assetDraft?: WorksAssetDraftState;
     };
     const { draft, baseline } = body ?? {};
     if (
@@ -20,6 +27,13 @@ export const POST: APIRoute = async ({ params, request }) => {
       baseline.contentId !== params.contentId
     )
       return Response.json({ error: "Content ID mismatch" }, { status: 400 });
+    if (body.assetDraft)
+      return Response.json(
+        await saveWorksEditorDraftWithAssets(draft, baseline, {
+          assetDraft: body.assetDraft,
+          store: await temporaryWorksAssetStore,
+        }),
+      );
     return Response.json({
       draft: await saveWorksEditorDraft(draft, baseline),
     });

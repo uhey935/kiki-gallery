@@ -95,6 +95,14 @@ test("validation failures point to review while infrastructure failures retry", 
   assert.equal(editorFailureGuidance(undefined).action, "retry");
 });
 
+test("expired temporary assets tell the operator to upload again", () => {
+  assert.deepEqual(editorFailureGuidance("asset-temp-expired"), {
+    action: "review",
+    message:
+      "The temporary image is no longer available. Upload it again before saving.",
+  });
+});
+
 test("issue location exposes locale and field with useful fallbacks", () => {
   assert.deepEqual(
     journalIssueLocation({

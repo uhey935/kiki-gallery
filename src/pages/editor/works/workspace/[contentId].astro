@@ -2,6 +2,7 @@
 import WorksDraftForm from "../../../../components/editor/WorksDraftForm.astro";
 import WorksValidationPanel from "../../../../components/editor/WorksValidationPanel.astro";
 import { createWorksEditorDraft } from "../../../../editor/works-draft-state";
+import { createWorksAssetDraftState } from "../../../../editor/works-asset-draft";
 import {
   readWorksEditorEntry,
   readWorksEditorState,
@@ -19,7 +20,18 @@ export async function getStaticPaths() {
 }
 const { entry } = Astro.props;
 const draft = createWorksEditorDraft(entry);
+const assetDraft = draft
+  ? createWorksAssetDraftState(
+      draft.contentId,
+      crypto.randomUUID(),
+      draft.data.images,
+    )
+  : undefined;
 const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
+const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
+  "<",
+  "\\u003c",
+);
 ---
 
 <EditorLayout title={entry.data?.title ?? entry.contentId} section="Works">
@@ -72,6 +84,12 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   id="works-editor-draft"
   set:html={serializedDraft}
 />
+<script
+  type="application/json"
+  is:inline
+  id="works-asset-draft"
+  set:html={serializedAssetDraft}
+/>
 <script>
   import {
     isWorksEditorDraftDirty,
@@ -79,6 +97,15 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     validateWorksEditorDraft,
     type WorksEditorDraftState,
   } from "../../../../editor/works-draft-state";
+  import type { WorksAssetDraftState } from "../../../../editor/works-asset-draft";
+  import type { WorksAssetPublishManifest } from "../../../../editor/works-asset-publish-manifest";
+  import {
+    addTemporaryWorksAsset,
+    removeTemporaryWorksAssetFromDraft,
+    reorderWorksAssetDraftImage,
+    temporaryWorksAssetPreviewUrl,
+    updateWorksAssetDraftAlt,
+  } from "../../../../editor/works-asset-draft";
   import { editorFailureGuidance } from "../../../../editor/ux";
   const raw = document.querySelector<HTMLScriptElement>(
     "#works-editor-draft",
@@ -86,6 +113,10 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   const form = document.querySelector<HTMLFormElement>(
     "[data-works-draft-form]",
   );
+  const rawAssetDraft =
+    document.querySelector<HTMLScriptElement>(
+      "#works-asset-draft",
+    )?.textContent;
   const button = document.querySelector<HTMLButtonElement>("[data-save-works]");
   const previewButton = document.querySelector<HTMLButtonElement>(
     "[data-preview-works]",
@@ -96,22 +127,127 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   const status = document.querySelector<HTMLElement>(
     "[data-works-action-status]",
   );
-  if (raw && form && button && previewButton && publishButton) {
+  const assetStatus = document.querySelector<HTMLElement>(
+    "[data-works-asset-status]",
+  );
+  const assetList = document.querySelector<HTMLElement>(
+    "[data-works-asset-list]",
+  );
+  const assetFile = document.querySelector<HTMLInputElement>(
+    "[data-works-asset-file]",
+  );
+  const uploadButton = document.querySelector<HTMLButtonElement>(
+    "[data-upload-works-assets]",
+  );
+  if (
+    raw &&
+    rawAssetDraft &&
+    form &&
+    button &&
+    previewButton &&
+    publishButton &&
+    assetList &&
+    assetFile &&
+    uploadButton
+  ) {
     let baseline = JSON.parse(raw) as WorksEditorDraftState;
     let draft = baseline;
-    let pending: "save" | "preview" | "publish" | null = null;
+    let assetDraft = JSON.parse(rawAssetDraft) as WorksAssetDraftState;
+    let assetBaseline = structuredClone(assetDraft);
+    let publishManifest: WorksAssetPublishManifest | undefined;
+    let pending: "save" | "preview" | "publish" | "upload" | null = null;
     let statusMessage: string | null = null;
     const failureMessage = (error: unknown, fallback: string) => {
       const response = error as Error & { code?: string };
       return `${response.message || fallback} ${editorFailureGuidance(response.code).message}`;
     };
+    const isDirty = () =>
+      isWorksEditorDraftDirty(baseline, draft) ||
+      JSON.stringify(assetBaseline) !== JSON.stringify(assetDraft);
+    const renderAssets = () => {
+      assetList.replaceChildren(
+        ...assetDraft.images.map((image, index) => {
+          const fieldset = document.createElement("fieldset");
+          fieldset.className = "editor-readonly-group";
+          fieldset.dataset.assetIndex = String(index);
+          const legend = document.createElement("legend");
+          legend.textContent = `Image ${index + 1}${image.kind === "temporary" ? " · Temporary" : ""}`;
+          const thumbnail = document.createElement("img");
+          thumbnail.className = "editor-asset-thumbnail";
+          thumbnail.src =
+            image.kind === "existing"
+              ? image.src
+              : temporaryWorksAssetPreviewUrl(
+                  image.token,
+                  assetDraft.contentId,
+                  assetDraft.workspaceId,
+                );
+          thumbnail.alt = image.alt;
+          const source = document.createElement("label");
+          source.textContent = "Shared · src";
+          const sourceInput = document.createElement("input");
+          sourceInput.readOnly = true;
+          sourceInput.value =
+            image.kind === "existing" ? image.src : "Temporary until Save";
+          source.append(sourceInput);
+          const alt = document.createElement("label");
+          alt.textContent = "Localized · alt";
+          const textarea = document.createElement("textarea");
+          textarea.dataset.assetAlt = "";
+          textarea.value = image.alt;
+          alt.append(textarea);
+          const actions = document.createElement("div");
+          actions.className = "editor-asset-actions";
+          for (const [action, label, disabled] of [
+            ["up", "Move up", index === 0],
+            ["down", "Move down", index === assetDraft.images.length - 1],
+          ] as const) {
+            const move = document.createElement("button");
+            move.type = "button";
+            move.dataset.assetMove = action;
+            move.textContent = label;
+            move.disabled = disabled;
+            actions.append(move);
+          }
+          if (image.kind === "temporary") {
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.dataset.assetRemove = image.token;
+            remove.textContent = "Remove temporary image";
+            actions.append(remove);
+          }
+          fieldset.append(legend, thumbnail, source, alt, actions);
+          return fieldset;
+        }),
+      );
+    };
     const render = () => {
-      const dirty = isWorksEditorDraftDirty(baseline, draft);
-      const capabilities = validateWorksEditorDraft(draft).capabilities;
+      const dirty = isDirty();
+      const validationDraft: WorksEditorDraftState = {
+        ...draft,
+        data: {
+          ...draft.data,
+          images: assetDraft.images.map((image) => ({
+            src:
+              image.kind === "existing"
+                ? image.src
+                : temporaryWorksAssetPreviewUrl(
+                    image.token,
+                    assetDraft.contentId,
+                    assetDraft.workspaceId,
+                  ),
+            alt: image.alt,
+          })),
+        },
+      };
+      const capabilities =
+        validateWorksEditorDraft(validationDraft).capabilities;
       button.disabled = pending !== null || !dirty || !capabilities.save;
       previewButton.disabled = pending !== null || !capabilities.preview;
       publishButton.disabled =
         pending !== null || dirty || !capabilities.publish;
+      uploadButton.disabled = pending !== null || assetFile.files?.length === 0;
+      assetFile.disabled = pending !== null;
       previewButton.title = pending
         ? "Another action is in progress"
         : capabilities.preview
@@ -132,20 +268,21 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
               ? "Preparing preview…"
               : pending === "publish"
                 ? "Publishing…"
-                : statusMessage
-                  ? statusMessage
-                  : dirty
-                    ? "Unsaved changes"
-                    : "Saved · ready";
+                : pending === "upload"
+                  ? "Uploading asset…"
+                  : statusMessage
+                    ? statusMessage
+                    : dirty
+                      ? "Unsaved changes"
+                      : "Saved · ready";
     };
     form.addEventListener("input", (event) => {
       const field = event.target as HTMLInputElement | HTMLTextAreaElement;
       draft = updateWorksEditorDraft(draft, (next) => {
-        const [key, index, child] = field.name.split(".");
+        const [key, index] = field.name.split(".");
         if (key === "body") next.body = field.value;
         else if (key === "artist") next.data.artist.id = field.value;
-        else if (key === "images")
-          next.data.images[Number(index)][child as "src" | "alt"] = field.value;
+        else if (key === "images") return;
         else if (key === "year")
           next.data.year = field.value ? Number(field.value) : undefined;
         else if (key === "inquiry" && index === "type")
@@ -166,6 +303,87 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       statusMessage = null;
       render();
     });
+    assetFile.addEventListener("change", render);
+    uploadButton.addEventListener("click", async () => {
+      const files = [...(assetFile.files ?? [])];
+      if (pending || files.length === 0) return;
+      pending = "upload";
+      if (assetStatus)
+        assetStatus.textContent = `Uploading ${files.length} image${files.length === 1 ? "" : "s"}…`;
+      render();
+      let uploaded = 0;
+      try {
+        for (const file of files) {
+          const body = new FormData();
+          body.set("workspaceId", assetDraft.workspaceId);
+          body.set("file", file);
+          const response = await fetch(
+            `/editor/api/works-assets/upload/${encodeURIComponent(draft.contentId)}`,
+            { method: "POST", body },
+          );
+          const result = (await response.json()) as {
+            asset?: { token: string; originalFilename: string };
+            error?: string;
+            code?: string;
+          };
+          if (!response.ok || !result.asset) {
+            const failure = new Error(
+              result.error ?? `Upload failed for ${file.name}`,
+            ) as Error & { code?: string };
+            failure.code = result.code;
+            throw failure;
+          }
+          assetDraft = addTemporaryWorksAsset(assetDraft, {
+            token: result.asset.token,
+            alt: file.name.replace(/\.[^.]+$/, "").replaceAll("-", " "),
+          });
+          uploaded += 1;
+        }
+        assetFile.value = "";
+        if (assetStatus)
+          assetStatus.textContent = `${uploaded} temporary image${uploaded === 1 ? "" : "s"} added. Save to make permanent.`;
+        statusMessage = "Unsaved asset changes";
+      } catch (error) {
+        if (assetStatus)
+          assetStatus.textContent = `${failureMessage(error, "Works asset upload failed")} ${uploaded ? `${uploaded} image${uploaded === 1 ? " was" : "s were"} added before the failure.` : ""}`;
+      } finally {
+        pending = null;
+        renderAssets();
+        render();
+      }
+    });
+    assetList.addEventListener("input", (event) => {
+      const field = event.target as HTMLTextAreaElement;
+      if (!field.matches("[data-asset-alt]")) return;
+      const index = Number(
+        field.closest<HTMLElement>("[data-asset-index]")?.dataset.assetIndex,
+      );
+      assetDraft = updateWorksAssetDraftAlt(assetDraft, index, field.value);
+      statusMessage = null;
+      render();
+    });
+    assetList.addEventListener("click", (event) => {
+      const target = event.target as HTMLButtonElement;
+      const container = target.closest<HTMLElement>("[data-asset-index]");
+      if (!container) return;
+      const index = Number(container.dataset.assetIndex);
+      if (target.dataset.assetMove) {
+        const to = target.dataset.assetMove === "up" ? index - 1 : index + 1;
+        assetDraft = reorderWorksAssetDraftImage(assetDraft, index, to);
+      } else if (target.dataset.assetRemove) {
+        // Keep removed bytes until TTL expiry so an accidental removal does not
+        // destroy retry/undo data. Save only materializes referenced tokens.
+        assetDraft = removeTemporaryWorksAssetFromDraft(
+          assetDraft,
+          target.dataset.assetRemove,
+        );
+        if (assetStatus)
+          assetStatus.textContent = "Temporary image removed from this Draft.";
+      } else return;
+      statusMessage = null;
+      renderAssets();
+      render();
+    });
     previewButton.addEventListener("click", async () => {
       if (previewButton.disabled) return;
       const previewWindow = window.open("", "_blank");
@@ -175,14 +393,20 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         const response = await fetch("/editor/api/works-preview/create", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ draft }),
+          body: JSON.stringify({ draft, assetDraft }),
         });
         const result = (await response.json()) as {
           url?: string;
           error?: string;
+          code?: string;
         };
-        if (!response.ok || !result.url)
-          throw new Error(result.error ?? "Works preview failed");
+        if (!response.ok || !result.url) {
+          const failure = new Error(
+            result.error ?? "Works preview failed",
+          ) as Error & { code?: string };
+          failure.code = result.code;
+          throw failure;
+        }
         if (previewWindow) previewWindow.location.href = result.url;
         else window.open(result.url, "_blank");
       } catch (error) {
@@ -203,17 +427,41 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ draft, baseline }),
+            body: JSON.stringify({ draft, baseline, assetDraft }),
           },
         );
         const result = (await response.json()) as {
           draft?: WorksEditorDraftState;
+          assetDraft?: WorksAssetDraftState;
+          publishManifest?: WorksAssetPublishManifest;
           error?: string;
+          code?: string;
         };
-        if (!response.ok || !result.draft)
-          throw new Error(result.error ?? "Works save failed");
+        if (!response.ok || !result.draft) {
+          const failure = new Error(
+            result.error ?? "Works save failed",
+          ) as Error & { code?: string };
+          failure.code = result.code;
+          throw failure;
+        }
         baseline = result.draft;
         draft = result.draft;
+        if (result.publishManifest) {
+          const assets = new Map(
+            publishManifest?.assets.map((asset) => [asset.src, asset]) ?? [],
+          );
+          for (const asset of result.publishManifest.assets)
+            assets.set(asset.src, asset);
+          publishManifest = {
+            ...result.publishManifest,
+            assets: [...assets.values()],
+          };
+        }
+        if (result.assetDraft) {
+          assetDraft = result.assetDraft;
+          assetBaseline = structuredClone(result.assetDraft);
+          renderAssets();
+        }
         statusMessage = "Saved to canonical file";
       } catch (error) {
         statusMessage = failureMessage(error, "Works save failed");
@@ -223,11 +471,20 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       }
     });
     publishButton.addEventListener("click", async () => {
-      const dirty = isWorksEditorDraftDirty(baseline, draft);
+      const dirty = isDirty();
       if (
         pending ||
         dirty ||
-        !validateWorksEditorDraft(draft).capabilities.publish
+        !validateWorksEditorDraft({
+          ...draft,
+          data: {
+            ...draft.data,
+            images: assetDraft.images.map((image) => ({
+              src: image.kind === "existing" ? image.src : "",
+              alt: image.alt,
+            })),
+          },
+        }).capabilities.publish
       )
         return;
       pending = "publish";
@@ -238,7 +495,12 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ draft, baseline, dirty }),
+            body: JSON.stringify({
+              draft,
+              baseline,
+              dirty,
+              publishManifest,
+            }),
           },
         );
         const result = (await response.json()) as {
@@ -260,6 +522,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           result.state === "published"
             ? `Published ${result.commit?.slice(0, 7) ?? "commit"}`
             : `Committed ${result.commit?.slice(0, 7) ?? "commit"}; push failed. Retry push outside the Editor.`;
+        publishManifest = undefined;
       } catch (error) {
         statusMessage = failureMessage(error, "Works publish failed");
       } finally {
@@ -268,11 +531,12 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       }
     });
     window.addEventListener("beforeunload", (event) => {
-      if (isWorksEditorDraftDirty(baseline, draft)) {
+      if (isDirty()) {
         event.preventDefault();
         (event as unknown as { returnValue: string }).returnValue = "";
       }
     });
+    renderAssets();
     render();
   }
 </script>

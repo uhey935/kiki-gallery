@@ -12,18 +12,19 @@ The documentation is intended to evolve alongside the project while preserving a
 
 The documents are designed to be read in the following order.
 
-| Document                              | Purpose                                                                                              |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Journal Architecture — Current**    | Current authority for the implemented Journal read path and production boundaries.                   |
-| **Collection Framework Audit**        | Reassesses shared Editor boundaries after the Works read-only slice and selects the next Save slice. |
-| **Content Model Specification**       | Defines the canonical content architecture and data model.                                           |
-| **Loader Architecture Specification** | Defines how Content Units are loaded and adapted for Astro while preserving validation boundaries.   |
-| **Workflow Architecture Audit**       | Audits Editor save, rename, removal, and Git publish workflows before implementation.                |
-| **Cross-Architecture Review**         | Sets the prototype gate across content, Editor, infrastructure, routing, migration, and consumers.   |
-| **Decisions 029–031**                 | Fixes Issue/Capability, surface visibility, Route Registry, and the exact Journal prototype gate.    |
-| **CSS Style Guide**                   | Defines the presentation architecture and CSS conventions.                                           |
-| **Architecture Audit**                | Evaluates the current implementation and identifies improvements.                                    |
-| **Architecture Review Report**        | Verifies architectural consistency before implementation.                                            |
+| Document                              | Purpose                                                                                                            |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Journal Architecture — Current**    | Current authority for the implemented Journal read path and production boundaries.                                 |
+| **Collection Framework Audit**        | Records the Works Editor v1 finalization audit and the proven Journal/Works boundaries.                            |
+| **Works Asset Manager Specification** | Defines the Works asset source of truth, mutation transactions, Preview/Publish boundaries, and safety invariants. |
+| **Content Model Specification**       | Defines the canonical content architecture and data model.                                                         |
+| **Loader Architecture Specification** | Defines how Content Units are loaded and adapted for Astro while preserving validation boundaries.                 |
+| **Workflow Architecture Audit**       | Audits Editor save, rename, removal, and Git publish workflows before implementation.                              |
+| **Cross-Architecture Review**         | Sets the prototype gate across content, Editor, infrastructure, routing, migration, and consumers.                 |
+| **Decisions 029–031**                 | Fixes Issue/Capability, surface visibility, Route Registry, and the exact Journal prototype gate.                  |
+| **CSS Style Guide**                   | Defines the presentation architecture and CSS conventions.                                                         |
+| **Architecture Audit**                | Evaluates the current implementation and identifies improvements.                                                  |
+| **Architecture Review Report**        | Verifies architectural consistency before implementation.                                                          |
 
 ---
 
@@ -33,7 +34,13 @@ The documents are designed to be read in the following order.
 
 **collection-framework-audit-2026-08-07.md**
 
-Classifies reusable Editor/platform behavior, deferred abstractions, and collection-owned contracts; preserves the first Works gate and adds the authoritative post-Works A2/B2/C2 reassessment plus the next implementation unit.
+Classifies reusable Editor/platform behavior, deferred abstractions, and collection-owned contracts; preserves the implementation gates, records the authoritative A2/B2/C2 reassessment, and closes the Works Editor v1 finalization audit.
+
+### Works Asset Manager Architecture & Safety Specification
+
+**works-asset-manager-architecture-and-safety-specification.md**
+
+Defines the current Works asset inventory, canonical root and URL model, Draft-versus-filesystem mutation boundary, media admission rules, Save/Preview/Publish transaction semantics, orphan policy, stable failure taxonomy, test matrix, and the single approved first implementation slice. Asset mutation, storage migration, locale splitting, and New/Delete remain outside its current implementation scope.
 
 ### Journal Architecture — Current
 
@@ -203,6 +210,7 @@ docs/
 └── architecture/
     ├── README.md
     ├── collection-framework-audit-2026-08-07.md
+    ├── works-asset-manager-architecture-and-safety-specification.md
     ├── journal-architecture-current.md
     ├── content-model-specification.md
     ├── loader-architecture-specification-v1.0.md

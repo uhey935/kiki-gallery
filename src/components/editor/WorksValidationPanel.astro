@@ -4,6 +4,7 @@ interface Props {
   entry: WorksEditorEntryState;
 }
 const { entry } = Astro.props;
+const capabilityLabel = entry.issueCount === 0 ? "Available" : "Blocked";
 ---
 
 <aside class="editor-validation" aria-labelledby="validation-heading">
@@ -29,9 +30,9 @@ const { entry } = Astro.props;
     }
   </p>
   <dl class="editor-detail-list">
-    <div><dt>Save</dt><dd>Not connected</dd></div><div>
-      <dt>Preview</dt><dd>Not connected</dd>
-    </div><div><dt>Publish</dt><dd>Not connected</dd></div>
+    <div><dt>Save</dt><dd>{capabilityLabel}</dd></div><div>
+      <dt>Preview</dt><dd>{capabilityLabel}</dd>
+    </div><div><dt>Publish</dt><dd>{capabilityLabel}</dd></div>
   </dl>
   <ul class="editor-issues" hidden={entry.issues.length === 0}>
     {

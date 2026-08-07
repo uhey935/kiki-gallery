@@ -2,6 +2,10 @@ import { randomUUID } from "node:crypto";
 
 import type { WorkData } from "../content-schemas/work.ts";
 import {
+  temporaryWorksAssetPreviewUrl,
+  type WorksAssetDraftState,
+} from "./works-asset-draft.ts";
+import {
   type WorksEditorDraftState,
   validateWorksEditorDraft,
 } from "./works-draft-state.ts";
@@ -11,6 +15,8 @@ export type WorksPreviewModel = {
   data: WorkData;
   body: string;
 };
+
+export { temporaryWorksAssetPreviewUrl } from "./works-asset-draft.ts";
 
 export class WorksPreviewError extends Error {
   readonly code:
@@ -28,6 +34,7 @@ export class WorksPreviewError extends Error {
 
 export function createWorksPreviewModel(
   draft: WorksEditorDraftState,
+  assetDraft?: WorksAssetDraftState,
 ): WorksPreviewModel {
   if (!validateWorksEditorDraft(draft).capabilities.preview) {
     throw new WorksPreviewError(
@@ -35,9 +42,35 @@ export function createWorksPreviewModel(
       "preview-blocked",
     );
   }
+  if (assetDraft && assetDraft.contentId !== draft.contentId) {
+    throw new WorksPreviewError(
+      "Works asset Draft does not belong to this content",
+      "invalid-request",
+    );
+  }
+  const data = structuredClone(draft.data);
+  if (assetDraft) {
+    data.images = assetDraft.images.map((image) => ({
+      src:
+        image.kind === "existing"
+          ? image.src
+          : temporaryWorksAssetPreviewUrl(
+              image.token,
+              assetDraft.contentId,
+              assetDraft.workspaceId,
+            ),
+      alt: image.alt,
+    }));
+    if (!validateWorksEditorDraft({ ...draft, data }).capabilities.preview) {
+      throw new WorksPreviewError(
+        "Works preview is blocked by Asset Draft validation",
+        "preview-blocked",
+      );
+    }
+  }
   return {
     contentId: draft.contentId,
-    data: structuredClone(draft.data),
+    data,
     body: draft.body,
   };
 }
