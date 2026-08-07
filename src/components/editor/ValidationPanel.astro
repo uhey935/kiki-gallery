@@ -1,5 +1,6 @@
 ---
 import type { JournalEditorEntryState } from "../../editor/journal-state";
+import { journalIssueFieldName, journalIssueLocation } from "../../editor/ux";
 
 interface Props {
   entry: JournalEditorEntryState;
@@ -50,12 +51,33 @@ const state = entry.structuralStatus === "valid" ? "valid" : "blocked";
   </dl>
   <ul class="editor-issues" data-issues hidden={entry.issues.length === 0}>
     {
-      entry.issues.map((issue) => (
-        <li>
-          <strong>{issue.severity}</strong> {issue.ruleId}
-          <small>{issue.messageKey}</small>
-        </li>
-      ))
+      entry.issues.map((issue) => {
+        const location = journalIssueLocation(issue);
+        const target = journalIssueFieldName(issue);
+        return (
+          <li data-issue-target={target}>
+            <div class="editor-issue__meta">
+              <strong
+                class:list={[
+                  "editor-issue__severity",
+                  `editor-issue__severity--${issue.severity}`,
+                ]}
+              >
+                {issue.severity}
+              </strong>
+              <span>{location.locale}</span>
+              <span>{location.field}</span>
+            </div>
+            <span>{issue.messageKey}</span>
+            <small>{issue.ruleId}</small>
+            {target && (
+              <button type="button" class="editor-issue__link">
+                Go to field
+              </button>
+            )}
+          </li>
+        );
+      })
     }
   </ul>
 </aside>

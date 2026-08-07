@@ -11,35 +11,59 @@ interface Props {
 const { locale, source } = Astro.props;
 ---
 
-<section class="editor-entry-section">
+<section class="editor-entry-section" data-editor-section={locale}>
   <header>
     <div>
       <p class="editor-eyebrow">Draft locale</p><h2>{locale.toUpperCase()}</h2>
     </div>
-    <span class="editor-status">{source.state}</span>
+    <div class="editor-section-status">
+      <span data-section-dirty hidden>Modified</span><span class="editor-status"
+        >{source.state}</span
+      >
+    </div>
   </header>
   <div class="editor-entry-section__content">
     {
       source.state === "editable" ? (
         <div class="editor-field-grid">
-          <label class="editor-field-wide">
-            Title
+          <label
+            class="editor-field-wide"
+            data-editor-field={`${locale}.title`}
+          >
+            <span>
+              Title <small class="editor-field-badge">Required</small>
+            </span>
             <input name={`${locale}.title`} value={source.value.title} />
           </label>
-          <label class="editor-field-wide">
-            Summary
+          <label
+            class="editor-field-wide"
+            data-editor-field={`${locale}.summary`}
+          >
+            <span>
+              Summary <small class="editor-field-badge">Required</small>
+            </span>
             <textarea
               name={`${locale}.summary`}
               rows="3"
               set:text={source.value.summary}
             />
           </label>
-          <label class="editor-field-wide">
-            Hero alt
+          <label
+            class="editor-field-wide"
+            data-editor-field={`${locale}.hero_alt`}
+          >
+            <span>
+              Hero alt <small class="editor-field-badge">Required</small>
+            </span>
             <input name={`${locale}.hero_alt`} value={source.value.hero_alt} />
           </label>
-          <label class="editor-field-wide">
-            Markdown body
+          <label class="editor-field-wide" data-editor-field={`${locale}.body`}>
+            <span>
+              Markdown body{" "}
+              <small class="editor-field-badge editor-field-badge--publish">
+                Publish checked
+              </small>
+            </span>
             <textarea
               class="editor-markdown-input"
               name={`${locale}.body`}

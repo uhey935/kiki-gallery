@@ -17,39 +17,51 @@ const {
 ---
 
 <footer class="editor-action-bar" aria-label="Editor actions">
-  <span
+  <span data-action-status role="status" aria-live="polite"
     >{
       dirty
         ? "Unsaved changes"
         : loaded
-          ? "Read-only Editor State"
+          ? "Saved · ready"
           : "No Editor State loaded"
     }</span
   >
-  <div>
-    <button
-      class="editor-button editor-button--secondary"
-      type="button"
-      data-preview-journal="ja"
-      disabled={!preview.ja}>Preview JA</button
-    >
-    <button
-      class="editor-button editor-button--secondary"
-      type="button"
-      data-preview-journal="en"
-      disabled={!preview.en}>Preview EN</button
-    >
-    <button
-      class="editor-button"
-      type="button"
-      data-save-journal
-      disabled={!loaded || !dirty || !save}>Save</button
-    >
-    <button
-      class="editor-button"
-      type="button"
-      data-publish-journal
-      disabled={!loaded || dirty || !publish}>Publish</button
-    >
+  <div class="editor-action-bar__actions">
+    <div class="editor-action" data-action="preview-ja">
+      <button
+        class="editor-button editor-button--secondary"
+        type="button"
+        data-preview-journal="ja"
+        disabled={!preview.ja}>Preview JA</button
+      >
+      <small data-action-reason></small>
+    </div>
+    <div class="editor-action" data-action="preview-en">
+      <button
+        class="editor-button editor-button--secondary"
+        type="button"
+        data-preview-journal="en"
+        disabled={!preview.en}>Preview EN</button
+      >
+      <small data-action-reason></small>
+    </div>
+    <div class="editor-action" data-action="save">
+      <button
+        class="editor-button"
+        type="button"
+        data-save-journal
+        disabled={!loaded || !dirty || !save}>Save</button
+      >
+      <small data-action-reason></small>
+    </div>
+    <div class="editor-action" data-action="publish">
+      <button
+        class="editor-button"
+        type="button"
+        data-publish-journal
+        disabled={!loaded || dirty || !publish}>Publish</button
+      >
+      <small data-action-reason></small>
+    </div>
   </div>
 </footer>

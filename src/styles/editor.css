@@ -240,6 +240,28 @@ button {
 .editor-draft-form {
   margin: 0;
 }
+.editor-field-meaning {
+  margin-bottom: 24px;
+  padding: 12px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  border-radius: 8px;
+  background: #f1f3f0;
+  color: #65706a;
+  font-size: 0.72rem;
+}
+.editor-field-meaning b {
+  color: #344039;
+}
+.editor-entry-section {
+  padding-left: 14px;
+  border-left: 3px solid #dfe4df;
+  transition: border-color 120ms ease;
+}
+.editor-entry-section.is-modified {
+  border-left-color: #b06a56;
+}
 .editor-field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -250,6 +272,46 @@ button {
   gap: 7px;
   color: #65706a;
   font-size: 0.78rem;
+}
+.editor-field-grid label.is-modified input,
+.editor-field-grid label.is-modified textarea {
+  border-color: #b06a56;
+  background: #fffaf7;
+}
+.editor-field-grid label.is-modified > span::before {
+  content: "•";
+  margin-right: 5px;
+  color: #b06a56;
+}
+.editor-field-badge {
+  margin-left: 5px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #e4ece7;
+  color: #315f50;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.editor-field-badge--optional {
+  background: #edf0ec;
+  color: #65706a;
+}
+.editor-field-badge--publish {
+  background: #f5ebce;
+  color: #765b12;
+}
+.editor-section-status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.editor-section-status [data-section-dirty] {
+  color: #91433c;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 .editor-field-grid input,
 .editor-field-grid select,
@@ -272,7 +334,9 @@ button {
   grid-column: 1 / -1;
 }
 .editor-markdown-input {
-  resize: vertical;
+  min-height: 224px;
+  overflow-y: hidden;
+  resize: none;
   font:
     0.82rem/1.6 ui-monospace,
     monospace !important;
@@ -286,13 +350,50 @@ button {
   list-style: none;
 }
 .editor-issues li {
-  margin-top: 10px;
+  margin-top: 12px;
+  padding: 11px;
+  border: 1px solid #e2e6e1;
+  border-radius: 8px;
   overflow-wrap: anywhere;
+}
+.editor-issue__meta {
+  margin-bottom: 7px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.editor-issue__meta > * {
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: #edf0ec;
+  color: #56615b;
+  font-size: 0.68rem;
+}
+.editor-issue__severity--error {
+  background: #f7e1df;
+  color: #91433c;
+}
+.editor-issue__severity--warning {
+  background: #f5ebce;
+  color: #765b12;
 }
 .editor-issues small {
   display: block;
   margin-top: 3px;
   color: #65706a;
+}
+.editor-issue__link {
+  margin-top: 9px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #315f50;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .editor-validation > p,
 .editor-validation > small {
@@ -327,9 +428,43 @@ button {
   color: #65706a;
   font-size: 0.82rem;
 }
-.editor-action-bar div {
+.editor-action-bar__actions {
   display: flex;
   gap: 9px;
+}
+.editor-action {
+  position: relative;
+}
+.editor-action > small {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  width: max-content;
+  max-width: 240px;
+  padding: 7px 9px;
+  border: 1px solid #d6dbd5;
+  border-radius: 6px;
+  background: #18201d;
+  color: white;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(3px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+.editor-action:focus-within > small,
+.editor-action:hover > small {
+  opacity: 1;
+  transform: translateY(0);
+}
+[data-action-status][data-state="dirty"] {
+  color: #91433c;
+  font-weight: 600;
+}
+[data-action-status][data-state="pending"] {
+  color: #315f50;
+  font-weight: 600;
 }
 .editor-button {
   min-height: 38px;
@@ -379,5 +514,14 @@ button {
   .editor-environment::after {
     content: "Local";
     font-size: 0.72rem;
+  }
+  .editor-action-bar {
+    padding: 10px 14px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .editor-action-bar__actions {
+    width: 100%;
+    overflow-x: auto;
   }
 }

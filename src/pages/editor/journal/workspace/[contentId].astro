@@ -57,6 +57,13 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     validateJournalEditorDraft,
     type JournalEditorDraftState,
   } from "../../../../editor/journal-draft-state";
+  import {
+    editorFailureGuidance,
+    isEditorSaveShortcut,
+    journalDraftDirtyFields,
+    journalIssueFieldName,
+    journalIssueLocation,
+  } from "../../../../editor/ux";
 
   const serialized = document.querySelector<HTMLScriptElement>(
     "#journal-editor-draft",
@@ -65,7 +72,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     "[data-editor-draft-form]",
   );
   const actionStatus = document.querySelector<HTMLElement>(
-    ".editor-action-bar > span",
+    "[data-action-status]",
   );
   const validation = document.querySelector<HTMLElement>(".editor-validation");
   const saveButton = document.querySelector<HTMLButtonElement>(
@@ -81,13 +88,130 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   if (serialized && form) {
     let initial = JSON.parse(serialized) as JournalEditorDraftState;
     let current = initial;
+    let pending: "preview-ja" | "preview-en" | "save" | "publish" | null = null;
+    let statusMessage: string | null = null;
+
+    const resizeTextarea = (textarea: HTMLTextAreaElement) => {
+      textarea.style.height = "auto";
+      textarea.style.height = `${Math.max(textarea.scrollHeight, 112)}px`;
+    };
+
+    const renderFieldState = () => {
+      const dirtyFields = journalDraftDirtyFields(initial, current);
+      for (const label of form.querySelectorAll<HTMLElement>(
+        "[data-editor-field]",
+      ))
+        label.classList.toggle(
+          "is-modified",
+          dirtyFields.has(label.dataset.editorField ?? ""),
+        );
+      for (const section of form.querySelectorAll<HTMLElement>(
+        "[data-editor-section]",
+      )) {
+        const dirty = [...dirtyFields].some((field) =>
+          field.startsWith(`${section.dataset.editorSection}.`),
+        );
+        section.classList.toggle("is-modified", dirty);
+        const indicator = section.querySelector<HTMLElement>(
+          "[data-section-dirty]",
+        );
+        if (indicator) indicator.hidden = !dirty;
+      }
+    };
+
+    const focusIssueField = (target: string) => {
+      const field = form.elements.namedItem(target);
+      if (!(field instanceof HTMLElement)) return;
+      field.scrollIntoView({ behavior: "smooth", block: "center" });
+      field.focus({ preventScroll: true });
+    };
+
+    const setActionReason = (action: string, reason: string) => {
+      const container = document.querySelector<HTMLElement>(
+        `[data-action="${action}"]`,
+      );
+      const hint = container?.querySelector<HTMLElement>(
+        "[data-action-reason]",
+      );
+      const button = container?.querySelector<HTMLButtonElement>("button");
+      if (hint) hint.textContent = reason;
+      if (button) button.title = reason;
+    };
+
+    const renderActions = () => {
+      const result = validateJournalEditorDraft(current);
+      const dirty = isJournalEditorDraftDirty(initial, current);
+      const busy = pending !== null;
+      if (actionStatus) {
+        actionStatus.textContent =
+          statusMessage ??
+          (dirty ? "Unsaved changes" : "Saved · ready to publish");
+        actionStatus.dataset.state = pending
+          ? "pending"
+          : dirty
+            ? "dirty"
+            : "saved";
+      }
+      for (const locale of ["ja", "en"] as const) {
+        const button = previewButtons.find(
+          (candidate) => candidate.dataset.previewJournal === locale,
+        );
+        if (button)
+          button.disabled = busy || !result.capabilities.preview[locale];
+        setActionReason(
+          `preview-${locale}`,
+          busy
+            ? "Another action is in progress"
+            : result.capabilities.preview[locale]
+              ? `Preview current ${locale.toUpperCase()} draft`
+              : `${locale.toUpperCase()} validation is blocking preview`,
+        );
+      }
+      if (saveButton)
+        saveButton.disabled = busy || !dirty || !result.capabilities.save;
+      setActionReason(
+        "save",
+        busy
+          ? "Another action is in progress"
+          : !result.capabilities.save
+            ? "Draft validation is blocking save"
+            : !dirty
+              ? "No unsaved changes"
+              : "Save changes (⌘S / Ctrl+S)",
+      );
+      if (publishButton)
+        publishButton.disabled = busy || dirty || !result.capabilities.publish;
+      setActionReason(
+        "publish",
+        busy
+          ? "Another action is in progress"
+          : dirty
+            ? "Save changes before publishing"
+            : !result.capabilities.publish
+              ? "Draft validation is blocking publish"
+              : "Commit and push the saved canonical files",
+      );
+      renderFieldState();
+    };
+
+    const failureMessage = (error: unknown, fallback: string) => {
+      const response = error as Error & { code?: string };
+      const guidance = editorFailureGuidance(response.code);
+      return `${response.message || fallback} ${guidance.message}`;
+    };
+
     for (const button of previewButtons) {
       button.addEventListener("click", async () => {
         const locale = button.dataset.previewJournal as "ja" | "en";
+        if (
+          pending ||
+          !validateJournalEditorDraft(current).capabilities.preview[locale]
+        )
+          return;
         const previewWindow = window.open("", "_blank");
-        button.disabled = true;
-        if (actionStatus)
-          actionStatus.textContent = `Preparing ${locale.toUpperCase()} preview…`;
+        pending = `preview-${locale}`;
+        statusMessage = `Preparing ${locale.toUpperCase()} preview…`;
+        renderActions();
         try {
           const response = await fetch("/editor/api/journal-preview/create", {
             method: "POST",
@@ -97,27 +221,54 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           const result = (await response.json()) as {
             url?: string;
             error?: string;
+            code?: string;
           };
-          if (!response.ok || !result.url)
-            throw new Error(result.error ?? "Journal preview failed");
+          if (!response.ok || !result.url) {
+            const failure = new Error(
+              result.error ?? "Journal preview failed",
+            ) as Error & { code?: string };
+            failure.code = result.code;
+            throw failure;
+          }
           if (previewWindow) previewWindow.location.href = result.url;
           else window.open(result.url, "_blank", "noopener");
-          if (actionStatus) actionStatus.textContent = "Draft preview opened";
+          statusMessage = "Draft preview opened";
         } catch (error) {
           previewWindow?.close();
-          if (actionStatus)
-            actionStatus.textContent =
-              error instanceof Error ? error.message : "Journal preview failed";
+          statusMessage = failureMessage(error, "Journal preview failed");
         } finally {
-          button.disabled =
-            !validateJournalEditorDraft(current).capabilities.preview[locale];
+          pending = null;
+          renderActions();
         }
       });
     }
-    saveButton?.addEventListener("click", async () => {
-      if (!isJournalEditorDraftDirty(initial, current)) return;
-      saveButton.disabled = true;
-      if (actionStatus) actionStatus.textContent = "Saving…";
+    const save = async () => {
+      const validationResult = validateJournalEditorDraft(current);
+      if (
+        pending ||
+        !isJournalEditorDraftDirty(initial, current) ||
+        !validationResult.capabilities.save
+      )
+        return;
+      pending = "save";
+      const active = document.activeElement;
+      const focusName =
+        active instanceof HTMLInputElement ||
+        active instanceof HTMLTextAreaElement
+          ? active.name
+          : null;
+      const selection =
+        active instanceof HTMLInputElement ||
+        active instanceof HTMLTextAreaElement
+          ? {
+              start: active.selectionStart,
+              end: active.selectionEnd,
+              direction: active.selectionDirection,
+            }
+          : null;
+      const pageScroll = { x: window.scrollX, y: window.scrollY };
+      statusMessage = "Saving…";
+      renderActions();
       try {
         const response = await fetch(
           `/editor/api/journal/${encodeURIComponent(current.contentId)}`,
@@ -130,31 +281,51 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         const result = (await response.json()) as {
           draft?: JournalEditorDraftState;
           error?: string;
+          code?: string;
         };
-        if (!response.ok || !result.draft)
-          throw new Error(result.error ?? "Journal save failed");
+        if (!response.ok || !result.draft) {
+          const failure = new Error(
+            result.error ?? "Journal save failed",
+          ) as Error & { code?: string };
+          failure.code = result.code;
+          throw failure;
+        }
         initial = result.draft;
         current = result.draft;
-        if (actionStatus) actionStatus.textContent = "Saved to canonical files";
+        statusMessage = "Saved to canonical files";
       } catch (error) {
-        if (actionStatus)
-          actionStatus.textContent =
-            error instanceof Error ? error.message : "Journal save failed";
+        statusMessage = failureMessage(error, "Journal save failed");
       } finally {
-        const result = validateJournalEditorDraft(current);
-        saveButton.disabled =
-          !isJournalEditorDraftDirty(initial, current) ||
-          !result.capabilities.save;
-        if (publishButton)
-          publishButton.disabled = !result.capabilities.publish;
+        pending = null;
+        renderActions();
+        const field = focusName ? form.elements.namedItem(focusName) : null;
+        if (
+          field instanceof HTMLInputElement ||
+          field instanceof HTMLTextAreaElement
+        ) {
+          field.focus({ preventScroll: true });
+          if (selection && selection.start !== null && selection.end !== null)
+            field.setSelectionRange(
+              selection.start,
+              selection.end,
+              selection.direction ?? undefined,
+            );
+          window.scrollTo(pageScroll.x, pageScroll.y);
+        }
       }
-    });
+    };
+    saveButton?.addEventListener("click", save);
     publishButton?.addEventListener("click", async () => {
       const dirty = isJournalEditorDraftDirty(initial, current);
-      if (dirty || !validateJournalEditorDraft(current).capabilities.publish)
+      if (
+        pending ||
+        dirty ||
+        !validateJournalEditorDraft(current).capabilities.publish
+      )
         return;
-      publishButton.disabled = true;
-      if (actionStatus) actionStatus.textContent = "Publishing…";
+      pending = "publish";
+      statusMessage = "Publishing…";
+      renderActions();
       try {
         const response = await fetch(
           `/editor/api/journal-publish/${encodeURIComponent(current.contentId)}`,
@@ -168,22 +339,24 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           state?: "published" | "committed-push-failed";
           commit?: string;
           error?: string;
+          code?: string;
         };
-        if (!response.ok || !result.state)
-          throw new Error(result.error ?? "Journal publish failed");
-        if (actionStatus)
-          actionStatus.textContent =
-            result.state === "published"
-              ? `Published ${result.commit?.slice(0, 7) ?? "commit"}`
-              : `Committed ${result.commit?.slice(0, 7) ?? "commit"}; push failed`;
+        if (!response.ok || !result.state) {
+          const failure = new Error(
+            result.error ?? "Journal publish failed",
+          ) as Error & { code?: string };
+          failure.code = result.code;
+          throw failure;
+        }
+        statusMessage =
+          result.state === "published"
+            ? `Published ${result.commit?.slice(0, 7) ?? "commit"}`
+            : `Committed ${result.commit?.slice(0, 7) ?? "commit"}; push failed. Retry push outside the Editor.`;
       } catch (error) {
-        if (actionStatus)
-          actionStatus.textContent =
-            error instanceof Error ? error.message : "Journal publish failed";
+        statusMessage = failureMessage(error, "Journal publish failed");
       } finally {
-        publishButton.disabled =
-          isJournalEditorDraftDirty(initial, current) ||
-          !validateJournalEditorDraft(current).capabilities.publish;
+        pending = null;
+        renderActions();
       }
     });
     form.addEventListener("input", (event) => {
@@ -214,10 +387,8 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           Object.assign(next.locales[scope].value, { [key]: field.value });
         }
       });
-      if (actionStatus)
-        actionStatus.textContent = isJournalEditorDraftDirty(initial, current)
-          ? "Unsaved changes"
-          : "Draft matches canonical state";
+      statusMessage = null;
+      if (field instanceof HTMLTextAreaElement) resizeTextarea(field);
       const dirty = isJournalEditorDraftDirty(initial, current);
       if (validation) {
         const result = validateJournalEditorDraft(current);
@@ -257,15 +428,60 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         issueList.replaceChildren(
           ...result.issues.map((issue) => {
             const item = document.createElement("li");
+            const meta = document.createElement("div");
             const severity = document.createElement("strong");
+            const locale = document.createElement("span");
+            const field = document.createElement("span");
+            const label = document.createElement("span");
             const message = document.createElement("small");
+            const location = journalIssueLocation(issue);
+            const targetName = journalIssueFieldName(issue);
+            if (targetName) item.dataset.issueTarget = targetName;
+            meta.className = "editor-issue__meta";
+            severity.className = `editor-issue__severity editor-issue__severity--${issue.severity}`;
             severity.textContent = issue.severity;
-            message.textContent = issue.messageKey;
-            item.append(severity, ` ${issue.ruleId}`, message);
+            locale.textContent = location.locale;
+            field.textContent = location.field;
+            label.textContent = issue.messageKey;
+            message.textContent = issue.ruleId;
+            meta.append(severity, locale, field);
+            item.append(meta, label, message);
+            if (targetName) {
+              const link = document.createElement("button");
+              link.type = "button";
+              link.className = "editor-issue__link";
+              link.textContent = "Go to field";
+              item.append(link);
+            }
             return item;
           }),
         );
       }
+      renderActions();
     });
+
+    window.addEventListener("beforeunload", (event) => {
+      if (!isJournalEditorDraftDirty(initial, current)) return;
+      event.preventDefault();
+      (event as unknown as { returnValue: string }).returnValue = "";
+    });
+    document.addEventListener("keydown", (event) => {
+      if (!isEditorSaveShortcut(event)) return;
+      event.preventDefault();
+      void save();
+    });
+    validation?.addEventListener("click", (event) => {
+      const button = (event.target as Element).closest<HTMLButtonElement>(
+        ".editor-issue__link",
+      );
+      const target = button?.closest<HTMLElement>("[data-issue-target]")
+        ?.dataset.issueTarget;
+      if (target) focusIssueField(target);
+    });
+    for (const textarea of form.querySelectorAll<HTMLTextAreaElement>(
+      "textarea",
+    ))
+      resizeTextarea(textarea);
+    renderActions();
   }
 </script>

@@ -9,50 +9,79 @@ const { draft } = Astro.props;
 ---
 
 <form class="editor-draft-form" data-editor-draft-form>
-  <section class="editor-entry-section">
+  <div class="editor-field-meaning" aria-label="Field requirement legend">
+    <span><b>Required</b> needed for a valid draft</span>
+    <span><b>Optional</b> may be left blank</span>
+    <span><b>Publish checked</b> placeholders block preview and publish</span>
+  </div>
+  <section class="editor-entry-section" data-editor-section="shared">
     <header>
-      <div><p class="editor-eyebrow">Draft</p><h2>Shared</h2></div><span
-        class="editor-status">{draft.shared.state}</span
-      >
+      <div><p class="editor-eyebrow">Shared metadata</p><h2>Shared</h2></div>
+      <div class="editor-section-status">
+        <span data-section-dirty hidden>Modified</span><span
+          class="editor-status">{draft.shared.state}</span
+        >
+      </div>
     </header>
     <div class="editor-entry-section__content">
       {
         draft.shared.state === "editable" ? (
           <div class="editor-field-grid">
-            <label>
-              Date
+            <label data-editor-field="shared.date">
+              <span>
+                Date <small class="editor-field-badge">Required</small>
+              </span>
               <input name="shared.date" value={draft.shared.value.date} />
             </label>
-            <label>
-              Categories
+            <label data-editor-field="shared.categories">
+              <span>
+                Categories <small class="editor-field-badge">Required</small>
+              </span>
               <input
                 name="shared.categories"
                 value={draft.shared.value.categories.join(", ")}
               />
             </label>
-            <label>
-              Visibility
+            <label data-editor-field="shared.visibility">
+              <span>
+                Visibility <small class="editor-field-badge">Required</small>
+              </span>
               <input
                 name="shared.visibility"
                 value={draft.shared.value.visibility}
               />
             </label>
-            <label>
-              Hero image
+            <label data-editor-field="shared.hero.image">
+              <span>
+                Hero image <small class="editor-field-badge">Required</small>
+              </span>
               <input
                 name="shared.hero.image"
                 value={draft.shared.value.hero.image}
               />
             </label>
-            <label class="editor-field-wide">
-              Hero caption
+            <label
+              class="editor-field-wide"
+              data-editor-field="shared.hero.hero_caption"
+            >
+              <span>
+                Hero caption{" "}
+                <small class="editor-field-badge editor-field-badge--optional">
+                  Optional
+                </small>
+              </span>
               <input
                 name="shared.hero.hero_caption"
                 value={draft.shared.value.hero.hero_caption ?? ""}
               />
             </label>
-            <label>
-              Author
+            <label data-editor-field="shared.author">
+              <span>
+                Author{" "}
+                <small class="editor-field-badge editor-field-badge--optional">
+                  Optional
+                </small>
+              </span>
               <input
                 name="shared.author"
                 value={draft.shared.value.author ?? ""}
