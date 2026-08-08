@@ -76,6 +76,62 @@ function pathsFor(contentId: string) {
   );
 }
 
+async function pathsForPendingRename(
+  contentId: string,
+  repositoryRoot: string,
+  git: Git,
+) {
+  const destinationFiles = pathsFor(contentId);
+  const destinationBytes = await Promise.all(
+    destinationFiles.map((file) =>
+      fs.readFile(path.join(repositoryRoot, file)),
+    ),
+  );
+  const deleted = (
+    await git([
+      "diff",
+      "--name-only",
+      "--diff-filter=D",
+      "--",
+      "src/content/journal",
+    ])
+  )
+    .split("\n")
+    .filter(Boolean);
+  const directories = [
+    ...new Set(deleted.map((file) => path.posix.dirname(file))),
+  ];
+  const matches: string[][] = [];
+  for (const directory of directories) {
+    const candidates = fileNames.map((fileName) =>
+      path.posix.join(directory, fileName),
+    );
+    if (!candidates.every((file) => deleted.includes(file))) continue;
+    const oldBytes = await Promise.all(
+      candidates.map((file) =>
+        execFile("git", ["show", `HEAD:${file}`], {
+          cwd: repositoryRoot,
+          encoding: "utf8",
+        })
+          .then(({ stdout }) => stdout)
+          .catch(() => ""),
+      ),
+    );
+    if (
+      oldBytes.every(
+        (bytes, index) => bytes === destinationBytes[index].toString("utf8"),
+      )
+    )
+      matches.push(candidates);
+  }
+  if (matches.length > 1)
+    throw new JournalPublishError(
+      "Publish found more than one possible Journal Rename source",
+      "unsafe-repository",
+    );
+  return [...(matches[0] ?? []), ...destinationFiles];
+}
+
 export function journalPublishCommitMessage(contentId: string): string {
   return `Publish journal: ${contentId}`;
 }
@@ -127,8 +183,8 @@ export async function inspectJournalPublish(
       "unsafe-repository",
     );
   }
-  const files = pathsFor(contentId);
-  for (const file of files) {
+  const files = await pathsForPendingRename(contentId, repositoryRoot, git);
+  for (const file of pathsFor(contentId)) {
     const stat = await fs
       .lstat(path.join(repositoryRoot, file))
       .catch(() => null);
@@ -192,21 +248,23 @@ export async function publishSavedJournalEntry(
       "canonical-mismatch",
     );
 
-  const allFiles = pathsFor(draft.contentId);
-  const expectedFiles = await Promise.all(
-    allFiles.map((file) =>
-      fs.readFile(path.join(repositoryRoot, file), "utf8"),
-    ),
-  );
-
   const git = createGit(repositoryRoot);
   const inspection = await inspectJournalPublish(
     draft.contentId,
     repositoryRoot,
     git,
   );
+  const allFiles = inspection.files;
+  const expectedFiles = await Promise.all(
+    allFiles.map((file) =>
+      fs.readFile(path.join(repositoryRoot, file), "utf8").catch((error) => {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+        throw error;
+      }),
+    ),
+  );
   try {
-    await git(["add", "--", ...allFiles]);
+    await git(["add", "-A", "--", ...allFiles]);
     const staged = (await git(["diff", "--cached", "--name-only"]))
       .split("\n")
       .filter(Boolean)
@@ -223,6 +281,14 @@ export async function publishSavedJournalEntry(
       );
     }
     for (const [index, file] of allFiles.entries()) {
+      if (expectedFiles[index] === null) {
+        if (await git(["ls-files", "--cached", "--", file]))
+          throw new JournalPublishError(
+            "Deleted Journal Rename source remained in the staged index",
+            "canonical-mismatch",
+          );
+        continue;
+      }
       const { stdout: stagedContent } = await execFile(
         "git",
         ["show", `:${file}`],

@@ -137,6 +137,69 @@ test("publish includes all three untracked files from a newly created unit", asy
   });
 });
 
+test("publish includes the exact old deletions and new files after Rename", async () => {
+  await withRepository(async (repository) => {
+    const oldDirectory = path.join(
+      repository,
+      "src/content/journal/valid-public",
+    );
+    const newDirectory = path.join(
+      repository,
+      "src/content/journal/renamed-public",
+    );
+    await fs.rename(oldDirectory, newDirectory);
+    const draft = createJournalEditorDraft(
+      await readJournalEditorEntry(
+        "renamed-public",
+        path.join(repository, "src/content/journal"),
+      ),
+    );
+    const inspection = await inspectJournalPublish(
+      "renamed-public",
+      repository,
+    );
+    assert.equal(inspection.files.length, 6);
+    assert.equal(
+      inspection.files.filter((file) => file.includes("valid-public")).length,
+      3,
+    );
+    assert.equal(
+      inspection.files.filter((file) => file.includes("renamed-public")).length,
+      3,
+    );
+
+    const result = await publishSavedJournalEntry(
+      draft,
+      false,
+      repository,
+      path.join(repository, "src/content/journal"),
+    );
+    assert.equal(result.state, "published");
+    assert.equal(
+      await git(
+        repository,
+        "ls-tree",
+        "-r",
+        "--name-only",
+        "HEAD",
+        "src/content/journal/valid-public",
+      ),
+      "",
+    );
+    assert.match(
+      await git(
+        repository,
+        "ls-tree",
+        "-r",
+        "--name-only",
+        "HEAD",
+        "src/content/journal/renamed-public",
+      ),
+      /index\.yaml/,
+    );
+  });
+});
+
 test("publish reports a committed push failure without losing the commit", async () => {
   await withRepository(async (repository, remote) => {
     const en = path.join(repository, "src/content/journal/valid-public/en.md");

@@ -24,8 +24,10 @@ Publish remains separate and includes only the exact new untracked source (and
 only an already-authorized Works saved-asset manifest). Create itself never
 uploads, moves, or infers ownership of assets.
 
-Home is the canonical `home.md` singleton and has no Create capability. Rename
-and Delete remain unavailable for every collection.
+Home is the canonical `home.md` singleton and has no Create capability. A
+service/API first slice supports reviewed Journal Rename only; the normal
+workspace does not yet expose a Rename control. Delete remains unavailable for
+every collection.
 
 Command/Ctrl+S invokes Save when Save is available. While Save, Preview,
 Upload, or Publish is pending, the full form and every action are locked.
@@ -43,6 +45,12 @@ no unrelated staged files, a saved baseline, and publishable validation.
   a symlink, missing directory, or other unsafe filesystem substitution.
 - `unsafe-collection-root`: stop Create and inspect the named flat collection
   root for a symlink, missing directory, or other unsafe substitution.
+- `source-unavailable`: stop Rename and inspect the complete Journal three-file
+  unit; do not repair or remove files merely to retry.
+- `unresolved-references`: review the reported incoming Journal route link.
+  This first slice does not rewrite references and has no force mode.
+- `lock-conflict`: stop mutation and inspect both content-lifecycle and
+  asset-lifecycle evidence. A stale or unverifiable lock is not stolen.
 - commit failure before a commit exists: preserve the working tree, inspect Git
   state, and retry only after the cause is understood.
 - `committed-push-failed`: the commit exists locally. Stop using that workspace,
@@ -54,6 +62,9 @@ no unrelated staged files, a saved baseline, and publishable validation.
   tree and `.kiki-editor` evidence, compare the selected canonical files/assets
   with Git and the recorded baseline, restore a consistent unit manually, then
   reload.
+- `journal-rename-rollback-failed`: stop all Editor mutation and preserve
+  `.kiki-editor/content-lifecycle/operations/` plus the repository lock. Compare
+  both old and new Journal paths with the recorded hashes before recovery.
 
 Never discard or overwrite recovery evidence merely to clear a lock.
 
@@ -151,3 +162,22 @@ existing asset paths; News has no asset operation.
 
 Cancel before First Save by leaving the page. No canonical content, asset,
 commit, or Production route is created.
+
+## Journal Rename first safe slice
+
+Journal Rename is currently an API/service milestone for operator and test
+integration; no browser control is exposed. Request a plan, review the old/new
+route and identity, then execute that exact plan. Execution changes no
+frontmatter or Markdown bytes, moves no assets, and does not stage Git.
+
+The operation is allowed only when the source is a valid exact three-file unit,
+the new lowercase hyphenated ID and its case-fold equivalent are absent, Git
+HEAD/branch and all source hashes still match, both lifecycle locks are clear,
+and the canonical Markdown inventory contains no recognized incoming link to
+the old Journal route. Any uncertainty fails closed.
+
+After success, load the new workspace and retain the existing Preview/Save
+semantics. Publish remains separate and must show the three old deletions plus
+the three new files. It stages and verifies that exact rename set; unrelated
+working-tree changes remain untouched. Do not delete lifecycle evidence or a
+retained lock to make a retry possible.

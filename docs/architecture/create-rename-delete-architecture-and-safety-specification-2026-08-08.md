@@ -2,7 +2,7 @@
 
 | Property      | Value                                                                 |
 | ------------- | --------------------------------------------------------------------- |
-| Status        | Approved design; Create UI and acceptance complete                    |
+| Status        | Create complete; Journal Rename first safe slice implemented          |
 | Date          | 2026-08-08                                                            |
 | Scope         | Editor-managed Create, Rename, and Delete planning and safety         |
 | Compatibility | Preserve Editor v1, canonical content/assets, and Production behavior |
@@ -51,6 +51,24 @@ the canonical reread succeeds; Publish remains disabled until the existing
 saved workspace is loaded. Journal's three-file Create screen is unchanged.
 Home has no Create route or list action. The shared UI shell contains no
 serializer, repository, asset, Save, Preview, or Publish semantics.
+
+The first Rename implementation slice is deliberately limited to Journal and
+to units with no recognized incoming Journal-route references. A read-only
+plan binds the Git HEAD/branch, source and destination IDs/routes, exact
+three-file SHA-256 identities, destination absence, and reference inventory.
+Execution rebuilds that plan under an exclusive content-lifecycle lock, writes
+durable Editor-only operation evidence, and moves the complete directory only
+after every precondition still matches. Canonical reread and byte verification
+must succeed at the new ID; otherwise the exact unit is moved back, or the
+operation enters `manual-recovery-required` with its lock and evidence
+preserved. This slice rejects recognized incoming links rather than rewriting
+them; typed reference rewriting is deferred to the next Rename slice.
+
+Journal Rename never changes content bytes or asset paths. It returns the new
+workspace as saved-unpublished. Journal Publish recognizes one exact Git
+delete/add pair with identical three-file bytes, stages all six old/new paths,
+and verifies both the deleted index entries and new staged blobs. Rename has a
+localhost-only plan/execute API but no workspace UI in this first slice.
 
 Acceptance is split deliberately. Browser checks cover list navigation,
 scaffolding, validation gating, Draft Preview availability, the First Save
