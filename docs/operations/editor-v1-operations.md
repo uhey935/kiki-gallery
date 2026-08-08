@@ -202,6 +202,27 @@ finish or recover the lifecycle operation. A rollback failure requires stopping
 all Editor mutation and inspecting the durable operation record while leaving
 the lock intact.
 
-Exhibitions, Artists, and Works have no Rename API yet. Their typed incoming
-references, public routes, and (for Works) Asset Lifecycle v2 state are recorded
-in the dependency/reference audit.
+## Exhibitions reference-aware Rename
+
+Exhibitions Rename uses `POST /editor/api/exhibitions-rename` and the same
+reviewed-plan confirmation gate. The plan inventories the complete canonical
+graph, identifies every exact News `link` to the old Exhibition route, and
+shows those required edits before execution. The Exhibition source is one flat
+Markdown file; that source and all listed News files are one logical
+multi-file transaction. The dedicated rewriter changes only the proven link
+scalar bytes and preserves every other byte, including quote style, whitespace,
+line endings, body text, and asset paths.
+
+Execution rechecks Git identity, destination absence/case-fold safety, the full
+graph hash, source/reference hashes, both lifecycle locks, and the exact plan
+identity before mutation. Durable evidence retains byte-exact preimages and
+prospective hashes. A mutation failure restores every touched file exactly; if
+that cannot be proven, the repository lock and recovery evidence remain for
+manual recovery.
+
+Success transitions to the new saved-unpublished workspace. Preview and Save
+remain unchanged. Publish separately consumes the completed evidence and stages
+only the old Exhibition deletion, new Exhibition addition, and exact News edits
+listed by the reviewed plan. Any HEAD/canonical/evidence mismatch blocks
+staging. Artists and Works Rename, Delete, Production loaders, and asset
+ownership remain unchanged.

@@ -1,7 +1,7 @@
-export type RenameCollection = "journal" | "news";
+export type RenameCollection = "journal" | "news" | "exhibitions";
 
 export type BrowserRenamePlan = {
-  operation: "journal-rename" | "news-rename";
+  operation: "journal-rename" | "news-rename" | "exhibitions-rename";
   sourceContentId: string;
   destinationContentId: string;
   repositoryHead: string;
@@ -9,7 +9,8 @@ export type BrowserRenamePlan = {
   oldRoutes: string[];
   newRoutes: string[];
   sourceFiles?: Record<string, string>;
-  sourceFile?: string;
+  sourceFile?: string | { file: string; hash: string; size: number };
+  referenceEdits?: Array<{ file: string; oldValue: string; newValue: string }>;
   planHash: string;
 };
 
@@ -36,6 +37,22 @@ const renameGuidance: Record<string, string> = {
     "Rollback failed. Stop all Editor mutations and follow manual recovery evidence.",
   "news-rename-rollback-failed":
     "Rollback failed. Stop all Editor mutations and follow manual recovery evidence.",
+  "destination-conflict":
+    "Choose another Content ID; the destination path or its case-folded form already exists.",
+  "reference-graph-incomplete":
+    "Rename stopped because the complete canonical reference graph could not be proven safe.",
+  "reference-rewrite-unsupported":
+    "A known incoming reference cannot be rewritten without changing unrelated bytes. Repair it and request a new plan.",
+  "prospective-validation-failed":
+    "The complete proposed content graph did not validate. No partial Rename is allowed.",
+  "plan-stale":
+    "Git, canonical bytes, destination, or references changed after review. Request and confirm a fresh plan.",
+  "lifecycle-lock-conflict":
+    "Another lifecycle operation owns or may own the repository lock. Reconcile it before retrying.",
+  "rename-failed-rolled-back":
+    "Rename failed, but every touched file was restored byte-for-byte. Inspect evidence before replanning.",
+  "manual-recovery-required":
+    "Rollback could not be proven. Stop all mutations and preserve the lock, evidence, staging, and recovery bytes.",
 };
 
 export function renameFailureGuidance(code?: string): string {

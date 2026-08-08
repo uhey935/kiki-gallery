@@ -19,7 +19,7 @@ const { collection, contentId } = Astro.props as {
       <p class="editor-eyebrow">Content lifecycle</p>
       <h2 id="rename-heading">Rename Content ID</h2>
     </div>
-    <span class="editor-status">Journal + News only</span>
+    <span class="editor-status">Reference-aware Rename</span>
   </div>
   <div class="editor-rename__body">
     <p>
@@ -55,6 +55,9 @@ const { collection, contentId } = Astro.props as {
           <dt>Canonical files & identities</dt><dd data-rename-files></dd>
         </div>
         <div><dt>Routes</dt><dd data-rename-routes></dd></div>
+        <div>
+          <dt>Required reference edits</dt><dd data-rename-references></dd>
+        </div>
       </dl>
       <label class="editor-rename__confirm">
         <input type="checkbox" data-rename-confirm />
@@ -163,17 +166,30 @@ const { collection, contentId } = Astro.props as {
               ([name, hash]) =>
                 `src/content/journal/${plan!.sourceContentId}/${name} · sha256 ${hash.slice(0, 12)}…`,
             )
-          : plan.sourceFile
+          : typeof plan.sourceFile === "string"
             ? [
                 `src/content/news/${plan.sourceContentId}.md · sha256 ${plan.sourceFile.slice(0, 12)}…`,
               ]
-            : [];
+            : plan.sourceFile
+              ? [
+                  `${plan.sourceFile.file} · sha256 ${plan.sourceFile.hash.slice(0, 12)}…`,
+                ]
+              : [];
         panel.querySelector<HTMLElement>("[data-rename-files]")!.textContent =
           files.join(", ");
         panel.querySelector<HTMLElement>("[data-rename-routes]")!.textContent =
           plan.oldRoutes.length
             ? `${plan.oldRoutes.join(", ")} → ${plan.newRoutes.join(", ")}`
             : "No public detail routes (News identity only)";
+        panel.querySelector<HTMLElement>(
+          "[data-rename-references]",
+        )!.textContent = plan.referenceEdits?.length
+          ? plan.referenceEdits
+              .map(
+                (edit) => `${edit.file}: ${edit.oldValue} → ${edit.newValue}`,
+              )
+              .join(", ")
+          : "No canonical reference edits required";
         review.hidden = false;
         status.textContent =
           "Plan ready · review every detail before execution.";

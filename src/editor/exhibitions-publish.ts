@@ -1,4 +1,5 @@
 import { execFile as execFileCallback } from "node:child_process";
+import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -26,6 +27,7 @@ export class ExhibitionsPublishError extends Error {
     | "publish-blocked"
     | "canonical-mismatch"
     | "unsafe-repository"
+    | "publish-set-mismatch"
     | "nothing-to-publish"
     | "publish-failed";
   constructor(
@@ -35,6 +37,7 @@ export class ExhibitionsPublishError extends Error {
       | "publish-blocked"
       | "canonical-mismatch"
       | "unsafe-repository"
+      | "publish-set-mismatch"
       | "nothing-to-publish"
       | "publish-failed",
     options?: ErrorOptions,
@@ -79,6 +82,70 @@ async function context(git: Git, expectedRoot: string) {
     );
   }
 }
+type RenameEvidence = {
+  state: "completed";
+  plan: {
+    operation: "exhibitions-rename";
+    destinationContentId: string;
+    repositoryBranch: string;
+    repositoryUpstream: string;
+    publishPaths: string[];
+    sourceFile: { file: string };
+  };
+  preimages: Record<string, { hash: string; bytes: string }>;
+  prospective: Record<string, { hash: string; bytes: string }>;
+};
+const hash = (bytes: Uint8Array) =>
+  createHash("sha256").update(bytes).digest("hex");
+async function completedRenameEvidence(
+  repositoryRoot: string,
+  contentId: string,
+) {
+  const operations = path.join(
+    repositoryRoot,
+    ".kiki-editor/content-lifecycle/operations",
+  );
+  const entries = await fs
+    .readdir(operations, { withFileTypes: true })
+    .catch(() => []);
+  const matches: RenameEvidence[] = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory() || entry.isSymbolicLink()) continue;
+    const file = path.join(operations, entry.name, "operation.json");
+    const stat = await fs.lstat(file).catch(() => undefined);
+    if (!stat?.isFile() || stat.isSymbolicLink()) continue;
+    let evidence: RenameEvidence;
+    try {
+      evidence = JSON.parse(await fs.readFile(file, "utf8")) as RenameEvidence;
+    } catch (error) {
+      throw new ExhibitionsPublishError(
+        `Rename evidence is unreadable: ${path.relative(repositoryRoot, file)}`,
+        "publish-set-mismatch",
+        { cause: error },
+      );
+    }
+    if (
+      evidence.state === "completed" &&
+      evidence.plan?.operation === "exhibitions-rename" &&
+      evidence.plan.destinationContentId === contentId
+    ) {
+      const sourceStillInHead = await execFile(
+        "git",
+        ["cat-file", "-e", `HEAD:${evidence.plan.sourceFile.file}`],
+        { cwd: repositoryRoot },
+      )
+        .then(() => true)
+        .catch(() => false);
+      if (sourceStillInHead) matches.push(evidence);
+    }
+  }
+  if (matches.length > 1)
+    throw new ExhibitionsPublishError(
+      "Multiple pending Rename records match this Exhibition.",
+      "publish-set-mismatch",
+    );
+  return matches[0];
+}
 export async function inspectExhibitionsPublish(
   contentId: string,
   repositoryRoot = path.resolve("."),
@@ -104,7 +171,42 @@ export async function inspectExhibitionsPublish(
       "Unsafe Exhibition source",
       "unsafe-repository",
     );
-  if (!(await git(["status", "--porcelain", "--", file])))
+  const evidence = await completedRenameEvidence(repositoryRoot, contentId);
+  const files = evidence?.plan.publishPaths ?? [file];
+  if (evidence) {
+    if (
+      evidence.plan.repositoryBranch !== repositoryContext.branch ||
+      evidence.plan.repositoryUpstream !==
+        `${repositoryContext.remote}/${repositoryContext.branch}`
+    )
+      throw new ExhibitionsPublishError(
+        "Rename evidence does not match the current Git branch.",
+        "publish-set-mismatch",
+      );
+    for (const [candidate, expected] of Object.entries(evidence.prospective)) {
+      const bytes = await fs
+        .readFile(path.join(repositoryRoot, candidate))
+        .catch(() => undefined);
+      if (!bytes || hash(bytes) !== expected.hash)
+        throw new ExhibitionsPublishError(
+          `Canonical Rename result does not match evidence: ${candidate}`,
+          "publish-set-mismatch",
+        );
+    }
+    for (const [candidate, expected] of Object.entries(evidence.preimages)) {
+      const head = await execFile("git", ["show", `HEAD:${candidate}`], {
+        cwd: repositoryRoot,
+      })
+        .then(({ stdout }) => stdout)
+        .catch(() => undefined);
+      if (!head || hash(Buffer.from(head)) !== expected.hash)
+        throw new ExhibitionsPublishError(
+          `Git HEAD preimage does not match Rename evidence: ${candidate}`,
+          "publish-set-mismatch",
+        );
+    }
+  }
+  if (!(await git(["status", "--porcelain", "--", ...files])))
     throw new ExhibitionsPublishError(
       "Canonical Exhibition has no changes",
       "nothing-to-publish",
@@ -112,6 +214,8 @@ export async function inspectExhibitionsPublish(
   return {
     ...repositoryContext,
     file,
+    files,
+    evidence,
     commitMessage: exhibitionsPublishCommitMessage(contentId),
   };
 }
@@ -144,26 +248,35 @@ export async function publishSavedExhibitionsEntry(
     git,
   );
   try {
-    await git(["add", "--", inspection.file]);
-    if ((await git(["diff", "--cached", "--name-only"])) !== inspection.file)
+    await git(["add", "--", ...inspection.files]);
+    const stagedNames = (
+      await git(["diff", "--cached", "--name-only", "--no-renames"])
+    )
+      .split("\n")
+      .filter(Boolean)
+      .sort();
+    if (
+      JSON.stringify(stagedNames) !==
+      JSON.stringify([...inspection.files].sort())
+    )
       throw new ExhibitionsPublishError(
         "Staging escaped Exhibition boundary",
         "unsafe-repository",
       );
-    const staged = (
-      await execFile("git", ["show", `:${inspection.file}`], {
-        cwd: repositoryRoot,
-        encoding: "utf8",
-      })
-    ).stdout;
-    if (staged !== canonical.sourceRaw)
+    const staged = await execFile("git", ["show", `:${inspection.file}`], {
+      cwd: repositoryRoot,
+    });
+    if (
+      hash(Buffer.from(staged.stdout)) !==
+      hash(Buffer.from(canonical.sourceRaw))
+    )
       throw new ExhibitionsPublishError(
         "Canonical Exhibition changed during Publish",
         "canonical-mismatch",
       );
     await git(["commit", "-m", inspection.commitMessage]);
   } catch (error) {
-    await git(["reset", "--", inspection.file]).catch(() => undefined);
+    await git(["reset", "--", ...inspection.files]).catch(() => undefined);
     if (error instanceof ExhibitionsPublishError) throw error;
     throw new ExhibitionsPublishError(
       "Failed to commit Exhibition",

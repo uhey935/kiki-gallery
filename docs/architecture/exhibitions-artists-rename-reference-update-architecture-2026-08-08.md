@@ -2,7 +2,7 @@
 
 | Property  | Value                                                                      |
 | --------- | -------------------------------------------------------------------------- |
-| Status    | Approved design; implementation not authorized                             |
+| Status    | Approved; Exhibitions first safe slice implemented, Artists deferred       |
 | Date      | 2026-08-08                                                                 |
 | Scope     | Exhibitions and Artists Content ID Rename with bounded reference updates   |
 | Preserved | Asset bytes/paths, Delete, Production loaders/consumers, canonical content |
@@ -15,10 +15,13 @@ bounded set of typed incoming references. The operation is one logical
 cross-file transaction. A source move without every required reference edit,
 or a partial reference edit without the source move, is never a valid result.
 
-This milestone defines that transaction but adds no Rename API, workspace UI,
-filesystem mutation, schema change, Production loader change, or canonical
-content/asset change. Works Rename and all Works Asset Lifecycle v2 Content-ID
-and lock semantics remain a separate milestone. Delete remains unchanged.
+The Exhibitions first safe slice now supplies the reviewed plan/execute API,
+workspace UI, bounded News-link rewrite, transaction evidence, exact rollback,
+and evidence-bound Publish set described below. Artist Rename remains deferred.
+There is no schema or Production loader change, and canonical production
+content/assets are unchanged by the implementation milestone. Works Rename and
+all Works Asset Lifecycle v2 Content-ID and lock semantics remain separate.
+Delete remains unchanged.
 
 ## Audited current boundaries
 
@@ -264,7 +267,7 @@ recovery files under `.kiki-editor/` are never staged or consumed by Production.
 
 ## Implementation gates and acceptance
 
-Implementation remains deferred until a separate milestone supplies
+Artists implementation remains deferred until a separate milestone supplies
 collection-owned inventory/rewriter modules, the staged-overlay validator,
 durable journal/restart inspection, composed lock enforcement, UI/API, and
 Publish expansion. Tests must use isolated Git repositories and cover every

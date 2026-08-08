@@ -7,9 +7,10 @@ import {
   renameWorkspaceUrl,
 } from "./rename-ui.ts";
 
-test("Rename browser routes remain limited to Journal and News", () => {
+test("Rename browser routes include the reference-aware Exhibitions slice", () => {
   assert.equal(renameEndpoint("journal"), "/editor/api/journal-rename");
   assert.equal(renameEndpoint("news"), "/editor/api/news-rename");
+  assert.equal(renameEndpoint("exhibitions"), "/editor/api/exhibitions-rename");
   assert.equal(
     renameWorkspaceUrl("journal", "renamed entry"),
     "/editor/journal/workspace/renamed%20entry/",
@@ -29,6 +30,14 @@ test("Rename failures provide stable fail-closed browser guidance", () => {
     "lock-conflict",
     "journal-rename-rollback-failed",
     "news-rename-rollback-failed",
+    "destination-conflict",
+    "reference-graph-incomplete",
+    "reference-rewrite-unsupported",
+    "prospective-validation-failed",
+    "plan-stale",
+    "lifecycle-lock-conflict",
+    "rename-failed-rolled-back",
+    "manual-recovery-required",
   ])
     assert.notEqual(renameFailureGuidance(code), renameFailureGuidance());
 });
