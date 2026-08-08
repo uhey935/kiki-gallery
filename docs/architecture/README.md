@@ -14,6 +14,7 @@ The documents are designed to be read in the following order.
 
 | Document                                                | Purpose                                                                                                                                              |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Retention Policy Finalization**                       | Approves retention floors, deletion authority, holds, evidence preservation, remote-storage requirements, and the separate implementation gate.      |
 | **Backup & Recovery Architecture / Tooling**            | Defines Git versus explicit-backup protection, integrity verification, exact restore, lock evidence, retention boundary, and disaster recovery.      |
 | **Asset Lifecycle v2 — Physical Delete & Finalization** | Defines per-asset explicit confirmation, quarantine retention, final locked re-audit, quarantine-only physical deletion, and durable final evidence. |
 | **Asset Lifecycle v2 — Reversible Cleanup**             | Defines locked fresh re-audit, reversible quarantine/restore, crash recovery, and the continued no-delete boundary.                                  |
@@ -38,6 +39,17 @@ The documents are designed to be read in the following order.
 ---
 
 ## Documents
+
+### Retention Policy Finalization
+
+**retention-policy-finalization-2026-08-08.md**
+
+Approves the independent post-backup policy. It separates candidate,
+quarantine, backup-generation, and durable-evidence retention; sets conservative
+minimum floors, roles, holds, remote-storage and restore requirements; preserves
+the no-automatic-deletion boundary; and keeps implementation in a separately
+reviewed milestone without changing Editor v1, Asset Lifecycle v2, or canonical
+content/assets.
 
 ### Backup & Recovery Architecture / Tooling
 
