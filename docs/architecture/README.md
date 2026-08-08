@@ -15,6 +15,7 @@ The documents are designed to be read in the following order.
 | Document                                                       | Purpose                                                                                                                                                             |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Exhibitions / Artists Rename Reference Update Architecture** | Defines the bounded typed-reference graph, reviewed multi-file transaction, byte-exact rollback, and exact Publish set; the Exhibitions first slice is implemented. |
+| **Exhibitions Rename Browser Acceptance Closure**              | Records fresh-server acceptance of the reviewed flow, redirect, reference rewrite, Preview/Save continuity, fail-closed collision, and exact Publish set.           |
 | **Rename Dependency and Reference Audit**                      | Classifies collection Rename safety, the News expansion, and deferred reference/asset blockers.                                                                     |
 | **Create / Rename / Delete Architecture & Safety**             | Defines reviewed, conflict-safe, rollback-aware semantics for future content lifecycle operations without authorizing implementation.                               |
 | **Retention Policy Finalization**                              | Approves retention floors, deletion authority, holds, evidence preservation, remote-storage requirements, and the separate implementation gate.                     |
@@ -55,6 +56,14 @@ exact Publish path set. Exhibitions now implements this boundary for its flat
 source file plus all known News `link` references. Artists, Works-specific
 lifecycle semantics, Delete, and Production behavior remain deferred. All
 asset bytes and paths remain outside the operation.
+
+### Exhibitions Rename Browser Acceptance Closure
+
+**exhibitions-rename-browser-acceptance-2026-08-08.md**
+
+Records the fresh-process browser run that closes the Exhibitions first slice
+without implementation changes, including the full reviewed Rename and
+evidence-limited Publish path plus a representative fail-closed collision.
 
 ### Rename Dependency and Reference Audit
 
