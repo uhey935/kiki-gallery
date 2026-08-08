@@ -2,7 +2,7 @@
 
 | Property      | Value                                                                 |
 | ------------- | --------------------------------------------------------------------- |
-| Status        | Approved design; Journal Create first safe slice implemented          |
+| Status        | Approved design; Create implemented for creatable collections         |
 | Date          | 2026-08-08                                                            |
 | Scope         | Editor-managed Create, Rename, and Delete planning and safety         |
 | Compatibility | Preserve Editor v1, canonical content/assets, and Production behavior |
@@ -32,11 +32,20 @@ unit is never an accepted result. Existing Journal Save and Publish remain the
 post-create boundaries, including Publish support for the three initially
 untracked files.
 
-This slice does not authorize Create for flat or singleton collections, asset
-upload or mutation, Rename, Delete, reference rewriting, redirects, or any
-Production loader change. The broader reviewed-plan, shared lifecycle lock,
-and durable operation-journal contract remains required before Rename/Delete
-or a wider lifecycle implementation.
+The collection-expansion slice authorizes Create for the existing flat Works,
+Artists, Exhibitions, and News adapters. A small flat-file transaction helper
+owns only safe-root checking, exact and case-fold absence checks, exclusive
+staging, no-overwrite publication, byte-guarded rollback, and cleanup. Each
+collection continues to own its schema, Draft validation, serializer,
+canonical reread, Preview, Save, and Publish contracts. Home remains a
+singleton and explicitly cannot Create a second entry. Asset upload or
+mutation, Rename, Delete, reference rewriting, redirects, and Production
+loader changes remain outside this implementation.
+
+Journal retains its three-file transaction and is not routed through the flat
+helper. Flat Create writes exactly one current-format Markdown file. All Create
+routes end at a saved-unpublished workspace; Publish independently includes
+the new untracked canonical path under the existing collection boundary.
 
 For a collection whose approved storage adapter uses a localized Content Unit,
 the unit is exactly:

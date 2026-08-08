@@ -6,6 +6,7 @@ import type { JournalEditorDraftState } from "./journal-draft-state.ts";
 import {
   editorFailureGuidance,
   flatIssueFieldCandidates,
+  isEditorManualRecoveryFailure,
   isEditorSaveShortcut,
   journalDraftDirtyFields,
   journalIssueFieldName,
@@ -167,6 +168,17 @@ test("rollback failure tells the operator to stop before another operation", () 
     message:
       "Stop editing and request manual recovery before trying another operation.",
   });
+});
+
+test("flat Create rollback failure uses the same manual recovery boundary", () => {
+  assert.equal(
+    isEditorManualRecoveryFailure("collection-create-rollback-failed"),
+    true,
+  );
+  assert.equal(
+    editorFailureGuidance("unsafe-collection-root").action,
+    "review",
+  );
 });
 
 test("Works recovery-required state keeps every operation stopped", () => {

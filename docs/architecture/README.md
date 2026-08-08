@@ -45,8 +45,9 @@ The documents are designed to be read in the following order.
 
 **create-rename-delete-architecture-and-safety-specification-2026-08-08.md**
 
-Approves the future content-lifecycle contract in Create → Rename → Delete
-order. It defines three-file Content Unit integrity, Content ID and route
+Approves the content-lifecycle contract in Create → Rename → Delete order and
+records the implemented Create boundary for Journal plus the four creatable
+flat collections, with Home explicitly singleton. It defines three-file Content Unit integrity, Content ID and route
 changes, typed reference updates, conservative asset ownership, optimistic
 conflicts, prospective validation, Save/Preview/Publish separation,
 rollback/recovery evidence, and quarantine/retention integration. It preserves
