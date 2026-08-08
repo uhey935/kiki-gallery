@@ -1,0 +1,10 @@
+---
+import ExhibitionsDraftForm from "../../../components/editor/ExhibitionsDraftForm.astro";
+import FlatCreateWorkspace from "../../../components/editor/FlatCreateWorkspace.astro";
+import { createNewExhibitionsDraft } from "../../../editor/collection-create-drafts";
+const draft = createNewExhibitionsDraft();
+---
+
+<FlatCreateWorkspace collection="exhibitions" label="Exhibitions" draft={draft}>
+  <ExhibitionsDraftForm draft={draft} />
+</FlatCreateWorkspace>

@@ -20,9 +20,9 @@ const { collectionId, collectionLabel, entries } = Astro.props;
     <div>
       <span class="editor-count">{entries.length} entries</span>
       {
-        collectionId === "journal" && (
-          <a class="editor-button" href="/editor/journal/create/">
-            Create Journal
+        collectionId !== "home" && (
+          <a class="editor-button" href={`/editor/${collectionId}/create/`}>
+            Create {collectionLabel}
           </a>
         )
       }

@@ -1,0 +1,78 @@
+---
+import FlatValidationPanel from "./FlatValidationPanel.astro";
+import EditorLayout from "../../layouts/EditorLayout.astro";
+
+type Collection = "works" | "artists" | "exhibitions" | "news";
+const { collection, label, draft } = Astro.props as {
+  collection: Collection;
+  label: string;
+  draft: { contentId: string };
+};
+const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
+---
+
+<EditorLayout title={`Create ${label}`} section={label}>
+  <header class="editor-page-heading">
+    <p class="editor-eyebrow">{label} create</p>
+    <h1>New {label} entry</h1>
+    <p>
+      Draft Preview is temporary. First Save creates one canonical Markdown
+      file, then opens the existing workspace. Publish remains separate.
+    </p>
+  </header>
+  <div class="editor-workspace" data-flat-create={collection}>
+    <main class="editor-panel editor-canvas">
+      <label data-editor-field="contentId">
+        <span
+          >Content ID <small class="editor-field-badge">Required</small></span
+        >
+        <input
+          name="contentId"
+          form={`${collection}-create-form`}
+          autocomplete="off"
+          placeholder="lowercase-hyphenated-id"
+        />
+      </label>
+      <slot />
+    </main>
+    <FlatValidationPanel issues={[]} />
+  </div>
+  <footer class="editor-action-bar" aria-label="Editor actions">
+    <span data-create-action-status role="status" aria-live="polite"
+      >Create blocked by validation</span
+    >
+    <div class="editor-action-bar__actions">
+      <button
+        class="editor-button editor-button--secondary"
+        type="button"
+        data-create-preview
+        disabled>Draft Preview</button
+      >
+      <button class="editor-button" type="button" data-create-save disabled
+        >First Save</button
+      >
+      <button
+        class="editor-button"
+        type="button"
+        data-create-publish
+        title="First Save the new entry; Publish remains a separate workspace action"
+        disabled>Publish</button
+      >
+    </div>
+  </footer>
+</EditorLayout>
+
+<script
+  type="application/json"
+  is:inline
+  id={`${collection}-create-draft`}
+  set:html={serializedDraft}
+/>
+<script>
+  import { startFlatCreateUi } from "../../editor/flat-create-ui";
+  const root = document.querySelector<HTMLElement>("[data-flat-create]");
+  if (root?.dataset.flatCreate)
+    startFlatCreateUi(
+      root.dataset.flatCreate as Parameters<typeof startFlatCreateUi>[0],
+    );
+</script>

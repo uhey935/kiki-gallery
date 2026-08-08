@@ -124,3 +124,30 @@ canonical content/assets with the captured pre-check hashes.
    details. Older prototype and migration documents are historical evidence.
 7. `docs/architecture/backup-and-recovery-architecture-2026-08-07.md` for
    backup scope, verification, restore, and disaster recovery.
+
+# Create operator flow
+
+Works, Artists, Exhibitions, News, and Journal expose **Create** from their
+collection list. Home is a singleton and never exposes Create.
+
+1. Open the collection and choose **Create**.
+2. Enter a lowercase, hyphenated Content ID and complete the collection's
+   required fields. Preview and First Save remain blocked while validation is
+   incomplete.
+3. Use **Draft Preview** to inspect the unsaved Draft where the collection
+   supports Preview. This does not create Production content.
+4. Choose **First Save**. A collision (including a case-fold equivalent) leaves
+   the Create screen and canonical files unchanged. Other failures follow the
+   displayed retry, review, reload, or stop guidance.
+5. After success, the Editor opens the normal saved workspace. Confirm the
+   entry is saved and unpublished, then use that workspace's existing Publish
+   action separately. Publish includes the newly untracked canonical file(s)
+   and stages no unrelated path.
+
+Works Create accepts an existing canonical image reference only. Asset upload,
+replacement, admission, and promotion behavior is unchanged and remains an
+existing-workspace operation. Artists and Exhibitions similarly reference
+existing asset paths; News has no asset operation.
+
+Cancel before First Save by leaving the page. No canonical content, asset,
+commit, or Production route is created.

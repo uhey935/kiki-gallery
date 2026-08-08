@@ -3,8 +3,9 @@ import type { WorksEditorDraftState } from "../../editor/works-draft-state";
 
 interface Props {
   draft: WorksEditorDraftState;
+  create?: boolean;
 }
-const { draft } = Astro.props;
+const { draft, create = false } = Astro.props;
 const { data } = draft;
 ---
 
@@ -34,11 +35,13 @@ const { data } = draft;
       <div><p class="editor-eyebrow">Shared / Localized</p><h2>Images</h2></div>
     </header>
     <p>
-      Upload JPEG, PNG, WebP, or AVIF files using canonical lowercase names. New
-      files remain temporary until Save. Preview can show temporary files, but
-      Publish always requires a successful Save first.
+      {
+        create
+          ? "Create references an existing canonical image path. Asset creation and upload remain outside first Save."
+          : "Upload JPEG, PNG, WebP, or AVIF files using canonical lowercase names. New files remain temporary until Save. Preview can show temporary files, but Publish always requires a successful Save first."
+      }
     </p>
-    <div class="editor-asset-upload">
+    <div class="editor-asset-upload" hidden={create}>
       <input
         data-works-asset-file
         type="file"
@@ -59,13 +62,22 @@ const { data } = draft;
             <legend>Image {index + 1}</legend>
             <label>
               Shared · src
-              <input value={image.src} readonly />
+              <input
+                name={create ? `images.${index}.src` : undefined}
+                value={image.src}
+                readonly={!create}
+              />
             </label>
             <label>
               Localized · alt
-              <textarea data-asset-alt>{image.alt}</textarea>
+              <textarea
+                name={create ? `images.${index}.alt` : undefined}
+                data-asset-alt={!create ? "" : undefined}
+              >
+                {image.alt}
+              </textarea>
             </label>
-            <div class="editor-asset-actions">
+            <div class="editor-asset-actions" hidden={create}>
               <button type="button" data-asset-move="up" disabled={index === 0}>
                 Move up
               </button>

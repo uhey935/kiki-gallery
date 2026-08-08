@@ -2,7 +2,7 @@
 
 | Property      | Value                                                                 |
 | ------------- | --------------------------------------------------------------------- |
-| Status        | Approved design; Create implemented for creatable collections         |
+| Status        | Approved design; Create UI and acceptance complete                    |
 | Date          | 2026-08-08                                                            |
 | Scope         | Editor-managed Create, Rename, and Delete planning and safety         |
 | Compatibility | Preserve Editor v1, canonical content/assets, and Production behavior |
@@ -41,6 +41,24 @@ canonical reread, Preview, Save, and Publish contracts. Home remains a
 singleton and explicitly cannot Create a second entry. Asset upload or
 mutation, Rename, Delete, reference rewriting, redirects, and Production
 loader changes remain outside this implementation.
+
+The UI-and-acceptance slice exposes a collection-owned Create screen from each
+Works, Artists, Exhibitions, and News list. Each screen starts from an isolated,
+validation-blocked Draft scaffold and delegates Draft parsing and validation to
+that collection's existing schema contract. Draft Preview calls the existing
+preview route; First Save calls the safe Create route and redirects only after
+the canonical reread succeeds; Publish remains disabled until the existing
+saved workspace is loaded. Journal's three-file Create screen is unchanged.
+Home has no Create route or list action. The shared UI shell contains no
+serializer, repository, asset, Save, Preview, or Publish semantics.
+
+Acceptance is split deliberately. Browser checks cover list navigation,
+scaffolding, validation gating, Draft Preview availability, the First Save
+boundary, collision feedback, and the absence of Home Create. Temporary Git
+repository tests cover canonical first Save, exact and case-fold collision
+failure, staged-write and canonical-reread rollback, workspace-ready reread,
+and Publish of each newly created untracked flat file. This keeps acceptance
+from mutating Production content or assets.
 
 Journal retains its three-file transaction and is not routed through the flat
 helper. Flat Create writes exactly one current-format Markdown file. All Create

@@ -165,7 +165,7 @@ test("a failed canonical reread rolls back only the exact created bytes", async 
   );
   try {
     await assert.rejects(
-      createFlatEditorEntry({
+      createFlatEditorEntry<{ contentId: string; value: string }>({
         collectionId: "example",
         collectionLabel: "Example",
         draft: { contentId: "new-example", value: "valid" },

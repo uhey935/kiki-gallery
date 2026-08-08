@@ -1,0 +1,10 @@
+---
+import FlatCreateWorkspace from "../../../components/editor/FlatCreateWorkspace.astro";
+import NewsDraftForm from "../../../components/editor/NewsDraftForm.astro";
+import { createNewNewsDraft } from "../../../editor/collection-create-drafts";
+const draft = createNewNewsDraft();
+---
+
+<FlatCreateWorkspace collection="news" label="News" draft={draft}>
+  <NewsDraftForm draft={draft} />
+</FlatCreateWorkspace>
