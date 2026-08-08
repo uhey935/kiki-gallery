@@ -14,6 +14,7 @@ The documents are designed to be read in the following order.
 
 | Document                                                | Purpose                                                                                                                                              |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Create / Rename / Delete Architecture & Safety**      | Defines reviewed, conflict-safe, rollback-aware semantics for future content lifecycle operations without authorizing implementation.                |
 | **Retention Policy Finalization**                       | Approves retention floors, deletion authority, holds, evidence preservation, remote-storage requirements, and the separate implementation gate.      |
 | **Backup & Recovery Architecture / Tooling**            | Defines Git versus explicit-backup protection, integrity verification, exact restore, lock evidence, retention boundary, and disaster recovery.      |
 | **Asset Lifecycle v2 — Physical Delete & Finalization** | Defines per-asset explicit confirmation, quarantine retention, final locked re-audit, quarantine-only physical deletion, and durable final evidence. |
@@ -39,6 +40,18 @@ The documents are designed to be read in the following order.
 ---
 
 ## Documents
+
+### Create / Rename / Delete Architecture & Safety
+
+**create-rename-delete-architecture-and-safety-specification-2026-08-08.md**
+
+Approves the future content-lifecycle contract in Create → Rename → Delete
+order. It defines three-file Content Unit integrity, Content ID and route
+changes, typed reference updates, conservative asset ownership, optimistic
+conflicts, prospective validation, Save/Preview/Publish separation,
+rollback/recovery evidence, and quarantine/retention integration. It preserves
+Editor v1 and current canonical content/assets and does not authorize
+implementation.
 
 ### Retention Policy Finalization
 
