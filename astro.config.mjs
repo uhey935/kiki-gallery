@@ -45,6 +45,11 @@ export default defineConfig({
             entrypoint: "./src/editor/routes/journal-rename.ts",
             prerender: false,
           });
+          injectRoute({
+            pattern: "/editor/api/news-rename",
+            entrypoint: "./src/editor/routes/news-rename.ts",
+            prerender: false,
+          });
           for (const collection of ["works", "artists", "exhibitions", "news"])
             injectRoute({
               pattern: `/editor/api/${collection}-create`,

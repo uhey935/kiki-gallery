@@ -90,7 +90,33 @@ export async function inspectNewsPublish(
     .catch(() => null);
   if (!stat?.isFile() || stat.isSymbolicLink())
     throw new NewsPublishError("Unsafe News source", "unsafe-repository");
-  if (!(await git(["status", "--porcelain", "--", file])))
+  const bytes = await fs.readFile(path.join(repositoryRoot, file), "utf8");
+  const deleted = (
+    await git([
+      "diff",
+      "--name-only",
+      "--diff-filter=D",
+      "--",
+      "src/content/news",
+    ])
+  )
+    .split("\n")
+    .filter(Boolean);
+  const matchingSources: string[] = [];
+  for (const candidate of deleted) {
+    const old = await execFile("git", ["show", `HEAD:${candidate}`], {
+      cwd: repositoryRoot,
+      encoding: "utf8",
+    }).then(({ stdout }) => stdout);
+    if (old === bytes) matchingSources.push(candidate);
+  }
+  if (matchingSources.length > 1)
+    throw new NewsPublishError(
+      "Publish found more than one possible News Rename source",
+      "unsafe-repository",
+    );
+  const files = [...matchingSources, file];
+  if (!(await git(["status", "--porcelain", "--", ...files])))
     throw new NewsPublishError(
       "Canonical News has no changes",
       "nothing-to-publish",
@@ -98,6 +124,7 @@ export async function inspectNewsPublish(
   return {
     ...repositoryContext,
     file,
+    files,
     commitMessage: `Publish news: ${contentId}`,
   };
 }
@@ -130,8 +157,17 @@ export async function publishSavedNewsEntry(
     git,
   );
   try {
-    await git(["add", "--", inspection.file]);
-    if ((await git(["diff", "--cached", "--name-only"])) !== inspection.file)
+    await git(["add", "--", ...inspection.files]);
+    const stagedNames = (
+      await git(["diff", "--cached", "--name-only", "--no-renames"])
+    )
+      .split("\n")
+      .filter(Boolean)
+      .sort();
+    if (
+      JSON.stringify(stagedNames) !==
+      JSON.stringify([...inspection.files].sort())
+    )
       throw new NewsPublishError(
         "Staging escaped News boundary",
         "unsafe-repository",
@@ -147,9 +183,26 @@ export async function publishSavedNewsEntry(
         "Canonical News changed during Publish",
         "canonical-mismatch",
       );
+    for (const deleted of inspection.files.filter(
+      (candidate) => candidate !== inspection.file,
+    )) {
+      await execFile("git", ["show", `:${deleted}`], {
+        cwd: repositoryRoot,
+        encoding: "utf8",
+      })
+        .then(() => {
+          throw new NewsPublishError(
+            "Deleted News remained in the staged index",
+            "canonical-mismatch",
+          );
+        })
+        .catch((error) => {
+          if (error instanceof NewsPublishError) throw error;
+        });
+    }
     await git(["commit", "-m", inspection.commitMessage]);
   } catch (error) {
-    await git(["reset", "--", inspection.file]).catch(() => undefined);
+    await git(["reset", "--", ...inspection.files]).catch(() => undefined);
     if (error instanceof NewsPublishError) throw error;
     throw new NewsPublishError("Failed to commit News", "publish-failed", {
       cause: error,

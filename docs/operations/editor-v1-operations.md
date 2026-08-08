@@ -25,7 +25,7 @@ only an already-authorized Works saved-asset manifest). Create itself never
 uploads, moves, or infers ownership of assets.
 
 Home is the canonical `home.md` singleton and has no Create capability. A
-service/API first slice supports reviewed Journal Rename only; the normal
+service/API slice supports reviewed Journal and News Rename; the normal
 workspace does not yet expose a Rename control. Delete remains unavailable for
 every collection.
 
@@ -46,7 +46,7 @@ no unrelated staged files, a saved baseline, and publishable validation.
 - `unsafe-collection-root`: stop Create and inspect the named flat collection
   root for a symlink, missing directory, or other unsafe substitution.
 - `source-unavailable`: stop Rename and inspect the complete Journal three-file
-  unit; do not repair or remove files merely to retry.
+  unit or schema-valid News file; do not remove files merely to retry.
 - `unresolved-references`: review the reported incoming Journal route link.
   This first slice does not rewrite references and has no force mode.
 - `lock-conflict`: stop mutation and inspect both content-lifecycle and
@@ -65,6 +65,8 @@ no unrelated staged files, a saved baseline, and publishable validation.
 - `journal-rename-rollback-failed`: stop all Editor mutation and preserve
   `.kiki-editor/content-lifecycle/operations/` plus the repository lock. Compare
   both old and new Journal paths with the recorded hashes before recovery.
+- `news-rename-rollback-failed`: use the same stop-and-preserve procedure for
+  the recorded old/new News paths and exact source hash.
 
 Never discard or overwrite recovery evidence merely to clear a lock.
 
@@ -181,3 +183,23 @@ semantics. Publish remains separate and must show the three old deletions plus
 the three new files. It stages and verifies that exact rename set; unrelated
 working-tree changes remain untouched. Do not delete lifecycle evidence or a
 retained lock to make a retry possible.
+
+## News Rename safe expansion
+
+News Rename is exposed only through the localhost
+`POST /editor/api/news-rename` plan/execute API. Review its IDs, repository
+identity, source hash, and explicitly empty route sets before executing the
+same plan. News has no detail route and is not a typed reference target, so the
+operation moves one schema-valid Markdown file without changing its bytes,
+outgoing `link`, or assets.
+
+Success opens the new saved-unpublished workspace. Publish is separate and
+must show and stage the exact old deletion plus new addition. On a collision,
+choose another ID; on canonical mismatch, review a fresh plan; on lock conflict,
+finish or recover the lifecycle operation. A rollback failure requires stopping
+all Editor mutation and inspecting the durable operation record while leaving
+the lock intact.
+
+Exhibitions, Artists, and Works have no Rename API yet. Their typed incoming
+references, public routes, and (for Works) Asset Lifecycle v2 state are recorded
+in the dependency/reference audit.

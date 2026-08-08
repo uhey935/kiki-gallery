@@ -2,7 +2,7 @@
 
 | Property      | Value                                                                 |
 | ------------- | --------------------------------------------------------------------- |
-| Status        | Create complete; Journal Rename first safe slice implemented          |
+| Status        | Create complete; Journal and News Rename safe slices implemented      |
 | Date          | 2026-08-08                                                            |
 | Scope         | Editor-managed Create, Rename, and Delete planning and safety         |
 | Compatibility | Preserve Editor v1, canonical content/assets, and Production behavior |
@@ -69,6 +69,16 @@ workspace as saved-unpublished. Journal Publish recognizes one exact Git
 delete/add pair with identical three-file bytes, stages all six old/new paths,
 and verifies both the deleted index entries and new staged blobs. Rename has a
 localhost-only plan/execute API but no workspace UI in this first slice.
+
+The dependency/reference audit classifies News as safe to Rename now because
+it has no public detail route and is not a typed reference target. News Rename
+moves one schema-valid Markdown file without changing its bytes, outgoing link,
+or assets, while retaining the reviewed plan, lifecycle lock, durable evidence,
+drift checks, canonical reread, and identity-guarded rollback. News Publish
+handles its exact delete/add pair. Exhibitions and Artists require reviewed
+typed-reference and known-route updates and are deferred. Works is additionally
+blocked on Asset Lifecycle v2 state and lock semantics. No browser Rename UI is
+added by this expansion.
 
 Acceptance is split deliberately. Browser checks cover list navigation,
 scaffolding, validation gating, Draft Preview availability, the First Save

@@ -14,6 +14,7 @@ The documents are designed to be read in the following order.
 
 | Document                                                | Purpose                                                                                                                                              |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rename Dependency and Reference Audit**               | Classifies collection Rename safety, the News expansion, and deferred reference/asset blockers.                                                      |
 | **Create / Rename / Delete Architecture & Safety**      | Defines reviewed, conflict-safe, rollback-aware semantics for future content lifecycle operations without authorizing implementation.                |
 | **Retention Policy Finalization**                       | Approves retention floors, deletion authority, holds, evidence preservation, remote-storage requirements, and the separate implementation gate.      |
 | **Backup & Recovery Architecture / Tooling**            | Defines Git versus explicit-backup protection, integrity verification, exact restore, lock evidence, retention boundary, and disaster recovery.      |
@@ -40,6 +41,14 @@ The documents are designed to be read in the following order.
 ---
 
 ## Documents
+
+### Rename Dependency and Reference Audit
+
+**rename-dependency-reference-audit-2026-08-08.md**
+
+Classifies collection-specific references, public route coupling, and asset
+semantics. It records the safe News Rename boundary and the precise blockers
+that defer Exhibitions, Artists, and Works.
 
 ### Create / Rename / Delete Architecture & Safety
 
