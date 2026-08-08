@@ -1,6 +1,7 @@
 ---
 import ActionBar from "../../../../components/editor/ActionBar.astro";
 import EntryDraftForm from "../../../../components/editor/EntryDraftForm.astro";
+import RenamePanel from "../../../../components/editor/RenamePanel.astro";
 import ValidationPanel from "../../../../components/editor/ValidationPanel.astro";
 import { createJournalEditorDraft } from "../../../../editor/journal-draft-state";
 import {
@@ -28,7 +29,10 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   <header class="editor-page-heading">
     <p class="editor-eyebrow">Journal workspace</p>
     <h1>{entry.title}</h1>
-    <p>{entry.contentId} · Canonical three-file editor</p>
+    <p>
+      <span data-workspace-content-id>{entry.contentId}</span> · Canonical three-file
+      editor
+    </p>
   </header>
   <div class="editor-workspace">
     <main class="editor-panel editor-canvas">
@@ -36,6 +40,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     </main>
     <ValidationPanel entry={entry} />
   </div>
+  <RenamePanel collection="journal" contentId={entry.contentId} />
   <ActionBar
     loaded
     save={entry.capabilities.save}
@@ -216,6 +221,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
                 : "Commit and push the saved canonical files",
       );
       renderFieldState();
+      window.dispatchEvent(
+        new CustomEvent("editor:workspace-state", {
+          detail: { locked: operationLocked || dirty },
+        }),
+      );
     };
 
     const failureMessage = (error: unknown, fallback: string) => {
@@ -389,11 +399,23 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         renderActions();
       }
     });
+    window.addEventListener("editor:rename-complete", (event) => {
+      const renamed = (
+        event as CustomEvent<{ draft?: JournalEditorDraftState }>
+      ).detail.draft;
+      if (!renamed) return;
+      initial = renamed;
+      current = structuredClone(renamed);
+      statusMessage = "Renamed · unpublished changes ready to publish";
+      const identity = document.querySelector<HTMLElement>(
+        "[data-workspace-content-id]",
+      );
+      if (identity) identity.textContent = renamed.contentId;
+      renderActions();
+    });
     form.addEventListener("input", (event) => {
       const field = event.target as
-        | HTMLInputElement
-        | HTMLTextAreaElement
-        | HTMLSelectElement;
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
       if (!field.name) return;
       current = updateJournalEditorDraft(current, (next) => {
         const [scope, key, nested] = field.name.split(".");

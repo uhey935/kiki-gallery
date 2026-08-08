@@ -172,6 +172,52 @@ button {
 .editor-empty-state .editor-button {
   margin-top: 24px;
 }
+.editor-rename {
+  margin-top: 18px;
+}
+.editor-rename__body {
+  padding: 22px;
+}
+.editor-rename__body > p {
+  margin-top: 0;
+  color: #65706a;
+}
+.editor-rename__body > label,
+.editor-rename__confirm {
+  display: grid;
+  gap: 7px;
+}
+.editor-rename__body input[type="text"],
+.editor-rename__body input:not([type]) {
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid #cbd1cb;
+  border-radius: 6px;
+  background: white;
+  font: inherit;
+}
+.editor-rename__actions {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #65706a;
+  font-size: 0.82rem;
+}
+.editor-rename__review {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid #d6dbd5;
+  border-radius: 10px;
+  background: #f4f6f3;
+}
+.editor-rename__review h3 {
+  margin-top: 0;
+}
+.editor-rename__confirm {
+  grid-template-columns: auto 1fr;
+  margin: 18px 0;
+}
 .editor-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;

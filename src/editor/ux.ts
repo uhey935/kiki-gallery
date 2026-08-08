@@ -165,6 +165,7 @@ const reviewCodes = new Set([
   "nothing-to-publish",
   "content-id-collision",
   "unsafe-journal-root",
+  "unsafe-news-root",
   "unsafe-collection-root",
   "source-unavailable",
   "unresolved-references",
@@ -178,6 +179,7 @@ const manualRecoveryCodes = new Set([
   "collection-create-rollback-failed",
   "journal-save-rollback-failed",
   "journal-rename-rollback-failed",
+  "news-rename-rollback-failed",
 ]);
 
 export function isEditorManualRecoveryFailure(

@@ -1,6 +1,7 @@
 ---
 import NewsDraftForm from "../../../../components/editor/NewsDraftForm.astro";
 import NewsValidationPanel from "../../../../components/editor/NewsValidationPanel.astro";
+import RenamePanel from "../../../../components/editor/RenamePanel.astro";
 import { createNewsEditorDraft } from "../../../../editor/news-draft-state";
 import {
   readNewsEditorEntry,
@@ -25,7 +26,9 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   <header class="editor-page-heading">
     <p class="editor-eyebrow">News workspace</p><h1>
       {entry.data?.title ?? entry.contentId}
-    </h1><p>{entry.contentId} · Current flat Markdown</p>
+    </h1><p>
+      <span data-workspace-content-id>{entry.contentId}</span> · Current flat Markdown
+    </p>
   </header>
   <div class="editor-workspace">
     <main class="editor-panel editor-canvas">
@@ -41,6 +44,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       }
     </main><NewsValidationPanel entry={entry} />
   </div>
+  <RenamePanel collection="news" contentId={entry.contentId} />
   <footer class="editor-action-bar" aria-label="Editor actions">
     <span data-news-action-status role="status">Saved · ready</span><div
       class="editor-action-bar__actions"
@@ -146,6 +150,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       save.title = ux.saveTitle;
       preview.title = ux.previewTitle;
       publish.title = ux.publishTitle;
+      window.dispatchEvent(
+        new CustomEvent("editor:workspace-state", {
+          detail: { locked: locked || dirty },
+        }),
+      );
     };
     const request = async (url: string, body: unknown) => {
       const response = await fetch(url, {
@@ -221,6 +230,20 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         pending = null;
         render();
       }
+    });
+    window.addEventListener("editor:rename-complete", (event) => {
+      const renamed = (event as CustomEvent<{ draft?: NewsEditorDraftState }>)
+        .detail.draft;
+      if (!renamed) return;
+      baseline = renamed;
+      draft = structuredClone(renamed);
+      savedSincePublish = true;
+      statusMessage = "Renamed · unpublished changes ready to publish";
+      const identity = document.querySelector<HTMLElement>(
+        "[data-workspace-content-id]",
+      );
+      if (identity) identity.textContent = renamed.contentId;
+      render();
     });
     document.addEventListener("keydown", (event) => {
       if (isEditorSaveShortcut(event) && !save.disabled) {

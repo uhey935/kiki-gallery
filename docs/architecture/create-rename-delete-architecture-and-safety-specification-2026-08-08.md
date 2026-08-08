@@ -2,7 +2,7 @@
 
 | Property      | Value                                                                 |
 | ------------- | --------------------------------------------------------------------- |
-| Status        | Create complete; Journal and News Rename safe slices implemented      |
+| Status        | Create complete; Journal and News Rename v1 UI complete               |
 | Date          | 2026-08-08                                                            |
 | Scope         | Editor-managed Create, Rename, and Delete planning and safety         |
 | Compatibility | Preserve Editor v1, canonical content/assets, and Production behavior |
@@ -68,7 +68,8 @@ Journal Rename never changes content bytes or asset paths. It returns the new
 workspace as saved-unpublished. Journal Publish recognizes one exact Git
 delete/add pair with identical three-file bytes, stages all six old/new paths,
 and verifies both the deleted index entries and new staged blobs. Rename has a
-localhost-only plan/execute API but no workspace UI in this first slice.
+localhost-only plan/execute API. Its workspace UI keeps plan review and explicit
+confirmation separate from execution, then opens the renamed workspace.
 
 The dependency/reference audit classifies News as safe to Rename now because
 it has no public detail route and is not a typed reference target. News Rename
@@ -77,8 +78,19 @@ or assets, while retaining the reviewed plan, lifecycle lock, durable evidence,
 drift checks, canonical reread, and identity-guarded rollback. News Publish
 handles its exact delete/add pair. Exhibitions and Artists require reviewed
 typed-reference and known-route updates and are deferred. Works is additionally
-blocked on Asset Lifecycle v2 state and lock semantics. No browser Rename UI is
-added by this expansion.
+blocked on Asset Lifecycle v2 state and lock semantics. Neither deferred
+collection receives a Rename API or browser UI.
+
+The Rename UI-and-acceptance slice exposes the same narrow workflow from saved
+Journal and News workspaces only. Unsaved drafts and in-progress workspace
+actions gate plan and execute. The review displays the old/new identity, Git
+basis, canonical source files, and route effects; execution requires a fresh
+confirmation of that exact plan. Stable fail-closed guidance covers invalid
+IDs, exact/case-fold collisions, incoming Journal references, Git/canonical
+drift, unsafe roots/symlinks, lifecycle locks, and rollback/manual recovery.
+Success uses the API-provided renamed workspace URL. Preview, Save, and Publish
+remain the existing workspace actions, and Publish still stages the exact old
+delete/new add set.
 
 Acceptance is split deliberately. Browser checks cover list navigation,
 scaffolding, validation gating, Draft Preview availability, the First Save

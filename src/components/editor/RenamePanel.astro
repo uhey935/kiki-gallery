@@ -1,0 +1,220 @@
+---
+import type { RenameCollection } from "../../editor/rename-ui";
+
+const { collection, contentId } = Astro.props as {
+  collection: RenameCollection;
+  contentId: string;
+};
+---
+
+<section
+  class="editor-panel editor-rename"
+  data-rename-panel
+  data-collection={collection}
+  data-content-id={contentId}
+  aria-labelledby="rename-heading"
+>
+  <div class="editor-panel__heading">
+    <div>
+      <p class="editor-eyebrow">Content lifecycle</p>
+      <h2 id="rename-heading">Rename Content ID</h2>
+    </div>
+    <span class="editor-status">Journal + News only</span>
+  </div>
+  <div class="editor-rename__body">
+    <p>
+      Rename is separate from Save and Publish. Save any draft changes first,
+      then review the exact server plan before execution.
+    </p>
+    <label>
+      New Content ID
+      <input
+        name="rename-content-id"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="lowercase-hyphenated-id"
+        data-rename-destination
+      />
+    </label>
+    <div class="editor-rename__actions">
+      <button
+        class="editor-button editor-button--secondary"
+        type="button"
+        data-rename-plan
+      >
+        Review Rename plan
+      </button>
+      <span role="status" data-rename-status>Enter a new Content ID.</span>
+    </div>
+    <div class="editor-rename__review" data-rename-review hidden>
+      <h3>Reviewed plan</h3>
+      <dl class="editor-detail-list">
+        <div><dt>Change</dt><dd data-rename-change></dd></div>
+        <div><dt>Git basis</dt><dd data-rename-git></dd></div>
+        <div>
+          <dt>Canonical files & identities</dt><dd data-rename-files></dd>
+        </div>
+        <div><dt>Routes</dt><dd data-rename-routes></dd></div>
+      </dl>
+      <label class="editor-rename__confirm">
+        <input type="checkbox" data-rename-confirm />
+        I reviewed this exact plan and understand Publish remains a separate action.
+      </label>
+      <button class="editor-button" type="button" data-rename-execute disabled>
+        Execute reviewed Rename
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+  import {
+    renameEndpoint,
+    renameFailureGuidance,
+    type BrowserRenamePlan,
+    type RenameCollection,
+  } from "../../editor/rename-ui";
+
+  const panel = document.querySelector<HTMLElement>("[data-rename-panel]");
+  if (panel) {
+    const collection = panel.dataset.collection as RenameCollection;
+    let sourceContentId = panel.dataset.contentId ?? "";
+    const destination = panel.querySelector<HTMLInputElement>(
+      "[data-rename-destination]",
+    )!;
+    const planButton =
+      panel.querySelector<HTMLButtonElement>("[data-rename-plan]")!;
+    const executeButton = panel.querySelector<HTMLButtonElement>(
+      "[data-rename-execute]",
+    )!;
+    const confirm = panel.querySelector<HTMLInputElement>(
+      "[data-rename-confirm]",
+    )!;
+    const review = panel.querySelector<HTMLElement>("[data-rename-review]")!;
+    const status = panel.querySelector<HTMLElement>("[data-rename-status]")!;
+    let plan: BrowserRenamePlan | undefined;
+    let workspaceLocked = false;
+    let pending = false;
+
+    const render = () => {
+      destination.disabled = pending || workspaceLocked;
+      planButton.disabled =
+        pending || workspaceLocked || !destination.value.trim();
+      confirm.disabled = pending || workspaceLocked;
+      executeButton.disabled =
+        pending || workspaceLocked || !plan || !confirm.checked;
+      if (workspaceLocked && !pending)
+        status.textContent =
+          "Rename blocked · save or finish the current workspace operation first.";
+    };
+    const clearPlan = () => {
+      plan = undefined;
+      confirm.checked = false;
+      review.hidden = true;
+      render();
+    };
+    const request = async (body: unknown) => {
+      const response = await fetch(renameEndpoint(collection), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw Object.assign(
+          new Error(result.error ?? "Rename request failed"),
+          {
+            code: result.code,
+          },
+        );
+      return result;
+    };
+    destination.addEventListener("input", () => {
+      clearPlan();
+      status.textContent = destination.value.trim()
+        ? "Request a plan to validate this destination."
+        : "Enter a new Content ID.";
+    });
+    confirm.addEventListener("change", render);
+    window.addEventListener("editor:workspace-state", (event) => {
+      workspaceLocked = Boolean(
+        (event as CustomEvent<{ locked: boolean }>).detail?.locked,
+      );
+      render();
+    });
+    planButton.addEventListener("click", async () => {
+      pending = true;
+      clearPlan();
+      status.textContent = "Validating canonical state and preparing plan…";
+      render();
+      try {
+        const result = await request({
+          action: "plan",
+          sourceContentId,
+          destinationContentId: destination.value.trim(),
+        });
+        plan = result.plan as BrowserRenamePlan;
+        panel.querySelector<HTMLElement>("[data-rename-change]")!.textContent =
+          `${plan.sourceContentId} → ${plan.destinationContentId}`;
+        panel.querySelector<HTMLElement>("[data-rename-git]")!.textContent =
+          `${plan.repositoryBranch} @ ${plan.repositoryHead.slice(0, 12)}`;
+        const files = plan.sourceFiles
+          ? Object.entries(plan.sourceFiles).map(
+              ([name, hash]) =>
+                `src/content/journal/${plan!.sourceContentId}/${name} · sha256 ${hash.slice(0, 12)}…`,
+            )
+          : plan.sourceFile
+            ? [
+                `src/content/news/${plan.sourceContentId}.md · sha256 ${plan.sourceFile.slice(0, 12)}…`,
+              ]
+            : [];
+        panel.querySelector<HTMLElement>("[data-rename-files]")!.textContent =
+          files.join(", ");
+        panel.querySelector<HTMLElement>("[data-rename-routes]")!.textContent =
+          plan.oldRoutes.length
+            ? `${plan.oldRoutes.join(", ")} → ${plan.newRoutes.join(", ")}`
+            : "No public detail routes (News identity only)";
+        review.hidden = false;
+        status.textContent =
+          "Plan ready · review every detail before execution.";
+      } catch (error) {
+        const value = error as Error & { code?: string };
+        status.textContent = `${value.message} ${renameFailureGuidance(value.code)}`;
+      } finally {
+        pending = false;
+        render();
+      }
+    });
+    executeButton.addEventListener("click", async () => {
+      if (!plan || !confirm.checked) return;
+      pending = true;
+      status.textContent = "Executing reviewed Rename…";
+      render();
+      try {
+        const result = await request({ action: "execute", plan });
+        if (!result.workspaceUrl)
+          throw new Error("Renamed workspace URL missing");
+        sourceContentId = plan.destinationContentId;
+        panel.dataset.contentId = sourceContentId;
+        history.replaceState(null, "", result.workspaceUrl);
+        window.dispatchEvent(
+          new CustomEvent("editor:rename-complete", { detail: result }),
+        );
+        destination.value = "";
+        plan = undefined;
+        confirm.checked = false;
+        review.hidden = true;
+        pending = false;
+        status.textContent =
+          "Rename complete · renamed workspace loaded · Publish remains separate.";
+        render();
+      } catch (error) {
+        pending = false;
+        const value = error as Error & { code?: string };
+        status.textContent = `${value.message} ${renameFailureGuidance(value.code)}`;
+        clearPlan();
+      }
+    });
+    render();
+  }
+</script>

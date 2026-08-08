@@ -165,12 +165,14 @@ existing asset paths; News has no asset operation.
 Cancel before First Save by leaving the page. No canonical content, asset,
 commit, or Production route is created.
 
-## Journal Rename first safe slice
+## Journal and News Rename v1
 
-Journal Rename is currently an API/service milestone for operator and test
-integration; no browser control is exposed. Request a plan, review the old/new
-route and identity, then execute that exact plan. Execution changes no
-frontmatter or Markdown bytes, moves no assets, and does not stage Git.
+Open a saved Journal or News workspace and use **Rename Content ID**. Save draft
+changes first. Enter the new ID and choose **Review Rename plan**. Review the
+old/new identity, attached Git branch and HEAD, canonical file set, and route
+effect. Execution stays disabled until the operator confirms that exact plan.
+Execution changes no frontmatter or Markdown bytes, moves no assets, and does
+not stage Git.
 
 The operation is allowed only when the source is a valid exact three-file unit,
 the new lowercase hyphenated ID and its case-fold equivalent are absent, Git
@@ -178,15 +180,15 @@ HEAD/branch and all source hashes still match, both lifecycle locks are clear,
 and the canonical Markdown inventory contains no recognized incoming link to
 the old Journal route. Any uncertainty fails closed.
 
-After success, load the new workspace and retain the existing Preview/Save
-semantics. Publish remains separate and must show the three old deletions plus
+After success, the Editor opens the new workspace and retains the existing
+Preview/Save semantics. Publish remains separate and must show the three old deletions plus
 the three new files. It stages and verifies that exact rename set; unrelated
 working-tree changes remain untouched. Do not delete lifecycle evidence or a
 retained lock to make a retry possible.
 
 ## News Rename safe expansion
 
-News Rename is exposed only through the localhost
+News Rename uses the same reviewed browser flow backed by the localhost
 `POST /editor/api/news-rename` plan/execute API. Review its IDs, repository
 identity, source hash, and explicitly empty route sets before executing the
 same plan. News has no detail route and is not a typed reference target, so the

@@ -2,7 +2,7 @@
 
 | Property | Value                                                                    |
 | -------- | ------------------------------------------------------------------------ |
-| Status   | News implemented; Exhibitions, Artists, and Works deferred               |
+| Status   | Journal/News v1 UI complete; Exhibitions, Artists, and Works deferred    |
 | Date     | 2026-08-08                                                               |
 | Scope    | Incoming/outgoing references, route coupling, assets, and Rename hazards |
 
@@ -50,3 +50,9 @@ multi-file steps, validate the prospective graph, and roll all files back by
 identity. Works additionally requires an approved decision for all Asset
 Lifecycle v2 state keyed by Content ID and a composed lock order. No deferred
 collection has a Rename API or browser UI in this slice.
+
+Journal and News workspaces expose only their collection-owned reviewed-plan →
+explicit-confirmation → execute flow. The browser does not calculate safety or
+rewrite content; it displays the server plan, gates against dirty/in-progress
+workspace state, transports stable failure guidance, and follows the returned
+renamed-workspace URL. Publish remains a separate verified operation.
