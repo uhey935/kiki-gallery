@@ -1,10 +1,10 @@
 # Rename Dependency and Reference Audit
 
-| Property | Value                                                                    |
-| -------- | ------------------------------------------------------------------------ |
-| Status   | Journal/News v1 UI complete; Exhibitions, Artists, and Works deferred    |
-| Date     | 2026-08-08                                                               |
-| Scope    | Incoming/outgoing references, route coupling, assets, and Rename hazards |
+| Property | Value                                                                                     |
+| -------- | ----------------------------------------------------------------------------------------- |
+| Status   | Journal/News v1 UI complete; Exhibitions/Artists design approved; implementation deferred |
+| Date     | 2026-08-08                                                                                |
+| Scope    | Incoming/outgoing references, route coupling, assets, and Rename hazards                  |
 
 ## Classification
 
@@ -41,6 +41,15 @@ unsafe root/repository, stale plan or canonical drift, lifecycle lock conflict,
 rollback requiring manual recovery, and generic rename failure. Guidance tells
 the operator to choose a new ID, fix validation, review a fresh plan, resolve a
 lock, or preserve and inspect durable evidence.
+
+## Exhibitions / Artists design disposition
+
+The bounded reference-update design is now approved in
+`exhibitions-artists-rename-reference-update-architecture-2026-08-08.md`.
+It defines collection-owned typed inventory and byte-preserving rewrites,
+reviewed multi-file plans, complete prospective graph validation, durable
+staging, exact rollback, and Publish staging for the old/new path pair plus all
+reference edits. No Rename API or UI is implemented by that milestone.
 
 ## Deferred acceptance criteria
 
