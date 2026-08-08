@@ -101,6 +101,42 @@ test("publish stages, commits, and pushes only the canonical three-file unit", a
   });
 });
 
+test("publish includes all three untracked files from a newly created unit", async () => {
+  await withRepository(async (repository) => {
+    const source = path.join(repository, "src/content/journal/valid-public");
+    const destination = path.join(repository, "src/content/journal/new-public");
+    await fs.cp(source, destination, { recursive: true });
+    const draft = createJournalEditorDraft(
+      await readJournalEditorEntry(
+        "new-public",
+        path.join(repository, "src/content/journal"),
+      ),
+    );
+    const inspection = await inspectJournalPublish("new-public", repository);
+    assert.deepEqual(inspection.files, [
+      "src/content/journal/new-public/en.md",
+      "src/content/journal/new-public/index.yaml",
+      "src/content/journal/new-public/ja.md",
+    ]);
+    assert.match(inspection.diff, /untracked: .*new-public\/index.yaml/);
+
+    const result = await publishSavedJournalEntry(
+      draft,
+      false,
+      repository,
+      path.join(repository, "src/content/journal"),
+    );
+    assert.equal(result.state, "published");
+    assert.deepEqual(
+      (await git(repository, "show", "--format=", "--name-only", "HEAD"))
+        .split("\n")
+        .filter(Boolean)
+        .sort(),
+      inspection.files,
+    );
+  });
+});
+
 test("publish reports a committed push failure without losing the commit", async () => {
   await withRepository(async (repository, remote) => {
     const en = path.join(repository, "src/content/journal/valid-public/en.md");

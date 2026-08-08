@@ -17,7 +17,16 @@ const { collectionId, collectionLabel, entries } = Astro.props;
       <p class="editor-eyebrow">{collectionLabel}</p>
       <h2 id="entries-heading">Entries</h2>
     </div>
-    <span class="editor-count">{entries.length} entries</span>
+    <div>
+      <span class="editor-count">{entries.length} entries</span>
+      {
+        collectionId === "journal" && (
+          <a class="editor-button" href="/editor/journal/create/">
+            Create Journal
+          </a>
+        )
+      }
+    </div>
   </div>
 
   <ul class="editor-list">
@@ -53,7 +62,7 @@ const { collectionId, collectionLabel, entries } = Astro.props;
   </ul>
 
   <div class="editor-panel__footer">
-    <small>Repository content is read-only in this phase.</small>
+    <small>Existing entries open through the canonical Editor boundary.</small>
     <span>Select an entry to open its workspace.</span>
   </div>
 </section>

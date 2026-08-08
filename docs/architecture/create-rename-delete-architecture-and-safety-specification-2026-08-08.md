@@ -2,7 +2,7 @@
 
 | Property      | Value                                                                 |
 | ------------- | --------------------------------------------------------------------- |
-| Status        | Approved design; implementation not authorized                        |
+| Status        | Approved design; Journal Create first safe slice implemented          |
 | Date          | 2026-08-08                                                            |
 | Scope         | Editor-managed Create, Rename, and Delete planning and safety         |
 | Compatibility | Preserve Editor v1, canonical content/assets, and Production behavior |
@@ -20,6 +20,23 @@ editing an existing canonical entry through load, validation, Draft Preview,
 atomic Save, and minimal Publish. Collection-owned repositories, serializers,
 schemas, route helpers, and asset services remain authoritative; this document
 does not introduce a universal repository or operation framework.
+
+The first implementation slice authorizes Create only for Journal, the one
+current collection whose canonical adapter owns a localized three-file Content
+Unit. It adds an Editor-only Draft, Draft Preview through the existing preview
+service, and an atomic first Save. The Save serializes and validates all three
+files in a sibling staging directory, rechecks exact and case-fold destination
+absence, publishes the complete directory, and canonically rereads the result.
+Failures remove transaction-owned staging or exact created bytes; a partial
+unit is never an accepted result. Existing Journal Save and Publish remain the
+post-create boundaries, including Publish support for the three initially
+untracked files.
+
+This slice does not authorize Create for flat or singleton collections, asset
+upload or mutation, Rename, Delete, reference rewriting, redirects, or any
+Production loader change. The broader reviewed-plan, shared lifecycle lock,
+and durable operation-journal contract remains required before Rename/Delete
+or a wider lifecycle implementation.
 
 For a collection whose approved storage adapter uses a localized Content Unit,
 the unit is exactly:

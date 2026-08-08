@@ -36,6 +36,11 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
+            pattern: "/editor/api/journal-create",
+            entrypoint: "./src/editor/routes/journal-create.ts",
+            prerender: false,
+          });
+          injectRoute({
             pattern: "/editor/api/works/[contentId]",
             entrypoint: "./src/editor/routes/works-save.ts",
             prerender: false,

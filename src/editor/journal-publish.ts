@@ -139,9 +139,15 @@ export async function inspectJournalPublish(
       );
     }
   }
-  const changed = (await git(["diff", "--name-only", "--", ...files]))
+  const trackedChanges = (await git(["diff", "--name-only", "--", ...files]))
     .split("\n")
     .filter(Boolean);
+  const untracked = (
+    await git(["ls-files", "--others", "--exclude-standard", "--", ...files])
+  )
+    .split("\n")
+    .filter(Boolean);
+  const changed = [...new Set([...trackedChanges, ...untracked])].sort();
   if (changed.length === 0) {
     throw new JournalPublishError(
       "Canonical Journal entry has no changes to publish",
@@ -151,7 +157,12 @@ export async function inspectJournalPublish(
   return {
     ...context,
     files: changed,
-    diff: await git(["diff", "--", ...files]),
+    diff: [
+      await git(["diff", "--", ...files]),
+      ...untracked.map((file) => `untracked: ${file}`),
+    ]
+      .filter(Boolean)
+      .join("\n"),
     commitMessage: journalPublishCommitMessage(contentId),
   };
 }

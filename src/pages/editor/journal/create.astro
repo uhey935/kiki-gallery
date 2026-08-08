@@ -1,0 +1,269 @@
+---
+import ActionBar from "../../../components/editor/ActionBar.astro";
+import EntryDraftForm from "../../../components/editor/EntryDraftForm.astro";
+import { createNewJournalDraft } from "../../../editor/journal-create";
+import EditorLayout from "../../../layouts/EditorLayout.astro";
+
+const draft = createNewJournalDraft("");
+const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
+---
+
+<EditorLayout title="Create Journal" section="Journal">
+  <header class="editor-page-heading">
+    <p class="editor-eyebrow">Journal create</p>
+    <h1>New Content Unit</h1>
+    <p>
+      Draft Preview is temporary. First Save creates the canonical three-file
+      unit.
+    </p>
+  </header>
+  <div class="editor-workspace">
+    <main class="editor-panel editor-canvas">
+      <label data-editor-field="contentId">
+        <span
+          >Content ID <small class="editor-field-badge">Required</small></span
+        >
+        <input
+          name="contentId"
+          form="journal-create-fields"
+          autocomplete="off"
+          placeholder="lowercase-hyphenated-id"
+        />
+      </label>
+      <div id="journal-create-fields"><EntryDraftForm draft={draft} /></div>
+    </main>
+    <aside class="editor-panel editor-validation">
+      <p class="editor-eyebrow">Create boundary</p>
+      <h2>Validation</h2>
+      <p data-create-validation>Complete the Content ID and required fields.</p>
+      <small>Assets are not created or moved by this operation.</small>
+    </aside>
+  </div>
+  <ActionBar
+    loaded
+    preview={{ ja: false, en: false }}
+    save={false}
+    publish={false}
+  />
+</EditorLayout>
+
+<script
+  type="application/json"
+  is:inline
+  id="journal-create-draft"
+  set:html={serializedDraft}
+/>
+<script>
+  import {
+    isJournalEditorDraftDirty,
+    updateJournalEditorDraft,
+    validateJournalEditorDraft,
+    type JournalEditorDraftState,
+  } from "../../../editor/journal-draft-state";
+  import { editorFailureGuidance } from "../../../editor/ux";
+
+  const raw = document.querySelector<HTMLScriptElement>(
+    "#journal-create-draft",
+  )?.textContent;
+  const form = document.querySelector<HTMLFormElement>(
+    "[data-editor-draft-form]",
+  );
+  const idInput = document.querySelector<HTMLInputElement>(
+    'input[name="contentId"]',
+  );
+  const saveButton = document.querySelector<HTMLButtonElement>(
+    "[data-save-journal]",
+  );
+  const publishButton = document.querySelector<HTMLButtonElement>(
+    "[data-publish-journal]",
+  );
+  const previewButtons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-preview-journal]"),
+  );
+  const status = document.querySelector<HTMLElement>("[data-action-status]");
+  const validationText = document.querySelector<HTMLElement>(
+    "[data-create-validation]",
+  );
+
+  if (raw && form && idInput) {
+    const initial = JSON.parse(raw) as JournalEditorDraftState;
+    let current = initial;
+    let pending = false;
+
+    const setReason = (action: string, message: string) => {
+      const container = document.querySelector<HTMLElement>(
+        `[data-action="${action}"]`,
+      );
+      const hint = container?.querySelector<HTMLElement>(
+        "[data-action-reason]",
+      );
+      const button = container?.querySelector<HTMLButtonElement>("button");
+      if (hint) hint.textContent = message;
+      if (button) button.title = message;
+    };
+
+    const render = (message?: string) => {
+      const result = validateJournalEditorDraft(current);
+      const idValid = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(current.contentId);
+      const busy = pending;
+      for (const control of document.querySelectorAll<
+        HTMLInputElement | HTMLTextAreaElement | HTMLButtonElement
+      >("input, textarea, button"))
+        control.disabled = busy;
+      if (status)
+        status.textContent =
+          message ??
+          (result.capabilities.save && idValid
+            ? "Unsaved new entry"
+            : "Create blocked by validation");
+      if (validationText)
+        validationText.textContent = !idValid
+          ? "Content ID must use lowercase letters, numbers, and single hyphens."
+          : result.issues.length === 0
+            ? "Draft is valid for first Save."
+            : `${result.issues.length} draft validation issue${result.issues.length === 1 ? "" : "s"}.`;
+      for (const locale of ["ja", "en"] as const) {
+        const button = previewButtons.find(
+          (candidate) => candidate.dataset.previewJournal === locale,
+        );
+        if (button)
+          button.disabled =
+            busy || !idValid || !result.capabilities.preview[locale];
+        setReason(
+          `preview-${locale}`,
+          result.capabilities.preview[locale] && idValid
+            ? `Preview the unsaved ${locale.toUpperCase()} draft`
+            : "Draft validation is blocking preview",
+        );
+      }
+      if (saveButton)
+        saveButton.disabled = busy || !idValid || !result.capabilities.save;
+      if (publishButton) publishButton.disabled = true;
+      setReason(
+        "save",
+        result.capabilities.save && idValid
+          ? "Atomically create index.yaml, ja.md, and en.md"
+          : "Draft validation is blocking first Save",
+      );
+      setReason(
+        "publish",
+        "First Save the new entry; Publish remains a separate workspace action",
+      );
+    };
+
+    const updateField = (field: HTMLInputElement | HTMLTextAreaElement) => {
+      current = updateJournalEditorDraft(current, (next) => {
+        if (field.name === "contentId") {
+          next.contentId = field.value;
+          return;
+        }
+        const [scope, key, nested] = field.name.split(".");
+        if (scope === "shared" && next.shared.state === "editable") {
+          const shared = next.shared.value;
+          if (key === "categories")
+            shared.categories = field.value
+              .split(",")
+              .map((value) => value.trim())
+              .filter(Boolean) as typeof shared.categories;
+          else if (key === "hero" && nested)
+            shared.hero[nested as "image" | "hero_caption"] =
+              field.value || (undefined as never);
+          else if (key === "author") shared.author = field.value || undefined;
+          else if (key === "date" || key === "visibility")
+            Object.assign(shared, { [key]: field.value });
+        } else if (
+          (scope === "ja" || scope === "en") &&
+          next.locales[scope].state === "editable"
+        )
+          Object.assign(next.locales[scope].value, { [key]: field.value });
+      });
+      render();
+    };
+    document.addEventListener("input", (event) => {
+      const field = event.target;
+      if (
+        field instanceof HTMLInputElement ||
+        field instanceof HTMLTextAreaElement
+      )
+        updateField(field);
+    });
+
+    for (const button of previewButtons)
+      button.addEventListener("click", async () => {
+        const locale = button.dataset.previewJournal as "ja" | "en";
+        if (
+          pending ||
+          !validateJournalEditorDraft(current).capabilities.preview[locale]
+        )
+          return;
+        const popup = window.open("", "_blank");
+        pending = true;
+        render(`Preparing ${locale.toUpperCase()} preview…`);
+        try {
+          const response = await fetch("/editor/api/journal-preview/create", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ draft: current, locale }),
+          });
+          const result = (await response.json()) as {
+            url?: string;
+            error?: string;
+            code?: string;
+          };
+          if (!response.ok || !result.url)
+            throw Object.assign(
+              new Error(result.error ?? "Journal preview failed"),
+              { code: result.code },
+            );
+          if (popup) popup.location.href = result.url;
+          else window.open(result.url, "_blank", "noopener");
+        } catch (error) {
+          popup?.close();
+          const failure = error as Error & { code?: string };
+          render(
+            `${failure.message} ${editorFailureGuidance(failure.code).message ?? "Try again."}`,
+          );
+        } finally {
+          pending = false;
+          render();
+        }
+      });
+
+    saveButton?.addEventListener("click", async () => {
+      if (pending || !validateJournalEditorDraft(current).capabilities.save)
+        return;
+      pending = true;
+      render("Creating canonical Content Unit…");
+      try {
+        const response = await fetch("/editor/api/journal-create", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ draft: current }),
+        });
+        const result = (await response.json()) as {
+          workspaceUrl?: string;
+          error?: string;
+          code?: string;
+        };
+        if (!response.ok || !result.workspaceUrl)
+          throw Object.assign(
+            new Error(result.error ?? "Journal create failed"),
+            { code: result.code },
+          );
+        window.location.assign(result.workspaceUrl);
+      } catch (error) {
+        pending = false;
+        const failure = error as Error & { code?: string };
+        render(
+          `${failure.message} ${editorFailureGuidance(failure.code).message ?? "Try again."}`,
+        );
+      }
+    });
+    window.addEventListener("beforeunload", (event) => {
+      if (!isJournalEditorDraftDirty(initial, current)) return;
+      event.preventDefault();
+      (event as unknown as { returnValue: string }).returnValue = "";
+    });
+    render();
+  }
+</script>

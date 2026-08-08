@@ -13,6 +13,16 @@
 6. Save first, review the repository diff, then Publish. Publish stages only
    the selected Content Unit and the exact saved Works asset manifest.
 
+Journal additionally exposes **Create Journal** from its collection list. A
+new entry remains Editor-only until first Save. Choose a lowercase hyphenated
+Content ID, complete the required shared and both locale fields, and optionally
+use Draft Preview. First Save fails closed if the ID, a case-fold equivalent,
+or target path exists; otherwise it creates `index.yaml`, `ja.md`, and `en.md`
+as one validated unit and opens the normal saved workspace. Publish remains a
+separate action there and includes the exact three untracked files. Create does
+not upload, move, or infer ownership of assets. Rename and Delete remain
+unavailable.
+
 Command/Ctrl+S invokes Save when Save is available. While Save, Preview,
 Upload, or Publish is pending, the full form and every action are locked.
 
@@ -23,15 +33,20 @@ no unrelated staged files, a saved baseline, and publishable validation.
 
 - `canonical-mismatch`: stop and reload. Reconcile the external change before
   reapplying the draft.
+- `content-id-collision`: choose a different ID or inspect the existing path;
+  never remove or overwrite it merely to retry Create.
+- `unsafe-journal-root`: stop Create and inspect the canonical Journal root for
+  a symlink, missing directory, or other unsafe filesystem substitution.
 - commit failure before a commit exists: preserve the working tree, inspect Git
   state, and retry only after the cause is understood.
 - `committed-push-failed`: the commit exists locally. Stop using that workspace,
   record the commit shown by the UI, inspect branch/upstream state, and push the
   existing commit manually. Do not Save or Publish again from the stale page.
-- `journal-save-rollback-failed` or `asset-save-rollback-failed`: stop all Editor
-  mutation. Preserve the working tree and `.kiki-editor` evidence, compare the
-  selected canonical files/assets with Git and the recorded baseline, restore
-  a consistent unit manually, then reload.
+- `journal-create-rollback-failed`, `journal-save-rollback-failed`, or
+  `asset-save-rollback-failed`: stop all Editor mutation. Preserve the working
+  tree and `.kiki-editor` evidence, compare the selected canonical files/assets
+  with Git and the recorded baseline, restore a consistent unit manually, then
+  reload.
 
 Never discard or overwrite recovery evidence merely to clear a lock.
 

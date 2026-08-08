@@ -163,11 +163,14 @@ const reviewCodes = new Set([
   "publish-blocked",
   "unsafe-repository",
   "nothing-to-publish",
+  "content-id-collision",
+  "unsafe-journal-root",
 ]);
 
 const reuploadCodes = new Set(["asset-temp-not-found", "asset-temp-expired"]);
 const manualRecoveryCodes = new Set([
   "asset-save-rollback-failed",
+  "journal-create-rollback-failed",
   "journal-save-rollback-failed",
 ]);
 

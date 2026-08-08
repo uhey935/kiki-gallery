@@ -1,0 +1,40 @@
+import type { APIRoute } from "astro";
+
+import {
+  createJournalEditorEntry,
+  JournalCreateError,
+} from "../journal-create.ts";
+import type { JournalEditorDraftState } from "../journal-draft-state.ts";
+
+export const POST: APIRoute = async ({ request }) => {
+  try {
+    const body = (await request.json()) as { draft?: JournalEditorDraftState };
+    if (
+      !body?.draft ||
+      typeof body.draft !== "object" ||
+      typeof body.draft.contentId !== "string"
+    )
+      return Response.json(
+        { error: "A Journal draft is required", code: "invalid-request" },
+        { status: 400 },
+      );
+    const draft = await createJournalEditorEntry(body.draft);
+    return Response.json({
+      draft,
+      workspaceUrl: `/editor/journal/workspace/${encodeURIComponent(draft.contentId)}/`,
+    });
+  } catch (error) {
+    const status =
+      error instanceof SyntaxError || error instanceof JournalCreateError
+        ? 400
+        : 500;
+    return Response.json(
+      {
+        error: error instanceof Error ? error.message : "Journal create failed",
+        code:
+          error instanceof JournalCreateError ? error.code : "create-failed",
+      },
+      { status },
+    );
+  }
+};

@@ -162,6 +162,11 @@ test("rollback failure tells the operator to stop before another operation", () 
     message:
       "Stop editing and request manual recovery before trying another operation.",
   });
+  assert.deepEqual(editorFailureGuidance("journal-create-rollback-failed"), {
+    action: "review",
+    message:
+      "Stop editing and request manual recovery before trying another operation.",
+  });
 });
 
 test("Works recovery-required state keeps every operation stopped", () => {
