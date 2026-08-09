@@ -14,6 +14,7 @@ The documents are designed to be read in the following order.
 
 | Document                                                       | Purpose                                                                                                                                                    |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Journal Delete Browser Acceptance**                          | Records exact-backup gating, no-cascade analysis, atomic three-file recovery, explicit confirmation, evidence-only Publish, and real-browser acceptance.   |
 | **Delete Safety Prerequisites Finalization**                   | Finalizes verified backup proof, durable recovery evidence, Delete-only Publish paths, shared locking, reference parsing, and Works dual-lock order.       |
 | **Delete Implementation Readiness Audit**                      | Reconciles Delete with finalized Create/Rename and Asset Lifecycle semantics; classifies every collection and records the remaining implementation gates.  |
 | **Works Rename Asset Lifecycle Semantics**                     | Approves unchanged asset paths/evidence, pending-manifest gating, dual-lock coordination, prospective validation, rollback, and asset-free Rename Publish. |

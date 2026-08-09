@@ -1,0 +1,245 @@
+---
+const { contentId } = Astro.props as { contentId: string };
+---
+
+<section
+  class="editor-panel editor-rename"
+  data-journal-delete
+  data-content-id={contentId}
+  aria-labelledby="delete-heading"
+>
+  <div class="editor-panel__heading">
+    <div>
+      <p class="editor-eyebrow">Exceptional content removal</p><h2
+        id="delete-heading"
+      >
+        Delete Journal
+      </h2>
+    </div>
+    <span class="editor-status editor-status--blocked"
+      >No cascade · assets retained</span
+    >
+  </div>
+  <div class="editor-rename__body">
+    <p>
+      Delete requires an exact verified backup, a closed incoming-reference
+      graph, review, and explicit confirmation. Publish remains separate.
+    </p>
+    <label
+      >Verified backup generation path
+      <input
+        data-delete-backup
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="/absolute/path/to/backup-generation"
+      />
+    </label>
+    <div class="editor-rename__actions">
+      <button
+        class="editor-button editor-button--secondary"
+        type="button"
+        data-delete-plan>Review Delete plan</button
+      >
+      <span role="status" data-delete-status
+        >Choose the exact pre-delete backup generation.</span
+      >
+    </div>
+    <div class="editor-rename__review" data-delete-review hidden>
+      <h3>Reviewed Delete plan</h3>
+      <dl class="editor-detail-list">
+        <div><dt>Journal and routes</dt><dd data-delete-identity></dd></div>
+        <div><dt>Git basis</dt><dd data-delete-git></dd></div>
+        <div><dt>Verified backup</dt><dd data-delete-proof></dd></div>
+        <div><dt>Canonical files</dt><dd data-delete-files></dd></div>
+        <div><dt>Incoming references</dt><dd>Complete graph: none</dd></div>
+        <div>
+          <dt>Assets</dt><dd>
+            All asset bytes and paths retained; no deletion inferred
+          </dd>
+        </div>
+      </dl>
+      <label class="editor-rename__confirm"
+        ><input type="checkbox" data-delete-confirm /> I reviewed this exact plan
+        and explicitly confirm deletion of the complete three-file Journal unit.</label
+      >
+      <button class="editor-button" type="button" data-delete-execute disabled
+        >Execute reviewed Delete</button
+      >
+      <button class="editor-button" type="button" data-delete-publish hidden
+        >Publish this Delete</button
+      >
+    </div>
+  </div>
+</section>
+
+<script>
+  import {
+    journalDeleteEndpoint,
+    journalDeleteFailureGuidance,
+  } from "../../editor/journal-delete-ui";
+  import type { JournalDeletePlan } from "../../editor/journal-delete";
+
+  const panel = document.querySelector<HTMLElement>("[data-journal-delete]");
+  if (panel) {
+    const contentId = panel.dataset.contentId ?? "";
+    const backup = panel.querySelector<HTMLInputElement>(
+      "[data-delete-backup]",
+    )!;
+    const planButton =
+      panel.querySelector<HTMLButtonElement>("[data-delete-plan]")!;
+    const executeButton = panel.querySelector<HTMLButtonElement>(
+      "[data-delete-execute]",
+    )!;
+    const publishButton = panel.querySelector<HTMLButtonElement>(
+      "[data-delete-publish]",
+    )!;
+    const confirm = panel.querySelector<HTMLInputElement>(
+      "[data-delete-confirm]",
+    )!;
+    const review = panel.querySelector<HTMLElement>("[data-delete-review]")!;
+    const status = panel.querySelector<HTMLElement>("[data-delete-status]")!;
+    let plan: JournalDeletePlan | undefined;
+    let operationId: string | undefined;
+    let workspaceLocked = false;
+    let pending = false;
+    const setDeleteLock = (locked: boolean) =>
+      window.dispatchEvent(
+        new CustomEvent("editor:delete-state", { detail: { locked } }),
+      );
+    const render = () => {
+      backup.disabled = pending || workspaceLocked || Boolean(operationId);
+      planButton.disabled =
+        pending ||
+        workspaceLocked ||
+        !backup.value.trim() ||
+        Boolean(operationId);
+      confirm.disabled = pending || workspaceLocked || Boolean(operationId);
+      executeButton.disabled =
+        pending ||
+        workspaceLocked ||
+        !plan ||
+        !confirm.checked ||
+        Boolean(operationId);
+      publishButton.disabled = pending || !operationId;
+    };
+    const request = async (body: unknown) => {
+      const response = await fetch(journalDeleteEndpoint, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw Object.assign(
+          new Error(result.error ?? "Journal Delete failed"),
+          { code: result.code },
+        );
+      return result;
+    };
+    const fail = (error: unknown) => {
+      const value = error as Error & { code?: string };
+      status.textContent = `${value.message} ${journalDeleteFailureGuidance(value.code)}`;
+    };
+    backup.addEventListener("input", () => {
+      plan = undefined;
+      confirm.checked = false;
+      review.hidden = true;
+      status.textContent =
+        "Request a fresh safety plan for this backup generation.";
+      render();
+    });
+    confirm.addEventListener("change", render);
+    window.addEventListener("editor:workspace-state", (event) => {
+      workspaceLocked = Boolean(
+        (event as CustomEvent<{ locked?: boolean }>).detail?.locked,
+      );
+      render();
+    });
+    planButton.addEventListener("click", async () => {
+      pending = true;
+      setDeleteLock(true);
+      plan = undefined;
+      confirm.checked = false;
+      review.hidden = true;
+      status.textContent =
+        "Verifying backup bytes and the complete reference graph…";
+      render();
+      try {
+        const result = await request({
+          action: "plan",
+          contentId,
+          backupRoot: backup.value.trim(),
+        });
+        plan = result.plan;
+        panel.querySelector<HTMLElement>(
+          "[data-delete-identity]",
+        )!.textContent = `${plan!.contentId} · ${plan!.routes.join(", ")}`;
+        panel.querySelector<HTMLElement>("[data-delete-git]")!.textContent =
+          `${plan!.repositoryBranch} @ ${plan!.repositoryHead.slice(0, 12)}`;
+        panel.querySelector<HTMLElement>("[data-delete-proof]")!.textContent =
+          `${plan!.backupProof.backupId.slice(0, 12)}… · exact bytes verified`;
+        panel.querySelector<HTMLElement>("[data-delete-files]")!.textContent =
+          plan!.preimages
+            .map(
+              (file) =>
+                `${file.path} · ${file.byteSize} bytes · ${file.sha256.slice(0, 12)}…`,
+            )
+            .join(", ");
+        review.hidden = false;
+        status.textContent =
+          "Plan ready · review every fact and explicitly confirm.";
+      } catch (error) {
+        fail(error);
+      } finally {
+        pending = false;
+        setDeleteLock(false);
+        render();
+      }
+    });
+    executeButton.addEventListener("click", async () => {
+      if (!plan || !confirm.checked) return;
+      pending = true;
+      setDeleteLock(true);
+      status.textContent = "Executing the reviewed atomic Delete…";
+      render();
+      try {
+        const result = await request({
+          action: "execute",
+          plan,
+          confirmed: true,
+        });
+        operationId = result.operationId;
+        executeButton.hidden = true;
+        confirm.disabled = true;
+        publishButton.hidden = false;
+        status.textContent =
+          "Delete complete · recovery evidence is durable · Publish remains separate.";
+        window.dispatchEvent(new CustomEvent("editor:delete-complete"));
+      } catch (error) {
+        fail(error);
+        setDeleteLock(false);
+      } finally {
+        pending = false;
+        render();
+      }
+    });
+    publishButton.addEventListener("click", async () => {
+      if (!operationId) return;
+      pending = true;
+      setDeleteLock(true);
+      status.textContent =
+        "Publishing only the evidence-authorized three deletions…";
+      render();
+      try {
+        const result = await request({ action: "publish", operationId });
+        status.textContent = `Committed ${result.commit.slice(0, 7)} · returning to Journal.`;
+        window.location.assign(result.workspaceUrl);
+      } catch (error) {
+        fail(error);
+        pending = false;
+        render();
+      }
+    });
+    render();
+  }
+</script>

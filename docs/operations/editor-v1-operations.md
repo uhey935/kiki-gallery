@@ -1,8 +1,12 @@
 # Editor v1 Operations
 
-## Delete safety hold
+## Journal Delete and remaining Delete safety hold
 
-Collection Delete is not exposed yet. A future Delete must stop if a verified complete backup generation cannot prove the exact planned source bytes, if `.kiki-editor/content-lifecycle/repository.lock` exists or is unreadable, if recovery evidence is incomplete, or if any supported incoming reference or unknown internal link exists. Never remove a retained lock, edit evidence, infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
+Journal Delete is available only from a saved Journal workspace and requires the absolute path of a complete verified backup generation containing the exact current three-file unit. Review the server plan, confirm it explicitly, execute, then use the separate Delete Publish action. Delete Publish commits but does not push.
+
+Do not remove incoming references, assets, locks, recovery bytes, or evidence as part of Delete. `backup-proof-stale`, `incoming-reference`, `parser-uncertainty`, `plan-stale`, `state-mismatch`, and `lock-conflict` require correction followed by a fresh plan. If `rollback-failed` is reported, stop all Editor mutation, preserve `.kiki-editor/content-lifecycle/repository.lock`, and inspect the operation record plus recovery directory. Never delete or steal the lock to retry.
+
+News, Exhibitions, Artists, and Works Delete remain unavailable. They must stop if a verified complete backup generation cannot prove the exact planned source bytes, if the content lifecycle lock exists or is unreadable, if recovery evidence is incomplete, or if any supported incoming reference or unknown internal link exists. Never infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
 
 Works Delete additionally requires the content lifecycle lock before the Asset Lifecycle repository lock. Release is asset first, content last. Until the Works-specific Delete milestone is accepted, this ordering grants no operator action.
 

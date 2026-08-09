@@ -1,6 +1,7 @@
 ---
 import ActionBar from "../../../../components/editor/ActionBar.astro";
 import EntryDraftForm from "../../../../components/editor/EntryDraftForm.astro";
+import JournalDeletePanel from "../../../../components/editor/JournalDeletePanel.astro";
 import RenamePanel from "../../../../components/editor/RenamePanel.astro";
 import ValidationPanel from "../../../../components/editor/ValidationPanel.astro";
 import { createJournalEditorDraft } from "../../../../editor/journal-draft-state";
@@ -41,6 +42,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     <ValidationPanel entry={entry} />
   </div>
   <RenamePanel collection="journal" contentId={entry.contentId} />
+  <JournalDeletePanel contentId={entry.contentId} />
   <ActionBar
     loaded
     save={entry.capabilities.save}
@@ -96,6 +98,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     let current = initial;
     let pending: "preview-ja" | "preview-en" | "save" | "publish" | null = null;
     let recoveryRequired = false;
+    let deleteLocked = false;
     let statusMessage: string | null = null;
 
     const resizeTextarea = (textarea: HTMLTextAreaElement) => {
@@ -149,7 +152,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       const result = validateJournalEditorDraft(current);
       const dirty = isJournalEditorDraftDirty(initial, current);
       const busy = pending !== null;
-      const operationLocked = busy || recoveryRequired;
+      const operationLocked = busy || recoveryRequired || deleteLocked;
       for (const control of form.querySelectorAll<
         | HTMLInputElement
         | HTMLTextAreaElement
@@ -411,6 +414,15 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         "[data-workspace-content-id]",
       );
       if (identity) identity.textContent = renamed.contentId;
+      renderActions();
+    });
+    window.addEventListener("editor:delete-state", (event) => {
+      deleteLocked = Boolean(
+        (event as CustomEvent<{ locked?: boolean }>).detail?.locked,
+      );
+      if (deleteLocked) statusMessage = "Journal Delete operation in progress";
+      else if (statusMessage === "Journal Delete operation in progress")
+        statusMessage = null;
       renderActions();
     });
     form.addEventListener("input", (event) => {
