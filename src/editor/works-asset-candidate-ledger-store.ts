@@ -8,6 +8,10 @@ import {
   serializeWorksAssetCandidateLedger,
   type WorksAssetCandidateLedger,
 } from "./works-asset-candidate-ledger.ts";
+import {
+  acquireWorksAssetRepositoryLock,
+  releaseWorksAssetRepositoryLock,
+} from "./works-asset-repository-lock.ts";
 
 export const WORKS_ASSET_LEDGER_RELATIVE_PATH = path.join(
   ".kiki-editor",
@@ -26,9 +30,7 @@ export type WorksAssetLedgerLoadResult =
 
 export class WorksAssetLedgerStoreError extends Error {
   readonly code:
-    | "ledger-conflict"
-    | "ledger-unsafe-path"
-    | "ledger-write-failed";
+    "ledger-conflict" | "ledger-unsafe-path" | "ledger-write-failed";
 
   constructor(
     code: WorksAssetLedgerStoreError["code"],
@@ -111,6 +113,21 @@ export async function saveWorksAssetCandidateLedger(
   repositoryRoot = path.resolve("."),
 ): Promise<string> {
   const root = path.resolve(repositoryRoot);
+  let lock;
+  try {
+    lock = await acquireWorksAssetRepositoryLock(
+      root,
+      new Date().toISOString(),
+    );
+  } catch (error) {
+    throw new WorksAssetLedgerStoreError(
+      (error as { code?: string }).code === "unsafe-path"
+        ? "ledger-unsafe-path"
+        : "ledger-conflict",
+      "Ledger mutation could not acquire the Asset Lifecycle repository lock",
+      { cause: error },
+    );
+  }
   const target = ledgerPath(root);
   if (!target.startsWith(`${root}${path.sep}`))
     throw new WorksAssetLedgerStoreError(
@@ -148,5 +165,8 @@ export async function saveWorksAssetCandidateLedger(
     );
   } finally {
     await fs.rm(staged, { force: true }).catch(() => undefined);
+    await releaseWorksAssetRepositoryLock(root, lock.identity).catch(
+      () => undefined,
+    );
   }
 }

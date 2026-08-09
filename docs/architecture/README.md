@@ -15,6 +15,7 @@ The documents are designed to be read in the following order.
 | Document                                                       | Purpose                                                                                                                                                    |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Works Rename Asset Lifecycle Semantics**                     | Approves unchanged asset paths/evidence, pending-manifest gating, dual-lock coordination, prospective validation, rollback, and asset-free Rename Publish. |
+| **Works Rename Browser Acceptance Closure**                    | Records the implemented dual-lock transaction, typed Artist/Exhibition rewrites, unchanged assets, renamed workspace continuity, and exact Publish set.    |
 | **Exhibitions / Artists Rename Reference Update Architecture** | Defines the bounded typed-reference graph, reviewed multi-file transaction, byte-exact rollback, and exact Publish set; both slices are implemented.       |
 | **Artists Rename Browser Acceptance Closure**                  | Records typed Works/Exhibitions/News rewrites, renamed-workspace continuity, fail-closed collision, and exact Publish evidence.                            |
 | **Exhibitions Rename Browser Acceptance Closure**              | Records fresh-server acceptance of the reviewed flow, redirect, reference rewrite, Preview/Save continuity, fail-closed collision, and exact Publish set.  |
@@ -55,6 +56,15 @@ Lifecycle v2. It keeps asset URLs/bytes and durable lifecycle evidence
 unchanged, blocks pending unpublished asset state, composes the content and
 asset repository locks, defines prospective evidence validation and exact
 rollback, and prohibits Rename Publish from staging or re-materializing assets.
+
+### Works Rename Browser Acceptance Closure
+
+**works-rename-browser-acceptance-2026-08-09.md**
+
+Records the completed implementation and isolated real-browser acceptance for
+reviewed-plan confirmation, typed incoming references, unchanged asset URLs and
+bytes, dual-lock refusal, renamed-workspace Preview/Save continuity, rollback,
+and evidence-limited Publish.
 Implementation, browser acceptance, Works Delete, and Production loader changes
 remain deferred.
 

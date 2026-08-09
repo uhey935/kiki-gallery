@@ -2,7 +2,7 @@
 
 | Property  | Value                                                                     |
 | --------- | ------------------------------------------------------------------------- |
-| Status    | Approved design; implementation and browser acceptance deferred           |
+| Status    | Implemented; browser acceptance closed                                    |
 | Date      | 2026-08-09                                                                |
 | Scope     | Works Content ID Rename coordination with Works Asset Lifecycle v2        |
 | Preserved | Canonical asset bytes/paths, Asset Lifecycle v2 behavior, Delete, loaders |
@@ -22,9 +22,10 @@ delete an asset. Every `images[].src` value and every file under
 the old Content ID is only a naming hint. Changing it would be a separate asset
 storage migration and is not approved by this design.
 
-This decision completes the design gate only. It authorizes no Works Rename
-route, UI, mutation service, serializer change, schema change, Delete behavior,
-Production loader change, or asset migration.
+The design gate was implemented and accepted on 2026-08-09. The implementation
+adds Works Rename route, UI, transaction service, lock coordination, evidence,
+and evidence-limited Publish only. It adds no Delete behavior, Production
+loader change, asset migration, or Asset Lifecycle state-transition change.
 
 ## Audited identity model
 
@@ -232,13 +233,16 @@ or execution stops for:
 
 ## Implementation and acceptance gate
 
-A later milestone may implement Works Rename only after tests prove the typed
+The implementation milestone proved the typed
 Artist/Exhibition inventory, byte-preserving rewrite, dual-lock protocol,
 pending-manifest gate, complete prospective content/asset/evidence validation,
 byte-exact rollback, renamed-workspace continuity, and evidence-limited Publish.
 Browser acceptance must visibly confirm reference edits and unchanged asset
 URLs, exercise a lifecycle lock conflict and unpublished-manifest rejection,
 and verify that the isolated commit contains no asset or `.kiki-editor/` path.
+
+The browser closure is recorded in
+`works-rename-browser-acceptance-2026-08-09.md`.
 
 Works Delete, Production loaders/consumers, Asset Lifecycle v2 schemas and
 behavior, canonical asset naming, and asset ownership remain unchanged.

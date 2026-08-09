@@ -12,9 +12,16 @@ import {
 import { loadWorksAssetCandidateLedger } from "./works-asset-candidate-ledger-store.ts";
 import { createWorksAssetCleanupReport } from "./works-asset-cleanup.ts";
 import { readWorksAssetInventory } from "./works-assets.ts";
+import {
+  acquireWorksAssetRepositoryLock as acquireSharedLock,
+  assertWorksAssetRepositoryLock,
+  releaseWorksAssetRepositoryLock as releaseSharedLock,
+  type RepositoryLock,
+} from "./works-asset-repository-lock.ts";
+
+export type { RepositoryLock } from "./works-asset-repository-lock.ts";
 
 const STATE = path.join(".kiki-editor", "asset-lifecycle");
-const LOCK = path.join(STATE, "repository.lock");
 const RECORDS = path.join(STATE, "quarantine", "records");
 
 export class WorksAssetReversibleCleanupError extends Error {
@@ -46,14 +53,6 @@ export class WorksAssetReversibleCleanupError extends Error {
     this.code = code;
   }
 }
-
-export type RepositoryLock = {
-  schemaVersion: 1;
-  identity: string;
-  ownerPid: number;
-  acquiredAt: string;
-  expiresAt: string;
-};
 
 const resolvedInside = (root: string, relative: string) => {
   const target = path.resolve(root, relative);
@@ -95,41 +94,34 @@ const ensureRegularParents = async (
   }
 };
 
+async function assertLockOwnership(repositoryRoot: string, identity: string) {
+  try {
+    await assertWorksAssetRepositoryLock(repositoryRoot, identity);
+  } catch (error) {
+    throw new WorksAssetReversibleCleanupError(
+      "lock-ownership",
+      "Repository lock is not owned by this operation",
+      { cause: error },
+    );
+  }
+}
+
 export async function acquireWorksAssetRepositoryLock(
   repositoryRoot: string,
   now: string,
   ttlMs = 300_000,
 ): Promise<RepositoryLock> {
-  await ensureRegularParents(repositoryRoot, STATE, true);
-  const lockDir = resolvedInside(repositoryRoot, LOCK);
-  const acquiredAt = new Date(Date.parse(now)).toISOString();
-  const lock: RepositoryLock = {
-    schemaVersion: 1,
-    identity: randomUUID(),
-    ownerPid: process.pid,
-    acquiredAt,
-    expiresAt: new Date(Date.parse(acquiredAt) + ttlMs).toISOString(),
-  };
   try {
-    await fs.mkdir(lockDir);
-    await fs.writeFile(
-      path.join(lockDir, "owner.json"),
-      `${JSON.stringify(lock, null, 2)}\n`,
-      { flag: "wx", mode: 0o600 },
-    );
-    return lock;
+    return await acquireSharedLock(repositoryRoot, now, ttlMs);
   } catch (error) {
-    const owner = (await fs
-      .readFile(path.join(lockDir, "owner.json"), "utf8")
-      .then(JSON.parse)
-      .catch(() => null)) as RepositoryLock | null;
-    const code =
-      owner && Date.parse(owner.expiresAt) <= Date.parse(acquiredAt)
-        ? "stale-lock"
-        : "lock-conflict";
+    const code = (error as { code?: string }).code;
     throw new WorksAssetReversibleCleanupError(
-      code,
-      "Repository lifecycle lock requires manual recovery",
+      code === "stale-lock"
+        ? "stale-lock"
+        : code === "unsafe-path"
+          ? "unsafe-path"
+          : "lock-conflict",
+      error instanceof Error ? error.message : "Repository lock failed",
       { cause: error },
     );
   }
@@ -139,32 +131,15 @@ export async function releaseWorksAssetRepositoryLock(
   repositoryRoot: string,
   identity: string,
 ) {
-  const lockDir = resolvedInside(repositoryRoot, LOCK);
-  const owner = (await fs
-    .readFile(path.join(lockDir, "owner.json"), "utf8")
-    .then(JSON.parse)
-    .catch(() => null)) as RepositoryLock | null;
-  if (!owner || owner.identity !== identity)
+  try {
+    await releaseSharedLock(repositoryRoot, identity);
+  } catch (error) {
     throw new WorksAssetReversibleCleanupError(
       "lock-ownership",
       "Lock ownership changed",
+      { cause: error },
     );
-  await fs.rm(lockDir, { recursive: true });
-}
-
-async function assertLockOwnership(repositoryRoot: string, identity: string) {
-  const owner = (await fs
-    .readFile(
-      path.join(resolvedInside(repositoryRoot, LOCK), "owner.json"),
-      "utf8",
-    )
-    .then(JSON.parse)
-    .catch(() => null)) as RepositoryLock | null;
-  if (!owner || owner.identity !== identity)
-    throw new WorksAssetReversibleCleanupError(
-      "lock-ownership",
-      "Repository lock is not owned by this operation",
-    );
+  }
 }
 
 const validateAssetPath = async (

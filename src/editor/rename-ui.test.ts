@@ -12,6 +12,7 @@ test("Rename browser routes include the reference-aware Exhibitions slice", () =
   assert.equal(renameEndpoint("news"), "/editor/api/news-rename");
   assert.equal(renameEndpoint("exhibitions"), "/editor/api/exhibitions-rename");
   assert.equal(renameEndpoint("artists"), "/editor/api/artists-rename");
+  assert.equal(renameEndpoint("works"), "/editor/api/works-rename");
   assert.equal(
     renameWorkspaceUrl("journal", "renamed entry"),
     "/editor/journal/workspace/renamed%20entry/",
@@ -39,6 +40,8 @@ test("Rename failures provide stable fail-closed browser guidance", () => {
     "lifecycle-lock-conflict",
     "rename-failed-rolled-back",
     "manual-recovery-required",
+    "pending-asset-state",
+    "unpublished-asset-manifest",
   ])
     assert.notEqual(renameFailureGuidance(code), renameFailureGuidance());
 });

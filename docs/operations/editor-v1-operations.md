@@ -224,8 +224,7 @@ Success transitions to the new saved-unpublished workspace. Preview and Save
 remain unchanged. Publish separately consumes the completed evidence and stages
 only the old Exhibition deletion, new Exhibition addition, and exact News edits
 listed by the reviewed plan. Any HEAD/canonical/evidence mismatch blocks
-staging. Artists and Works Rename, Delete, Production loaders, and asset
-ownership remain unchanged.
+staging. Delete, Production loaders, and asset ownership remain unchanged.
 
 ## Artists reference-aware Rename
 
@@ -235,3 +234,24 @@ the old/new Artist paths plus every byte-preserving `Works.artist`,
 exact confirmed plan and opens the new Artist workspace. Publish stages only
 the completed evidence path set. Collision, graph, drift, symlink, lock,
 rewrite, validation, and evidence mismatch failures have no force mode.
+
+## Works reference-aware Rename
+
+Works Rename uses `POST /editor/api/works-rename`. Start only from a clean,
+canonically saved Works workspace with no temporary asset, in-flight action, or
+non-empty unpublished asset manifest. Enter the new ID, review the exact old/new
+routes, source identity, Artist/Exhibition edits, and unchanged asset
+consequences, then select the exact-plan confirmation before Execute.
+
+Execution acquires the content lifecycle lock and then the Asset Lifecycle v2
+repository lock. A collision, stale/corrupt/held lock, canonical or Git drift,
+unsafe path or symlink, incomplete graph, unsupported reference, recovery state,
+or rewrite mismatch fails closed. Do not remove a lock to retry; inspect the
+durable operation/recovery evidence first.
+
+Success changes the workspace URL to the new Work ID. Existing image URLs and
+bytes remain unchanged and Preview/Save continue normally. Publish immediately
+after Rename consumes the completed Rename evidence and stages only the old Work
+deletion, new byte-identical Work addition, and exact Artist/Exhibition edits.
+It must contain no asset or `.kiki-editor/` path. A later ordinary Save is a
+separate operation. Delete remains unavailable.

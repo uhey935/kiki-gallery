@@ -1,6 +1,7 @@
 ---
 import WorksDraftForm from "../../../../components/editor/WorksDraftForm.astro";
 import WorksValidationPanel from "../../../../components/editor/WorksValidationPanel.astro";
+import RenamePanel from "../../../../components/editor/RenamePanel.astro";
 import { createWorksEditorDraft } from "../../../../editor/works-draft-state";
 import { createWorksAssetDraftState } from "../../../../editor/works-asset-draft";
 import {
@@ -52,7 +53,10 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
           </p>
         )
       }
-    </main><WorksValidationPanel entry={entry} />
+    </main><aside class="editor-workspace__sidebar">
+      <WorksValidationPanel entry={entry} />
+      <RenamePanel collection="works" contentId={entry.contentId} />
+    </aside>
   </div>
   <footer class="editor-action-bar" aria-label="Editor actions">
     <span data-works-action-status role="status">Saved · ready</span><div
@@ -99,6 +103,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
   } from "../../../../editor/works-draft-state";
   import type { WorksAssetDraftState } from "../../../../editor/works-asset-draft";
   import type { WorksAssetPublishManifest } from "../../../../editor/works-asset-publish-manifest";
+  import type { WorksRenamePublishEvidence } from "../../../../editor/works-publish";
   import {
     addTemporaryWorksAsset,
     removeTemporaryWorksAssetFromDraft,
@@ -161,6 +166,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
     let assetDraft = JSON.parse(rawAssetDraft) as WorksAssetDraftState;
     let assetBaseline = structuredClone(assetDraft);
     let publishManifest: WorksAssetPublishManifest | undefined;
+    let renameEvidence: WorksRenamePublishEvidence | undefined;
     let savedSincePublish = false;
     let pending: "save" | "preview" | "publish" | "upload" | null = null;
     let recoveryRequired = false;
@@ -290,9 +296,9 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
       previewButton.title = ux.previewTitle;
       publishButton.title = ux.publishTitle;
       form
-        .querySelectorAll<
-          HTMLInputElement | HTMLTextAreaElement
-        >("input, textarea")
+        .querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+          "input, textarea",
+        )
         .forEach((control) => {
           if (control === assetFile || assetList.contains(control)) return;
           control.disabled = operationLocked;
@@ -364,6 +370,17 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
         }
       }
       if (status) status.textContent = ux.status;
+      window.dispatchEvent(
+        new CustomEvent("editor:workspace-state", {
+          detail: {
+            locked: operationLocked || dirty,
+            pendingAssetState: assetDraft.images.some(
+              (image) => image.kind === "temporary",
+            ),
+            unpublishedAssetCount: publishManifest?.assets.length ?? 0,
+          },
+        }),
+      );
     };
     form.addEventListener("input", (event) => {
       const field = event.target as HTMLInputElement | HTMLTextAreaElement;
@@ -650,6 +667,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
               baseline,
               dirty,
               publishManifest,
+              renameEvidence,
             }),
           },
         );
@@ -673,6 +691,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
             ? `Published ${result.commit?.slice(0, 7) ?? "commit"}`
             : `Committed ${result.commit?.slice(0, 7) ?? "commit"}; push failed. Retry push outside the Editor.`;
         publishManifest = undefined;
+        renameEvidence = undefined;
         savedSincePublish = false;
       } catch (error) {
         statusMessage = failureMessage(error, "Works publish failed");
@@ -680,6 +699,32 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
         pending = null;
         render();
       }
+    });
+    window.addEventListener("editor:rename-complete", (event) => {
+      const detail = event as CustomEvent<{
+        draft?: WorksEditorDraftState;
+        renameEvidence?: WorksRenamePublishEvidence;
+      }>;
+      const renamed = detail.detail.draft;
+      if (!renamed) return;
+      baseline = renamed;
+      draft = structuredClone(renamed);
+      assetDraft = {
+        contentId: renamed.contentId,
+        workspaceId: crypto.randomUUID(),
+        images: renamed.data.images.map((image) => ({
+          kind: "existing" as const,
+          ...image,
+        })),
+      };
+      assetBaseline = structuredClone(assetDraft);
+      publishManifest = undefined;
+      renameEvidence = detail.detail.renameEvidence;
+      savedSincePublish = true;
+      statusMessage =
+        "Renamed · references updated · assets unchanged · unpublished changes ready to publish";
+      renderAssets();
+      render();
     });
     window.addEventListener("beforeunload", (event) => {
       if (isDirty()) {

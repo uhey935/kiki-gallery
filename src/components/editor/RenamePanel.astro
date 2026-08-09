@@ -97,6 +97,8 @@ const { collection, contentId } = Astro.props as {
     const status = panel.querySelector<HTMLElement>("[data-rename-status]")!;
     let plan: BrowserRenamePlan | undefined;
     let workspaceLocked = false;
+    let pendingAssetState = false;
+    let unpublishedAssetCount = 0;
     let pending = false;
 
     const render = () => {
@@ -140,9 +142,16 @@ const { collection, contentId } = Astro.props as {
     });
     confirm.addEventListener("change", render);
     window.addEventListener("editor:workspace-state", (event) => {
-      workspaceLocked = Boolean(
-        (event as CustomEvent<{ locked: boolean }>).detail?.locked,
-      );
+      const detail = (
+        event as CustomEvent<{
+          locked: boolean;
+          pendingAssetState?: boolean;
+          unpublishedAssetCount?: number;
+        }>
+      ).detail;
+      workspaceLocked = Boolean(detail?.locked);
+      pendingAssetState = Boolean(detail?.pendingAssetState);
+      unpublishedAssetCount = detail?.unpublishedAssetCount ?? 0;
       render();
     });
     planButton.addEventListener("click", async () => {
@@ -155,6 +164,9 @@ const { collection, contentId } = Astro.props as {
           action: "plan",
           sourceContentId,
           destinationContentId: destination.value.trim(),
+          ...(collection === "works"
+            ? { pendingAssetState, unpublishedAssetCount }
+            : {}),
         });
         plan = result.plan as BrowserRenamePlan;
         panel.querySelector<HTMLElement>("[data-rename-change]")!.textContent =

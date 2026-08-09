@@ -38,6 +38,62 @@ export type WorksPublishInspection = {
   files: string[];
 };
 
+export type WorksRenamePublishEvidence = {
+  operationId: string;
+  planHash: string;
+};
+
+async function renamePublishPaths(
+  repositoryRoot: string,
+  contentId: string,
+  evidence?: WorksRenamePublishEvidence,
+) {
+  if (!evidence) return null;
+  if (
+    !/^[0-9a-f-]{36}$/i.test(evidence.operationId) ||
+    !/^[a-f0-9]{64}$/.test(evidence.planHash)
+  )
+    throw new WorksPublishError(
+      "Rename Publish evidence identity is invalid",
+      "unsafe-repository",
+    );
+  const file = path.join(
+    repositoryRoot,
+    ".kiki-editor/content-lifecycle/operations",
+    evidence.operationId,
+    "operation.json",
+  );
+  const stat = await fs.lstat(file).catch(() => undefined);
+  if (!stat?.isFile() || stat.isSymbolicLink())
+    throw new WorksPublishError(
+      "Completed Rename evidence is missing or unsafe",
+      "unsafe-repository",
+    );
+  const record = JSON.parse(await fs.readFile(file, "utf8")) as {
+    state?: string;
+    operation?: string;
+    plan?: {
+      planHash?: string;
+      destinationContentId?: string;
+      publishPaths?: string[];
+      sourceFile?: { file?: string; hash?: string };
+      referenceEdits?: Array<{ file: string; resultingHash: string }>;
+    };
+  };
+  if (
+    record.state !== "completed" ||
+    record.operation !== "works-rename" ||
+    record.plan?.planHash !== evidence.planHash ||
+    record.plan.destinationContentId !== contentId ||
+    !Array.isArray(record.plan.publishPaths)
+  )
+    throw new WorksPublishError(
+      "Rename Publish evidence does not match this workspace",
+      "unsafe-repository",
+    );
+  return record.plan;
+}
+
 export class WorksPublishError extends Error {
   readonly code:
     | "dirty-draft"
@@ -196,6 +252,7 @@ export async function inspectWorksPublish(
   repositoryRoot = path.resolve("."),
   git = createGit(repositoryRoot),
   manifest?: WorksAssetPublishManifest,
+  renameEvidence?: WorksRenamePublishEvidence,
 ): Promise<WorksPublishInspection> {
   if (!isContentId(contentId))
     throw new WorksPublishError(
@@ -222,8 +279,19 @@ export async function inspectWorksPublish(
         ({ file }) => file,
       )
     : [];
+  const renamePlan = await renamePublishPaths(
+    repositoryRoot,
+    contentId,
+    renameEvidence,
+  );
+  const allowed = renamePlan ? renamePlan.publishPaths! : [file, ...assetFiles];
+  if (renamePlan && assetFiles.length)
+    throw new WorksPublishError(
+      "Rename Publish cannot replay an asset manifest",
+      "asset-publish-manifest-mismatch",
+    );
   const files: string[] = [];
-  for (const candidate of [file, ...assetFiles])
+  for (const candidate of allowed)
     if (await git(["status", "--porcelain", "--", candidate]))
       files.push(candidate);
   if (files.length === 0)
@@ -247,6 +315,7 @@ export async function publishSavedWorksEntry(
   repositoryRoot = path.resolve("."),
   worksRoot = path.join(repositoryRoot, "src/content/works"),
   manifest?: WorksAssetPublishManifest,
+  renameEvidence?: WorksRenamePublishEvidence,
 ): Promise<WorksPublishResult> {
   if (dirty || JSON.stringify(draft) !== JSON.stringify(baseline))
     throw new WorksPublishError(
@@ -285,11 +354,14 @@ export async function publishSavedWorksEntry(
     repositoryRoot,
     git,
     manifest,
+    renameEvidence,
   );
   const expected = canonical.sourceRaw;
   try {
     await git(["add", "--", ...inspection.files]);
-    const staged = (await git(["diff", "--cached", "--name-only"]))
+    const staged = (
+      await git(["diff", "--cached", "--name-only", "--no-renames"])
+    )
       .split("\n")
       .filter(Boolean);
     if (
@@ -297,7 +369,7 @@ export async function publishSavedWorksEntry(
       JSON.stringify([...inspection.files].sort())
     )
       throw new WorksPublishError(
-        "Staged files escaped the Works publish boundary",
+        `Staged files escaped the Works publish boundary: expected ${inspection.files.sort().join(", ")}; received ${staged.sort().join(", ")}`,
         "unsafe-repository",
       );
     if (inspection.files.includes(inspection.file)) {
@@ -311,6 +383,48 @@ export async function publishSavedWorksEntry(
           "Canonical Works file changed while Publish was staging it",
           "canonical-mismatch",
         );
+    }
+    const renamePlan = await renamePublishPaths(
+      repositoryRoot,
+      draft.contentId,
+      renameEvidence,
+    );
+    if (renamePlan) {
+      const oldStatus = await git([
+        "diff",
+        "--cached",
+        "--name-status",
+        "--no-renames",
+        "--",
+        renamePlan.sourceFile!.file!,
+      ]);
+      if (!oldStatus.startsWith("D\t"))
+        throw new WorksPublishError(
+          "Old Work deletion is not staged",
+          "canonical-mismatch",
+        );
+      const { stdout: renamedBytes } = await execFile(
+        "git",
+        ["show", `:${inspection.file}`],
+        { cwd: repositoryRoot, encoding: "buffer" },
+      );
+      if (sha256(renamedBytes) !== renamePlan.sourceFile!.hash)
+        throw new WorksPublishError(
+          "Renamed Work bytes do not match the old Work identity",
+          "canonical-mismatch",
+        );
+      for (const edit of renamePlan.referenceEdits ?? []) {
+        const { stdout: stagedBytes } = await execFile(
+          "git",
+          ["show", `:${edit.file}`],
+          { cwd: repositoryRoot, encoding: "buffer" },
+        );
+        if (sha256(stagedBytes) !== edit.resultingHash)
+          throw new WorksPublishError(
+            `Staged reference does not match Rename evidence: ${edit.file}`,
+            "canonical-mismatch",
+          );
+      }
     }
     for (const verified of verifiedAssets) {
       const reread = await fs.readFile(

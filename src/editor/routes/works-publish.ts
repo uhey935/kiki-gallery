@@ -1,7 +1,11 @@
 import type { APIRoute } from "astro";
 
 import type { WorksEditorDraftState } from "../works-draft-state.ts";
-import { publishSavedWorksEntry, WorksPublishError } from "../works-publish.ts";
+import {
+  publishSavedWorksEntry,
+  WorksPublishError,
+  type WorksRenamePublishEvidence,
+} from "../works-publish.ts";
 import type { WorksAssetPublishManifest } from "../works-asset-publish-manifest.ts";
 
 export const POST: APIRoute = async ({ params, request }) => {
@@ -11,6 +15,7 @@ export const POST: APIRoute = async ({ params, request }) => {
       baseline?: WorksEditorDraftState;
       dirty?: boolean;
       publishManifest?: WorksAssetPublishManifest;
+      renameEvidence?: WorksRenamePublishEvidence;
     };
     if (
       !params.contentId ||
@@ -32,6 +37,7 @@ export const POST: APIRoute = async ({ params, request }) => {
         undefined,
         undefined,
         body.publishManifest,
+        body.renameEvidence,
       ),
     );
   } catch (error) {

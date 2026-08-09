@@ -1,8 +1,13 @@
-export type RenameCollection = "journal" | "news" | "exhibitions" | "artists";
+export type RenameCollection =
+  "journal" | "news" | "exhibitions" | "artists" | "works";
 
 export type BrowserRenamePlan = {
   operation:
-    "journal-rename" | "news-rename" | "exhibitions-rename" | "artists-rename";
+    | "journal-rename"
+    | "news-rename"
+    | "exhibitions-rename"
+    | "artists-rename"
+    | "works-rename";
   sourceContentId: string;
   destinationContentId: string;
   repositoryHead: string;
@@ -54,6 +59,10 @@ const renameGuidance: Record<string, string> = {
     "Rename failed, but every touched file was restored byte-for-byte. Inspect evidence before replanning.",
   "manual-recovery-required":
     "Rollback could not be proven. Stop all mutations and preserve the lock, evidence, staging, and recovery bytes.",
+  "pending-asset-state":
+    "Finish or abandon pending Works asset changes before requesting a Rename plan.",
+  "unpublished-asset-manifest":
+    "Publish or explicitly reconcile the saved asset manifest before Rename.",
 };
 
 export function renameFailureGuidance(code?: string): string {
