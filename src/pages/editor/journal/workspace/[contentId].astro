@@ -206,7 +206,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
               ? "Draft validation is blocking save"
               : !dirty
                 ? "No unsaved changes"
-                : "Save changes (⌘S / Ctrl+S)",
+                : "Save changes to the canonical Journal (⌘S / Ctrl+S)",
       );
       if (publishButton)
         publishButton.disabled =
@@ -221,7 +221,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
               ? "Save changes before publishing"
               : !result.capabilities.publish
                 ? "Draft validation is blocking publish"
-                : "Commit and push the saved canonical files",
+                : "Publish the saved canonical Journal",
       );
       renderFieldState();
       window.dispatchEvent(

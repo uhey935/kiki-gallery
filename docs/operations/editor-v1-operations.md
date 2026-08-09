@@ -46,6 +46,19 @@ typed references authorized by its reviewed plan; Delete never cascades.
 Command/Ctrl+S invokes Save when Save is available. While Save, Preview,
 Upload, or Publish is pending, the full form and every action are locked.
 
+## Journal locale operations
+
+Use JA then EN as the recommended operational order. This is an operator
+workflow, not an order enforced by the Editor. The Editor never substitutes JA
+content for EN or EN content for JA; there is no locale fallback.
+
+Unresolved `__TODO_*` placeholders may be saved so translation work can remain
+in progress. A locale that still contains a TODO placeholder cannot be
+previewed, and the complete Journal unit cannot be published. JA Preview
+remains available when JA is complete even if EN still contains TODO
+placeholders. Full Publish requires both locales to satisfy the existing
+completeness validation.
+
 ## Browser regression suite
 
 Run `npm run editor:test:browser` from a clean checkout after installing the
@@ -156,9 +169,20 @@ quarantine records and bytes, and deletion manifests.
 ## Release check
 
 Before a release milestone, run Editor and Journal tests, Astro check, a
-production build, Prettier check, and `git diff --check`. Confirm `dist/`
-contains no Editor mutation/API routes or Draft Preview artifacts, and compare
-canonical content/assets with the captured pre-check hashes.
+production build, a changed-file Prettier check, and `git diff --check`. Do not
+use repository-wide `npx prettier --check .`: intentional fixtures and
+historical files are outside the release formatting scope. Before committing,
+stage only the milestone files, then run the following reproducible check:
+
+```bash
+git diff --cached --name-only --diff-filter=ACMR -z -- \
+  '*.astro' '*.css' '*.js' '*.mjs' '*.ts' '*.json' '*.md' '*.yaml' '*.yml' \
+  | xargs -0 npx prettier --check
+```
+
+Confirm `dist/` contains no Editor mutation/API routes or Draft Preview
+artifacts, and compare canonical content/assets with the captured pre-check
+hashes.
 
 ## Documentation reading order
 

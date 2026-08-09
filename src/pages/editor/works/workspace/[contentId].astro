@@ -287,6 +287,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
             ? "Upload selected files as temporary images"
             : "Choose one or more images first";
       const ux = worksWorkspaceUxState({
+        collectionName: "Work",
         pending,
         dirty,
         canSave: capabilities.save,

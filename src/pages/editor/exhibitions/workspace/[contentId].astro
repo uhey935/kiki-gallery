@@ -173,6 +173,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         >("input, textarea, select")
         .forEach((control) => (control.disabled = locked));
       const ux = worksWorkspaceUxState({
+        collectionName: "Exhibition",
         pending,
         dirty,
         ...{

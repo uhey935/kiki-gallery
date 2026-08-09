@@ -24,6 +24,7 @@ test("flat validation field guidance resolves nested Home controls", () => {
 
 test("Works workspace explains dirty, blocked, and unpublished states", () => {
   const dirty = worksWorkspaceUxState({
+    collectionName: "Work",
     pending: null,
     dirty: true,
     canSave: true,
@@ -34,6 +35,7 @@ test("Works workspace explains dirty, blocked, and unpublished states", () => {
   assert.equal(dirty.status, "Unsaved changes · save required before publish");
   assert.equal(dirty.publishTitle, "Save changes before publishing");
   const blocked = worksWorkspaceUxState({
+    collectionName: "Work",
     pending: null,
     dirty: false,
     canSave: false,
@@ -43,6 +45,7 @@ test("Works workspace explains dirty, blocked, and unpublished states", () => {
   });
   assert.equal(blocked.status, "Saved · Publish blocked by validation");
   const unpublished = worksWorkspaceUxState({
+    collectionName: "Work",
     pending: null,
     dirty: false,
     canSave: true,
@@ -65,6 +68,44 @@ test("canonical mismatch tells the operator to reload", () => {
     action: "reload",
     message: "The canonical files changed. Reload before continuing.",
   });
+});
+
+test("workspace save and publish tooltips name each flat collection", () => {
+  for (const collectionName of [
+    "Work",
+    "Artist",
+    "Exhibition",
+    "News",
+    "Home",
+  ] as const) {
+    const dirty = worksWorkspaceUxState({
+      collectionName,
+      pending: null,
+      dirty: true,
+      canSave: true,
+      canPreview: true,
+      canPublish: true,
+      savedSincePublish: false,
+    });
+    assert.equal(
+      dirty.saveTitle,
+      `Save changes to the canonical ${collectionName}`,
+    );
+
+    const saved = worksWorkspaceUxState({
+      collectionName,
+      pending: null,
+      dirty: false,
+      canSave: true,
+      canPreview: true,
+      canPublish: true,
+      savedSincePublish: false,
+    });
+    assert.equal(
+      saved.publishTitle,
+      `Publish the saved canonical ${collectionName}`,
+    );
+  }
 });
 
 test("issue field names resolve the first actionable field across scopes", () => {
@@ -183,6 +224,7 @@ test("flat Create rollback failure uses the same manual recovery boundary", () =
 
 test("Works recovery-required state keeps every operation stopped", () => {
   const state = worksWorkspaceUxState({
+    collectionName: "Work",
     pending: null,
     dirty: true,
     canSave: true,

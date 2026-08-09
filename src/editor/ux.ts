@@ -79,6 +79,7 @@ export function renderFlatValidationPanel(
 }
 
 export function worksWorkspaceUxState(input: {
+  collectionName: "Work" | "Artist" | "Exhibition" | "News" | "Home";
   pending: "save" | "preview" | "publish" | "upload" | null;
   dirty: boolean;
   canSave: boolean;
@@ -120,7 +121,7 @@ export function worksWorkspaceUxState(input: {
         : !dirty
           ? "No unsaved changes"
           : canSave
-            ? "Save changes to the canonical Work"
+            ? `Save changes to the canonical ${input.collectionName}`
             : "Save is blocked by draft validation",
     previewTitle: input.recoveryRequired
       ? "Manual recovery is required before preview can continue"
@@ -140,7 +141,7 @@ export function worksWorkspaceUxState(input: {
           : canPublish
             ? input.savedSincePublish
               ? "Publish the saved unpublished changes"
-              : "Publish the saved canonical Work"
+              : `Publish the saved canonical ${input.collectionName}`
             : "Publish is blocked by draft validation",
   };
 }
