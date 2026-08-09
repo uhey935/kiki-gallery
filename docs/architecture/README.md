@@ -14,6 +14,7 @@ The documents are designed to be read in the following order.
 
 | Document                                                       | Purpose                                                                                                                                                    |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Works Delete Asset Lifecycle Semantics**                     | Finalizes content-only Works deletion, post-Delete ALv2 handoff, dual-lock coordination, unchanged assets/evidence, and asset-free Publish.                |
 | **Journal Delete Browser Acceptance**                          | Records exact-backup gating, no-cascade analysis, atomic three-file recovery, explicit confirmation, evidence-only Publish, and real-browser acceptance.   |
 | **News Delete Browser Acceptance**                             | Records exact-backup gating, fail-closed reference analysis, atomic single-file recovery, explicit confirmation, and evidence-only Publish.                |
 | **Exhibitions Delete Browser Acceptance**                      | Records exact-backup gating, News/Markdown no-cascade refusal, atomic single-file recovery, explicit confirmation, and evidence-only Publish.              |
@@ -52,6 +53,17 @@ The documents are designed to be read in the following order.
 
 ## Documents
 
+### Works Delete Asset Lifecycle Semantics
+
+**works-delete-asset-lifecycle-semantics-2026-08-09.md**
+
+Finalizes the boundary between recoverable Works content removal and Asset
+Lifecycle v2. It keeps every asset and lifecycle record unchanged, starts orphan
+retention only at a later independent complete scan, gates pending asset state,
+defines dual-lock inspection and rollback, and restricts Publish to the evidenced
+Work Markdown deletion. The design is implementation-ready; Works Delete remains
+unimplemented until its separate implementation and browser acceptance milestone.
+
 ### Delete Implementation Readiness Audit
 
 **delete-implementation-readiness-audit-2026-08-09.md**
@@ -60,8 +72,8 @@ Audits the current Create/Rename implementations, no-cascade Delete contract,
 Asset Lifecycle v2, retention, backup/recovery, quarantine, durable evidence,
 reference graph, and Publish boundaries. It classifies Journal, News,
 Exhibitions, and Artists as collection-ready under strict incoming-reference
-blocking, keeps Works deferred for its dual-lock lifecycle milestone, and
-records the shared gates that prevent Delete implementation in this milestone.
+blocking. Its Works deferral is closed by the subsequent Works Delete lifecycle
+semantics finalization, while the audit remains the historical gate record.
 
 ### Works Rename Asset Lifecycle Semantics
 

@@ -2,7 +2,7 @@
 
 | Property  | Value                                                               |
 | --------- | ------------------------------------------------------------------- |
-| Status    | Audit complete; implementation not authorized                       |
+| Status    | Audit complete; all collection design gates subsequently closed     |
 | Date      | 2026-08-09                                                          |
 | Baseline  | `0d3f883` (`Implement safe Works rename`)                           |
 | Scope     | Journal, News, Exhibitions, Artists, and Works content Delete       |
@@ -117,18 +117,20 @@ closed. Push failure remains `committed-push-failed`; Delete is not rerun.
 
 ## Collection readiness matrix
 
-| Collection  | Classification       | Canonical removal                          | Incoming reference disposition                                                                                    | Assets and principal hazards                                                                                                                  |
-| ----------- | -------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Journal     | Implementation-ready | Complete `index.yaml + ja.md + en.md` unit | Any recognized Journal route link blocks; incomplete locale/body inventory blocks                                 | Journal hero/body assets remain canonical. Missing/extra unit files, placeholder/invalid locale state, or partial-unit recovery fail closed.  |
-| News        | Implementation-ready | One flat Markdown file                     | No typed incoming target exists today; its optional outgoing `link` disappears with the source                    | News image resolution and link target are outgoing only; asset paths remain unchanged. No public detail route is deleted.                     |
-| Exhibitions | Implementation-ready | One flat Markdown file                     | Exact News `/exhibitions/<id>` and structurally recognized Markdown links block; no automatic rewrite             | Hero/body assets remain canonical. Derived index/detail/Home/Artist views disappear only from canonical absence.                              |
-| Artists     | Implementation-ready | One flat Markdown file                     | Any Work `artist`, Exhibition `artists[]`, News `/artists/<id>`, or recognized Markdown link blocks               | Mandatory Work ownership means many Artists are ineligible. Hero and related Work/Exhibition assets remain canonical.                         |
-| Works       | Blocked/deferred     | One flat Markdown file                     | Artist `works_layout[].works[]`, Exhibition `works[]`, and recognized route links block under the no-cascade rule | Requires dual locks, complete ALv2 stop-state inspection, pending upload/manifest gates, and proof that post-delete asset state is untouched. |
+| Collection  | Classification       | Canonical removal                          | Incoming reference disposition                                                                                    | Assets and principal hazards                                                                                                                                            |
+| ----------- | -------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Journal     | Implementation-ready | Complete `index.yaml + ja.md + en.md` unit | Any recognized Journal route link blocks; incomplete locale/body inventory blocks                                 | Journal hero/body assets remain canonical. Missing/extra unit files, placeholder/invalid locale state, or partial-unit recovery fail closed.                            |
+| News        | Implementation-ready | One flat Markdown file                     | No typed incoming target exists today; its optional outgoing `link` disappears with the source                    | News image resolution and link target are outgoing only; asset paths remain unchanged. No public detail route is deleted.                                               |
+| Exhibitions | Implementation-ready | One flat Markdown file                     | Exact News `/exhibitions/<id>` and structurally recognized Markdown links block; no automatic rewrite             | Hero/body assets remain canonical. Derived index/detail/Home/Artist views disappear only from canonical absence.                                                        |
+| Artists     | Implementation-ready | One flat Markdown file                     | Any Work `artist`, Exhibition `artists[]`, News `/artists/<id>`, or recognized Markdown link blocks               | Mandatory Work ownership means many Artists are ineligible. Hero and related Work/Exhibition assets remain canonical.                                                   |
+| Works       | Implementation-ready | One flat Markdown file                     | Artist `works_layout[].works[]`, Exhibition `works[]`, and recognized route links block under the no-cascade rule | Uses content-then-asset locks, complete ALv2 stop-state inspection, pending upload/manifest gates, unchanged assets/evidence, and later independent orphan observation. |
 
 “Implementation-ready” means the approved no-reference-update behavior and
 transaction boundary are sufficient once the shared gates are implemented. It
-does not mean every current entry is eligible. “Blocked/deferred” means a
-collection-specific design/acceptance slice is still required.
+does not mean every current entry is eligible or that the feature exists. Works
+reached this classification in the subsequent
+`works-delete-asset-lifecycle-semantics-2026-08-09.md` design milestone; its
+implementation and browser acceptance remain separate.
 
 No collection is classified `ready-with-defined-reference-updates`: removing
 an Artist or Exhibition reference, pruning a Work from an Artist layout or
@@ -188,9 +190,11 @@ These gaps prevent implementation even for collection-ready slices:
 5. **Reference-parser closure.** Turn each collection's audited incoming forms,
    including structurally recognized Markdown links and unsupported-route
    reporting, into complete versioned adapters with deletion-specific tests.
-6. **Works Delete milestone.** Specify and browser-test pending manifest/Draft
-   gates, content-then-asset lock order, lifecycle evidence snapshot, unchanged
-   asset/lifecycle assertions, rollback with both locks, and asset-free Publish.
+6. **Works Delete milestone — closed by design finalization.** The subsequent
+   Works Delete lifecycle semantics document specifies pending manifest/Draft
+   gates, content-then-asset lock order, lifecycle evidence snapshots, unchanged
+   asset/lifecycle assertions, rollback with both locks, post-Delete orphan
+   timing, and asset-free Publish. Implementation/browser acceptance remains.
 
 ## Milestone recommendation
 
@@ -198,8 +202,8 @@ Resolve gates 1–5 as a narrow shared foundation and implement **News Delete**
 first. News proves flat recoverable removal, durable evidence, restart/rollback,
 Restore separation, and evidence-exclusive Publish without route or incoming
 reference edits. Journal should follow to prove complete-unit recovery;
-Exhibitions and Artists then reuse the complete blocking inventory. Works stays
-last and requires its own Asset Lifecycle coordination milestone.
+Exhibitions and Artists then reuse the complete blocking inventory. Works remains
+last for implementation; its Asset Lifecycle coordination design is now finalized.
 
 ## Audit acceptance
 

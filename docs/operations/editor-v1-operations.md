@@ -12,7 +12,7 @@ Exhibitions Delete follows the same one-file lifecycle and includes its public d
 
 Artists Delete follows the same one-file lifecycle and additionally closes typed `Works.artist` and `Exhibitions.artists[]` references plus known News links. It never cascades, rewrites references, or moves assets. Works Delete remains unavailable. Never infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
 
-Works Delete additionally requires the content lifecycle lock before the Asset Lifecycle repository lock. Release is asset first, content last. Until the Works-specific Delete milestone is accepted, this ordering grants no operator action.
+Works Delete additionally requires the content lifecycle lock before the Asset Lifecycle repository lock. Release is asset first, content last. Its design is finalized, but no Works Delete implementation exists; this ordering grants no operator action until implementation and browser acceptance are complete.
 
 ## Safe start
 

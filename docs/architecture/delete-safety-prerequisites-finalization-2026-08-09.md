@@ -62,7 +62,7 @@ No cascade, nulling, pruning, reciprocal edit, or force mode is authorized.
 | Reference parser closure        | Closed for shared Markdown syntax | supported-route classification and unsupported-local fail-closed test   |
 | Works dual-lock order           | Accepted; behavior unchanged      | content-first acquisition and reverse-release test                      |
 
-Journal/News Delete implementation may start next, provided its service acquires the shared lock and combines this Markdown inventory with the existing complete typed graph reader. Existing writer behavior is unchanged in this milestone because no Delete execution exists yet. Migrating duplicated Rename lock code to the helper is a mechanical follow-up, not a prerequisite for the first Delete slice. Works Delete remains deferred for its collection-specific lifecycle snapshot and browser acceptance milestone.
+Journal/News Delete implementation may start next, provided its service acquires the shared lock and combines this Markdown inventory with the existing complete typed graph reader. Existing writer behavior is unchanged in this milestone because no Delete execution exists yet. Migrating duplicated Rename lock code to the helper is a mechanical follow-up, not a prerequisite for the first Delete slice. The subsequent Works Delete Asset Lifecycle Semantics Finalization closes its collection-specific lifecycle design gate: Works is implementation-ready but remains unavailable pending a separate implementation and browser acceptance milestone.
 
 ## Acceptance
 
