@@ -226,3 +226,12 @@ only the old Exhibition deletion, new Exhibition addition, and exact News edits
 listed by the reviewed plan. Any HEAD/canonical/evidence mismatch blocks
 staging. Artists and Works Rename, Delete, Production loaders, and asset
 ownership remain unchanged.
+
+## Artists reference-aware Rename
+
+Artists Rename uses `POST /editor/api/artists-rename`. Its reviewed plan lists
+the old/new Artist paths plus every byte-preserving `Works.artist`,
+`Exhibitions.artists[]`, and recognized News-link edit. Execute requires the
+exact confirmed plan and opens the new Artist workspace. Publish stages only
+the completed evidence path set. Collision, graph, drift, symlink, lock,
+rewrite, validation, and evidence mismatch failures have no force mode.

@@ -2,7 +2,7 @@
 
 | Property  | Value                                                                      |
 | --------- | -------------------------------------------------------------------------- |
-| Status    | Approved; Exhibitions first safe slice implemented, Artists deferred       |
+| Status    | Implemented and browser-accepted for Exhibitions and Artists               |
 | Date      | 2026-08-08                                                                 |
 | Scope     | Exhibitions and Artists Content ID Rename with bounded reference updates   |
 | Preserved | Asset bytes/paths, Delete, Production loaders/consumers, canonical content |
@@ -267,10 +267,10 @@ recovery files under `.kiki-editor/` are never staged or consumed by Production.
 
 ## Implementation gates and acceptance
 
-Artists implementation remains deferred until a separate milestone supplies
+Artists implementation now supplies
 collection-owned inventory/rewriter modules, the staged-overlay validator,
 durable journal/restart inspection, composed lock enforcement, UI/API, and
-Publish expansion. Tests must use isolated Git repositories and cover every
+Publish expansion. Tests use isolated Git repositories and cover every
 reference class, multiple edits per file, formatting preservation, new files
 during planning, every mutation-step failure, exact rollback, rollback refusal,
 restart at every journal state, and exact Publish staging.
@@ -279,4 +279,5 @@ Acceptance must also prove that canonical asset bytes and paths are unchanged,
 Works Asset Lifecycle v2 state is unchanged, Delete and Production loaders are
 unchanged, the production route count changes only as the old target route is
 replaced by the new target route, and no implementation endpoint exists in this
-documentation milestone.
+Artists acceptance is recorded in
+`artists-rename-browser-acceptance-2026-08-09.md`.

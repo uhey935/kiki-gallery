@@ -1,7 +1,8 @@
-export type RenameCollection = "journal" | "news" | "exhibitions";
+export type RenameCollection = "journal" | "news" | "exhibitions" | "artists";
 
 export type BrowserRenamePlan = {
-  operation: "journal-rename" | "news-rename" | "exhibitions-rename";
+  operation:
+    "journal-rename" | "news-rename" | "exhibitions-rename" | "artists-rename";
   sourceContentId: string;
   destinationContentId: string;
   repositoryHead: string;

@@ -1,6 +1,7 @@
 ---
 import ArtistsDraftForm from "../../../../components/editor/ArtistsDraftForm.astro";
 import ArtistsValidationPanel from "../../../../components/editor/ArtistsValidationPanel.astro";
+import RenamePanel from "../../../../components/editor/RenamePanel.astro";
 import { createArtistsEditorDraft } from "../../../../editor/artists-draft-state";
 import {
   readArtistsEditorEntry,
@@ -42,7 +43,10 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           </p>
         )
       }
-    </main><ArtistsValidationPanel entry={entry} />
+    </main><aside class="editor-workspace__sidebar">
+      <ArtistsValidationPanel entry={entry} />
+      <RenamePanel collection="artists" contentId={entry.contentId} />
+    </aside>
   </div>
   <footer class="editor-action-bar" aria-label="Editor actions">
     <span data-artists-action-status role="status">Saved · ready</span><div
@@ -199,6 +203,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       save.title = ux.saveTitle;
       preview.title = ux.previewTitle;
       publish.title = ux.publishTitle;
+      window.dispatchEvent(
+        new CustomEvent("editor:workspace-state", {
+          detail: { locked: locked || dirty },
+        }),
+      );
     };
     const request = async (url: string, body: unknown) => {
       const response = await fetch(url, {
@@ -278,6 +287,18 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         pending = null;
         render();
       }
+    });
+    window.addEventListener("editor:rename-complete", (event) => {
+      const renamed = (
+        event as CustomEvent<{ draft?: ArtistsEditorDraftState }>
+      ).detail.draft;
+      if (!renamed) return;
+      baseline = renamed;
+      draft = structuredClone(renamed);
+      savedSincePublish = true;
+      statusMessage =
+        "Renamed · references updated · unpublished changes ready to publish";
+      render();
     });
     document.addEventListener("keydown", (event) => {
       if (isEditorSaveShortcut(event) && !save.disabled) {

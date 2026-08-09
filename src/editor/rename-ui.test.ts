@@ -11,6 +11,7 @@ test("Rename browser routes include the reference-aware Exhibitions slice", () =
   assert.equal(renameEndpoint("journal"), "/editor/api/journal-rename");
   assert.equal(renameEndpoint("news"), "/editor/api/news-rename");
   assert.equal(renameEndpoint("exhibitions"), "/editor/api/exhibitions-rename");
+  assert.equal(renameEndpoint("artists"), "/editor/api/artists-rename");
   assert.equal(
     renameWorkspaceUrl("journal", "renamed entry"),
     "/editor/journal/workspace/renamed%20entry/",
