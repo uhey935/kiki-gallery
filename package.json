@@ -13,6 +13,7 @@
     "astro": "astro",
     "journal:test": "node --experimental-strip-types --test src/content-loaders/journal/*.test.ts src/content-boundaries/journal.test.ts",
     "editor:test": "node --experimental-strip-types --test src/editor/*.test.ts",
+    "editor:test:browser": "node tests/browser/run-browser-tests.mjs",
     "backup": "node --experimental-strip-types src/editor/backup-cli.ts",
     "journal:migration:manifest": "node --experimental-strip-types src/content-loaders/journal/migration-manifest.ts"
   },
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@playwright/test": "^1.62.1",
     "@types/node": "^24.13.3",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",

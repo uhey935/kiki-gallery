@@ -25,3 +25,5 @@ pnpm-debug.log*
 
 # local Editor durable observation state (never production input)
 .kiki-editor/
+test-results/
+playwright-report/

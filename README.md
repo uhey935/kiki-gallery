@@ -24,14 +24,15 @@ npm run dev
 Open the public site at `http://localhost:4321/` and the Editor at
 `http://localhost:4321/editor/`.
 
-| Command                | Purpose                                             |
-| ---------------------- | --------------------------------------------------- |
-| `npm run dev`          | Development site and local Editor                   |
-| `npm run check`        | Astro and TypeScript diagnostics                    |
-| `npm run build`        | Production static build in `dist/`                  |
-| `npm run preview`      | Serve the production build locally                  |
-| `npm run editor:test`  | Editor, Publish, preview, and asset lifecycle tests |
-| `npm run journal:test` | Journal loader and production-boundary tests        |
+| Command                       | Purpose                                               |
+| ----------------------------- | ----------------------------------------------------- |
+| `npm run dev`                 | Development site and local Editor                     |
+| `npm run check`               | Astro and TypeScript diagnostics                      |
+| `npm run build`               | Production static build in `dist/`                    |
+| `npm run preview`             | Serve the production build locally                    |
+| `npm run editor:test`         | Editor, Publish, preview, and asset lifecycle tests   |
+| `npm run editor:test:browser` | Isolated browser smoke and lifecycle regression suite |
+| `npm run journal:test`        | Journal loader and production-boundary tests          |
 
 If the user-level npm cache is not writable, use an isolated cache rather than
 changing machine-wide ownership as part of a release:

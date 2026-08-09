@@ -46,6 +46,26 @@ typed references authorized by its reviewed plan; Delete never cascades.
 Command/Ctrl+S invokes Save when Save is available. While Save, Preview,
 Upload, or Publish is pending, the full form and every action are locked.
 
+## Browser regression suite
+
+Run `npm run editor:test:browser` from a clean checkout after installing the
+Playwright Chromium runtime with `npx playwright install chromium`. The runner
+creates a temporary local clone and bare remote, binds Astro only to
+`127.0.0.1`, executes the browser suite there, and removes the sandbox. It never
+runs mutation routes against this checkout's canonical content or assets.
+
+The foundation suite covers Dashboard and collection navigation, News Create,
+Draft Preview, First Save, ordinary Publish, Rename and its separate Publish,
+Delete with verified backup and its separate Publish, validation gating, the
+shared lifecycle lock, and browser console errors. It is intentionally serial.
+
+For future CI, use Node 22.12 or newer, install dependencies and Chromium, then
+run the same command. Preserve the one-worker setting and do not point the suite
+at a maintained clone. Deferred cases include every collection/locale
+permutation, native Works upload/Replace, injected rollback and push failures,
+manual-recovery terminal UI, concurrent tabs, token expiry, accessibility, and
+visual regression. Focused service tests remain authoritative for unsafe races.
+
 ## Publish and recovery
 
 Publish requires a clean safe repository, attached branch, matching upstream,
