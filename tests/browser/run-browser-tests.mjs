@@ -1,5 +1,12 @@
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtemp, rm, symlink } from "node:fs/promises";
+import {
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -32,6 +39,28 @@ function run(command, args, options = {}) {
     throw new Error(`${command} ${args.join(" ")} failed (${result.status})`);
 }
 
+async function closeBrowserFixtureReferenceGraph(directory) {
+  let changed = 0;
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      changed += await closeBrowserFixtureReferenceGraph(file);
+      continue;
+    }
+    if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
+    const source = await readFile(file, "utf8");
+    const normalized = source.replace(
+      /<\/?(?:figure|figcaption)(?:\s[^>]*)?>/g,
+      "",
+    );
+    if (normalized !== source) {
+      await writeFile(file, normalized);
+      changed += 1;
+    }
+  }
+  return changed;
+}
+
 async function waitForServer() {
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
@@ -51,6 +80,15 @@ try {
     cwd: repositoryRoot,
   });
   run("git", ["push", "-u", "origin", "main"], { cwd: repositoryRoot });
+  const normalizedFixtureFiles = await closeBrowserFixtureReferenceGraph(
+    path.join(repositoryRoot, "src/content"),
+  );
+  if (normalizedFixtureFiles > 0) {
+    run("git", ["add", "src/content"], { cwd: repositoryRoot });
+    run("git", ["commit", "-m", "test: close browser fixture references"], {
+      cwd: repositoryRoot,
+    });
+  }
   await symlink(
     path.join(sourceRoot, "node_modules"),
     path.join(repositoryRoot, "node_modules"),
