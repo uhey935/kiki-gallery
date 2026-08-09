@@ -14,6 +14,7 @@ The documents are designed to be read in the following order.
 
 | Document                                                       | Purpose                                                                                                                                                    |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Editor Final Completion Audit**                              | Current authority for the completed Editor scope, final findings, verification, safety boundaries, and deferred work.                                      |
 | **Works Delete Asset Lifecycle Semantics**                     | Finalizes content-only Works deletion, post-Delete ALv2 handoff, dual-lock coordination, unchanged assets/evidence, and asset-free Publish.                |
 | **Works Delete Implementation and Browser Acceptance**         | Records implemented content-only Delete, cross-writer server locking, unchanged asset/lifecycle proof, one-path Publish, and browser acceptance.           |
 | **Journal Delete Browser Acceptance**                          | Records exact-backup gating, no-cascade analysis, atomic three-file recovery, explicit confirmation, evidence-only Publish, and real-browser acceptance.   |
@@ -53,6 +54,15 @@ The documents are designed to be read in the following order.
 ---
 
 ## Documents
+
+### Editor Final Completion Audit
+
+**editor-final-completion-audit-2026-08-09.md**
+
+Audits all six collections and every supported mutation flow after Works
+Delete, reconciles the browser-acceptance record, verifies locking, recovery,
+Publish scope, dependency and Production boundaries, and records the canonical
+completion decision plus intentionally deferred future work.
 
 ### Works Delete Asset Lifecycle Semantics
 

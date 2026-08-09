@@ -1,6 +1,6 @@
 # Editor v1 Operations
 
-## Journal, News, Exhibitions, and Artists Delete; remaining Works safety hold
+## Content Delete
 
 Journal Delete is available only from a saved Journal workspace and requires the absolute path of a complete verified backup generation containing the exact current three-file unit. Review the server plan, confirm it explicitly, execute, then use the separate Delete Publish action. Delete Publish commits but does not push.
 
@@ -10,9 +10,9 @@ News Delete follows the same reviewed-plan and explicit-confirmation boundary fo
 
 Exhibitions Delete follows the same one-file lifecycle and includes its public detail route in the reviewed plan. Any supported Markdown route, known News `link`, malformed Exhibition route, or unresolved canonical reference blocks Delete. After completed recovery evidence is durable, the separate Delete Publish action commits only the Exhibition Markdown deletion and returns to the Exhibitions list. It never moves or stages the hero or any other asset.
 
-Artists Delete follows the same one-file lifecycle and additionally closes typed `Works.artist` and `Exhibitions.artists[]` references plus known News links. It never cascades, rewrites references, or moves assets. Works Delete remains unavailable. Never infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
+Artists Delete follows the same one-file lifecycle and additionally closes typed `Works.artist` and `Exhibitions.artists[]` references plus known News links. It never cascades, rewrites references, or moves assets. Never infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
 
-Works Delete additionally requires the content lifecycle lock before the Asset Lifecycle repository lock. Release is asset first, content last. Its design is finalized, but no Works Delete implementation exists; this ordering grants no operator action until implementation and browser acceptance are complete.
+Works Delete additionally requires the content lifecycle lock before the Asset Lifecycle repository lock. Release is asset first, content last. It moves and publishes only the selected Works Markdown; asset bytes, paths, and Asset Lifecycle v2 evidence remain unchanged.
 
 ## Safe start
 
@@ -38,10 +38,10 @@ Publish remains separate and includes only the exact new untracked source (and
 only an already-authorized Works saved-asset manifest). Create itself never
 uploads, moves, or infers ownership of assets.
 
-Home is the canonical `home.md` singleton and has no Create capability. A
-service/API slice supports reviewed Journal and News Rename; the normal
-workspace does not yet expose a Rename control. Delete remains unavailable for
-every collection.
+Home is the canonical `home.md` singleton and has no Create, Rename, or Delete
+capability. Saved workspaces expose reviewed Rename and content-only Delete for
+Works, Journal, Exhibitions, Artists, and News. Rename may update only the
+typed references authorized by its reviewed plan; Delete never cascades.
 
 Command/Ctrl+S invokes Save when Save is available. While Save, Preview,
 Upload, or Publish is pending, the full form and every action are locked.
@@ -143,8 +143,9 @@ canonical content/assets with the captured pre-check hashes.
 ## Documentation reading order
 
 1. This operations guide.
-2. `docs/architecture/editor-v1-finalization-2026-08-07.md`.
-3. `docs/architecture/editor-v1-release-readiness-2026-08-07.md`.
+2. `docs/architecture/editor-final-completion-audit-2026-08-09.md`.
+3. The collection-specific Rename/Delete browser-acceptance records, ending
+   with `docs/architecture/works-delete-browser-acceptance-2026-08-09.md`.
 4. `docs/architecture/journal-architecture-current.md` for Journal.
 5. `docs/architecture/works-asset-manager-architecture-and-safety-specification.md`.
 6. The three Asset Lifecycle v2 milestone documents for quarantine and delete

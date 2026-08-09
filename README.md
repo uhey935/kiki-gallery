@@ -42,14 +42,18 @@ npm ci --cache /tmp/kiki-gallery-npm-cache
 
 ## Editor operations
 
-The supported v1 workflow is edit existing content only:
+The completed local Editor supports Preview, Save, and Publish for all six
+collections; Create for Works, Journal, Exhibitions, Artists, and News; and
+reviewed Rename and content-only Delete for those five non-singleton
+collections. Home remains an intentional singleton without Create, Rename, or
+Delete.
 
-`load → edit → validate → Draft Preview → Save → Publish`
-
-Create, delete, rename, batch Replace, non-Works asset management, storage
-migration, cross-collection ownership, and derivatives are outside v1.
+Destructive content operations require reviewed plans and explicit
+confirmation. Delete additionally requires an exact verified backup and keeps
+assets unchanged. Batch Replace, non-Works asset management, storage migration,
+cross-collection ownership, and derivatives remain deferred.
 
 Read [Editor v1 Operations](docs/operations/editor-v1-operations.md) before
 operating Save, Publish, or asset lifecycle recovery. Architecture authority
-and reading order are listed there. Phase 4 evidence is recorded in
-[Editor v1 Release Readiness](docs/architecture/editor-v1-release-readiness-2026-08-07.md).
+and reading order are listed there. The current completion decision is recorded
+in [Editor Final Completion Audit](docs/architecture/editor-final-completion-audit-2026-08-09.md).
