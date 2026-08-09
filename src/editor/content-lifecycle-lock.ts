@@ -126,6 +126,26 @@ export async function releaseContentLifecycleLock(
   await fs.rm(lockPath(repositoryRoot), { recursive: true });
 }
 
+export async function withContentLifecycleLock<T>(input: {
+  repositoryRoot?: string;
+  writer: Exclude<ContentWriter, "delete">;
+  operationId?: string;
+  action: () => Promise<T>;
+}): Promise<T> {
+  const repositoryRoot = path.resolve(input.repositoryRoot ?? ".");
+  const lock = await acquireContentLifecycleLock({
+    repositoryRoot,
+    writer: input.writer,
+    operationId: input.operationId,
+  });
+  try {
+    await assertContentLifecycleLock(repositoryRoot, lock.identity);
+    return await input.action();
+  } finally {
+    await releaseContentLifecycleLock(repositoryRoot, lock.identity);
+  }
+}
+
 export async function acquireWorksDeleteLocks(input: {
   repositoryRoot: string;
   operationId: string;

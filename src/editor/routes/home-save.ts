@@ -1,7 +1,8 @@
 import type { APIRoute } from "astro";
+import { contentWriterRoute } from "./content-writer-route.ts";
 import type { HomeEditorDraftState } from "../home-draft-state.ts";
 import { saveHomeEditorDraft, HomeSaveError } from "../home-save.ts";
-export const POST: APIRoute = async ({ request }) => {
+const unlockedPOST: APIRoute = async ({ request }) => {
   try {
     const body = (await request.json()) as {
       draft?: HomeEditorDraftState;
@@ -33,3 +34,5 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 };
+
+export const POST = contentWriterRoute("save", unlockedPOST);

@@ -1,11 +1,12 @@
 import type { APIRoute } from "astro";
+import { contentWriterRoute } from "./content-writer-route.ts";
 import type { ArtistsEditorDraftState } from "../artists-draft-state.ts";
 import {
   createArtistsPreviewModel,
   artistsPreviewStore,
   ArtistsPreviewError,
 } from "../artists-preview.ts";
-export const POST: APIRoute = async ({ request }) => {
+const unlockedPOST: APIRoute = async ({ request }) => {
   try {
     const input = (await request.json()) as { draft?: ArtistsEditorDraftState };
     if (!input.draft)
@@ -31,3 +32,5 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 };
+
+export const POST = contentWriterRoute("save", unlockedPOST);

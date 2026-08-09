@@ -15,6 +15,7 @@ The documents are designed to be read in the following order.
 | Document                                                       | Purpose                                                                                                                                                    |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Works Delete Asset Lifecycle Semantics**                     | Finalizes content-only Works deletion, post-Delete ALv2 handoff, dual-lock coordination, unchanged assets/evidence, and asset-free Publish.                |
+| **Works Delete Implementation and Browser Acceptance**         | Records implemented content-only Delete, cross-writer server locking, unchanged asset/lifecycle proof, one-path Publish, and browser acceptance.           |
 | **Journal Delete Browser Acceptance**                          | Records exact-backup gating, no-cascade analysis, atomic three-file recovery, explicit confirmation, evidence-only Publish, and real-browser acceptance.   |
 | **News Delete Browser Acceptance**                             | Records exact-backup gating, fail-closed reference analysis, atomic single-file recovery, explicit confirmation, and evidence-only Publish.                |
 | **Exhibitions Delete Browser Acceptance**                      | Records exact-backup gating, News/Markdown no-cascade refusal, atomic single-file recovery, explicit confirmation, and evidence-only Publish.              |
@@ -61,8 +62,16 @@ Finalizes the boundary between recoverable Works content removal and Asset
 Lifecycle v2. It keeps every asset and lifecycle record unchanged, starts orphan
 retention only at a later independent complete scan, gates pending asset state,
 defines dual-lock inspection and rollback, and restricts Publish to the evidenced
-Work Markdown deletion. The design is implementation-ready; Works Delete remains
-unimplemented until its separate implementation and browser acceptance milestone.
+Work Markdown deletion. The design is implemented by the subsequent browser
+acceptance milestone.
+
+### Works Delete Implementation and Browser Acceptance
+
+**works-delete-browser-acceptance-2026-08-09.md**
+
+Records the completed Works Delete service, route, reviewed-plan UI, dual-lock
+transaction, byte-exact rollback, unchanged asset/lifecycle proof, single-path
+Publish, cross-writer server gate, isolated tests, and real-browser acceptance.
 
 ### Delete Implementation Readiness Audit
 
@@ -93,7 +102,8 @@ Records the completed implementation and isolated real-browser acceptance for
 reviewed-plan confirmation, typed incoming references, unchanged asset URLs and
 bytes, dual-lock refusal, renamed-workspace Preview/Save continuity, rollback,
 and evidence-limited Publish.
-Works Delete and Production loader changes remain deferred.
+Production loader changes remain deferred. Works Delete is implemented by its
+separate acceptance milestone.
 
 ### Exhibitions / Artists Rename Reference Update Architecture
 

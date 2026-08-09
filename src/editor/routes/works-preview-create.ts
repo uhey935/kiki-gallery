@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { contentWriterRoute } from "./content-writer-route.ts";
 
 import type { WorksEditorDraftState } from "../works-draft-state.ts";
 import type { WorksAssetDraftState } from "../works-asset-draft.ts";
@@ -8,7 +9,7 @@ import {
   worksPreviewStore,
 } from "../works-preview.ts";
 
-export const POST: APIRoute = async ({ request }) => {
+const unlockedPOST: APIRoute = async ({ request }) => {
   try {
     const input = (await request.json()) as {
       draft?: WorksEditorDraftState;
@@ -37,3 +38,5 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 };
+
+export const POST = contentWriterRoute("save", unlockedPOST);

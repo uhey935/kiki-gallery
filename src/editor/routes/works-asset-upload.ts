@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { contentWriterRoute } from "./content-writer-route.ts";
 
 import {
   temporaryWorksAssetStore,
@@ -78,7 +79,7 @@ export async function handleWorksAssetUpload(
   }
 }
 
-export const POST: APIRoute = async ({ params, request }) => {
+const unlockedPOST: APIRoute = async ({ params, request }) => {
   const inventory = await readWorksAssetInventory();
   return handleWorksAssetUpload(params.contentId, request, {
     store: await temporaryWorksAssetStore,
@@ -96,3 +97,5 @@ export const POST: APIRoute = async ({ params, request }) => {
     })),
   });
 };
+
+export const POST = contentWriterRoute("save", unlockedPOST);

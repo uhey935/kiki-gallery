@@ -7,6 +7,7 @@ import {
   createWorksEditorEntry,
 } from "../collection-create.ts";
 import { FlatCreateError } from "../flat-create.ts";
+import { contentWriterRoute } from "./content-writer-route.ts";
 
 const create = {
   works: createWorksEditorEntry,
@@ -16,7 +17,7 @@ const create = {
 };
 
 export function flatCreateRoute(collection: keyof typeof create): APIRoute {
-  return async ({ request }) => {
+  return contentWriterRoute("create", async ({ request }) => {
     try {
       const body = (await request.json()) as {
         draft?: { contentId?: unknown };
@@ -55,5 +56,5 @@ export function flatCreateRoute(collection: keyof typeof create): APIRoute {
         },
       );
     }
-  };
+  });
 }

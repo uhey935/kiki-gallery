@@ -65,3 +65,39 @@ test("Works Delete acceptance acquires content then asset and releases in revers
     ),
   );
 });
+
+test("every ordinary Editor writer route participates in the shared server-side gate", async () => {
+  const routeRoot = path.resolve("src/editor/routes");
+  const names = [
+    "artists-save",
+    "exhibitions-save",
+    "home-save",
+    "journal-save",
+    "news-save",
+    "works-save",
+    "artists-publish",
+    "exhibitions-publish",
+    "home-publish",
+    "journal-publish",
+    "news-publish",
+    "works-publish",
+    "artists-preview-create",
+    "exhibitions-preview-create",
+    "home-preview-create",
+    "journal-preview-create",
+    "news-preview-create",
+    "works-preview-create",
+    "works-asset-upload",
+    "journal-create",
+  ];
+  for (const name of names)
+    assert.match(
+      await fs.readFile(path.join(routeRoot, `${name}.ts`), "utf8"),
+      /contentWriterRoute\("(?:save|publish|create)", unlockedPOST\)/,
+      `${name} must use the non-stealing lifecycle gate`,
+    );
+  assert.match(
+    await fs.readFile(path.join(routeRoot, "flat-create-route.ts"), "utf8"),
+    /contentWriterRoute\("create"/,
+  );
+});

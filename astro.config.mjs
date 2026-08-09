@@ -85,6 +85,11 @@ export default defineConfig({
             entrypoint: "./src/editor/routes/works-rename.ts",
             prerender: false,
           });
+          injectRoute({
+            pattern: "/editor/api/works-delete",
+            entrypoint: "./src/editor/routes/works-delete.ts",
+            prerender: false,
+          });
           for (const collection of ["works", "artists", "exhibitions", "news"])
             injectRoute({
               pattern: `/editor/api/${collection}-create`,

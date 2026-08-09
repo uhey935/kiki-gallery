@@ -1,7 +1,8 @@
 import type { APIRoute } from "astro";
+import { contentWriterRoute } from "./content-writer-route.ts";
 import type { NewsEditorDraftState } from "../news-draft-state.ts";
 import { publishSavedNewsEntry, NewsPublishError } from "../news-publish.ts";
-export const POST: APIRoute = async ({ params, request }) => {
+const unlockedPOST: APIRoute = async ({ params, request }) => {
   try {
     const body = (await request.json()) as {
       draft?: NewsEditorDraftState;
@@ -38,3 +39,5 @@ export const POST: APIRoute = async ({ params, request }) => {
     );
   }
 };
+
+export const POST = contentWriterRoute("publish", unlockedPOST);

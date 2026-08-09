@@ -1,0 +1,254 @@
+---
+const { contentId } = Astro.props as { contentId: string };
+---
+
+<section
+  class="editor-panel editor-rename"
+  data-works-delete
+  data-content-id={contentId}
+  aria-labelledby="works-delete-heading"
+>
+  <div class="editor-panel__heading">
+    <div>
+      <p class="editor-eyebrow">Exceptional content removal</p><h2
+        id="works-delete-heading"
+      >
+        Delete Work
+      </h2>
+    </div><span class="editor-status editor-status--blocked"
+      >No cascade · assets unchanged</span
+    >
+  </div>
+  <div class="editor-rename__body">
+    <p>
+      Only this Works Markdown is recoverably moved. Every asset path, byte, and
+      lifecycle record remains unchanged; a future independent scan may observe
+      an orphan.
+    </p>
+    <label
+      >Verified backup generation path <input
+        data-delete-backup
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="/absolute/path/to/backup-generation"
+      /></label
+    >
+    <div class="editor-rename__actions">
+      <button
+        class="editor-button editor-button--secondary"
+        type="button"
+        data-delete-plan>Review Delete plan</button
+      ><span role="status" data-delete-status
+        >Choose the exact pre-delete backup generation.</span
+      >
+    </div>
+    <div class="editor-rename__review" data-delete-review hidden>
+      <h3>Reviewed Delete plan</h3>
+      <dl class="editor-detail-list">
+        <div><dt>Work identity</dt><dd data-delete-identity></dd></div><div>
+          <dt>Git basis</dt><dd data-delete-git></dd>
+        </div><div><dt>Verified backup</dt><dd data-delete-proof></dd></div><div
+        >
+          <dt>Content move</dt><dd data-delete-files></dd>
+        </div><div>
+          <dt>Incoming references</dt><dd>Complete graph: none</dd>
+        </div><div>
+          <dt>Asset consequences</dt><dd data-delete-assets></dd>
+        </div><div>
+          <dt>Asset mutation</dt><dd>
+            None · no observation, quarantine, or physical delete
+          </dd>
+        </div>
+      </dl>
+      <label class="editor-rename__confirm"
+        ><input type="checkbox" data-delete-confirm /> I reviewed this exact plan
+        and explicitly confirm deletion of this Work Markdown only.</label
+      >
+      <button class="editor-button" type="button" data-delete-execute disabled
+        >Execute reviewed Delete</button
+      ><button class="editor-button" type="button" data-delete-publish hidden
+        >Publish this Delete</button
+      >
+    </div>
+  </div>
+</section>
+<script>
+  import {
+    worksDeleteEndpoint,
+    worksDeleteFailureGuidance,
+  } from "../../editor/works-delete-ui";
+  import type { WorksDeletePlan } from "../../editor/works-delete";
+  const panel = document.querySelector<HTMLElement>("[data-works-delete]");
+  if (panel) {
+    const contentId = panel.dataset.contentId ?? "";
+    const backup = panel.querySelector<HTMLInputElement>(
+      "[data-delete-backup]",
+    )!;
+    const planButton =
+      panel.querySelector<HTMLButtonElement>("[data-delete-plan]")!;
+    const executeButton = panel.querySelector<HTMLButtonElement>(
+      "[data-delete-execute]",
+    )!;
+    const publishButton = panel.querySelector<HTMLButtonElement>(
+      "[data-delete-publish]",
+    )!;
+    const confirm = panel.querySelector<HTMLInputElement>(
+      "[data-delete-confirm]",
+    )!;
+    const review = panel.querySelector<HTMLElement>("[data-delete-review]")!;
+    const status = panel.querySelector<HTMLElement>("[data-delete-status]")!;
+    let plan: WorksDeletePlan | undefined;
+    let operationId: string | undefined;
+    let pending = false;
+    let workspaceLocked = false;
+    let pendingAssetState = false;
+    let unpublishedAssetCount = 0;
+    const setLock = (locked: boolean) =>
+      window.dispatchEvent(
+        new CustomEvent("editor:delete-state", { detail: { locked } }),
+      );
+    const render = () => {
+      backup.disabled = pending || workspaceLocked || Boolean(operationId);
+      planButton.disabled =
+        pending ||
+        workspaceLocked ||
+        !backup.value.trim() ||
+        Boolean(operationId);
+      confirm.disabled = pending || workspaceLocked || Boolean(operationId);
+      executeButton.disabled =
+        pending ||
+        workspaceLocked ||
+        !plan ||
+        !confirm.checked ||
+        Boolean(operationId);
+      publishButton.disabled = pending || !operationId;
+    };
+    const request = async (body: unknown) => {
+      const response = await fetch(worksDeleteEndpoint, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw Object.assign(new Error(result.error ?? "Works Delete failed"), {
+          code: result.code,
+        });
+      return result;
+    };
+    const fail = (error: unknown) => {
+      const value = error as Error & { code?: string };
+      status.textContent = `${value.message} ${worksDeleteFailureGuidance(value.code)}`;
+    };
+    window.addEventListener("editor:workspace-state", (event) => {
+      const detail = (
+        event as CustomEvent<{
+          locked?: boolean;
+          pendingAssetState?: boolean;
+          unpublishedAssetCount?: number;
+        }>
+      ).detail;
+      workspaceLocked = Boolean(detail?.locked);
+      pendingAssetState = Boolean(detail?.pendingAssetState);
+      unpublishedAssetCount = detail?.unpublishedAssetCount ?? 0;
+      render();
+    });
+    backup.addEventListener("input", () => {
+      plan = undefined;
+      confirm.checked = false;
+      review.hidden = true;
+      status.textContent =
+        "Request a fresh safety plan for this backup generation.";
+      render();
+    });
+    confirm.addEventListener("change", render);
+    planButton.addEventListener("click", async () => {
+      pending = true;
+      setLock(true);
+      plan = undefined;
+      confirm.checked = false;
+      review.hidden = true;
+      status.textContent =
+        "Verifying backup, references, assets, and lifecycle evidence…";
+      render();
+      try {
+        const result = await request({
+          action: "plan",
+          contentId,
+          backupRoot: backup.value.trim(),
+          pendingAssetState,
+          unpublishedAssetCount,
+        });
+        plan = result.plan;
+        panel.querySelector<HTMLElement>(
+          "[data-delete-identity]",
+        )!.textContent = `${plan!.contentId} · ${plan!.routes.join(", ")}`;
+        panel.querySelector<HTMLElement>("[data-delete-git]")!.textContent =
+          `${plan!.repositoryBranch} @ ${plan!.repositoryHead.slice(0, 12)}`;
+        panel.querySelector<HTMLElement>("[data-delete-proof]")!.textContent =
+          `${plan!.backupProof.backupId.slice(0, 12)}… · exact bytes verified`;
+        panel.querySelector<HTMLElement>("[data-delete-files]")!.textContent =
+          `${plan!.preimages[0].path} → ${plan!.recoveryPaths[0]}`;
+        panel.querySelector<HTMLElement>("[data-delete-assets]")!.textContent =
+          plan!.assets
+            .map(
+              (asset) =>
+                `${asset.publicUrl}: ${asset.consequence === "still-referenced" ? "still referenced" : "possibly unreferenced; future scan only"}`,
+            )
+            .join(", ") || "No Works assets";
+        review.hidden = false;
+        status.textContent =
+          "Plan ready · review every fact and explicitly confirm.";
+      } catch (error) {
+        fail(error);
+      } finally {
+        pending = false;
+        setLock(false);
+        render();
+      }
+    });
+    executeButton.addEventListener("click", async () => {
+      if (!plan || !confirm.checked) return;
+      pending = true;
+      setLock(true);
+      status.textContent = "Executing content-only Delete under both locks…";
+      render();
+      try {
+        const result = await request({
+          action: "execute",
+          plan,
+          confirmed: true,
+        });
+        operationId = result.operationId;
+        executeButton.hidden = true;
+        publishButton.hidden = false;
+        status.textContent =
+          "Delete complete · assets unchanged · Publish remains separate.";
+      } catch (error) {
+        fail(error);
+        setLock(false);
+      } finally {
+        pending = false;
+        render();
+      }
+    });
+    publishButton.addEventListener("click", async () => {
+      if (!operationId) return;
+      pending = true;
+      setLock(true);
+      status.textContent =
+        "Publishing only the evidence-authorized Works Markdown deletion…";
+      render();
+      try {
+        const result = await request({ action: "publish", operationId });
+        status.textContent = `Committed ${result.commit.slice(0, 7)} · returning to Works.`;
+        window.location.assign(result.workspaceUrl);
+      } catch (error) {
+        fail(error);
+        pending = false;
+        render();
+      }
+    });
+    render();
+  }
+</script>

@@ -1,9 +1,10 @@
 import type { APIRoute } from "astro";
+import { contentWriterRoute } from "./content-writer-route.ts";
 
 import type { JournalEditorDraftState } from "../journal-draft-state.ts";
 import { JournalSaveError, saveJournalEditorDraft } from "../journal-save.ts";
 
-export const POST: APIRoute = async ({ params, request }) => {
+const unlockedPOST: APIRoute = async ({ params, request }) => {
   try {
     const body = (await request.json()) as {
       draft?: JournalEditorDraftState;
@@ -39,3 +40,5 @@ export const POST: APIRoute = async ({ params, request }) => {
     );
   }
 };
+
+export const POST = contentWriterRoute("save", unlockedPOST);

@@ -268,7 +268,26 @@ bytes remain unchanged and Preview/Save continue normally. Publish immediately
 after Rename consumes the completed Rename evidence and stages only the old Work
 deletion, new byte-identical Work addition, and exact Artist/Exhibition edits.
 It must contain no asset or `.kiki-editor/` path. A later ordinary Save is a
-separate operation. Delete remains unavailable.
+separate operation. Delete is available through the reviewed content-only
+workflow below.
+
+## Works content-only Delete
+
+Works Delete requires a fresh exact-byte backup generation, a clean saved
+workspace with no pending upload or unpublished asset manifest, a complete
+incoming-reference graph with no references, review of the exact plan, and an
+explicit confirmation checkbox. Execution acquires the content lock and then
+the asset repository lock; neither lock is ever stolen.
+
+Only `src/content/works/<content-id>.md` moves to content recovery. No asset
+path, byte, candidate, observation, quarantine record, deletion manifest, or
+retention clock changes. A possibly unreferenced asset is only a displayed
+consequence for a future independent ALv2 scan.
+
+After Delete, use its dedicated Publish button. It consumes completed recovery
+evidence and stages exactly the one deleted Works Markdown path. If rollback or
+invariance proof fails, stop all Editor writes, preserve both locks and the
+operation evidence, and perform manual recovery before retrying.
 
 # Artists Delete
 

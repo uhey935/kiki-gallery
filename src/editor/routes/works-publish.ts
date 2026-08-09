@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { contentWriterRoute } from "./content-writer-route.ts";
 
 import type { WorksEditorDraftState } from "../works-draft-state.ts";
 import {
@@ -8,7 +9,7 @@ import {
 } from "../works-publish.ts";
 import type { WorksAssetPublishManifest } from "../works-asset-publish-manifest.ts";
 
-export const POST: APIRoute = async ({ params, request }) => {
+const unlockedPOST: APIRoute = async ({ params, request }) => {
   try {
     const body = (await request.json()) as {
       draft?: WorksEditorDraftState;
@@ -55,3 +56,5 @@ export const POST: APIRoute = async ({ params, request }) => {
     );
   }
 };
+
+export const POST = contentWriterRoute("publish", unlockedPOST);
