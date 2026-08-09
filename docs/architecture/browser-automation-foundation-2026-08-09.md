@@ -8,6 +8,12 @@
 
 ## Finalization status
 
+| Layer                    | Status              | Evidence                                                                                                                    |
+| ------------------------ | ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Foundation               | Complete            | Playwright configuration, disposable runner, deterministic lifecycle fixture, and operating documentation at `af35744`      |
+| Runtime prerequisites    | Available for retry | Playwright Chromium, headless shell, and FFmpeg revision 1234 installed successfully; retry used supported Node.js v24.14.0 |
+| Actual browser execution | Environment-blocked | Chromium process started, then macOS denied its Mach rendezvous service before a browser context or Editor flow could run   |
+
 The Browser Automation Foundation is complete at `af35744`. Its reviewed scope
 is the Playwright dependency and configuration, npm entry point, disposable
 repository runner, deterministic News lifecycle fixture, and operating
@@ -48,6 +54,42 @@ After the attempt, the source checkout remained clean, `src/content/` and
 temporary roots. The ignored `test-results/` directory retains only the local
 failed-run evidence (status, trace, and error context); it is not milestone
 evidence of an executed Editor flow.
+
+## Runtime verification retry
+
+The retry ran on 2026-08-09 at 14:24 JST after Playwright successfully installed
+its pinned Chromium 1234, Chromium headless shell 1234, and FFmpeg 1011 into a
+disposable runtime directory. The runner used Node.js v24.14.0, satisfying the
+repository's `>=22.12.0` requirement. This completes prerequisite setup for the
+attempt and rules out the earlier missing-executable boundary.
+
+The runner again successfully created its no-hardlink temporary clone and local
+bare remote, pushed the isolated `main` baseline, linked dependencies, and
+started Astro without the earlier unsupported-Node warning. Playwright launched
+the installed headless-shell process, but macOS stopped it before browser context
+creation:
+
+```text
+FATAL:base/apple/mach_port_rendezvous_mac.cc:159
+bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer.<pid>:
+Permission denied (1100)
+```
+
+The same result with supported Node.js identifies a host process-isolation
+restriction, not a missing browser, automation failure, or product regression.
+Preview, Save, Publish, Create, Rename, and Delete remain unexecuted, so actual
+browser Runtime Verification is still incomplete. Run the same command from a
+macOS shell or CI host that permits Chromium Mach service registration; no code
+change is justified by this environment-only boundary.
+
+The first retry sandbox was removed by the runner. Chromium's restricted process
+termination left the second sandbox's linked-dependency repository behind after
+its local bare remote had been removed; the residual sandbox was identified and
+removed explicitly during final verification. Before/after SHA-256 manifests for
+every file under `src/content/` and `public/` were identical, the source checkout
+had no production diff, and no `kiki-browser-*` temporary directory remained.
+Local `test-results/` evidence is ignored and does not represent an executed
+lifecycle flow.
 
 ## Audit and choice
 
