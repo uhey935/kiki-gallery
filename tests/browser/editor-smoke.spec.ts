@@ -15,13 +15,13 @@ function isExpectedBrowserConsoleError(message: {
   const isOutdatedOptimizedDependency =
     message.text.includes("Failed to load resource") &&
     message.text.includes("504 (Outdated Optimize Dep)") &&
-    diagnostic.includes("dev-toolbar") &&
-    (diagnostic.includes("/node_modules/.vite/deps/") ||
-      diagnostic.includes("/astro/dist/runtime/client/dev-toolbar/"));
+    diagnostic.includes(
+      "/@id/astro/runtime/client/dev-toolbar/entrypoint.js",
+    );
   const isIntentionalFailClosedConflict =
     message.text.includes("Failed to load resource") &&
     message.text.includes("409 (Conflict)") &&
-    diagnostic.includes(`/editor/api/news-save/${renamedId}`);
+    diagnostic.includes(`/editor/api/news/${renamedId}`);
 
   return isOutdatedOptimizedDependency || isIntentionalFailClosedConflict;
 }
