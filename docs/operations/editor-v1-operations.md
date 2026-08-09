@@ -1,5 +1,11 @@
 # Editor v1 Operations
 
+## Delete safety hold
+
+Collection Delete is not exposed yet. A future Delete must stop if a verified complete backup generation cannot prove the exact planned source bytes, if `.kiki-editor/content-lifecycle/repository.lock` exists or is unreadable, if recovery evidence is incomplete, or if any supported incoming reference or unknown internal link exists. Never remove a retained lock, edit evidence, infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
+
+Works Delete additionally requires the content lifecycle lock before the Asset Lifecycle repository lock. Release is asset first, content last. Until the Works-specific Delete milestone is accepted, this ordering grants no operator action.
+
 ## Safe start
 
 1. Use Node.js 22.12.0 or newer and run `npm ci`.
