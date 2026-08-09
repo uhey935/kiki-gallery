@@ -1,6 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
 
@@ -85,8 +84,7 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   rmSync(lockPath, { recursive: true });
   await page.reload();
 
-  const backupParent = mkdtempSync(path.join(tmpdir(), "kiki-browser-backup-"));
-  const backupRoot = path.join(backupParent, "generation");
+  const backupRoot = path.join(path.dirname(repositoryRoot), "backup");
   execFileSync(
     process.execPath,
     [
@@ -117,7 +115,5 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   );
   await page.locator("[data-delete-publish]").click();
   await page.waitForURL("**/editor/news/workspace/");
-  rmSync(backupParent, { recursive: true, force: true });
-
   expect(browserErrors).toEqual([]);
 });

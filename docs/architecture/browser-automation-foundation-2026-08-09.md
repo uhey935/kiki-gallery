@@ -6,6 +6,21 @@
 | Scope    | Maintainable browser foundation plus representative lifecycle smoke suite  |
 | Safety   | Disposable clone, local bare remote, deterministic fixture, localhost only |
 
+## Finalization status
+
+The Browser Automation Foundation is complete at `af35744`. Its reviewed scope
+is the Playwright dependency and configuration, npm entry point, disposable
+repository runner, deterministic News lifecycle fixture, and operating
+documentation described below. The existing Editor and Journal service suites,
+Astro check, and production build pass without changes to Editor behavior,
+production content, or public assets.
+
+Chromium Runtime Verification was deliberately not run for this milestone. A
+future **Browser Automation Runtime Verification** milestone must install or
+select a compatible Chromium runtime and execute `npm run editor:test:browser`
+from a clean checkout. That future result is runtime evidence, not a condition
+of this foundation milestone.
+
 ## Audit and choice
 
 The manual six-collection release record and later Create, Rename, and Delete
