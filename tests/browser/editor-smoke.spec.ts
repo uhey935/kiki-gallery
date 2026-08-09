@@ -11,14 +11,17 @@ function isExpectedBrowserConsoleError(message: {
   text: string;
   url: string;
 }): boolean {
+  const diagnostic = `${message.text} ${message.url}`;
   const isOutdatedOptimizedDependency =
     message.text.includes("Failed to load resource") &&
     message.text.includes("504 (Outdated Optimize Dep)") &&
-    message.url.includes("/node_modules/.vite/deps/");
+    diagnostic.includes("dev-toolbar") &&
+    (diagnostic.includes("/node_modules/.vite/deps/") ||
+      diagnostic.includes("/astro/dist/runtime/client/dev-toolbar/"));
   const isIntentionalFailClosedConflict =
     message.text.includes("Failed to load resource") &&
     message.text.includes("409 (Conflict)") &&
-    message.url.includes(`/editor/api/news-save/${renamedId}`);
+    diagnostic.includes(`/editor/api/news-save/${renamedId}`);
 
   return isOutdatedOptimizedDependency || isIntentionalFailClosedConflict;
 }
