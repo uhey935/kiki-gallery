@@ -21,6 +21,34 @@ select a compatible Chromium runtime and execute `npm run editor:test:browser`
 from a clean checkout. That future result is runtime evidence, not a condition
 of this foundation milestone.
 
+## Runtime verification attempt
+
+The first Runtime Verification attempt ran on 2026-08-09 at 14:17 JST from the
+clean `34c771e` checkout. The runner successfully created its no-hardlink
+temporary clone, initialized and attached the local bare remote, pushed the
+isolated `main` baseline, linked the installed dependencies, and started the
+isolated Astro server. Playwright then stopped in its first `browser` fixture,
+before creating a browser context or executing any Editor assertion or
+mutation, because its Chromium headless-shell executable was not installed:
+
+```text
+/Users/reset/Library/Caches/ms-playwright/chromium_headless_shell-1234/
+chrome-headless-shell-mac-arm64/chrome-headless-shell
+```
+
+This is a local runtime prerequisite failure, not an automation implementation
+failure and not a Chromium process/launch restriction. No lifecycle flow
+(Preview, Save, Publish, Create, Rename, or Delete) executed, so runtime
+verification remains incomplete. Install the pinned runtime with
+`npx playwright install chromium`, then rerun `npm run editor:test:browser`.
+
+The runner's `finally` cleanup removed the temporary repository and bare remote.
+After the attempt, the source checkout remained clean, `src/content/` and
+`public/` had no diff, and no `kiki-browser-*` sandbox remained in the system
+temporary roots. The ignored `test-results/` directory retains only the local
+failed-run evidence (status, trace, and error context); it is not milestone
+evidence of an executed Editor flow.
+
 ## Audit and choice
 
 The manual six-collection release record and later Create, Rename, and Delete
