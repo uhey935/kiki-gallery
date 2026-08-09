@@ -51,6 +51,11 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
+            pattern: "/editor/api/news-delete",
+            entrypoint: "./src/editor/routes/news-delete.ts",
+            prerender: false,
+          });
+          injectRoute({
             pattern: "/editor/api/news-rename",
             entrypoint: "./src/editor/routes/news-rename.ts",
             prerender: false,

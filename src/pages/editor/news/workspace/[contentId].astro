@@ -2,6 +2,7 @@
 import NewsDraftForm from "../../../../components/editor/NewsDraftForm.astro";
 import NewsValidationPanel from "../../../../components/editor/NewsValidationPanel.astro";
 import RenamePanel from "../../../../components/editor/RenamePanel.astro";
+import NewsDeletePanel from "../../../../components/editor/NewsDeletePanel.astro";
 import { createNewsEditorDraft } from "../../../../editor/news-draft-state";
 import {
   readNewsEditorEntry,
@@ -45,6 +46,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     </main><NewsValidationPanel entry={entry} />
   </div>
   <RenamePanel collection="news" contentId={entry.contentId} />
+  <NewsDeletePanel contentId={entry.contentId} />
   <footer class="editor-action-bar" aria-label="Editor actions">
     <span data-news-action-status role="status">Saved · ready</span><div
       class="editor-action-bar__actions"
@@ -104,6 +106,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     let savedSincePublish = false;
     let statusMessage: string | null = null;
     let recoveryRequired = false;
+    let deleteLocked = false;
     const optional = (value: string) => value.trim() || undefined;
     const read = () => {
       const data = new FormData(form);
@@ -127,7 +130,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       const validation = validateNewsEditorDraft(draft);
       const capabilities = validation.capabilities;
       renderFlatValidationPanel(form, validation);
-      const locked = pending !== null || recoveryRequired;
+      const locked = pending !== null || recoveryRequired || deleteLocked;
       save.disabled = locked || !dirty || !capabilities.save;
       preview.disabled = locked || !capabilities.preview;
       publish.disabled = locked || dirty || !capabilities.publish;
@@ -243,6 +246,13 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         "[data-workspace-content-id]",
       );
       if (identity) identity.textContent = renamed.contentId;
+      render();
+    });
+    window.addEventListener("editor:delete-state", (event) => {
+      deleteLocked = Boolean(
+        (event as CustomEvent<{ locked?: boolean }>).detail?.locked,
+      );
+      statusMessage = deleteLocked ? "News Delete operation in progress" : null;
       render();
     });
     document.addEventListener("keydown", (event) => {
