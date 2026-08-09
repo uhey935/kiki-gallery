@@ -3,6 +3,7 @@ import {
   type ArtistsEditorDraftState,
 } from "./artists-draft-state.ts";
 import {
+  normalizeExhibitionDateInput,
   validateExhibitionsEditorDraft,
   type ExhibitionsEditorDraftState,
 } from "./exhibitions-draft-state.ts";
@@ -116,8 +117,8 @@ function readDraft(
           id,
           collection: "works" as const,
         })),
-        start_date: new Date(`${value("start_date")}T00:00:00.000Z`),
-        end_date: new Date(`${value("end_date")}T00:00:00.000Z`),
+        start_date: normalizeExhibitionDateInput(value("start_date")),
+        end_date: normalizeExhibitionDateInput(value("end_date")),
         display_artists: display === "default" ? undefined : display === "true",
         hero: {
           image: value("hero.image"),

@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import {
   createExhibitionsEditorDraft,
+  normalizeExhibitionDateInput,
   validateExhibitionsEditorDraft,
 } from "./exhibitions-draft-state.ts";
 import {
@@ -57,6 +58,30 @@ test("reads a canonical Exhibition and preserves a clean serialization", async (
     await rm(root, { recursive: true });
   }
 });
+test("normalizes YYYY-MM-DD form values to canonical UTC midnight Dates", () => {
+  const normalized = normalizeExhibitionDateInput("2026-08-09");
+  assert.ok(normalized instanceof Date);
+  assert.equal(normalized.toISOString(), "2026-08-09T00:00:00.000Z");
+  assert.ok(Number.isNaN(normalizeExhibitionDateInput("2026-02-30").getTime()));
+});
+test("workspace date normalization preserves the canonical baseline shape", async () => {
+  const root = await fixture();
+  try {
+    const canonical = createExhibitionsEditorDraft(
+      await readExhibitionsEditorEntry("test-exhibition", root),
+    )!;
+    const workspaceBaseline = structuredClone(canonical);
+    workspaceBaseline.data.start_date = normalizeExhibitionDateInput(
+      canonical.data.start_date.toISOString().slice(0, 10),
+    );
+    workspaceBaseline.data.end_date = normalizeExhibitionDateInput(
+      canonical.data.end_date.toISOString().slice(0, 10),
+    );
+    assert.deepEqual(workspaceBaseline, canonical);
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
 test("date order blocks Save, Preview, and Publish", async () => {
   const root = await fixture();
   try {
@@ -83,9 +108,13 @@ test("date order blocks Save, Preview, and Publish", async () => {
 test("Save atomically replaces only the selected canonical file", async () => {
   const root = await fixture();
   try {
-    const baseline = createExhibitionsEditorDraft(
+    const canonical = createExhibitionsEditorDraft(
       await readExhibitionsEditorEntry("test-exhibition", root),
     )!;
+    const baseline = structuredClone(canonical);
+    baseline.data.start_date = normalizeExhibitionDateInput("2026-08-01");
+    baseline.data.end_date = normalizeExhibitionDateInput("2026-08-10");
+    assert.deepEqual(baseline, canonical);
     const draft = structuredClone(baseline);
     draft.data.title = "Changed";
     const saved = await saveExhibitionsEditorDraft(draft, baseline, root);

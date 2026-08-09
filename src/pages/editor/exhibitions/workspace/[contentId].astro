@@ -84,6 +84,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
 <script>
   import {
     isExhibitionsEditorDraftDirty,
+    normalizeExhibitionDateInput,
     validateExhibitionsEditorDraft,
     type ExhibitionsEditorDraftState,
   } from "../../../../editor/exhibitions-draft-state";
@@ -137,8 +138,8 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           ...draft.data,
           artists: list(value("artists"), "artists"),
           works: list(value("works"), "works"),
-          start_date: value("start_date") as unknown as Date,
-          end_date: value("end_date") as unknown as Date,
+          start_date: normalizeExhibitionDateInput(value("start_date")),
+          end_date: normalizeExhibitionDateInput(value("end_date")),
           display_artists:
             display === "default" ? undefined : display === "true",
           title: optional(value("title")),

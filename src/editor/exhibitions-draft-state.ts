@@ -11,6 +11,16 @@ export type ExhibitionsEditorDraftState = {
   body: string;
   sourceRaw: string;
 };
+export function normalizeExhibitionDateInput(value: string): Date {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return new Date(Number.NaN);
+  const normalized = new Date(`${value}T00:00:00.000Z`);
+  if (
+    Number.isNaN(normalized.getTime()) ||
+    normalized.toISOString().slice(0, 10) !== value
+  )
+    return new Date(Number.NaN);
+  return normalized;
+}
 export function createExhibitionsEditorDraft(
   entry: ExhibitionsEditorEntryState,
 ): ExhibitionsEditorDraftState | undefined {
