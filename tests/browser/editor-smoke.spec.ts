@@ -7,13 +7,41 @@ const repositoryRoot = process.env.KIKI_BROWSER_REPOSITORY!;
 const contentId = "browser-foundation-news";
 const renamedId = "browser-foundation-news-renamed";
 
+function isExpectedBrowserConsoleError(message: {
+  text: string;
+  url: string;
+}): boolean {
+  const isOutdatedOptimizedDependency =
+    message.text.includes("Failed to load resource") &&
+    message.text.includes("504 (Outdated Optimize Dep)") &&
+    message.url.includes("/node_modules/.vite/deps/");
+  const isIntentionalFailClosedConflict =
+    message.text.includes("Failed to load resource") &&
+    message.text.includes("409 (Conflict)") &&
+    message.url.includes(`/editor/api/news-save/${renamedId}`);
+
+  return isOutdatedOptimizedDependency || isIntentionalFailClosedConflict;
+}
+
 test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   page,
   context,
 }) => {
   const browserErrors: string[] = [];
   page.on("console", (message) => {
-    if (message.type() === "error") browserErrors.push(message.text());
+    if (message.type() !== "error") return;
+
+    const browserError = {
+      text: message.text(),
+      url: message.location().url,
+    };
+    if (!isExpectedBrowserConsoleError(browserError)) {
+      browserErrors.push(
+        browserError.url
+          ? `${browserError.text} (${browserError.url})`
+          : browserError.text,
+      );
+    }
   });
   page.on("pageerror", (error) => browserErrors.push(error.message));
 
