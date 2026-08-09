@@ -2,6 +2,7 @@
 import ExhibitionsDraftForm from "../../../../components/editor/ExhibitionsDraftForm.astro";
 import ExhibitionsValidationPanel from "../../../../components/editor/ExhibitionsValidationPanel.astro";
 import RenamePanel from "../../../../components/editor/RenamePanel.astro";
+import ExhibitionsDeletePanel from "../../../../components/editor/ExhibitionsDeletePanel.astro";
 import { createExhibitionsEditorDraft } from "../../../../editor/exhibitions-draft-state";
 import {
   readExhibitionsEditorEntry,
@@ -50,6 +51,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       <RenamePanel collection="exhibitions" contentId={entry.contentId} />
     </aside>
   </div>
+  <ExhibitionsDeletePanel contentId={entry.contentId} />
   <footer class="editor-action-bar" aria-label="Editor actions">
     <span data-exhibitions-action-status role="status">Saved · ready</span><div
       class="editor-action-bar__actions"
@@ -116,6 +118,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     let savedSincePublish = false;
     let statusMessage: string | null = null;
     let recoveryRequired = false;
+    let deleteLocked = false;
     const optional = (value: string) => value.trim() || undefined;
     const list = (value: string, collection: "artists" | "works") =>
       value
@@ -160,7 +163,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       const validation = validateExhibitionsEditorDraft(draft);
       const capabilities = validation.capabilities;
       renderFlatValidationPanel(form, validation);
-      const locked = pending !== null || recoveryRequired;
+      const locked = pending !== null || recoveryRequired || deleteLocked;
       save.disabled = locked || !dirty || !capabilities.save;
       preview.disabled = locked || !capabilities.preview;
       publish.disabled = locked || dirty || !capabilities.publish;
@@ -284,6 +287,15 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         "[data-workspace-content-id]",
       );
       if (identity) identity.textContent = renamed.contentId;
+      render();
+    });
+    window.addEventListener("editor:delete-state", (event) => {
+      deleteLocked = Boolean(
+        (event as CustomEvent<{ locked?: boolean }>).detail?.locked,
+      );
+      statusMessage = deleteLocked
+        ? "Exhibitions Delete operation in progress"
+        : null;
       render();
     });
     document.addEventListener("keydown", (event) => {

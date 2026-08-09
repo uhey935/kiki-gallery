@@ -1,6 +1,6 @@
 # Editor v1 Operations
 
-## Journal and News Delete; remaining Delete safety hold
+## Journal, News, and Exhibitions Delete; remaining Delete safety hold
 
 Journal Delete is available only from a saved Journal workspace and requires the absolute path of a complete verified backup generation containing the exact current three-file unit. Review the server plan, confirm it explicitly, execute, then use the separate Delete Publish action. Delete Publish commits but does not push.
 
@@ -8,7 +8,9 @@ Do not remove incoming references, assets, locks, recovery bytes, or evidence as
 
 News Delete follows the same reviewed-plan and explicit-confirmation boundary for its one canonical Markdown file. It has no public detail route, retains all assets, and Delete Publish stages only the completed-evidence News deletion before returning to the News list.
 
-Exhibitions, Artists, and Works Delete remain unavailable. They must stop if a verified complete backup generation cannot prove the exact planned source bytes, if the content lifecycle lock exists or is unreadable, if recovery evidence is incomplete, or if any supported incoming reference or unknown internal link exists. Never infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
+Exhibitions Delete follows the same one-file lifecycle and includes its public detail route in the reviewed plan. Any supported Markdown route, known News `link`, malformed Exhibition route, or unresolved canonical reference blocks Delete. After completed recovery evidence is durable, the separate Delete Publish action commits only the Exhibition Markdown deletion and returns to the Exhibitions list. It never moves or stages the hero or any other asset.
+
+Artists and Works Delete remain unavailable. They must stop if a verified complete backup generation cannot prove the exact planned source bytes, if the content lifecycle lock exists or is unreadable, if recovery evidence is incomplete, or if any supported incoming reference or unknown internal link exists. Never infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
 
 Works Delete additionally requires the content lifecycle lock before the Asset Lifecycle repository lock. Release is asset first, content last. Until the Works-specific Delete milestone is accepted, this ordering grants no operator action.
 

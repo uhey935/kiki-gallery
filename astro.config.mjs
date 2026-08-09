@@ -66,6 +66,11 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
+            pattern: "/editor/api/exhibitions-delete",
+            entrypoint: "./src/editor/routes/exhibitions-delete.ts",
+            prerender: false,
+          });
+          injectRoute({
             pattern: "/editor/api/artists-rename",
             entrypoint: "./src/editor/routes/artists-rename.ts",
             prerender: false,
