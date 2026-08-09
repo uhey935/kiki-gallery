@@ -2,7 +2,7 @@
 
 | Property      | Value                                                                 |
 | ------------- | --------------------------------------------------------------------- |
-| Status        | Create complete; Journal and News Rename v1 UI complete               |
+| Status        | Create and four Rename slices complete; Works Rename design approved  |
 | Date          | 2026-08-08                                                            |
 | Scope         | Editor-managed Create, Rename, and Delete planning and safety         |
 | Compatibility | Preserve Editor v1, canonical content/assets, and Production behavior |
@@ -76,10 +76,12 @@ it has no public detail route and is not a typed reference target. News Rename
 moves one schema-valid Markdown file without changing its bytes, outgoing link,
 or assets, while retaining the reviewed plan, lifecycle lock, durable evidence,
 drift checks, canonical reread, and identity-guarded rollback. News Publish
-handles its exact delete/add pair. Exhibitions and Artists require reviewed
-typed-reference and known-route updates and are deferred. Works is additionally
-blocked on Asset Lifecycle v2 state and lock semantics. Neither deferred
-collection receives a Rename API or browser UI.
+handles its exact delete/add pair. Exhibitions and Artists subsequently
+implemented their reviewed typed-reference updates. Works Asset Lifecycle v2
+semantics are approved separately: asset paths and durable evidence remain
+unchanged, pending unpublished asset state blocks, and execution composes the
+content lock with the existing asset repository lock. Works still receives no
+Rename API or browser UI from that design milestone.
 
 The Rename UI-and-acceptance slice exposes the same narrow workflow from saved
 Journal and News workspaces only. Unsaved drafts and in-progress workspace
@@ -332,6 +334,17 @@ The journal retains source/destination identities, file preimages, each typed
 rewrite, asset classifications and hashes, route changes, completed steps, and
 rollback status. Recovery restores the old unit and references only when their
 current identities still match the journal.
+
+For Works, `works-rename-asset-lifecycle-semantics-2026-08-09.md` is the
+collection-specific authority. Work asset URLs and bytes never follow the
+Content ID. Existing ledger, quarantine, deletion, backup, and recovery
+evidence remains byte-identical and historical. A pending upload, Draft asset
+mutation, non-empty unpublished asset Publish manifest, active/uncertain asset
+operation, or lifecycle recovery finding blocks Rename. Execution acquires the
+content-lifecycle lock and then the Asset Lifecycle repository lock and holds
+both through validation and the content/reference transaction. Publish stages
+only the old/new Work paths and reviewed references; it never infers or stages
+an asset from the renamed ID.
 
 ## 3. Delete semantics
 
