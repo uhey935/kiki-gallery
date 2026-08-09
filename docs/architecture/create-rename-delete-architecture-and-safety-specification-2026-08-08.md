@@ -2,7 +2,7 @@
 
 | Property      | Value                                                                 |
 | ------------- | --------------------------------------------------------------------- |
-| Status        | Create and four Rename slices complete; Works Rename design approved  |
+| Status        | Create/Rename complete; Delete readiness audited, implementation held |
 | Date          | 2026-08-08                                                            |
 | Scope         | Editor-managed Create, Rename, and Delete planning and safety         |
 | Compatibility | Preserve Editor v1, canonical content/assets, and Production behavior |
@@ -347,6 +347,12 @@ only the old/new Work paths and reviewed references; it never infers or stages
 an asset from the renamed ID.
 
 ## 3. Delete semantics
+
+The implementation-readiness reconciliation in
+`delete-implementation-readiness-audit-2026-08-09.md` is authoritative for the
+post-Works-Rename implementation gates. It preserves the no-cascade Delete
+semantics below, requires evidence-exclusive Publish, and keeps Works deferred
+until its content/asset lock and stop-state milestone is closed.
 
 ### Eligibility and review
 

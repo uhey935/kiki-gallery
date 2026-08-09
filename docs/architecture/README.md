@@ -14,6 +14,7 @@ The documents are designed to be read in the following order.
 
 | Document                                                       | Purpose                                                                                                                                                    |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Delete Implementation Readiness Audit**                      | Reconciles Delete with finalized Create/Rename and Asset Lifecycle semantics; classifies every collection and records the remaining implementation gates.  |
 | **Works Rename Asset Lifecycle Semantics**                     | Approves unchanged asset paths/evidence, pending-manifest gating, dual-lock coordination, prospective validation, rollback, and asset-free Rename Publish. |
 | **Works Rename Browser Acceptance Closure**                    | Records the implemented dual-lock transaction, typed Artist/Exhibition rewrites, unchanged assets, renamed workspace continuity, and exact Publish set.    |
 | **Exhibitions / Artists Rename Reference Update Architecture** | Defines the bounded typed-reference graph, reviewed multi-file transaction, byte-exact rollback, and exact Publish set; both slices are implemented.       |
@@ -47,6 +48,17 @@ The documents are designed to be read in the following order.
 
 ## Documents
 
+### Delete Implementation Readiness Audit
+
+**delete-implementation-readiness-audit-2026-08-09.md**
+
+Audits the current Create/Rename implementations, no-cascade Delete contract,
+Asset Lifecycle v2, retention, backup/recovery, quarantine, durable evidence,
+reference graph, and Publish boundaries. It classifies Journal, News,
+Exhibitions, and Artists as collection-ready under strict incoming-reference
+blocking, keeps Works deferred for its dual-lock lifecycle milestone, and
+records the shared gates that prevent Delete implementation in this milestone.
+
 ### Works Rename Asset Lifecycle Semantics
 
 **works-rename-asset-lifecycle-semantics-2026-08-09.md**
@@ -65,8 +77,7 @@ Records the completed implementation and isolated real-browser acceptance for
 reviewed-plan confirmation, typed incoming references, unchanged asset URLs and
 bytes, dual-lock refusal, renamed-workspace Preview/Save continuity, rollback,
 and evidence-limited Publish.
-Implementation, browser acceptance, Works Delete, and Production loader changes
-remain deferred.
+Works Delete and Production loader changes remain deferred.
 
 ### Exhibitions / Artists Rename Reference Update Architecture
 
@@ -76,10 +87,10 @@ Defines the shared design boundary for Exhibitions and Artists Rename. The
 maps every typed incoming/outgoing reference and route dependency, defines the
 reviewed plan, canonical drift checks, byte-preserving reference rewrites,
 multi-file staged installation, byte-exact rollback, stable failures, and the
-exact Publish path set. Exhibitions now implements this boundary for its flat
-source file plus all known News `link` references. Artists, Works-specific
-lifecycle semantics, Delete, and Production behavior remain deferred. All
-asset bytes and paths remain outside the operation.
+exact Publish path set. Exhibitions and Artists implement this boundary, and
+Works implements its separately approved lifecycle-aware transaction. Delete
+and Production behavior remain deferred. All asset bytes and paths remain
+outside the operation.
 
 ### Exhibitions Rename Browser Acceptance Closure
 
@@ -95,7 +106,7 @@ evidence-limited Publish path plus a representative fail-closed collision.
 
 Classifies collection-specific references, public route coupling, and asset
 semantics. It records the completed News/Exhibitions/Artists boundaries and the
-approved but not yet implemented Works Asset Lifecycle disposition.
+subsequently implemented Works Asset Lifecycle disposition.
 
 ### Create / Rename / Delete Architecture & Safety
 

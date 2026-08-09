@@ -1,19 +1,19 @@
 # Rename Dependency and Reference Audit
 
-| Property | Value                                                                                     |
-| -------- | ----------------------------------------------------------------------------------------- |
-| Status   | Journal/News/Exhibitions/Artists complete; Works design approved, implementation deferred |
-| Date     | 2026-08-08                                                                                |
-| Scope    | Incoming/outgoing references, route coupling, assets, and Rename hazards                  |
+| Property | Value                                                                    |
+| -------- | ------------------------------------------------------------------------ |
+| Status   | Journal, News, Exhibitions, Artists, and Works complete                  |
+| Date     | 2026-08-08                                                               |
+| Scope    | Incoming/outgoing references, route coupling, assets, and Rename hazards |
 
 ## Classification
 
-| Collection  | Classification                           | Audit result                                                                                                                                                                                                                                                |
-| ----------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| News        | Safe to rename now                       | A News ID is a canonical filename and Editor workspace identity only. News has no public detail route and is not a typed reference target. Its optional `link` is outgoing content and remains byte-identical. Rename moves one Markdown file and no asset. |
-| Exhibitions | Safe with reference updates; complete    | Exhibition IDs own `/exhibitions/<id>` routes. Implemented Rename rewrites recognized incoming News `link` fields with prospective validation and exact rollback.                                                                                           |
-| Artists     | Safe with reference updates; complete    | Artist IDs are targets of Works `artist`, Exhibitions `artists`, and known News `/artists/<id>` links. Implemented Rename updates the complete bounded graph; Artist-like asset filenames remain hints only.                                                |
-| Works       | Design approved; implementation deferred | Work IDs are targets of Artists section `works` and optional Exhibitions `works`. Asset paths and durable lifecycle evidence remain unchanged; pending asset state blocks Rename, and execution holds both lifecycle locks.                                 |
+| Collection  | Classification                        | Audit result                                                                                                                                                                                                                                                |
+| ----------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| News        | Safe to rename now                    | A News ID is a canonical filename and Editor workspace identity only. News has no public detail route and is not a typed reference target. Its optional `link` is outgoing content and remains byte-identical. Rename moves one Markdown file and no asset. |
+| Exhibitions | Safe with reference updates; complete | Exhibition IDs own `/exhibitions/<id>` routes. Implemented Rename rewrites recognized incoming News `link` fields with prospective validation and exact rollback.                                                                                           |
+| Artists     | Safe with reference updates; complete | Artist IDs are targets of Works `artist`, Exhibitions `artists`, and known News `/artists/<id>` links. Implemented Rename updates the complete bounded graph; Artist-like asset filenames remain hints only.                                                |
+| Works       | Complete                              | Work IDs are targets of Artists section `works` and optional Exhibitions `works`. Asset paths and durable lifecycle evidence remain unchanged; pending asset state blocks Rename, and execution holds both lifecycle locks.                                 |
 
 ## Implemented News boundary
 
@@ -67,12 +67,12 @@ and then the existing Asset Lifecycle repository lock, hold both through
 prospective validation and the content/reference visibility point, and release
 in reverse order only after success or verified rollback.
 
-## Deferred acceptance criteria
+## Closed Works acceptance criteria
 
-Works may advance only in a separate implementation milestone after the
-approved design is covered by typed-reference, dual-lock, pending-manifest,
-prospective asset/evidence, rollback, and exact Publish tests. Works has no
-Rename API or browser UI in this design slice.
+Works advanced in commit `0d3f883` after the approved design was covered by
+typed-reference, dual-lock, pending-manifest, prospective asset/evidence,
+rollback, and exact Publish tests. Its browser acceptance is recorded in
+`works-rename-browser-acceptance-2026-08-09.md`.
 
 Journal and News workspaces expose only their collection-owned reviewed-plan →
 explicit-confirmation → execute flow. The browser does not calculate safety or
