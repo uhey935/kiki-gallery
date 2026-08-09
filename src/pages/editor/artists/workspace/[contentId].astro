@@ -1,6 +1,7 @@
 ---
 import ArtistsDraftForm from "../../../../components/editor/ArtistsDraftForm.astro";
 import ArtistsValidationPanel from "../../../../components/editor/ArtistsValidationPanel.astro";
+import ArtistsDeletePanel from "../../../../components/editor/ArtistsDeletePanel.astro";
 import RenamePanel from "../../../../components/editor/RenamePanel.astro";
 import { createArtistsEditorDraft } from "../../../../editor/artists-draft-state";
 import {
@@ -46,6 +47,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     </main><aside class="editor-workspace__sidebar">
       <ArtistsValidationPanel entry={entry} />
       <RenamePanel collection="artists" contentId={entry.contentId} />
+      <ArtistsDeletePanel contentId={entry.contentId} />
     </aside>
   </div>
   <footer class="editor-action-bar" aria-label="Editor actions">
@@ -107,6 +109,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     let statusMessage: string | null = null;
     let recoveryRequired = false;
     let inputInvalid = false;
+    let deleteLocked = false;
     const optional = (value: string) => value.trim() || undefined;
     const read = () => {
       const data = new FormData(form);
@@ -178,7 +181,14 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         publish: validated.publish && !inputInvalid,
       };
       renderFlatValidationPanel(form, validation);
-      const locked = pending !== null || recoveryRequired;
+      const locked = pending !== null || recoveryRequired || deleteLocked;
+      for (const control of form.elements)
+        if (
+          control instanceof HTMLInputElement ||
+          control instanceof HTMLTextAreaElement ||
+          control instanceof HTMLSelectElement
+        )
+          control.disabled = deleteLocked;
       save.disabled = locked || !dirty || !capabilities.save;
       preview.disabled = locked || !capabilities.preview;
       publish.disabled = locked || dirty || !capabilities.publish;
@@ -298,6 +308,15 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       savedSincePublish = true;
       statusMessage =
         "Renamed · references updated · unpublished changes ready to publish";
+      render();
+    });
+    window.addEventListener("editor:delete-state", (event) => {
+      deleteLocked = Boolean(
+        (event as CustomEvent<{ locked?: boolean }>).detail?.locked,
+      );
+      statusMessage = deleteLocked
+        ? "Artists Delete operation in progress"
+        : null;
       render();
     });
     document.addEventListener("keydown", (event) => {

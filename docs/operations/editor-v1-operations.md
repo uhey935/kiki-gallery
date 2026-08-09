@@ -1,6 +1,6 @@
 # Editor v1 Operations
 
-## Journal, News, and Exhibitions Delete; remaining Delete safety hold
+## Journal, News, Exhibitions, and Artists Delete; remaining Works safety hold
 
 Journal Delete is available only from a saved Journal workspace and requires the absolute path of a complete verified backup generation containing the exact current three-file unit. Review the server plan, confirm it explicitly, execute, then use the separate Delete Publish action. Delete Publish commits but does not push.
 
@@ -10,7 +10,7 @@ News Delete follows the same reviewed-plan and explicit-confirmation boundary fo
 
 Exhibitions Delete follows the same one-file lifecycle and includes its public detail route in the reviewed plan. Any supported Markdown route, known News `link`, malformed Exhibition route, or unresolved canonical reference blocks Delete. After completed recovery evidence is durable, the separate Delete Publish action commits only the Exhibition Markdown deletion and returns to the Exhibitions list. It never moves or stages the hero or any other asset.
 
-Artists and Works Delete remain unavailable. They must stop if a verified complete backup generation cannot prove the exact planned source bytes, if the content lifecycle lock exists or is unreadable, if recovery evidence is incomplete, or if any supported incoming reference or unknown internal link exists. Never infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
+Artists Delete follows the same one-file lifecycle and additionally closes typed `Works.artist` and `Exhibitions.artists[]` references plus known News links. It never cascades, rewrites references, or moves assets. Works Delete remains unavailable. Never infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
 
 Works Delete additionally requires the content lifecycle lock before the Asset Lifecycle repository lock. Release is asset first, content last. Until the Works-specific Delete milestone is accepted, this ordering grants no operator action.
 
@@ -269,3 +269,7 @@ after Rename consumes the completed Rename evidence and stages only the old Work
 deletion, new byte-identical Work addition, and exact Artist/Exhibition edits.
 It must contain no asset or `.kiki-editor/` path. A later ordinary Save is a
 separate operation. Delete remains unavailable.
+
+# Artists Delete
+
+Artists Delete requires a verified canonical backup generation, a reviewed no-cascade plan, and explicit confirmation. Resolve every incoming `Works.artist`, `Exhibitions.artists[]`, known News link, or uncertain reference before retrying. A successful execution retains every asset and creates recovery evidence; use the separate Delete Publish action to commit only the evidence-authorized Artist deletion. On `manual-recovery-required`, stop all Editor mutation and preserve the lifecycle lock until the recorded bytes are reconciled.
