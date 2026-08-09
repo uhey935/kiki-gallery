@@ -41,12 +41,19 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   await page.locator("[data-create-save]").click();
   await page.waitForURL(`**/editor/news/workspace/${contentId}/`);
   await expect(page.locator("[data-news-action-status]")).toContainText(
-    "unpublished",
+    "Saved · publish available",
+  );
+  const initialPublishResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith(`/editor/api/news-publish/${contentId}`) &&
+      response.request().method() === "POST",
   );
   await page.locator("[data-publish-news]").click();
+  expect((await initialPublishResponse).ok()).toBe(true);
   await expect(page.locator("[data-news-action-status]")).toContainText(
-    "Published",
+    "Saved · publish available",
   );
+  await expect(page.locator("[data-publish-news]")).toBeEnabled();
 
   await page.locator("[data-rename-destination]").fill(renamedId);
   await page.locator("[data-rename-plan]").click();
@@ -54,10 +61,17 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   await page.locator("[data-rename-confirm]").check();
   await page.locator("[data-rename-execute]").click();
   await page.waitForURL(`**/editor/news/workspace/${renamedId}/`);
-  await page.locator("[data-publish-news]").click();
-  await expect(page.locator("[data-news-action-status]")).toContainText(
-    "Published",
+  const renamedPublishResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith(`/editor/api/news-publish/${renamedId}`) &&
+      response.request().method() === "POST",
   );
+  await page.locator("[data-publish-news]").click();
+  expect((await renamedPublishResponse).ok()).toBe(true);
+  await expect(page.locator("[data-news-action-status]")).toContainText(
+    "Saved · publish available",
+  );
+  await expect(page.locator("[data-publish-news]")).toBeEnabled();
 
   const lockPath = path.join(
     repositoryRoot,
@@ -106,7 +120,22 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
     { cwd: repositoryRoot },
   );
   await page.locator("[data-delete-backup]").fill(backupRoot);
+  const deletePlanResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/editor/api/news-delete") &&
+      response.request().method() === "POST" &&
+      response.request().postDataJSON()?.action === "plan",
+  );
   await page.locator("[data-delete-plan]").click();
+  const deletePlanResponse = await deletePlanResponsePromise;
+  const deletePlanResult = (await deletePlanResponse.json()) as {
+    code?: string;
+    error?: string;
+  };
+  expect(
+    deletePlanResponse.ok(),
+    `Delete plan failed (${deletePlanResponse.status()}): ${deletePlanResult.code ?? "unknown"} · ${deletePlanResult.error ?? "unknown error"}`,
+  ).toBe(true);
   await expect(page.locator("[data-delete-review]")).toBeVisible();
   await page.locator("[data-delete-confirm]").check();
   await page.locator("[data-delete-execute]").click();

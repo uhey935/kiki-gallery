@@ -1,5 +1,6 @@
 import { spawn, spawnSync } from "node:child_process";
 import { mkdtemp, rm, symlink } from "node:fs/promises";
+import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import process from "node:process";
@@ -8,7 +9,21 @@ const sourceRoot = process.cwd();
 const sandboxRoot = await mkdtemp(path.join(tmpdir(), "kiki-browser-"));
 const repositoryRoot = path.join(sandboxRoot, "repository");
 const remoteRoot = path.join(sandboxRoot, "remote.git");
-const port = "4322";
+const port = await new Promise((resolve, reject) => {
+  const listener = createServer();
+  listener.once("error", reject);
+  listener.listen(0, "127.0.0.1", () => {
+    const address = listener.address();
+    if (!address || typeof address === "string") {
+      listener.close();
+      reject(new Error("Failed to allocate an isolated Editor port"));
+      return;
+    }
+    listener.close((error) =>
+      error ? reject(error) : resolve(String(address.port)),
+    );
+  });
+});
 let server;
 
 function run(command, args, options = {}) {
