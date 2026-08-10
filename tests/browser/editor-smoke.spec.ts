@@ -73,7 +73,9 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   const previewPagePromise = context.waitForEvent("page");
   await page.locator("[data-create-preview]").click();
   const previewPage = await previewPagePromise;
-  await expect(previewPage.getByText("Browser foundation news")).toBeVisible();
+  await expect(
+    previewPage.getByRole("heading", { name: "Browser foundation news" }),
+  ).toBeVisible();
   await previewPage.close();
 
   await page.locator("[data-create-save]").click();
