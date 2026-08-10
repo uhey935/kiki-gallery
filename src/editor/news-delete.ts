@@ -107,11 +107,11 @@ async function repositoryIdentity(repositoryRoot: string) {
 
 async function newsInventory(repositoryRoot: string, contentId: string) {
   const root = path.join(repositoryRoot, "src/content/news");
-  const file = path.resolve(root, `${contentId}.md`);
+  const file = path.resolve(root, contentId);
   if (path.dirname(file) !== root)
     throw new NewsDeleteError("Unsafe News source.", "source-unavailable");
   const stat = await fs.lstat(file).catch(() => undefined);
-  if (!stat?.isFile() || stat.isSymbolicLink())
+  if (!stat?.isDirectory() || stat.isSymbolicLink())
     throw new NewsDeleteError(
       "News source is unavailable.",
       "source-unavailable",
@@ -124,14 +124,28 @@ async function newsInventory(repositoryRoot: string, contentId: string) {
       "News file must pass canonical validation before Delete.",
       "source-unavailable",
     );
-  const bytes = await fs.readFile(file);
-  return [
-    {
-      path: relative(repositoryRoot, file),
-      sha256: sha256(bytes),
-      byteSize: bytes.byteLength,
-    },
-  ];
+  const names = (await fs.readdir(file)).sort();
+  if (
+    JSON.stringify(names) !== JSON.stringify(["en.md", "index.yaml", "ja.md"])
+  )
+    throw new NewsDeleteError(
+      "News Delete requires exactly index.yaml, ja.md, and en.md.",
+      "source-unavailable",
+    );
+  return Promise.all(
+    names.map(async (name) => {
+      const source = path.join(file, name);
+      const sourceStat = await fs.lstat(source);
+      if (!sourceStat.isFile() || sourceStat.isSymbolicLink())
+        throw new NewsDeleteError("Unsafe News source.", "source-unavailable");
+      const bytes = await fs.readFile(source);
+      return {
+        path: relative(repositoryRoot, source),
+        sha256: sha256(bytes),
+        byteSize: bytes.byteLength,
+      };
+    }),
+  );
 }
 
 async function assertNoIncomingReferences(
@@ -352,9 +366,11 @@ export async function executeNewsDelete(
   const canonicalFile = path.join(
     repositoryRoot,
     "src/content/news",
-    `${reviewedPlan.contentId}.md`,
+    reviewedPlan.contentId,
   );
-  const recoveryFile = path.join(repositoryRoot, reviewedPlan.recoveryPaths[0]);
+  const recoveryFile = path.dirname(
+    path.join(repositoryRoot, reviewedPlan.recoveryPaths[0]),
+  );
   let moved = false;
   try {
     await assertContentLifecycleLock(repositoryRoot, lock.identity);
@@ -490,7 +506,10 @@ export async function publishNewsDelete(
       "Repository identity changed after the completed Delete.",
       "state-mismatch",
     );
-  if (files.some((file) => file !== `src/content/news/${record.contentId}.md`))
+  const expected = ["en.md", "index.yaml", "ja.md"]
+    .map((name) => `src/content/news/${record.contentId}/${name}`)
+    .sort();
+  if (JSON.stringify([...files].sort()) !== JSON.stringify(expected))
     throw new NewsDeleteError(
       "Delete evidence escaped the News unit.",
       "state-mismatch",
@@ -513,7 +532,7 @@ export async function publishNewsDelete(
     );
     if (status.some((line) => !line.startsWith("D\t")))
       throw new NewsDeleteError(
-        "Delete Publish requires one staged deletion.",
+        "Delete Publish requires three staged deletions.",
         "state-mismatch",
       );
     await git(["commit", "-m", `Delete news: ${record.contentId}`]);

@@ -29,15 +29,24 @@ const git = (root: string, args: string[]) =>
 async function fixture() {
   const parent = await fs.mkdtemp(path.join(os.tmpdir(), "news-delete-"));
   const repository = path.join(parent, "repository");
-  const unit = path.join(repository, "src/content/news/delete-me.md");
+  const unit = path.join(repository, "src/content/news/delete-me");
   for (const collection of ["artists", "works", "exhibitions", "news", "home"])
     await fs.mkdir(path.join(repository, "src/content", collection), {
       recursive: true,
     });
   await fs.mkdir(path.join(repository, "public/images"), { recursive: true });
+  await fs.mkdir(unit);
   await fs.writeFile(
-    unit,
-    "---\ntitle: Delete me\ndate: 2026-08-09\nnews_type: general\nshow_on_home: false\n---\n\nBody\n",
+    path.join(unit, "index.yaml"),
+    'date: "2026-08-09"\nnews_type: general\nshow_on_home: false\n',
+  );
+  await fs.writeFile(
+    path.join(unit, "ja.md"),
+    "---\ntitle: 削除\n---\n\n本文\n",
+  );
+  await fs.writeFile(
+    path.join(unit, "en.md"),
+    "---\ntitle: Delete me\n---\n\nBody\n",
   );
   await fs.writeFile(
     path.join(repository, "src/content/news/unrelated.md"),
@@ -55,7 +64,7 @@ async function fixture() {
 
 test("News Delete requires exact backup bytes and refuses unresolved references", async () => {
   const value = await fixture();
-  await fs.appendFile(value.unit, "drift\n");
+  await fs.appendFile(path.join(value.unit, "ja.md"), "drift\n");
   await assert.rejects(
     () =>
       planNewsDelete({
@@ -66,8 +75,8 @@ test("News Delete requires exact backup bytes and refuses unresolved references"
     (error: Error & { code?: string }) => error.code === "backup-proof-stale",
   );
   await fs.writeFile(
-    value.unit,
-    "---\ntitle: Delete me\ndate: 2026-08-09\nnews_type: general\nshow_on_home: false\n---\n\nBody\n",
+    path.join(value.unit, "ja.md"),
+    "---\ntitle: 削除\n---\n\n本文\n",
   );
   await fs.writeFile(
     path.join(value.repository, "src/content/news/incoming.md"),
@@ -137,14 +146,14 @@ test("News Delete detects drift and non-stealing lock conflicts", async () => {
     contentId: "delete-me",
     backupRoot: value.backup,
   });
-  await fs.appendFile(value.unit, "drift\n");
+  await fs.appendFile(path.join(value.unit, "ja.md"), "drift\n");
   await assert.rejects(
     () => executeNewsDelete(plan, value.repository),
     (error: Error & { code?: string }) => error.code === "plan-stale",
   );
   await fs.writeFile(
-    value.unit,
-    "---\ntitle: Delete me\ndate: 2026-08-09\nnews_type: general\nshow_on_home: false\n---\n\nBody\n",
+    path.join(value.unit, "ja.md"),
+    "---\ntitle: 削除\n---\n\n本文\n",
   );
   const fresh = await planNewsDelete({
     repositoryRoot: value.repository,
@@ -213,7 +222,7 @@ test("uncertain rollback preserves the lifecycle lock and records manual recover
           throw new Error("injected failure");
         },
         beforeRollback: async () => {
-          await fs.writeFile(value.unit, "conflict");
+          await fs.mkdir(value.unit);
         },
       }),
     (error: Error & { code?: string }) => error.code === "rollback-failed",

@@ -19,6 +19,7 @@ export type NewsEditorEntryState = {
   sourceModel: "legacy" | "three-file";
   file: string;
   raw: string;
+  canonicalFiles?: { "index.yaml": string; "ja.md": string; "en.md": string };
   shared?: NewsShared;
   locales: Partial<Record<NewsLocale, NewsEditorLocaleState>>;
   /** Temporary JA compatibility view for the existing flat News Editor UI. */
@@ -181,6 +182,17 @@ async function readThreeFileEntry(contentId: string, root: string) {
     sourceModel: "three-file" as const,
     file: directory,
     raw: unit.shared.state === "missing" ? "" : unit.shared.raw,
+    ...(unit.shared.state !== "missing" &&
+    unit.locales.ja.state !== "missing" &&
+    unit.locales.en.state !== "missing"
+      ? {
+          canonicalFiles: {
+            "index.yaml": unit.shared.raw,
+            "ja.md": unit.locales.ja.raw,
+            "en.md": unit.locales.en.raw,
+          },
+        }
+      : {}),
     shared,
     locales,
     data: data?.success ? data.data : undefined,

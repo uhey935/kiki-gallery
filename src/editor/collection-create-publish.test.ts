@@ -104,14 +104,29 @@ test("first Save transitions every flat collection to Publish with its new untra
           (await read(sourceId, sourceRoot)) as never,
         );
         assert.ok(sourceDraft);
+        if (collection === "news") {
+          const localized = (sourceDraft as ReturnType<
+            typeof createNewsEditorDraft
+          >)!.locales.en;
+          if (localized.state === "editable") {
+            localized.value.title = "Publishable English title";
+            localized.value.summary = "Publishable English summary";
+          }
+        }
         const contentId = `browser-new-${collection}`;
         const saved = await create(
           { ...sourceDraft, contentId, sourceRaw: "" } as never,
           { root },
         );
+        const expectedPaths =
+          collection === "news"
+            ? ["en.md", "index.yaml", "ja.md"]
+                .map((name) => `?? ${relativeRoot}/${contentId}/${name}`)
+                .join("\n")
+            : `?? ${relativeRoot}/${contentId}.md`;
         assert.equal(
           await git(repository, "status", "--short", "--untracked-files=all"),
-          `?? ${relativeRoot}/${contentId}.md`,
+          expectedPaths,
         );
 
         const result = await publish(
@@ -122,9 +137,15 @@ test("first Save transitions every flat collection to Publish with its new untra
           root,
         );
         assert.equal(result.state, "published");
+        const publishedPaths =
+          collection === "news"
+            ? ["en.md", "index.yaml", "ja.md"]
+                .map((name) => `${relativeRoot}/${contentId}/${name}`)
+                .join("\n")
+            : `${relativeRoot}/${contentId}.md`;
         assert.equal(
           await git(repository, "show", "--format=", "--name-only", "HEAD"),
-          `${relativeRoot}/${contentId}.md`,
+          publishedPaths,
         );
         assert.equal(
           await git(remote, "rev-parse", "refs/heads/main"),

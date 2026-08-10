@@ -180,7 +180,7 @@ const { collection, contentId } = Astro.props as {
             )
           : typeof plan.sourceFile === "string"
             ? [
-                `src/content/news/${plan.sourceContentId}.md · sha256 ${plan.sourceFile.slice(0, 12)}…`,
+                `src/content/news/${plan.sourceContentId}/{index.yaml, ja.md, en.md} · aggregate sha256 ${plan.sourceFile.slice(0, 12)}…`,
               ]
             : plan.sourceFile
               ? [

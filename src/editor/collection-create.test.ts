@@ -20,6 +20,11 @@ import {
   type FlatCreateFileSystem,
 } from "./flat-create.ts";
 import { createNewsEditorDraft } from "./news-draft-state.ts";
+import {
+  createNewsThreeFileEntry,
+  NewsCreateError,
+  type NewsCreateFileSystem,
+} from "./news-create.ts";
 import { readNewsEditorEntry } from "./news-state.ts";
 import { createWorksEditorDraft } from "./works-draft-state.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
@@ -74,7 +79,7 @@ async function fixtures() {
   ] as const;
 }
 
-test("each create-capable flat collection first-saves one canonical Markdown file", async (t) => {
+test("each create-capable collection first-saves its canonical unit", async (t) => {
   for (const fixture of await fixtures())
     await t.test(fixture.name, async () => {
       const root = await fs.mkdtemp(
@@ -84,8 +89,15 @@ test("each create-capable flat collection first-saves one canonical Markdown fil
         const saved = await fixture.create(fixture.draft as never, { root });
         assert.equal(saved.contentId, fixture.draft.contentId);
         assert.deepEqual(await fs.readdir(root), [
-          `${fixture.draft.contentId}.md`,
+          fixture.name === "news"
+            ? fixture.draft.contentId
+            : `${fixture.draft.contentId}.md`,
         ]);
+        if (fixture.name === "news")
+          assert.deepEqual(
+            (await fs.readdir(path.join(root, fixture.draft.contentId))).sort(),
+            ["en.md", "index.yaml", "ja.md"],
+          );
       } finally {
         await fs.rm(root, { recursive: true, force: true });
       }
@@ -103,7 +115,7 @@ test("flat Create fails closed for invalid IDs and case-fold collisions", async 
       await assert.rejects(
         fixture.create({ ...fixture.draft, contentId } as never, { root }),
         (error: unknown) =>
-          error instanceof FlatCreateError &&
+          error instanceof NewsCreateError &&
           ["invalid-content-id", "content-id-collision"].includes(error.code),
       );
     assert.equal(
@@ -138,6 +150,83 @@ test("a flat staged-write failure leaves no partial canonical entry", async () =
   }
 });
 
+test("a News staged-write failure leaves no partial canonical unit", async () => {
+  const fixture = (await fixtures())[3];
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "news-create-stage-"));
+  let writes = 0;
+  const failing: NewsCreateFileSystem = {
+    ...fs,
+    async writeFile(...args: Parameters<typeof fs.writeFile>) {
+      if (++writes === 2) throw new Error("injected staged write failure");
+      return fs.writeFile(...args);
+    },
+  };
+  try {
+    await assert.rejects(
+      fixture.create(fixture.draft as never, { root, fileSystem: failing }),
+      (error: unknown) =>
+        error instanceof NewsCreateError && error.code === "create-failed",
+    );
+    assert.deepEqual(await fs.readdir(root), []);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
+test("a News post-install reread failure removes the exact created unit", async () => {
+  const fixture = (await fixtures())[3];
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "news-create-reread-"));
+  try {
+    await assert.rejects(
+      createNewsThreeFileEntry(
+        { ...fixture.draft, sourceModel: "three-file" },
+        root,
+        fs,
+        async () => undefined,
+      ),
+      (error: unknown) =>
+        error instanceof NewsCreateError && error.code === "canonical-mismatch",
+    );
+    assert.deepEqual(await fs.readdir(root), []);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
+test("a News Create rollback failure preserves the installed evidence", async () => {
+  const fixture = (await fixtures())[3];
+  const root = await fs.mkdtemp(
+    path.join(os.tmpdir(), "news-create-rollback-"),
+  );
+  const failing: NewsCreateFileSystem = {
+    ...fs,
+    async rm(target, options) {
+      if (path.basename(String(target)) === fixture.draft.contentId)
+        throw new Error("injected rollback failure");
+      return fs.rm(target, options);
+    },
+  };
+  try {
+    await assert.rejects(
+      createNewsThreeFileEntry(
+        { ...fixture.draft, sourceModel: "three-file" },
+        root,
+        failing,
+        async () => undefined,
+      ),
+      (error: unknown) =>
+        error instanceof NewsCreateError &&
+        error.code === "news-create-rollback-failed",
+    );
+    assert.deepEqual(
+      (await fs.readdir(path.join(root, fixture.draft.contentId))).sort(),
+      ["en.md", "index.yaml", "ja.md"],
+    );
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
 test("flat Create blocks invalid drafts before mutation", async () => {
   const fixture = (await fixtures())[3];
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "news-create-invalid-"));
@@ -151,7 +240,7 @@ test("flat Create blocks invalid drafts before mutation", async () => {
         { root },
       ),
       (error: unknown) =>
-        error instanceof FlatCreateError && error.code === "invalid-draft",
+        error instanceof NewsCreateError && error.code === "invalid-draft",
     );
     assert.deepEqual(await fs.readdir(root), []);
   } finally {

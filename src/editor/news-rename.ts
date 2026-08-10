@@ -102,10 +102,12 @@ async function repositoryIdentity(repositoryRoot: string) {
 }
 
 async function assertDestinationAbsent(root: string, contentId: string) {
-  const target = `${contentId}.md`.toLocaleLowerCase("en-US");
+  const targets = [contentId, `${contentId}.md`].map((value) =>
+    value.toLocaleLowerCase("en-US"),
+  );
   if (
-    (await fs.readdir(root)).some(
-      (name) => name.toLocaleLowerCase("en-US") === target,
+    (await fs.readdir(root)).some((name) =>
+      targets.includes(name.toLocaleLowerCase("en-US")),
     )
   )
     throw new NewsRenameError(
@@ -115,11 +117,11 @@ async function assertDestinationAbsent(root: string, contentId: string) {
 }
 
 async function sourceHash(root: string, contentId: string) {
-  const file = path.resolve(root, `${contentId}.md`);
+  const file = path.resolve(root, contentId);
   if (path.dirname(file) !== root)
     throw new NewsRenameError("Unsafe News source", "source-unavailable");
   const stat = await fs.lstat(file).catch(() => undefined);
-  if (!stat?.isFile() || stat.isSymbolicLink())
+  if (!stat?.isDirectory() || stat.isSymbolicLink())
     throw new NewsRenameError(
       `News source is unavailable: ${contentId}.`,
       "source-unavailable",
@@ -136,7 +138,21 @@ async function sourceHash(root: string, contentId: string) {
       "Fix News validation issues before Rename.",
       "source-unavailable",
     );
-  return sha256(await fs.readFile(file));
+  const names = (await fs.readdir(file)).sort();
+  if (
+    JSON.stringify(names) !== JSON.stringify(["en.md", "index.yaml", "ja.md"])
+  )
+    throw new NewsRenameError(
+      "News source must contain exactly three canonical files",
+      "source-unavailable",
+    );
+  return sha256(
+    Buffer.concat(
+      await Promise.all(
+        names.map((name) => fs.readFile(path.join(file, name))),
+      ),
+    ),
+  );
 }
 
 export async function planNewsRename(input: {
@@ -240,11 +256,8 @@ export async function executeNewsRename(
   }
   const recordPath = path.join(operations, `${reviewedPlan.operationId}.json`);
   const root = path.join(repositoryRoot, "src/content/news");
-  const source = path.join(root, `${reviewedPlan.sourceContentId}.md`);
-  const destination = path.join(
-    root,
-    `${reviewedPlan.destinationContentId}.md`,
-  );
+  const source = path.join(root, reviewedPlan.sourceContentId);
+  const destination = path.join(root, reviewedPlan.destinationContentId);
   let moved = false;
   const record = (state: string, detail?: string) =>
     fs.writeFile(

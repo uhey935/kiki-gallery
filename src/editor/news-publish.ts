@@ -11,6 +11,9 @@ import {
 import { readNewsEditorEntry } from "./news-state.ts";
 const execFile = promisify(execFileCallback);
 type Git = (args: string[]) => Promise<string>;
+const fileNames = ["index.yaml", "ja.md", "en.md"] as const;
+const pathsFor = (contentId: string) =>
+  fileNames.map((name) => path.posix.join("src/content/news", contentId, name));
 export type NewsPublishResult =
   | { state: "published"; commit: string; branch: string; remote: string }
   | {
@@ -84,13 +87,19 @@ export async function inspectNewsPublish(
       "Repository already has staged changes",
       "unsafe-repository",
     );
-  const file = path.posix.join("src/content/news", `${contentId}.md`);
-  const stat = await fs
-    .lstat(path.join(repositoryRoot, file))
-    .catch(() => null);
-  if (!stat?.isFile() || stat.isSymbolicLink())
-    throw new NewsPublishError("Unsafe News source", "unsafe-repository");
-  const bytes = await fs.readFile(path.join(repositoryRoot, file), "utf8");
+  const destinationFiles = pathsFor(contentId);
+  for (const file of destinationFiles) {
+    const stat = await fs
+      .lstat(path.join(repositoryRoot, file))
+      .catch(() => null);
+    if (!stat?.isFile() || stat.isSymbolicLink())
+      throw new NewsPublishError("Unsafe News source", "unsafe-repository");
+  }
+  const bytes = await Promise.all(
+    destinationFiles.map((file) =>
+      fs.readFile(path.join(repositoryRoot, file), "utf8"),
+    ),
+  );
   const deleted = (
     await git([
       "diff",
@@ -102,20 +111,33 @@ export async function inspectNewsPublish(
   )
     .split("\n")
     .filter(Boolean);
-  const matchingSources: string[] = [];
-  for (const candidate of deleted) {
-    const old = await execFile("git", ["show", `HEAD:${candidate}`], {
-      cwd: repositoryRoot,
-      encoding: "utf8",
-    }).then(({ stdout }) => stdout);
-    if (old === bytes) matchingSources.push(candidate);
+  const matchingSources: string[][] = [];
+  for (const directory of [
+    ...new Set(deleted.map((candidate) => path.posix.dirname(candidate))),
+  ]) {
+    const candidates = fileNames.map((name) =>
+      path.posix.join(directory, name),
+    );
+    if (!candidates.every((candidate) => deleted.includes(candidate))) continue;
+    const old = await Promise.all(
+      candidates.map((candidate) =>
+        execFile("git", ["show", `HEAD:${candidate}`], {
+          cwd: repositoryRoot,
+          encoding: "utf8",
+        })
+          .then(({ stdout }) => stdout)
+          .catch(() => ""),
+      ),
+    );
+    if (old.every((value, index) => value === bytes[index]))
+      matchingSources.push(candidates);
   }
   if (matchingSources.length > 1)
     throw new NewsPublishError(
       "Publish found more than one possible News Rename source",
       "unsafe-repository",
     );
-  const files = [...matchingSources, file];
+  const files = [...(matchingSources[0] ?? []), ...destinationFiles];
   if (!(await git(["status", "--porcelain", "--", ...files])))
     throw new NewsPublishError(
       "Canonical News has no changes",
@@ -123,7 +145,7 @@ export async function inspectNewsPublish(
     );
   return {
     ...repositoryContext,
-    file,
+    destinationFiles,
     files,
     commitMessage: `Publish news: ${contentId}`,
   };
@@ -172,19 +194,30 @@ export async function publishSavedNewsEntry(
         "Staging escaped News boundary",
         "unsafe-repository",
       );
-    const staged = (
-      await execFile("git", ["show", `:${inspection.file}`], {
-        cwd: repositoryRoot,
-        encoding: "utf8",
-      })
-    ).stdout;
-    if (staged !== canonical.sourceRaw)
+    const entry = await readNewsEditorEntry(draft.contentId, root);
+    if (!entry.canonicalFiles)
       throw new NewsPublishError(
-        "Canonical News changed during Publish",
+        "Canonical News files unavailable",
         "canonical-mismatch",
       );
+    for (const file of inspection.destinationFiles) {
+      const name = path.posix.basename(
+        file,
+      ) as keyof typeof entry.canonicalFiles;
+      const staged = (
+        await execFile("git", ["show", `:${file}`], {
+          cwd: repositoryRoot,
+          encoding: "utf8",
+        })
+      ).stdout;
+      if (staged !== entry.canonicalFiles[name])
+        throw new NewsPublishError(
+          "Canonical News changed during Publish",
+          "canonical-mismatch",
+        );
+    }
     for (const deleted of inspection.files.filter(
-      (candidate) => candidate !== inspection.file,
+      (candidate) => !inspection.destinationFiles.includes(candidate),
     )) {
       await execFile("git", ["show", `:${deleted}`], {
         cwd: repositoryRoot,

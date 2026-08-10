@@ -18,13 +18,11 @@ import {
   createFlatEditorEntry,
   type FlatCreateFileSystem,
 } from "./flat-create.ts";
+import { type NewsEditorDraftState } from "./news-draft-state.ts";
 import {
-  createNewsEditorDraft,
-  type NewsEditorDraftState,
-  validateNewsEditorDraft,
-} from "./news-draft-state.ts";
-import { serializeNewsEditorDraft } from "./news-serializer.ts";
-import { readNewsEditorEntry } from "./news-state.ts";
+  createNewsThreeFileEntry,
+  type NewsCreateFileSystem,
+} from "./news-create.ts";
 import {
   createWorksEditorDraft,
   type WorksEditorDraftState,
@@ -33,11 +31,12 @@ import {
 import { serializeWorksEditorDraft } from "./works-serializer.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
 
-type Options = { root?: string; fileSystem?: FlatCreateFileSystem };
+type FlatCreateOptions = { root?: string; fileSystem?: FlatCreateFileSystem };
+type NewsCreateOptions = { root?: string; fileSystem?: NewsCreateFileSystem };
 
 export const createWorksEditorEntry = (
   draft: WorksEditorDraftState,
-  options: Options = {},
+  options: FlatCreateOptions = {},
 ) =>
   createFlatEditorEntry({
     collectionId: "works",
@@ -53,7 +52,7 @@ export const createWorksEditorEntry = (
 
 export const createArtistsEditorEntry = (
   draft: ArtistsEditorDraftState,
-  options: Options = {},
+  options: FlatCreateOptions = {},
 ) =>
   createFlatEditorEntry({
     collectionId: "artists",
@@ -69,7 +68,7 @@ export const createArtistsEditorEntry = (
 
 export const createExhibitionsEditorEntry = (
   draft: ExhibitionsEditorDraftState,
-  options: Options = {},
+  options: FlatCreateOptions = {},
 ) =>
   createFlatEditorEntry({
     collectionId: "exhibitions",
@@ -86,16 +85,10 @@ export const createExhibitionsEditorEntry = (
 
 export const createNewsEditorEntry = (
   draft: NewsEditorDraftState,
-  options: Options = {},
+  options: NewsCreateOptions = {},
 ) =>
-  createFlatEditorEntry({
-    collectionId: "news",
-    collectionLabel: "News",
-    draft,
-    root: options.root ?? path.resolve("src/content/news"),
-    validate: (value) => validateNewsEditorDraft(value).capabilities.save,
-    serialize: serializeNewsEditorDraft,
-    reread: async (id, root) =>
-      createNewsEditorDraft(await readNewsEditorEntry(id, root)),
-    fileSystem: options.fileSystem,
-  });
+  createNewsThreeFileEntry(
+    { ...draft, sourceModel: "three-file" },
+    options.root ?? path.resolve("src/content/news"),
+    options.fileSystem,
+  );
