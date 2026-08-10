@@ -1,0 +1,261 @@
+{
+  "migrationVersion": 1,
+  "collection": "news",
+  "mode": "dry-run",
+  "sourceRoot": "/Users/reset/kiki-gallery/src/content/news",
+  "count": 7,
+  "entries": [
+    {
+      "contentId": "2023-11-20",
+      "source": {
+        "path": "/Users/reset/kiki-gallery/src/content/news/2023-11-20.md",
+        "byteLength": 183,
+        "sha256": "0c1d16ede31566bd866018bccc0c2f896ccf5103bc9bd74a7ea15076ddd145de"
+      },
+      "targetDirectory": "/Users/reset/kiki-gallery/src/content/news/2023-11-20",
+      "generated": {
+        "shared": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2023-11-20/index.yaml",
+          "content": "date: 2023-11-20\nnews_type: exhibition\nlink: /exhibitions/reiko-kinoshita-2023-12\nshow_on_home: false\n",
+          "byteLength": 102,
+          "sha256": "c300aba64e1c97cfc280338230adb6c5f9ee8d284087ba3a3f2b641918af63e8"
+        },
+        "ja": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2023-11-20/ja.md",
+          "content": "---\ntitle: 木下令子 個展「粒と房」を開催いたします。\n---\n",
+          "byteLength": 77,
+          "sha256": "4b74536faa8e65cc70e375a38b0c3b38edb64aaee0648d65b283c03a9ca41754"
+        },
+        "en": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2023-11-20/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nsummary: __TODO_EN_SUMMARY__\n---\n",
+          "byteLength": 62,
+          "sha256": "39302f4ea0125e671aa8fbf86f555496eba4b4a471e6b32d75b32b73ebff92f2"
+        }
+      },
+      "rollback": {
+        "action": "restore-source-bytes",
+        "sourcePath": "/Users/reset/kiki-gallery/src/content/news/2023-11-20.md",
+        "originalBase64": "LS0tCnRpdGxlOiDmnKjkuIvku6TlrZAg5YCL5bGV44CM57KS44Go5oi/44CN44KS6ZaL5YKs44GE44Gf44GX44G+44GZ44CCCmRhdGU6ICIyMDIzLTExLTIwIgpuZXdzX3R5cGU6IGV4aGliaXRpb24KbGluazogIi9leGhpYml0aW9ucy9yZWlrby1raW5vc2hpdGEtMjAyMy0xMiIKc2hvd19vbl9ob21lOiBmYWxzZQotLS0K",
+        "originalByteLength": 183,
+        "originalSha256": "0c1d16ede31566bd866018bccc0c2f896ccf5103bc9bd74a7ea15076ddd145de"
+      }
+    },
+    {
+      "contentId": "2024-06-11",
+      "source": {
+        "path": "/Users/reset/kiki-gallery/src/content/news/2024-06-11.md",
+        "byteLength": 184,
+        "sha256": "d30a5e2c7e1e804da20127710b91dc01175ec4c286ab4aeba9397d646cc8c1e6"
+      },
+      "targetDirectory": "/Users/reset/kiki-gallery/src/content/news/2024-06-11",
+      "generated": {
+        "shared": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2024-06-11/index.yaml",
+          "content": "date: 2024-06-11\nnews_type: exhibition\nlink: /exhibitions/keisuke-matsuda-2024-07\nshow_on_home: false\n",
+          "byteLength": 102,
+          "sha256": "4bd747699ef2edb4227f6f0598158999b174464316113900cd197f9d0a22874e"
+        },
+        "ja": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2024-06-11/ja.md",
+          "content": "---\ntitle: 松田啓佑 個展「Undulation」を開催いたします。\n---\n",
+          "byteLength": 78,
+          "sha256": "8b395225957503c25c3b21a7bd92c64f675665af906b428d9efd871456c13915"
+        },
+        "en": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2024-06-11/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nsummary: __TODO_EN_SUMMARY__\n---\n",
+          "byteLength": 62,
+          "sha256": "39302f4ea0125e671aa8fbf86f555496eba4b4a471e6b32d75b32b73ebff92f2"
+        }
+      },
+      "rollback": {
+        "action": "restore-source-bytes",
+        "sourcePath": "/Users/reset/kiki-gallery/src/content/news/2024-06-11.md",
+        "originalBase64": "LS0tCnRpdGxlOiDmnb7nlLDllZPkvZEg5YCL5bGV44CMVW5kdWxhdGlvbuOAjeOCkumWi+WCrOOBhOOBn+OBl+OBvuOBmeOAggpkYXRlOiAiMjAyNC0wNi0xMSIKbmV3c190eXBlOiBleGhpYml0aW9uCmxpbms6ICIvZXhoaWJpdGlvbnMva2Vpc3VrZS1tYXRzdWRhLTIwMjQtMDciCnNob3dfb25faG9tZTogZmFsc2UKLS0tCg==",
+        "originalByteLength": 184,
+        "originalSha256": "d30a5e2c7e1e804da20127710b91dc01175ec4c286ab4aeba9397d646cc8c1e6"
+      }
+    },
+    {
+      "contentId": "2025-06-20",
+      "source": {
+        "path": "/Users/reset/kiki-gallery/src/content/news/2025-06-20.md",
+        "byteLength": 202,
+        "sha256": "df035bdf0a2891ada3af3a6fddc5239a93d77124dd316282253b30a11704e27a"
+      },
+      "targetDirectory": "/Users/reset/kiki-gallery/src/content/news/2025-06-20",
+      "generated": {
+        "shared": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2025-06-20/index.yaml",
+          "content": "date: 2025-06-20\nnews_type: exhibition\nlink: /exhibitions/yuka-mori-2025-07\nshow_on_home: false\n",
+          "byteLength": 96,
+          "sha256": "b08ea3c1d4eb3dc04d3b2fa2bf7bcc4e071bb2cd8c3c9254b1bbdbe02012e5c2"
+        },
+        "ja": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2025-06-20/ja.md",
+          "content": "---\ntitle: 森夕香 個展「Intertwined ー 戯れるメッシュ」を開催いたします。\n---\n",
+          "byteLength": 102,
+          "sha256": "cd858039fd01c3fa0e43841b2565c79d69727907d25acb2c072699740ca8c9e3"
+        },
+        "en": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2025-06-20/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nsummary: __TODO_EN_SUMMARY__\n---\n",
+          "byteLength": 62,
+          "sha256": "39302f4ea0125e671aa8fbf86f555496eba4b4a471e6b32d75b32b73ebff92f2"
+        }
+      },
+      "rollback": {
+        "action": "restore-source-bytes",
+        "sourcePath": "/Users/reset/kiki-gallery/src/content/news/2025-06-20.md",
+        "originalBase64": "LS0tCnRpdGxlOiDmo67lpJXpppkg5YCL5bGV44CMSW50ZXJ0d2luZWQg44O8IOaIr+OCjOOCi+ODoeODg+OCt+ODpeOAjeOCkumWi+WCrOOBhOOBn+OBl+OBvuOBmeOAggpkYXRlOiAiMjAyNS0wNi0yMCIKbmV3c190eXBlOiBleGhpYml0aW9uCmxpbms6ICIvZXhoaWJpdGlvbnMveXVrYS1tb3JpLTIwMjUtMDciCnNob3dfb25faG9tZTogZmFsc2UKLS0tCg==",
+        "originalByteLength": 202,
+        "originalSha256": "df035bdf0a2891ada3af3a6fddc5239a93d77124dd316282253b30a11704e27a"
+      }
+    },
+    {
+      "contentId": "2026-02-05",
+      "source": {
+        "path": "/Users/reset/kiki-gallery/src/content/news/2026-02-05.md",
+        "byteLength": 184,
+        "sha256": "7e1d40811e1e2e3bc5a2777194f5d626780b3bb6e9a97e6114a35722570f22ed"
+      },
+      "targetDirectory": "/Users/reset/kiki-gallery/src/content/news/2026-02-05",
+      "generated": {
+        "shared": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2026-02-05/index.yaml",
+          "content": "date: 2026-02-05\nnews_type: exhibition\nlink: /exhibitions/group-exhibition-2026-03\nshow_on_home: false\n",
+          "byteLength": 103,
+          "sha256": "f56b7038f230cf25a52ae0c2c4055d893fb11514defd288b056a7db5eca6201a"
+        },
+        "ja": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2026-02-05/ja.md",
+          "content": "---\ntitle: 木下令子・森夕香 二人展を開催いたします。\n---\n",
+          "byteLength": 77,
+          "sha256": "7f2ae7a1d3ee04dcbd31faf7fe95ecf6c3d5bc68f2a6c012f6912f8dfc776a16"
+        },
+        "en": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2026-02-05/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nsummary: __TODO_EN_SUMMARY__\n---\n",
+          "byteLength": 62,
+          "sha256": "39302f4ea0125e671aa8fbf86f555496eba4b4a471e6b32d75b32b73ebff92f2"
+        }
+      },
+      "rollback": {
+        "action": "restore-source-bytes",
+        "sourcePath": "/Users/reset/kiki-gallery/src/content/news/2026-02-05.md",
+        "originalBase64": "LS0tCnRpdGxlOiDmnKjkuIvku6TlrZDjg7vmo67lpJXpppkg5LqM5Lq65bGV44KS6ZaL5YKs44GE44Gf44GX44G+44GZ44CCCmRhdGU6ICIyMDI2LTAyLTA1IgpuZXdzX3R5cGU6IGV4aGliaXRpb24KbGluazogIi9leGhpYml0aW9ucy9ncm91cC1leGhpYml0aW9uLTIwMjYtMDMiCnNob3dfb25faG9tZTogZmFsc2UKLS0tCg==",
+        "originalByteLength": 184,
+        "originalSha256": "7e1d40811e1e2e3bc5a2777194f5d626780b3bb6e9a97e6114a35722570f22ed"
+      }
+    },
+    {
+      "contentId": "2026-02-14",
+      "source": {
+        "path": "/Users/reset/kiki-gallery/src/content/news/2026-02-14.md",
+        "byteLength": 163,
+        "sha256": "ad3f306d19ff3aa3552b011159daa1bc68bb83713dcd709c2ef26e8af9a23ca7"
+      },
+      "targetDirectory": "/Users/reset/kiki-gallery/src/content/news/2026-02-14",
+      "generated": {
+        "shared": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2026-02-14/index.yaml",
+          "content": "date: 2026-02-14\nnews_type: artist\nlink: /artists/keisuke-matsuda\nshow_on_home: true\n",
+          "byteLength": 85,
+          "sha256": "bd9f49c631c685d4649ff10cf8582a25c003d5eca28cc2fb641f07863c937ae2"
+        },
+        "ja": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2026-02-14/ja.md",
+          "content": "---\ntitle: 松田啓佑の作品の取り扱いが始まりました。\n---\n",
+          "byteLength": 76,
+          "sha256": "5cbaaf467edbeaed218edf792399df574884cc3fd196e5987c0608ef731be45f"
+        },
+        "en": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2026-02-14/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nsummary: __TODO_EN_SUMMARY__\n---\n",
+          "byteLength": 62,
+          "sha256": "39302f4ea0125e671aa8fbf86f555496eba4b4a471e6b32d75b32b73ebff92f2"
+        }
+      },
+      "rollback": {
+        "action": "restore-source-bytes",
+        "sourcePath": "/Users/reset/kiki-gallery/src/content/news/2026-02-14.md",
+        "originalBase64": "LS0tCnRpdGxlOiDmnb7nlLDllZPkvZHjga7kvZzlk4Hjga7lj5bjgormibHjgYTjgYzlp4vjgb7jgorjgb7jgZfjgZ/jgIIKZGF0ZTogIjIwMjYtMDItMTQiCm5ld3NfdHlwZTogYXJ0aXN0Cmxpbms6IC9hcnRpc3RzL2tlaXN1a2UtbWF0c3VkYQpzaG93X29uX2hvbWU6IHRydWUKLS0tCg==",
+        "originalByteLength": 163,
+        "originalSha256": "ad3f306d19ff3aa3552b011159daa1bc68bb83713dcd709c2ef26e8af9a23ca7"
+      }
+    },
+    {
+      "contentId": "2026-03-28",
+      "source": {
+        "path": "/Users/reset/kiki-gallery/src/content/news/2026-03-28.md",
+        "byteLength": 171,
+        "sha256": "0f6eef65f1991301d39629ae598e926bad03b0d1b8d29ad8c0c237de949b90d7"
+      },
+      "targetDirectory": "/Users/reset/kiki-gallery/src/content/news/2026-03-28",
+      "generated": {
+        "shared": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2026-03-28/index.yaml",
+          "content": "date: 2026-03-28\nnews_type: general\nshow_on_home: false\n",
+          "byteLength": 56,
+          "sha256": "f78ef78341fd4d8a28367ff48691b50de285a4860b7f1459d89bfbf15caa2daf"
+        },
+        "ja": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2026-03-28/ja.md",
+          "content": "---\ntitle: サイト公開のお知らせ\nsummary: KiKi Galleryのウェブサイトを公開しました。\n---\n",
+          "byteLength": 113,
+          "sha256": "7ee0a9ff286646ec4f77aeeb6d7a08b1b2785ceaaafcbcab75e540a19c921e3f"
+        },
+        "en": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2026-03-28/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nsummary: __TODO_EN_SUMMARY__\n---\n",
+          "byteLength": 62,
+          "sha256": "39302f4ea0125e671aa8fbf86f555496eba4b4a471e6b32d75b32b73ebff92f2"
+        }
+      },
+      "rollback": {
+        "action": "restore-source-bytes",
+        "sourcePath": "/Users/reset/kiki-gallery/src/content/news/2026-03-28.md",
+        "originalBase64": "LS0tCnRpdGxlOiDjgrXjgqTjg4jlhazplovjga7jgYrnn6XjgonjgZsKZGF0ZTogIjIwMjYtMDMtMjgiCm5ld3NfdHlwZTogZ2VuZXJhbApzdW1tYXJ5OiBLaUtpIEdhbGxlcnnjga7jgqbjgqfjg5bjgrXjgqTjg4jjgpLlhazplovjgZfjgb7jgZfjgZ/jgIIKc2hvd19vbl9ob21lOiBmYWxzZQotLS0K",
+        "originalByteLength": 171,
+        "originalSha256": "0f6eef65f1991301d39629ae598e926bad03b0d1b8d29ad8c0c237de949b90d7"
+      }
+    },
+    {
+      "contentId": "2027-03-05",
+      "source": {
+        "path": "/Users/reset/kiki-gallery/src/content/news/2027-03-05.md",
+        "byteLength": 183,
+        "sha256": "e9bd88b02334233e573d1ed5b6019517dcf32d9847e222f2860490f8924bc966"
+      },
+      "targetDirectory": "/Users/reset/kiki-gallery/src/content/news/2027-03-05",
+      "generated": {
+        "shared": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2027-03-05/index.yaml",
+          "content": "date: 2027-03-05\nnews_type: exhibition\nlink: /exhibitions/alana-wilson-2027-04\nshow_on_home: false\n",
+          "byteLength": 99,
+          "sha256": "7f1ff489716198be1b90c8b5fb0e104f1313d818e10ae5613d9fe4b84ed68026"
+        },
+        "ja": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2027-03-05/ja.md",
+          "content": "---\ntitle: アラーナ・ウィルソン Roots を開催いたします。\n---\n",
+          "byteLength": 80,
+          "sha256": "a7541ce4a0f2e0349ef29d9c6c1932958633e92dec6492da5e75c5c731d1756f"
+        },
+        "en": {
+          "path": "/Users/reset/kiki-gallery/src/content/news/2027-03-05/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nsummary: __TODO_EN_SUMMARY__\n---\n",
+          "byteLength": 62,
+          "sha256": "39302f4ea0125e671aa8fbf86f555496eba4b4a471e6b32d75b32b73ebff92f2"
+        }
+      },
+      "rollback": {
+        "action": "restore-source-bytes",
+        "sourcePath": "/Users/reset/kiki-gallery/src/content/news/2027-03-05.md",
+        "originalBase64": "LS0tCnRpdGxlOiDjgqLjg6njg7zjg4rjg7vjgqbjgqPjg6vjgr3jg7MgUm9vdHMg44KS6ZaL5YKs44GE44Gf44GX44G+44GZ44CCCmRhdGU6ICIyMDI3LTAzLTA1IgpuZXdzX3R5cGU6IGV4aGliaXRpb24KbGluazogIi9leGhpYml0aW9ucy9hbGFuYS13aWxzb24tMjAyNy0wNCIKc2hvd19vbl9ob21lOiBmYWxzZQotLS0K",
+        "originalByteLength": 183,
+        "originalSha256": "e9bd88b02334233e573d1ed5b6019517dcf32d9847e222f2860490f8924bc966"
+      }
+    }
+  ]
+}

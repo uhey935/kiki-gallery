@@ -56,13 +56,21 @@ test("reviewed Exhibitions Rename moves the source and byte-preservingly rewrite
     const source = path.join(repository, `src/content/exhibitions/${oldId}.md`);
     const sourceBytes = await fs.readFile(source);
     const news = path.join(repository, "src/content/news/2023-11-20.md");
+    const shared = path.join(
+      repository,
+      "src/content/news/2023-11-20/index.yaml",
+    );
     const before = await fs.readFile(news, "utf8");
+    const sharedBefore = await fs.readFile(shared, "utf8");
+    const ja = path.join(repository, "src/content/news/2023-11-20/ja.md");
+    const en = path.join(repository, "src/content/news/2023-11-20/en.md");
+    const localeBytes = await Promise.all([fs.readFile(ja), fs.readFile(en)]);
     const plan = await planExhibitionsRename({
       repositoryRoot: repository,
       sourceContentId: oldId,
       destinationContentId: newId,
     });
-    assert.equal(plan.referenceEdits.length, 1);
+    assert.equal(plan.referenceEdits.length, 2);
     assert.deepEqual(plan.oldRoutes, [`/exhibitions/${oldId}/`]);
     const result = await executeExhibitionsRename(plan, repository);
     assert.equal(result.draft.contentId, newId);
@@ -82,6 +90,12 @@ test("reviewed Exhibitions Rename moves the source and byte-preservingly rewrite
       after.replace(`/exhibitions/${newId}`, `/exhibitions/${oldId}`),
       before,
     );
+    assert.equal(
+      await fs.readFile(shared, "utf8"),
+      sharedBefore.replace(`/exhibitions/${oldId}`, `/exhibitions/${newId}`),
+    );
+    assert.deepEqual(await fs.readFile(ja), localeBytes[0]);
+    assert.deepEqual(await fs.readFile(en), localeBytes[1]);
     const evidence = JSON.parse(
       await fs.readFile(
         path.join(

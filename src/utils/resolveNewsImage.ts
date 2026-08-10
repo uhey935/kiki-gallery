@@ -24,7 +24,7 @@ type NewsImageCollections = {
 };
 
 export const resolveNewsImage = (
-  news: CollectionEntry<"news">,
+  news: { id: string; data: { link?: string } },
   collections: NewsImageCollections,
 ): ImageSource | null => {
   const link = news.data.link;

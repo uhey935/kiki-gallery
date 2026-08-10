@@ -1,7 +1,56 @@
 ---
 import type { NewsEditorEntryState } from "../../editor/news-state";
-import FlatValidationPanel from "./FlatValidationPanel.astro";
 const { entry } = Astro.props as { entry: NewsEditorEntryState };
+const blocked = entry.issues.length > 0;
 ---
 
-<FlatValidationPanel issues={entry.issues} />
+<aside class="editor-validation" aria-labelledby="validation-heading">
+  <div class="editor-panel__heading">
+    <div>
+      <p class="editor-eyebrow">Canonical schema</p><h2 id="validation-heading">
+        Validation
+      </h2>
+    </div><span
+      data-validation-status
+      class:list={[
+        "editor-status",
+        blocked ? "editor-status--blocked" : "editor-status--valid",
+      ]}>{blocked ? "blocked" : "valid"}</span
+    >
+  </div>
+  <p data-issue-summary>
+    {blocked ? `${entry.issues.length} draft issues` : "No draft issues"}
+  </p>
+  <dl class="editor-detail-list">
+    <div>
+      <dt>Save</dt><dd data-save>{blocked ? "Blocked" : "Available"}</dd>
+    </div>
+    <div><dt>Preview JA</dt><dd data-preview-ja>Available</dd></div>
+    <div>
+      <dt>Preview EN</dt><dd data-preview-en>
+        {blocked ? "Blocked" : "Available"}
+      </dd>
+    </div>
+    <div>
+      <dt>Publish</dt><dd data-publish>
+        {blocked ? "Blocked" : "Available"}
+      </dd>
+    </div>
+    <dd data-preview hidden></dd>
+  </dl>
+  <ul class="editor-issues" data-issues hidden={!blocked}>
+    {
+      entry.issues.map((item) => (
+        <li>
+          <strong>{item.severity}</strong>{" "}
+          <span>
+            {item.locale
+              ? `${item.locale}.${item.fieldPath ?? "source"}`
+              : item.fieldPath}
+          </span>
+          <small>{item.messageKey}</small>
+        </li>
+      ))
+    }
+  </ul>
+</aside>

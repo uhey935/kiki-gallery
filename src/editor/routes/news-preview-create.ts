@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { contentWriterRoute } from "./content-writer-route.ts";
 import type { NewsEditorDraftState } from "../news-draft-state.ts";
+import type { NewsLocale } from "../../content-loaders/news/contracts.ts";
 import {
   createNewsPreviewModel,
   newsPreviewStore,
@@ -8,10 +9,13 @@ import {
 } from "../news-preview.ts";
 const unlockedPOST: APIRoute = async ({ request }) => {
   try {
-    const input = (await request.json()) as { draft?: NewsEditorDraftState };
+    const input = (await request.json()) as {
+      draft?: NewsEditorDraftState;
+      locale?: NewsLocale;
+    };
     if (!input.draft)
       throw new NewsPreviewError("Draft required", "invalid-request");
-    const model = createNewsPreviewModel(input.draft);
+    const model = createNewsPreviewModel(input.draft, input.locale ?? "ja");
     const token = newsPreviewStore.create(model);
     return Response.json({
       url: `/editor/preview/news/${token}/${encodeURIComponent(model.contentId)}`,

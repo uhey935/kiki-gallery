@@ -54,17 +54,26 @@ test("reviewed Artists Rename moves the source and byte-preservingly rewrites Wo
     const source = path.join(repository, `src/content/artists/${oldId}.md`);
     const sourceBytes = await fs.readFile(source);
     const news = path.join(repository, "src/content/news/2026-02-14.md");
-    await fs.writeFile(
-      news,
-      (await fs.readFile(news, "utf8")).replace(
-        "/artists/keisuke-matsuda",
-        `/artists/${oldId}`,
-      ),
+    const shared = path.join(
+      repository,
+      "src/content/news/2026-02-14/index.yaml",
     );
-    await git(repository, "add", news);
+    for (const file of [news, shared])
+      await fs.writeFile(
+        file,
+        (await fs.readFile(file, "utf8")).replace(
+          "/artists/keisuke-matsuda",
+          `/artists/${oldId}`,
+        ),
+      );
+    await git(repository, "add", news, shared);
     await git(repository, "commit", "-m", "Add Artist reference fixture");
     await git(repository, "push");
     const before = await fs.readFile(news, "utf8");
+    const sharedBefore = await fs.readFile(shared, "utf8");
+    const ja = path.join(repository, "src/content/news/2026-02-14/ja.md");
+    const en = path.join(repository, "src/content/news/2026-02-14/en.md");
+    const localeBytes = await Promise.all([fs.readFile(ja), fs.readFile(en)]);
     const plan = await planArtistsRename({
       repositoryRoot: repository,
       sourceContentId: oldId,
@@ -81,7 +90,7 @@ test("reviewed Artists Rename moves the source and byte-preservingly rewrites Wo
     );
     assert.equal(
       plan.referenceEdits.filter((edit) => edit.collection === "news").length,
-      1,
+      2,
     );
     assert.deepEqual(plan.oldRoutes, [`/artists/${oldId}/`]);
     const result = await executeArtistsRename(plan, repository);
@@ -102,6 +111,12 @@ test("reviewed Artists Rename moves the source and byte-preservingly rewrites Wo
       after.replace(`/artists/${newId}`, `/artists/${oldId}`),
       before,
     );
+    assert.equal(
+      await fs.readFile(shared, "utf8"),
+      sharedBefore.replace(`/artists/${oldId}`, `/artists/${newId}`),
+    );
+    assert.deepEqual(await fs.readFile(ja), localeBytes[0]);
+    assert.deepEqual(await fs.readFile(en), localeBytes[1]);
     const evidence = JSON.parse(
       await fs.readFile(
         path.join(

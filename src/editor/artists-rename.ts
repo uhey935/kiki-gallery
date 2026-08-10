@@ -10,6 +10,10 @@ import { readArtistsEditorEntry } from "./artists-state.ts";
 import { readExhibitionsEditorEntry } from "./exhibitions-state.ts";
 import { readNewsEditorEntry } from "./news-state.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
+import {
+  findNewsReferenceSpan,
+  NewsReferenceStructureError,
+} from "./news-reference-update.ts";
 
 const execFile = promisify(execFileCallback);
 const CONTENT_COLLECTIONS = [
@@ -204,7 +208,7 @@ async function validateProspectiveTypedGraph(
         .map(({ file }) => relative(repositoryRoot, file))
         .filter(
           (file) =>
-            file.startsWith(`src/content/${collection}/`) &&
+            path.posix.dirname(file) === `src/content/${collection}` &&
             file.endsWith(".md"),
         )
         .map((file) => path.basename(file, ".md")),
@@ -377,36 +381,20 @@ function newsLinkEdit(
   newId: string,
 ): ArtistReferenceEdit | undefined {
   const file = relative(repositoryRoot, item.file);
-  if (!file.startsWith("src/content/news/") || !file.endsWith(".md")) return;
-  const raw = item.bytes.toString("utf8");
-  const frontmatter = /^---(\r?\n)([\s\S]*?)\1---(?:\1|$)/.exec(raw);
-  if (!frontmatter)
-    throw new ArtistsRenameError(
-      `News frontmatter cannot be inventoried: ${file}`,
-      "reference-graph-incomplete",
-    );
-  const exact = new RegExp(
-    `^(\\s*link\\s*:\\s*)(["']?)(/artists/${oldId}/?)(\\2)(\\s*(?:#.*)?)$`,
-    "m",
-  );
-  const oldRouteToken = `/artists/${oldId}`;
-  const body = frontmatter[2];
-  const match = exact.exec(body);
-  if (!match) {
-    if (body.includes(oldRouteToken))
+  let span;
+  try {
+    span = findNewsReferenceSpan(file, item.bytes, "artists", oldId, newId);
+  } catch (error) {
+    if (error instanceof NewsReferenceStructureError)
       throw new ArtistsRenameError(
-        `Recognized Artist route cannot be byte-preservingly rewritten: ${file}`,
+        error.message,
         "reference-rewrite-unsupported",
+        { cause: error },
       );
-    return;
+    throw error;
   }
-  const oldValue = match[3];
-  const newValue = oldValue.replace(oldRouteToken, `/artists/${newId}`);
-  const frontmatterBodyStart = frontmatter.index + 3 + frontmatter[1].length;
-  const characterStart =
-    frontmatterBodyStart + match.index + match[1].length + match[2].length;
-  const start = Buffer.byteLength(raw.slice(0, characterStart));
-  const end = start + Buffer.byteLength(oldValue);
+  if (!span) return;
+  const { oldValue, newValue, start, end } = span;
   const output = Buffer.concat([
     item.bytes.subarray(0, start),
     Buffer.from(newValue),
@@ -414,7 +402,7 @@ function newsLinkEdit(
   ]);
   return {
     collection: "news",
-    contentId: path.basename(file, ".md"),
+    contentId: span.contentId,
     file,
     fieldPath: "link",
     oldValue,

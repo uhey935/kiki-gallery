@@ -1,0 +1,65 @@
+---
+import type { NewsLocalized } from "../../content-loaders/news/contracts";
+import type { NewsEditorDraftSource } from "../../editor/news-draft-state";
+
+const { locale, source } = Astro.props as {
+  locale: "ja" | "en";
+  source: NewsEditorDraftSource<NewsLocalized & { body: string }>;
+};
+---
+
+<section class="editor-entry-section" data-editor-section={locale}>
+  <header>
+    <div>
+      <p class="editor-eyebrow">Draft locale</p><h2>{locale.toUpperCase()}</h2>
+    </div>
+    <div class="editor-section-status">
+      <span data-section-dirty hidden>Modified</span>
+      <span class="editor-status">{source.state}</span>
+    </div>
+  </header>
+  <div class="editor-entry-section__content">
+    {
+      source.state === "editable" ? (
+        <div class="editor-field-grid">
+          <label
+            class="editor-field-wide"
+            data-editor-field={`${locale}.title`}
+          >
+            <span>
+              Title <small class="editor-field-badge">Required</small>
+            </span>
+            <input name={`${locale}.title`} value={source.value.title} />
+          </label>
+          <label
+            class="editor-field-wide"
+            data-editor-field={`${locale}.summary`}
+          >
+            <span>
+              Summary
+              <small class="editor-field-badge editor-field-badge--optional">
+                Optional
+              </small>
+            </span>
+            <textarea
+              name={`${locale}.summary`}
+              rows="3"
+              set:text={source.value.summary ?? ""}
+            />
+          </label>
+          {locale === "en" && (
+            <p class="editor-field-wide">
+              EN values containing <code>__TODO_*</code> remain visible but
+              block EN Preview and Publish.
+            </p>
+          )}
+        </div>
+      ) : (
+        <p>
+          Locale source is {source.sourceState}; structured editing is
+          unavailable.
+        </p>
+      )
+    }
+  </div>
+</section>

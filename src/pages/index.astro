@@ -11,6 +11,7 @@ import { getExhibitionStatus } from "../utils/exhibitionStatus";
 import { resolveNewsImage } from "../utils/resolveNewsImage";
 import { journalRouteRegistry } from "../content-boundaries/journal";
 import { getJournalProductionFacade } from "../content-boundaries/journal-production";
+import { getNewsProductionFacade } from "../content-boundaries/news-production";
 
 /* =========================
    Home
@@ -29,7 +30,7 @@ if (!home) {
 const exhibitions = await getCollection("exhibitions");
 const artists = await getCollection("artists");
 const journal = await getJournalProductionFacade();
-const news = await getCollection("news");
+const news = (await getNewsProductionFacade()).forHome("ja");
 
 /* =========================
    Helpers
@@ -104,14 +105,13 @@ const homeExhibitions = [
 ========================= */
 
 const newsStories = news
-  .filter((item) => item.data.show_on_home === true && item.data.link)
   .map((item) => {
     const image = resolveNewsImage(item, newsImageCollections);
 
     if (!image || !item.data.link) return null;
 
     return {
-      id: item.id,
+      id: item.data.contentId,
       title: item.data.title,
       date: item.data.date,
       type: item.data.news_type,

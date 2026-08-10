@@ -138,20 +138,38 @@ function readDraft(
     };
   }
   const current = draft as NewsEditorDraftState;
+  const shared = {
+    date: value("shared.date"),
+    news_type: value(
+      "shared.news_type",
+    ) as NewsEditorDraftState["data"]["news_type"],
+    link: optional(value("shared.link")),
+    show_on_home: data.get("shared.show_on_home") === "on",
+  };
+  const ja = {
+    title: value("ja.title"),
+    summary: optional(value("ja.summary")),
+    body: "",
+  };
+  const en = {
+    title: value("en.title"),
+    summary: optional(value("en.summary")),
+    body: "",
+  };
   return {
     ...current,
     contentId,
-    data: {
-      date: value("date"),
-      news_type: value(
-        "news_type",
-      ) as NewsEditorDraftState["data"]["news_type"],
-      title: value("title"),
-      summary: optional(value("summary")),
-      link: optional(value("link")),
-      show_on_home: data.get("show_on_home") === "on",
+    shared: { state: "editable", value: shared },
+    locales: {
+      ja: { state: "editable", value: ja },
+      en: { state: "editable", value: en },
     },
-  };
+    data: {
+      ...shared,
+      title: ja.title,
+      summary: ja.summary,
+    },
+  } as NewsEditorDraftState;
 }
 
 export function startFlatCreateUi(collection: Collection) {
@@ -205,9 +223,17 @@ export function startFlatCreateUi(collection: Collection) {
           recovery: { kind: "edit-field", fieldPath: "form" },
         },
       ];
+    const previewCapability = validation.capabilities.preview;
+    const flatCapabilities = {
+      ...validation.capabilities,
+      preview:
+        typeof previewCapability === "boolean"
+          ? previewCapability
+          : previewCapability.ja || previewCapability.en,
+    };
     renderFlatValidationPanel(form, {
       ...validation,
-      capabilities: { ...validation.capabilities, publish: false },
+      capabilities: { ...flatCapabilities, publish: false },
     });
     const allowed = idValid && !inputError && validation.capabilities.save;
     preview.disabled = pending || !allowed;

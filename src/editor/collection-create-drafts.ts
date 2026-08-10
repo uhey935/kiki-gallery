@@ -43,6 +43,22 @@ export const createNewExhibitionsDraft = (): ExhibitionsEditorDraftState => ({
 
 export const createNewNewsDraft = (): NewsEditorDraftState => ({
   contentId: "",
+  sourceModel: "legacy",
+  shared: {
+    state: "editable",
+    value: { date: "", news_type: "general", show_on_home: false },
+  },
+  locales: {
+    ja: { state: "editable", value: { title: "", body: "" } },
+    en: {
+      state: "editable",
+      value: {
+        title: "__TODO_EN_TITLE__",
+        summary: "__TODO_EN_SUMMARY__",
+        body: "",
+      },
+    },
+  },
   data: {
     date: "",
     news_type: "general",

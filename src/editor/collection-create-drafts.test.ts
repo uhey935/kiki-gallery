@@ -24,7 +24,10 @@ test("flat Create screens begin with isolated validation-blocked scaffolds", () 
     assert.equal(draft.sourceRaw, "");
     const result = validate(draft as never);
     assert.equal(result.capabilities.save, false);
-    assert.equal(result.capabilities.preview, false);
+    if (typeof result.capabilities.preview === "boolean")
+      assert.equal(result.capabilities.preview, false);
+    else
+      assert.deepEqual(result.capabilities.preview, { ja: false, en: false });
     assert.equal(result.capabilities.publish, false);
   }
 });

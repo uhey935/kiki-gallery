@@ -1,79 +1,99 @@
 ---
 import type { NewsEditorDraftState } from "../../editor/news-draft-state";
+import NewsLocaleDraftSection from "./NewsLocaleDraftSection.astro";
+
 const { draft } = Astro.props as { draft: NewsEditorDraftState };
-const { data } = draft;
 ---
 
 <form class="editor-draft-form" data-news-draft-form>
   <div class="editor-field-meaning" aria-label="Field requirement legend">
     <span><b>Required</b> needed for a valid draft</span>
     <span><b>Optional</b> may be left blank</span>
+    <span
+      ><b>Publish checked</b> placeholders block locale Preview and Publish</span
+    >
   </div>
-  <section class="editor-entry-section">
+  <section class="editor-entry-section" data-editor-section="shared">
     <header>
-      <div><p class="editor-eyebrow">Announcement</p><h2>News</h2></div>
+      <div><p class="editor-eyebrow">Shared metadata</p><h2>Shared</h2></div>
+      <div class="editor-section-status">
+        <span data-section-dirty hidden>Modified</span>
+        <span class="editor-status">{draft.shared.state}</span>
+      </div>
     </header>
     <p>
-      News has no image, body, or Detail page. Internal links may provide a
-      derived Home image.
+      News has no image, body, or Detail page. Shared values apply to both
+      locales.
     </p>
     <div class="editor-entry-section__content">
-      <div class="editor-field-grid">
-        <label data-editor-field="title">
-          <span>Title <small class="editor-field-badge">Required</small></span>
-          <input name="title" value={data.title} />
-        </label>
-        <label data-editor-field="date">
-          <span>Date <small class="editor-field-badge">Required</small></span>
-          <input name="date" type="date" value={data.date} />
-        </label>
-        <label data-editor-field="news_type">
-          <span>Type <small class="editor-field-badge">Required</small></span>
-          <select name="news_type">
-            {
-              (["exhibition", "artist", "general"] as const).map((type) => (
-                <option value={type} selected={data.news_type === type}>
-                  {type}
-                </option>
-              ))
-            }
-          </select>
-        </label>
-        <label class="editor-field-wide" data-editor-field="summary">
-          <span>
-            Summary
-            <small class="editor-field-badge editor-field-badge--optional">
-              Optional
-            </small>
-          </span>
-          <textarea name="summary">{data.summary ?? ""}</textarea>
-        </label>
-        <label data-editor-field="link">
-          <span>
-            Link
-            <small class="editor-field-badge editor-field-badge--optional">
-              Optional
-            </small>
-          </span>
-          <input
-            name="link"
-            value={data.link ?? ""}
-            placeholder="/artists/example or https://…"
-          />
-        </label>
-      </div>
-      <p>
-        <label data-editor-field="show_on_home">
-          <input
-            name="show_on_home"
-            type="checkbox"
-            checked={data.show_on_home}
-          /> Show on Home
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </label>
-      </p>
+      {
+        draft.shared.state === "editable" ? (
+          <div class="editor-field-grid" data-shared-editable>
+            <label data-editor-field="shared.date">
+              <span>
+                Date <small class="editor-field-badge">Required</small>
+              </span>
+              <input
+                name="shared.date"
+                type="date"
+                value={draft.shared.value.date}
+              />
+            </label>
+            <label data-editor-field="shared.news_type">
+              <span>
+                Type <small class="editor-field-badge">Required</small>
+              </span>
+              <select name="shared.news_type">
+                {(["exhibition", "artist", "general"] as const).map((type) => (
+                  <option
+                    value={type}
+                    selected={
+                      (draft.shared.state === "editable"
+                        ? draft.shared.value.news_type
+                        : "general") === type
+                    }
+                  >
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label data-editor-field="shared.link">
+              <span>
+                Link
+                <small class="editor-field-badge editor-field-badge--optional">
+                  Optional
+                </small>
+              </span>
+              <input
+                name="shared.link"
+                value={draft.shared.value.link ?? ""}
+                placeholder="/artists/example or https://…"
+              />
+            </label>
+            <p>
+              <label data-editor-field="shared.show_on_home">
+                <input
+                  name="shared.show_on_home"
+                  type="checkbox"
+                  checked={draft.shared.value.show_on_home}
+                />{" "}
+                Show on Home
+                <small class="editor-field-badge editor-field-badge--optional">
+                  Optional
+                </small>
+              </label>
+            </p>
+          </div>
+        ) : (
+          <p>
+            Shared source is {draft.shared.sourceState}; structured editing is
+            unavailable.
+          </p>
+        )
+      }
     </div>
   </section>
+  <NewsLocaleDraftSection locale="ja" source={draft.locales.ja} />
+  <NewsLocaleDraftSection locale="en" source={draft.locales.en} />
 </form>

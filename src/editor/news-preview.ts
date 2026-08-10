@@ -3,6 +3,7 @@ import {
   validateNewsEditorDraft,
   type NewsEditorDraftState,
 } from "./news-draft-state.ts";
+import type { NewsLocale } from "../content-loaders/news/contracts.ts";
 export class NewsPreviewError extends Error {
   readonly code:
     | "invalid-request"
@@ -15,16 +16,36 @@ export class NewsPreviewError extends Error {
     this.code = code;
   }
 }
-export type NewsPreviewModel = Pick<NewsEditorDraftState, "contentId" | "data">;
+export type NewsPreviewModel = Pick<NewsEditorDraftState, "contentId"> & {
+  locale?: NewsLocale;
+  data: NewsEditorDraftState["data"];
+};
 export function createNewsPreviewModel(
   draft: NewsEditorDraftState,
+  locale: NewsLocale = "ja",
 ): NewsPreviewModel {
-  if (!validateNewsEditorDraft(draft).capabilities.preview)
+  if (!validateNewsEditorDraft(draft).capabilities.preview[locale])
     throw new NewsPreviewError(
       "News is blocked from preview",
       "preview-blocked",
     );
-  return { contentId: draft.contentId, data: structuredClone(draft.data) };
+  const localized = draft.locales[locale];
+  if (draft.shared.state !== "editable" || localized.state !== "editable")
+    throw new NewsPreviewError(
+      "News locale is unavailable for preview",
+      "preview-blocked",
+    );
+  return {
+    contentId: draft.contentId,
+    locale,
+    data: {
+      ...structuredClone(draft.shared.value),
+      title: localized.value.title,
+      ...(localized.value.summary === undefined
+        ? {}
+        : { summary: localized.value.summary }),
+    },
+  };
 }
 export class NewsPreviewStore {
   private records = new Map<

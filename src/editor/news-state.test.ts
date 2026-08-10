@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import {
   createNewsEditorDraft,
+  updateNewsEditorDraft,
   validateNewsEditorDraft,
 } from "./news-draft-state.ts";
 import {
@@ -30,6 +31,33 @@ async function fixture() {
   await writeFile(path.join(root, "test-news.md"), source);
   return root;
 }
+
+async function writeThreeFileNews(
+  root: string,
+  options: {
+    index?: string;
+    ja?: string;
+    en?: string | null;
+  } = {},
+) {
+  const directory = path.join(root, "test-news");
+  await mkdir(directory);
+  await writeFile(
+    path.join(directory, "index.yaml"),
+    options.index ??
+      `date: "2026-08-07"\nnews_type: artist\nlink: /artists/test-artist\nshow_on_home: true\n`,
+  );
+  await writeFile(
+    path.join(directory, "ja.md"),
+    options.ja ?? `---\ntitle: 三ファイルニュース\nsummary: 日本語概要\n---\n`,
+  );
+  if (options.en !== null)
+    await writeFile(
+      path.join(directory, "en.md"),
+      options.en ??
+        `---\ntitle: Three-file News\nsummary: English summary\n---\n`,
+    );
+}
 test("reads canonical News and preserves clean serialization", async () => {
   const root = await fixture();
   try {
@@ -44,6 +72,116 @@ test("reads canonical News and preserves clean serialization", async () => {
     await rm(root, { recursive: true });
   }
 });
+test("prefers three-file News while retaining the legacy compatibility source", async () => {
+  const root = await fixture();
+  try {
+    await writeThreeFileNews(root);
+    const entry = await readNewsEditorEntry("test-news", root);
+    assert.equal(entry.sourceModel, "three-file");
+    assert.equal(entry.shared?.date, "2026-08-07");
+    assert.equal(entry.locales.ja?.title, "三ファイルニュース");
+    assert.equal(entry.locales.en?.title, "Three-file News");
+    assert.equal(entry.data?.title, "三ファイルニュース");
+    assert.equal(entry.legacy?.data?.title, "Test News");
+    assert.equal((await readNewsEditorState(root)).entries.length, 1);
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+test("reports invalid three-file shared data without using legacy values", async () => {
+  const root = await fixture();
+  try {
+    await writeThreeFileNews(root, {
+      index: `date: not-a-date\nnews_type: artist\nshow_on_home: false\n`,
+    });
+    const entry = await readNewsEditorEntry("test-news", root);
+    assert.equal(entry.sourceModel, "three-file");
+    assert.equal(entry.shared, undefined);
+    assert.equal(entry.data, undefined);
+    assert.equal(entry.structuralStatus, "issues");
+    assert.ok(
+      entry.issues.some((item) => item.ruleId === "content.shared.structure"),
+    );
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+test("reports a missing EN locale and does not fall back to JA", async () => {
+  const root = await fixture();
+  try {
+    await writeThreeFileNews(root, { en: null });
+    const entry = await readNewsEditorEntry("test-news", root);
+    assert.equal(entry.locales.en, undefined);
+    assert.equal(entry.locales.ja?.title, "三ファイルニュース");
+    assert.ok(
+      entry.issues.some(
+        (item) =>
+          item.ruleId === "content.locale.missing" && item.locale === "en",
+      ),
+    );
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+test("detects unresolved EN placeholders independently from JA", async () => {
+  const root = await fixture();
+  try {
+    await writeThreeFileNews(root, {
+      en: `---\ntitle: __TODO_EN_TITLE__\nsummary: __TODO_EN_SUMMARY__\n---\n`,
+    });
+    const entry = await readNewsEditorEntry("test-news", root);
+    assert.equal(entry.data?.title, "三ファイルニュース");
+    assert.equal(
+      entry.issues.filter(
+        (item) =>
+          item.ruleId === "content.placeholder.unresolved" &&
+          item.locale === "en",
+      ).length,
+      2,
+    );
+    assert.equal(
+      entry.issues.some(
+        (item) =>
+          item.ruleId === "content.placeholder.unresolved" &&
+          item.locale === "ja",
+      ),
+      false,
+    );
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+test("localized News Draft gates JA and EN Preview independently", async () => {
+  const root = await fixture();
+  try {
+    await writeThreeFileNews(root, {
+      en: `---\ntitle: __TODO_EN_TITLE__\nsummary: __TODO_EN_SUMMARY__\n---\n`,
+    });
+    const draft = createNewsEditorDraft(
+      await readNewsEditorEntry("test-news", root),
+    )!;
+    assert.deepEqual(validateNewsEditorDraft(draft).capabilities.preview, {
+      ja: true,
+      en: false,
+    });
+    const translated = updateNewsEditorDraft(draft, (next) => {
+      if (next.locales.en.state !== "editable") return;
+      next.locales.en.value.title = "Translated title";
+      next.locales.en.value.summary = "Translated summary";
+    });
+    assert.deepEqual(validateNewsEditorDraft(translated).capabilities.preview, {
+      ja: true,
+      en: true,
+    });
+    assert.equal(createNewsPreviewModel(translated, "en").locale, "en");
+    assert.equal(
+      createNewsPreviewModel(translated, "en").data.title,
+      "Translated title",
+    );
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
 test("Home-visible News requires a link and blocks every action", async () => {
   const root = await fixture();
   try {
@@ -54,7 +192,7 @@ test("Home-visible News requires a link and blocks every action", async () => {
     const validation = validateNewsEditorDraft(draft);
     assert.deepEqual(validation.capabilities, {
       save: false,
-      preview: false,
+      preview: { ja: false, en: false },
       publish: false,
     });
     assert.throws(

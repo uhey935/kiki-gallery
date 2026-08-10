@@ -4,7 +4,10 @@ import NewsDraftForm from "../../../../components/editor/NewsDraftForm.astro";
 import NewsValidationPanel from "../../../../components/editor/NewsValidationPanel.astro";
 import RenamePanel from "../../../../components/editor/RenamePanel.astro";
 import NewsDeletePanel from "../../../../components/editor/NewsDeletePanel.astro";
-import { createNewsEditorDraft } from "../../../../editor/news-draft-state";
+import {
+  createNewsEditorDraft,
+  validateNewsEditorDraft,
+} from "../../../../editor/news-draft-state";
 import {
   readNewsEditorEntry,
   readNewsEditorState,
@@ -21,6 +24,9 @@ export async function getStaticPaths() {
 }
 const { entry } = Astro.props;
 const draft = createNewsEditorDraft(entry);
+const initialCapabilities = draft
+  ? validateNewsEditorDraft(draft).capabilities
+  : { save: false, preview: { ja: false, en: false }, publish: false };
 const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
 ---
 
@@ -29,7 +35,8 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     <p class="editor-eyebrow">News workspace</p><h1>
       {entry.data?.title ?? entry.contentId}
     </h1><p>
-      <span data-workspace-content-id>{entry.contentId}</span> · Current flat Markdown
+      <span data-workspace-content-id>{entry.contentId}</span> · Localized three-file
+      draft
     </p>
   </header>
   <div class="editor-workspace">
@@ -48,7 +55,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   </div>
   <RenamePanel collection="news" contentId={entry.contentId} />
   <NewsDeletePanel contentId={entry.contentId} />
-  <ActionBar mode="news" loaded={Boolean(draft)} preview={false} />
+  <ActionBar
+    mode="news"
+    loaded={Boolean(draft)}
+    preview={initialCapabilities.preview}
+  />
 </EditorLayout>
 <script
   type="application/json"
@@ -59,6 +70,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
 <script>
   import {
     isNewsEditorDraftDirty,
+    updateNewsEditorDraft,
     validateNewsEditorDraft,
     type NewsEditorDraftState,
   } from "../../../../editor/news-draft-state";
@@ -76,8 +88,8 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     "[data-news-draft-form]",
   );
   const save = document.querySelector<HTMLButtonElement>("[data-save-news]");
-  const preview = document.querySelector<HTMLButtonElement>(
-    "[data-preview-news]",
+  const previews = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-preview-news]"),
   );
   const publish = document.querySelector<HTMLButtonElement>(
     "[data-publish-news]",
@@ -85,7 +97,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   const status = document.querySelector<HTMLElement>(
     "[data-news-action-status]",
   );
-  if (raw && form && save && preview && publish && status) {
+  if (raw && form && save && previews.length === 2 && publish && status) {
     let baseline = JSON.parse(raw) as NewsEditorDraftState;
     let draft = structuredClone(baseline);
     let pending: "save" | "preview" | "publish" | null = null;
@@ -109,28 +121,56 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     const read = () => {
       const data = new FormData(form);
       const value = (name: string) => String(data.get(name) ?? "");
-      draft = {
-        ...draft,
-        data: {
-          title: value("title"),
-          date: value("date"),
-          news_type: value(
-            "news_type",
-          ) as NewsEditorDraftState["data"]["news_type"],
-          summary: optional(value("summary")),
-          link: optional(value("link")),
-          show_on_home: data.get("show_on_home") === "on",
-        },
-      };
+      draft = updateNewsEditorDraft(draft, (next) => {
+        if (next.shared.state === "editable") {
+          next.shared.value.date = value("shared.date");
+          next.shared.value.news_type = value(
+            "shared.news_type",
+          ) as NewsEditorDraftState["data"]["news_type"];
+          next.shared.value.link = optional(value("shared.link"));
+          next.shared.value.show_on_home =
+            data.get("shared.show_on_home") === "on";
+        }
+        for (const locale of ["ja", "en"] as const) {
+          const source = next.locales[locale];
+          if (source.state !== "editable") continue;
+          source.value.title = value(`${locale}.title`);
+          source.value.summary = optional(value(`${locale}.summary`));
+        }
+      });
     };
     const render = () => {
       const dirty = isNewsEditorDraftDirty(baseline, draft);
       const validation = validateNewsEditorDraft(draft);
       const capabilities = validation.capabilities;
-      renderFlatValidationPanel(form, validation);
+      renderFlatValidationPanel(form, {
+        ...validation,
+        capabilities: {
+          ...capabilities,
+          preview: capabilities.preview.ja || capabilities.preview.en,
+        },
+      });
       const locked = pending !== null || recoveryRequired || deleteLocked;
       save.disabled = locked || !dirty || !capabilities.save;
-      preview.disabled = locked || !capabilities.preview;
+      for (const locale of ["ja", "en"] as const) {
+        const preview = previews.find(
+          (candidate) => candidate.dataset.previewNews === locale,
+        );
+        if (preview) preview.disabled = locked || !capabilities.preview[locale];
+        const capability = document.querySelector<HTMLElement>(
+          `[data-preview-${locale}]`,
+        );
+        if (capability)
+          capability.textContent = capabilities.preview[locale]
+            ? "Available"
+            : "Blocked";
+        setActionReason(
+          `preview-${locale}`,
+          capabilities.preview[locale]
+            ? `Preview current ${locale.toUpperCase()} draft`
+            : `${locale.toUpperCase()} validation is blocking preview`,
+        );
+      }
       publish.disabled = locked || dirty || !capabilities.publish;
       form
         .querySelectorAll<
@@ -142,7 +182,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         pending,
         dirty,
         canSave: capabilities.save,
-        canPreview: capabilities.preview,
+        canPreview: capabilities.preview.ja || capabilities.preview.en,
         canPublish: capabilities.publish,
         savedSincePublish,
         recoveryRequired,
@@ -151,7 +191,6 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       status.textContent = ux.status;
       status.dataset.state = pending ? "pending" : dirty ? "dirty" : "saved";
       setActionReason("save", ux.saveTitle);
-      setActionReason("preview", ux.previewTitle);
       setActionReason("publish", ux.publishTitle);
       window.dispatchEvent(
         new CustomEvent("editor:workspace-state", {
@@ -195,23 +234,28 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         render();
       }
     });
-    preview.addEventListener("click", async () => {
-      pending = "preview";
-      render();
-      try {
-        const result = await request("/editor/api/news-preview/create", {
-          draft,
-        });
-        window.open(result.url, "_blank", "noopener,noreferrer");
-        statusMessage = "Draft preview opened";
-      } catch (error) {
-        const value = error as Error & { code?: string };
-        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
-      } finally {
-        pending = null;
+    for (const preview of previews)
+      preview.addEventListener("click", async () => {
+        const locale = preview.dataset.previewNews as "ja" | "en";
+        if (!validateNewsEditorDraft(draft).capabilities.preview[locale])
+          return;
+        pending = "preview";
         render();
-      }
-    });
+        try {
+          const result = await request("/editor/api/news-preview/create", {
+            draft,
+            locale,
+          });
+          window.open(result.url, "_blank", "noopener,noreferrer");
+          statusMessage = `${locale.toUpperCase()} draft preview opened`;
+        } catch (error) {
+          const value = error as Error & { code?: string };
+          statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
+        } finally {
+          pending = null;
+          render();
+        }
+      });
     publish.addEventListener("click", async () => {
       pending = "publish";
       render();

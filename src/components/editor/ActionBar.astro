@@ -18,6 +18,16 @@ const {
 } = Astro.props;
 const journalPreview =
   typeof preview === "boolean" ? { ja: preview, en: preview } : preview;
+const localizedCollection = mode === "news" ? "news" : "journal";
+const localizedPreviewAttributes = (locale: "ja" | "en") => ({
+  ["data-preview-" + localizedCollection]: locale,
+});
+const localizedSaveAttributes = {
+  ["data-save-" + localizedCollection]: true,
+};
+const localizedPublishAttributes = {
+  ["data-publish-" + localizedCollection]: true,
+};
 const flatPreview = typeof preview === "boolean" ? preview : false;
 const flatCollection =
   mode === "home"
@@ -39,7 +49,7 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
 
 <footer class="editor-action-bar" aria-label="Editor actions">
   {
-    mode !== "journal" ? (
+    mode !== "journal" && mode !== "news" ? (
       <>
         <span
           data-action-status
@@ -91,7 +101,12 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
       </>
     ) : (
       <>
-        <span data-action-status role="status" aria-live="polite">
+        <span
+          data-action-status
+          {...(mode === "news" ? flatStatusAttributes : {})}
+          role="status"
+          aria-live="polite"
+        >
           {dirty
             ? "Unsaved changes"
             : loaded
@@ -103,7 +118,7 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
             <button
               class="editor-button editor-button--secondary"
               type="button"
-              data-preview-journal="ja"
+              {...localizedPreviewAttributes("ja")}
               disabled={!journalPreview.ja}
             >
               Preview JA
@@ -114,7 +129,7 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
             <button
               class="editor-button editor-button--secondary"
               type="button"
-              data-preview-journal="en"
+              {...localizedPreviewAttributes("en")}
               disabled={!journalPreview.en}
             >
               Preview EN
@@ -125,7 +140,7 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
             <button
               class="editor-button"
               type="button"
-              data-save-journal
+              {...localizedSaveAttributes}
               disabled={!loaded || !dirty || !save}
             >
               Save
@@ -136,7 +151,7 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
             <button
               class="editor-button"
               type="button"
-              data-publish-journal
+              {...localizedPublishAttributes}
               disabled={!loaded || dirty || !publish}
             >
               Publish

@@ -1,8 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection } from "astro:content";
 import { journalRouteRegistry } from "../../content-boundaries/journal";
 import { getJournalProductionFacade } from "../../content-boundaries/journal-production";
+import { getNewsProductionFacade } from "../../content-boundaries/news-production";
 
 // 1. 型定義
 type NewsItem = {
@@ -15,14 +15,15 @@ type NewsItem = {
 };
 
 // 2. データ取得
-const [news, journalContent] = await Promise.all([
-  getCollection("news"),
+const [newsContent, journalContent] = await Promise.all([
+  getNewsProductionFacade(),
   getJournalProductionFacade(),
 ]);
+const news = newsContent.forIndex("ja");
 
 // 3. Newsの整形
 const newsItems: NewsItem[] = news.map((item) => ({
-  id: item.id,
+  id: item.data.contentId,
   href: item.data.link ?? null,
   title: item.data.title,
   date: new Date(item.data.date),

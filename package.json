@@ -12,10 +12,13 @@
     "preview": "astro preview",
     "astro": "astro",
     "journal:test": "node --experimental-strip-types --test src/content-loaders/journal/*.test.ts src/content-boundaries/journal.test.ts",
+    "news:test": "node --experimental-strip-types --test src/content-loaders/news/*.test.ts src/content-boundaries/news.test.ts",
     "editor:test": "node --experimental-strip-types --test src/editor/*.test.ts",
     "editor:test:browser": "node tests/browser/run-browser-tests.mjs",
     "backup": "node --experimental-strip-types src/editor/backup-cli.ts",
-    "journal:migration:manifest": "node --experimental-strip-types src/content-loaders/journal/migration-manifest.ts"
+    "journal:migration:manifest": "node --experimental-strip-types src/content-loaders/journal/migration-manifest.ts",
+    "news:migration:manifest": "node --experimental-strip-types src/content-loaders/news/migration-manifest.ts",
+    "news:migration:execute": "node --experimental-strip-types src/content-loaders/news/migration-executor.ts"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.2.2",
