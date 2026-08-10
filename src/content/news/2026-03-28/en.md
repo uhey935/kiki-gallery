@@ -1,4 +1,4 @@
 ---
-title: __TODO_EN_TITLE__
-summary: __TODO_EN_SUMMARY__
+title: Website Launch Announcement
+summary: KiKi Gallery has launched its official website.
 ---

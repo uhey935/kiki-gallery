@@ -1,4 +1,4 @@
 ---
-title: __TODO_EN_TITLE__
-summary: __TODO_EN_SUMMARY__
+title: Yuka Mori Solo Exhibition “Intertwined — Playful Mesh”
+summary: KiKi Gallery is pleased to present “Intertwined — Playful Mesh,” a solo exhibition by Yuka Mori.
 ---

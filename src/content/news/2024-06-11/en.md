@@ -1,4 +1,4 @@
 ---
-title: __TODO_EN_TITLE__
-summary: __TODO_EN_SUMMARY__
+title: Keisuke Matsuda Solo Exhibition “Undulation”
+summary: KiKi Gallery is pleased to present “Undulation,” a solo exhibition by Keisuke Matsuda.
 ---

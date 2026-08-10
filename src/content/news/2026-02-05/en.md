@@ -1,4 +1,4 @@
 ---
-title: __TODO_EN_TITLE__
-summary: __TODO_EN_SUMMARY__
+title: Reiko Kinoshita and Yuka Mori Two-Person Exhibition
+summary: KiKi Gallery is pleased to present a two-person exhibition by Reiko Kinoshita and Yuka Mori.
 ---

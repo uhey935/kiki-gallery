@@ -1,4 +1,4 @@
 ---
-title: __TODO_EN_TITLE__
-summary: __TODO_EN_SUMMARY__
+title: KiKi Gallery Now Represents Works by Keisuke Matsuda
+summary: KiKi Gallery is pleased to announce that we now represent works by Keisuke Matsuda.
 ---

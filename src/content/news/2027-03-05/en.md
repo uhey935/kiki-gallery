@@ -1,4 +1,4 @@
 ---
-title: __TODO_EN_TITLE__
-summary: __TODO_EN_SUMMARY__
+title: Alana Wilson Exhibition “Roots”
+summary: KiKi Gallery is pleased to present “Roots,” an exhibition by Alana Wilson.
 ---

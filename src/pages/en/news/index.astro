@@ -1,0 +1,118 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { journalRouteRegistry } from "../../../content-boundaries/journal";
+import { getJournalProductionFacade } from "../../../content-boundaries/journal-production";
+import { getNewsProductionFacade } from "../../../content-boundaries/news-production";
+
+type NewsItem = {
+  id: string;
+  href: string | null;
+  title: string;
+  date: Date;
+  type: "exhibition" | "artist" | "general" | "Journal";
+  summary: string;
+};
+
+const [newsContent, journalContent] = await Promise.all([
+  getNewsProductionFacade(),
+  getJournalProductionFacade(),
+]);
+
+const newsItems: NewsItem[] = newsContent.forIndex("en").map((item) => ({
+  id: item.data.contentId,
+  href: item.data.link ?? null,
+  title: item.data.title,
+  date: new Date(item.data.date),
+  type: item.data.news_type,
+  summary: item.data.summary ?? "",
+}));
+
+const journalItems: NewsItem[] = journalContent
+  .forNewsIntegration("en")
+  .map((item) => ({
+    id: item.data.contentId,
+    href: journalRouteRegistry.build({
+      collection: "journal",
+      contentId: item.data.contentId,
+      locale: "en",
+    }),
+    title: item.data.title,
+    date: new Date(item.data.date),
+    type: "Journal",
+    summary: item.data.summary,
+  }));
+
+const sortedItems = [...newsItems, ...journalItems].sort(
+  (a, b) => b.date.getTime() - a.date.getTime(),
+);
+
+const groupedByYear = sortedItems.reduce<Record<string, NewsItem[]>>(
+  (groups, item) => {
+    const year = String(item.date.getFullYear());
+    groups[year] ??= [];
+    groups[year].push(item);
+    return groups;
+  },
+  {},
+);
+
+const years = Object.keys(groupedByYear).sort((a, b) => Number(b) - Number(a));
+
+const formatDate = (date: Date) => {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${month}.${day}`;
+};
+
+const categoryLinks = {
+  exhibition: "/exhibitions",
+  artist: "/artists",
+  Journal: "/en/journal",
+};
+---
+
+<Layout title="News" locale="en">
+  <section class="news-index section">
+    <h1 class="index-h1">News</h1>
+
+    {
+      years.map((year) => (
+        <section class="news-year" data-year={year}>
+          <div class="news-year-row">
+            <div class="news-year-left">
+              <h2 class="news-year-heading">{year}</h2>
+            </div>
+
+            <div class="news-year-right">
+              <ul class="news-list">
+                {groupedByYear[year].map((item) => (
+                  <li class="news-item">
+                    <article class="news-card">
+                      <div class="news-meta">
+                        <span class="news-date">{formatDate(item.date)}</span>
+                        <span class="news-separator"> | </span>
+                        <span class="news-category">
+                          {item.type === "general" ? (
+                            item.type
+                          ) : (
+                            <a href={categoryLinks[item.type]}>{item.type}</a>
+                          )}
+                        </span>
+                      </div>
+
+                      <h3 class="news-card-title">
+                        {item.href ? <a href={item.href}>{item.title}</a> : item.title}
+                      </h3>
+
+                      <p class="news-excerpt">{item.summary}</p>
+                    </article>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      ))
+    }
+  </section>
+</Layout>

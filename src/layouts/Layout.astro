@@ -16,6 +16,7 @@ interface Props {
   description?: string;
   image?: string;
   flush?: boolean;
+  locale?: "ja" | "en";
 }
 
 const {
@@ -23,6 +24,7 @@ const {
   description,
   image,
   flush = false,
+  locale = "ja",
 } = Astro.props;
 
 // TODO: 本番ドメイン設定後、Astro.siteのみを使用する
@@ -33,7 +35,7 @@ const ogImageUrl = new URL(image ?? "/default-og.jpg", siteUrl).toString();
 ---
 
 <!doctype html>
-<html lang="ja">
+<html lang={locale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
