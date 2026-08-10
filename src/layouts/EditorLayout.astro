@@ -8,6 +8,7 @@ interface Props {
 }
 
 const { title, section } = Astro.props;
+const sectionHref = section ? `/editor/${section.toLowerCase()}` : undefined;
 ---
 
 <!doctype html>
@@ -25,8 +26,8 @@ const { title, section } = Astro.props;
           >KiKi <span>Editor</span></a
         >
         <nav aria-label="Editor navigation">
-          <a href={editorRoutes.dashboard}>Dashboard</a>
-          {section && <span>{section}</span>}
+          <a href="/editor">Dashboard</a>
+          {section && <a href={sectionHref}>{section}</a>}
         </nav>
         <span class="editor-environment">Local workspace</span>
       </header>

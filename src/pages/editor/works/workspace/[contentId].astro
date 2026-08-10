@@ -1,4 +1,5 @@
 ---
+import ActionBar from "../../../../components/editor/ActionBar.astro";
 import WorksDraftForm from "../../../../components/editor/WorksDraftForm.astro";
 import WorksValidationPanel from "../../../../components/editor/WorksValidationPanel.astro";
 import RenamePanel from "../../../../components/editor/RenamePanel.astro";
@@ -60,29 +61,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
       <WorksDeletePanel contentId={entry.contentId} />
     </aside>
   </div>
-  <footer class="editor-action-bar" aria-label="Editor actions">
-    <span data-works-action-status role="status">Saved · ready</span><div
-      class="editor-action-bar__actions"
-    >
-      <button
-        class="editor-button editor-button--secondary"
-        type="button"
-        data-preview-works
-        disabled
-        title="Preview is unavailable until the draft passes validation"
-        >Preview</button
-      ><button class="editor-button" type="button" data-save-works disabled
-        >Save</button
-      ><button
-        class="editor-button"
-        type="button"
-        data-publish-works
-        disabled
-        title="Publish is unavailable until the saved draft passes validation"
-        >Publish</button
-      >
-    </div>
-  </footer>
+  <ActionBar mode="works" loaded={Boolean(draft)} preview={false} />
 </EditorLayout>
 <script
   type="application/json"
@@ -181,6 +160,18 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
     const isDirty = () =>
       isWorksEditorDraftDirty(baseline, draft) ||
       JSON.stringify(assetBaseline) !== JSON.stringify(assetDraft);
+    const setActionReason = (action: string, reason: string) => {
+      const container = document.querySelector<HTMLElement>(
+        `[data-action="${action}"]`,
+      );
+      const hint = container?.querySelector<HTMLElement>(
+        "[data-action-reason]",
+      );
+      const actionButton =
+        container?.querySelector<HTMLButtonElement>("button");
+      if (hint) hint.textContent = reason;
+      if (actionButton) actionButton.title = reason;
+    };
     const renderAssets = () => {
       assetList.replaceChildren(
         ...assetDraft.images.map((image, index) => {
@@ -297,9 +288,9 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
         recoveryRequired,
         statusMessage,
       });
-      button.title = ux.saveTitle;
-      previewButton.title = ux.previewTitle;
-      publishButton.title = ux.publishTitle;
+      setActionReason("save", ux.saveTitle);
+      setActionReason("preview", ux.previewTitle);
+      setActionReason("publish", ux.publishTitle);
       form
         .querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
           "input, textarea",
@@ -374,7 +365,10 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
           );
         }
       }
-      if (status) status.textContent = ux.status;
+      if (status) {
+        status.textContent = ux.status;
+        status.dataset.state = pending ? "pending" : dirty ? "dirty" : "saved";
+      }
       window.dispatchEvent(
         new CustomEvent("editor:workspace-state", {
           detail: {

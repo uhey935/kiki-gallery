@@ -1,67 +1,150 @@
 ---
 interface Props {
+  mode?: "journal" | "works" | "exhibitions" | "artists" | "news" | "home";
   dirty?: boolean;
   loaded?: boolean;
-  preview?: { ja: boolean; en: boolean };
+  preview?: { ja: boolean; en: boolean } | boolean;
   save?: boolean;
   publish?: boolean;
 }
 
 const {
+  mode = "journal",
   dirty = false,
   loaded = false,
   preview = { ja: false, en: false },
   save = false,
   publish = false,
 } = Astro.props;
+const journalPreview =
+  typeof preview === "boolean" ? { ja: preview, en: preview } : preview;
+const flatPreview = typeof preview === "boolean" ? preview : false;
+const flatCollection =
+  mode === "home"
+    ? "home"
+    : mode === "news"
+      ? "news"
+      : mode === "artists"
+        ? "artists"
+        : mode === "exhibitions"
+          ? "exhibitions"
+          : "works";
+const flatStatusAttributes = {
+  ["data-" + flatCollection + "-action-status"]: true,
+};
+const flatPreviewAttributes = { ["data-preview-" + flatCollection]: true };
+const flatSaveAttributes = { ["data-save-" + flatCollection]: true };
+const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
 ---
 
 <footer class="editor-action-bar" aria-label="Editor actions">
-  <span data-action-status role="status" aria-live="polite"
-    >{
-      dirty
-        ? "Unsaved changes"
-        : loaded
-          ? "Saved · ready"
-          : "No Editor State loaded"
-    }</span
-  >
-  <div class="editor-action-bar__actions">
-    <div class="editor-action" data-action="preview-ja">
-      <button
-        class="editor-button editor-button--secondary"
-        type="button"
-        data-preview-journal="ja"
-        disabled={!preview.ja}>Preview JA</button
-      >
-      <small data-action-reason></small>
-    </div>
-    <div class="editor-action" data-action="preview-en">
-      <button
-        class="editor-button editor-button--secondary"
-        type="button"
-        data-preview-journal="en"
-        disabled={!preview.en}>Preview EN</button
-      >
-      <small data-action-reason></small>
-    </div>
-    <div class="editor-action" data-action="save">
-      <button
-        class="editor-button"
-        type="button"
-        data-save-journal
-        disabled={!loaded || !dirty || !save}>Save</button
-      >
-      <small data-action-reason></small>
-    </div>
-    <div class="editor-action" data-action="publish">
-      <button
-        class="editor-button"
-        type="button"
-        data-publish-journal
-        disabled={!loaded || dirty || !publish}>Publish</button
-      >
-      <small data-action-reason></small>
-    </div>
-  </div>
+  {
+    mode !== "journal" ? (
+      <>
+        <span
+          data-action-status
+          {...flatStatusAttributes}
+          role="status"
+          aria-live="polite"
+        >
+          {dirty
+            ? "Unsaved changes"
+            : loaded
+              ? "Saved · ready"
+              : "No Editor State loaded"}
+        </span>
+        <div class="editor-action-bar__actions">
+          <div class="editor-action" data-action="preview">
+            <button
+              class="editor-button editor-button--secondary"
+              type="button"
+              {...flatPreviewAttributes}
+              disabled={!flatPreview}
+            >
+              Preview
+            </button>
+            <small data-action-reason />
+          </div>
+          <div class="editor-action" data-action="save">
+            <button
+              class="editor-button"
+              type="button"
+              {...flatSaveAttributes}
+              disabled={!loaded || !dirty || !save}
+            >
+              Save
+            </button>
+            <small data-action-reason />
+          </div>
+          <div class="editor-action" data-action="publish">
+            <button
+              class="editor-button"
+              type="button"
+              {...flatPublishAttributes}
+              disabled={!loaded || dirty || !publish}
+            >
+              Publish
+            </button>
+            <small data-action-reason />
+          </div>
+        </div>
+      </>
+    ) : (
+      <>
+        <span data-action-status role="status" aria-live="polite">
+          {dirty
+            ? "Unsaved changes"
+            : loaded
+              ? "Saved · ready"
+              : "No Editor State loaded"}
+        </span>
+        <div class="editor-action-bar__actions">
+          <div class="editor-action" data-action="preview-ja">
+            <button
+              class="editor-button editor-button--secondary"
+              type="button"
+              data-preview-journal="ja"
+              disabled={!journalPreview.ja}
+            >
+              Preview JA
+            </button>
+            <small data-action-reason />
+          </div>
+          <div class="editor-action" data-action="preview-en">
+            <button
+              class="editor-button editor-button--secondary"
+              type="button"
+              data-preview-journal="en"
+              disabled={!journalPreview.en}
+            >
+              Preview EN
+            </button>
+            <small data-action-reason />
+          </div>
+          <div class="editor-action" data-action="save">
+            <button
+              class="editor-button"
+              type="button"
+              data-save-journal
+              disabled={!loaded || !dirty || !save}
+            >
+              Save
+            </button>
+            <small data-action-reason />
+          </div>
+          <div class="editor-action" data-action="publish">
+            <button
+              class="editor-button"
+              type="button"
+              data-publish-journal
+              disabled={!loaded || dirty || !publish}
+            >
+              Publish
+            </button>
+            <small data-action-reason />
+          </div>
+        </div>
+      </>
+    )
+  }
 </footer>

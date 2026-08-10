@@ -1,4 +1,5 @@
 ---
+import ActionBar from "../../../../components/editor/ActionBar.astro";
 import ArtistsDraftForm from "../../../../components/editor/ArtistsDraftForm.astro";
 import ArtistsValidationPanel from "../../../../components/editor/ArtistsValidationPanel.astro";
 import ArtistsDeletePanel from "../../../../components/editor/ArtistsDeletePanel.astro";
@@ -50,22 +51,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       <ArtistsDeletePanel contentId={entry.contentId} />
     </aside>
   </div>
-  <footer class="editor-action-bar" aria-label="Editor actions">
-    <span data-artists-action-status role="status">Saved · ready</span><div
-      class="editor-action-bar__actions"
-    >
-      <button
-        class="editor-button editor-button--secondary"
-        type="button"
-        data-preview-artists
-        disabled>Preview</button
-      ><button class="editor-button" type="button" data-save-artists disabled
-        >Save</button
-      ><button class="editor-button" type="button" data-publish-artists disabled
-        >Publish</button
-      >
-    </div>
-  </footer>
+  <ActionBar mode="artists" loaded={Boolean(draft)} preview={false} />
 </EditorLayout>
 <script
   type="application/json"
@@ -110,6 +96,18 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     let recoveryRequired = false;
     let inputInvalid = false;
     let deleteLocked = false;
+    const setActionReason = (action: string, reason: string) => {
+      const container = document.querySelector<HTMLElement>(
+        '[data-action="' + action + '"]',
+      );
+      const hint = container?.querySelector<HTMLElement>(
+        "[data-action-reason]",
+      );
+      const actionButton =
+        container?.querySelector<HTMLButtonElement>("button");
+      if (hint) hint.textContent = reason;
+      if (actionButton) actionButton.title = reason;
+    };
     const optional = (value: string) => value.trim() || undefined;
     const read = () => {
       const data = new FormData(form);
@@ -211,9 +209,10 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           : statusMessage,
       });
       status.textContent = ux.status;
-      save.title = ux.saveTitle;
-      preview.title = ux.previewTitle;
-      publish.title = ux.publishTitle;
+      status.dataset.state = pending ? "pending" : dirty ? "dirty" : "saved";
+      setActionReason("save", ux.saveTitle);
+      setActionReason("preview", ux.previewTitle);
+      setActionReason("publish", ux.publishTitle);
       window.dispatchEvent(
         new CustomEvent("editor:workspace-state", {
           detail: { locked: locked || dirty },

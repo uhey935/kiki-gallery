@@ -5,31 +5,53 @@ const { data } = draft;
 ---
 
 <form class="editor-draft-form" data-artists-draft-form>
+  <div class="editor-field-meaning" aria-label="Field requirement legend">
+    <span><b>Required</b> needed for a valid draft</span>
+    <span><b>Optional</b> may be left blank</span>
+  </div>
   <section class="editor-entry-section">
     <header>
       <div><p class="editor-eyebrow">Identity</p><h2>Artist</h2></div>
     </header>
-    <div class="editor-entry-section__content editor-detail-list">
-      <label>Name<input name="name" value={data.name} /></label>
-      <label
-        >Display name<input
-          name="display_name"
-          value={data.display_name ?? ""}
-        /></label
-      >
-      <label
-        >Medium (one English term per line)<textarea name="medium"
-          >{data.medium.join("\n")}</textarea
-        ></label
-      >
-      <label
-        >Short biography<textarea name="short_bio">{data.short_bio}</textarea
-        ></label
-      >
-      <label
-        >Biography<textarea name="biography">{data.biography ?? ""}</textarea
-        ></label
-      >
+    <div class="editor-entry-section__content editor-field-grid">
+      <label data-editor-field="name">
+        <span>Name <small class="editor-field-badge">Required</small></span>
+        <input name="name" value={data.name} />
+      </label>
+      <label data-editor-field="display_name">
+        <span>
+          Display name
+          <small class="editor-field-badge editor-field-badge--optional">
+            Optional
+          </small>
+        </span>
+        <input name="display_name" value={data.display_name ?? ""} />
+      </label>
+      <label class="editor-field-wide" data-editor-field="medium">
+        <span>
+          Medium (one English term per line)
+          <small class="editor-field-badge">Required</small>
+        </span>
+        <textarea name="medium">{data.medium.join("\n")}</textarea>
+      </label>
+      <label class="editor-field-wide" data-editor-field="short_bio">
+        <span>
+          Short biography
+          <small class="editor-field-badge editor-field-badge--optional">
+            Optional
+          </small>
+        </span>
+        <textarea name="short_bio">{data.short_bio}</textarea>
+      </label>
+      <label class="editor-field-wide" data-editor-field="biography">
+        <span>
+          Biography
+          <small class="editor-field-badge editor-field-badge--optional">
+            Optional
+          </small>
+        </span>
+        <textarea name="biography">{data.biography ?? ""}</textarea>
+      </label>
     </div>
   </section>
   <section class="editor-entry-section">
@@ -42,12 +64,19 @@ const { data } = draft;
       Asset upload and replacement are outside this milestone. Edit the
       canonical public path only.
     </p>
-    <div class="editor-entry-section__content editor-detail-list">
-      <label
-        >Image path<input name="hero.image" value={data.hero.image} /></label
-      >
-      <label>Alt text<textarea name="hero_alt">{data.hero_alt}</textarea></label
-      >
+    <div class="editor-entry-section__content editor-field-grid">
+      <label class="editor-field-wide" data-editor-field="hero.image">
+        <span>
+          Image path <small class="editor-field-badge">Required</small>
+        </span>
+        <input name="hero.image" value={data.hero.image} />
+      </label>
+      <label class="editor-field-wide" data-editor-field="hero_alt">
+        <span>
+          Alt text <small class="editor-field-badge">Required</small>
+        </span>
+        <textarea name="hero_alt">{data.hero_alt}</textarea>
+      </label>
     </div>
   </section>
   <section class="editor-entry-section">
@@ -60,9 +89,15 @@ const { data } = draft;
       JSON array using single-a, single-b, double-a, or double-b layouts.
       Referenced assets remain managed by Works.
     </p>
-    <div class="editor-entry-section__content editor-detail-list">
-      <label
-        >Layout sections<textarea name="works_layout" rows="14"
+    <div class="editor-entry-section__content editor-field-grid">
+      <label class="editor-field-wide" data-editor-field="works_layout">
+        <span>
+          Layout sections
+          <small class="editor-field-badge editor-field-badge--optional">
+            Optional
+          </small>
+        </span>
+        <textarea name="works_layout" rows="14"
           >{
             JSON.stringify(
               data.works_layout?.map((section) => ({
@@ -73,24 +108,42 @@ const { data } = draft;
               2,
             )
           }</textarea
-        ></label
-      >
+        >
+      </label>
     </div>
   </section>
   <section class="editor-entry-section">
     <header>
       <div><p class="editor-eyebrow">Metadata</p><h2>SEO & body</h2></div>
     </header>
-    <div class="editor-entry-section__content editor-detail-list">
-      <label
-        >SEO title<input name="seo_title" value={data.seo_title ?? ""} /></label
-      >
-      <label
-        >Description<textarea name="description"
-          >{data.description ?? ""}</textarea
-        ></label
-      >
-      <label>Body<textarea name="body">{draft.body}</textarea></label>
+    <div class="editor-entry-section__content editor-field-grid">
+      <label data-editor-field="seo_title">
+        <span>
+          SEO title
+          <small class="editor-field-badge editor-field-badge--optional">
+            Optional
+          </small>
+        </span>
+        <input name="seo_title" value={data.seo_title ?? ""} />
+      </label>
+      <label class="editor-field-wide" data-editor-field="description">
+        <span>
+          Description
+          <small class="editor-field-badge editor-field-badge--optional">
+            Optional
+          </small>
+        </span>
+        <textarea name="description">{data.description ?? ""}</textarea>
+      </label>
+      <label class="editor-field-wide" data-editor-field="body">
+        <span>
+          Body
+          <small class="editor-field-badge editor-field-badge--optional">
+            Optional
+          </small>
+        </span>
+        <textarea name="body">{draft.body}</textarea>
+      </label>
     </div>
   </section>
 </form>

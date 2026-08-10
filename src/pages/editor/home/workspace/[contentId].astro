@@ -1,4 +1,5 @@
 ---
+import ActionBar from "../../../../components/editor/ActionBar.astro";
 import HomeDraftForm from "../../../../components/editor/HomeDraftForm.astro";
 import HomeValidationPanel from "../../../../components/editor/HomeValidationPanel.astro";
 import { createHomeEditorDraft } from "../../../../editor/home-draft-state";
@@ -35,22 +36,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         )
       }
     </main><HomeValidationPanel entry={entry} />
-  </div><footer class="editor-action-bar" aria-label="Editor actions">
-    <span data-home-action-status role="status">Saved · ready</span><div
-      class="editor-action-bar__actions"
-    >
-      <button
-        class="editor-button editor-button--secondary"
-        type="button"
-        data-preview-home
-        disabled>Preview</button
-      ><button class="editor-button" type="button" data-save-home disabled
-        >Save</button
-      ><button class="editor-button" type="button" data-publish-home disabled
-        >Publish</button
-      >
-    </div>
-  </footer></EditorLayout
+  </div><ActionBar
+    mode="home"
+    loaded={Boolean(draft)}
+    preview={false}
+  /></EditorLayout
 >
 <script
   type="application/json"
@@ -94,6 +84,18 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     let savedSincePublish = false;
     let statusMessage: string | null = null;
     let terminal = false;
+    const setActionReason = (action: string, reason: string) => {
+      const container = document.querySelector<HTMLElement>(
+        '[data-action="' + action + '"]',
+      );
+      const hint = container?.querySelector<HTMLElement>(
+        "[data-action-reason]",
+      );
+      const actionButton =
+        container?.querySelector<HTMLButtonElement>("button");
+      if (hint) hint.textContent = reason;
+      if (actionButton) actionButton.title = reason;
+    };
     const optional = (value: string) => value.trim() || undefined;
     const read = () => {
       const data = new FormData(form);
@@ -162,14 +164,16 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         canPreview: capabilities.preview,
         canPublish: capabilities.publish,
         savedSincePublish,
+        recoveryRequired: terminal,
         statusMessage,
       });
       status.textContent = terminal
         ? (statusMessage ?? "Manual recovery required")
         : ux.status;
-      save.title = ux.saveTitle;
-      preview.title = ux.previewTitle;
-      publish.title = ux.publishTitle;
+      status.dataset.state = pending ? "pending" : dirty ? "dirty" : "saved";
+      setActionReason("save", ux.saveTitle);
+      setActionReason("preview", ux.previewTitle);
+      setActionReason("publish", ux.publishTitle);
     };
     const request = async (url: string, body: unknown) => {
       const response = await fetch(url, {

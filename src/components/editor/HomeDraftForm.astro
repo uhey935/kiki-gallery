@@ -5,125 +5,182 @@ const { data } = draft;
 ---
 
 <form class="editor-draft-form" data-home-draft-form>
+  <div class="editor-field-meaning" aria-label="Field requirement legend">
+    <span><b>Required</b> needed for a valid draft</span>
+    <span><b>Optional</b> may be left blank</span>
+  </div>
   <section class="editor-entry-section">
     <header>
       <div><p class="editor-eyebrow">Singleton</p><h2>Home settings</h2></div>
     </header>
-    <div class="editor-entry-section__content editor-detail-list">
-      <label>Title<input name="title" value={data.title ?? ""} /></label><label
-        >Description<textarea name="description"
-          >{data.description ?? ""}</textarea
-        ></label
-      >
-      <label
-        ><input
-          name="hero_enabled"
-          type="checkbox"
-          checked={Boolean(data.home_hero)}
-        /> Custom hero media</label
-      >
-      <label
-        >Hero type<select name="hero_type"
-          ><option
-            value="image"
-            selected={data.home_hero?.media.type !== "video"}>image</option
-          ><option
-            value="video"
-            selected={data.home_hero?.media.type === "video"}>video</option
-          ></select
-        ></label
-      >
-      <label
-        >Hero image<input
-          name="hero_image"
-          value={data.home_hero?.media.image ?? ""}
-          placeholder="/images/home/…"
-        /></label
-      ><label
-        >Hero video<input
-          name="hero_video"
-          value={data.home_hero?.media.video ?? ""}
-        /></label
-      ><label
-        >Hero poster<input
-          name="hero_poster"
-          value={data.home_hero?.media.poster ?? ""}
-        /></label
-      >
-      <label
-        >Hero layout<select name="hero_layout"
-          ><option value="">default (omitted)</option>{
-            (["default", "portrait", "alternate"] as const).map((layout) => (
-              <option
-                value={layout}
-                selected={data.home_hero?.layout === layout}
-              >
-                {layout}
-              </option>
-            ))
-          }</select
-        ></label
-      >
+    <div class="editor-entry-section__content">
+      <div class="editor-field-grid">
+        <label data-editor-field="title">
+          <span>Title <small class="editor-field-badge">Required</small></span>
+          <input name="title" value={data.title ?? ""} />
+        </label>
+        <label class="editor-field-wide" data-editor-field="description">
+          <span>
+            Description
+            <small class="editor-field-badge editor-field-badge--optional">
+              Optional
+            </small>
+          </span>
+          <textarea name="description">{data.description ?? ""}</textarea>
+        </label>
+      </div>
+      <p>
+        <label data-editor-field="hero_enabled">
+          <input
+            name="hero_enabled"
+            type="checkbox"
+            checked={Boolean(data.home_hero)}
+          /> Custom hero media
+          <small class="editor-field-badge editor-field-badge--optional">
+            Optional
+          </small>
+        </label>
+      </p>
+      <div class="editor-field-grid">
+        <label data-editor-field="hero_type">
+          <span>
+            Hero type
+            <small class="editor-field-badge editor-field-badge--optional">
+              Optional
+            </small>
+          </span>
+          <select name="hero_type">
+            <option
+              value="image"
+              selected={data.home_hero?.media.type !== "video"}>image</option
+            >
+            <option
+              value="video"
+              selected={data.home_hero?.media.type === "video"}>video</option
+            >
+          </select>
+        </label>
+        <label data-editor-field="hero_image">
+          <span>
+            Hero image
+            <small class="editor-field-badge editor-field-badge--optional">
+              Optional
+            </small>
+          </span>
+          <input
+            name="hero_image"
+            value={data.home_hero?.media.image ?? ""}
+            placeholder="/images/home/…"
+          />
+        </label>
+        <label class="editor-field-wide" data-editor-field="hero_video">
+          <span>
+            Hero video
+            <small class="editor-field-badge editor-field-badge--optional">
+              Optional
+            </small>
+          </span>
+          <input name="hero_video" value={data.home_hero?.media.video ?? ""} />
+        </label>
+        <label class="editor-field-wide" data-editor-field="hero_poster">
+          <span>
+            Hero poster
+            <small class="editor-field-badge editor-field-badge--optional">
+              Optional
+            </small>
+          </span>
+          <input
+            name="hero_poster"
+            value={data.home_hero?.media.poster ?? ""}
+          />
+        </label>
+        <label data-editor-field="hero_layout">
+          <span>
+            Hero layout
+            <small class="editor-field-badge editor-field-badge--optional">
+              Optional
+            </small>
+          </span>
+          <select name="hero_layout">
+            <option value="">default (omitted)</option>
+            {
+              (["default", "portrait", "alternate"] as const).map((layout) => (
+                <option
+                  value={layout}
+                  selected={data.home_hero?.layout === layout}
+                >
+                  {layout}
+                </option>
+              ))
+            }
+          </select>
+        </label>
+      </div>
     </div>
   </section>
   {
     data.sections.map((section, index) => (
       <section class="editor-entry-section">
-        <>
-          <header>
-            <div>
-              <>
-                <p class="editor-eyebrow">Section {index + 1}</p>
-                <h2>{section.id}</h2>
-              </>
-            </div>
-          </header>
-          <div class="editor-entry-section__content editor-detail-list">
-            <>
-              <label>
-                ID
-                <select name={`section_${index}_id`}>
-                  {(["artists", "about"] as const).map((id) => (
-                    <option value={id} selected={section.id === id}>
-                      {id}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Title
-                <input name={`section_${index}_title`} value={section.title} />
-              </label>
-              <label>
-                Href
-                <input name={`section_${index}_href`} value={section.href} />
-              </label>
-            </>
-            <>
-              <label>
-                Landscape image
-                <input
-                  name={`section_${index}_landscape`}
-                  value={section.image.landscape}
-                />
-              </label>
-              <label>
-                Square image
-                <input
-                  name={`section_${index}_square`}
-                  value={section.image.square}
-                />
-              </label>
-              <label>
-                Portrait image
-                <input
-                  name={`section_${index}_portrait`}
-                  value={section.image.portrait}
-                />
-              </label>
-            </>
+        <header>
+          <div>
+            <p class="editor-eyebrow">Section {index + 1}</p>
+            <h2>{section.id}</h2>
           </div>
-        </>
+        </header>
+        <div class="editor-entry-section__content editor-field-grid">
+          <label data-editor-field={"sections." + index + ".id"}>
+            <span>
+              ID <small class="editor-field-badge">Required</small>
+            </span>
+            <select name={"section_" + index + "_id"}>
+              {(["artists", "about"] as const).map((id) => (
+                <option value={id} selected={section.id === id}>
+                  {id}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label data-editor-field={"sections." + index + ".title"}>
+            <span>
+              Title <small class="editor-field-badge">Required</small>
+            </span>
+            <input name={"section_" + index + "_title"} value={section.title} />
+          </label>
+          <label data-editor-field={"sections." + index + ".href"}>
+            <span>
+              Href <small class="editor-field-badge">Required</small>
+            </span>
+            <input name={"section_" + index + "_href"} value={section.href} />
+          </label>
+          <label data-editor-field={"sections." + index + ".image.landscape"}>
+            <span>
+              Landscape image
+              <small class="editor-field-badge">Required</small>
+            </span>
+            <input
+              name={"section_" + index + "_landscape"}
+              value={section.image.landscape}
+            />
+          </label>
+          <label data-editor-field={"sections." + index + ".image.square"}>
+            <span>
+              Square image <small class="editor-field-badge">Required</small>
+            </span>
+            <input
+              name={"section_" + index + "_square"}
+              value={section.image.square}
+            />
+          </label>
+          <label data-editor-field={"sections." + index + ".image.portrait"}>
+            <span>
+              Portrait image <small class="editor-field-badge">Required</small>
+            </span>
+            <input
+              name={"section_" + index + "_portrait"}
+              value={section.image.portrait}
+            />
+          </label>
+        </div>
       </section>
     ))
   }

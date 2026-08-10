@@ -10,29 +10,54 @@ const { data } = draft;
 ---
 
 <form class="editor-draft-form" aria-label="Works draft" data-works-draft-form>
+  <div class="editor-field-meaning" aria-label="Field requirement legend">
+    <span><b>Required</b> needed for a valid draft</span>
+    <span><b>Optional</b> may be left blank</span>
+  </div>
   <section class="editor-entry-section">
     <header>
       <div>
         <p class="editor-eyebrow">Shared</p><h2>Identity & presentation</h2>
       </div>
     </header>
-    <div class="editor-entry-section__content editor-detail-list">
-      <label>Artist<input name="artist" value={data.artist.id} /></label>
-      <label
-        >Year<input name="year" type="number" value={data.year ?? ""} /></label
-      >
-      <label>Size<input name="size" value={data.size ?? ""} /></label>
-      <label
-        >Orientation<input
-          name="orientation"
-          value={data.orientation ?? ""}
-        /></label
-      >
+    <div class="editor-entry-section__content editor-field-grid">
+      <label data-editor-field="artist">
+        <span>Artist <small class="editor-field-badge">Required</small></span>
+        <input name="artist" value={data.artist.id} />
+      </label>
+      <label data-editor-field="year">
+        <span
+          >Year <small class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        >
+        <input name="year" type="number" value={data.year ?? ""} />
+      </label>
+      <label data-editor-field="size">
+        <span
+          >Size <small class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        >
+        <input name="size" value={data.size ?? ""} />
+      </label>
+      <label data-editor-field="orientation">
+        <span
+          >Orientation <small
+            class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        >
+        <input name="orientation" value={data.orientation ?? ""} />
+      </label>
     </div>
   </section>
   <section class="editor-entry-section">
     <header>
-      <div><p class="editor-eyebrow">Shared / Localized</p><h2>Images</h2></div>
+      <div>
+        <p class="editor-eyebrow">Shared / Localized</p>
+        <h2>Images <small class="editor-field-badge">Required</small></h2>
+      </div>
     </header>
     <p>
       {
@@ -98,14 +123,26 @@ const { data } = draft;
     <header>
       <div><p class="editor-eyebrow">Shared</p><h2>Inquiry</h2></div>
     </header>
-    <div class="editor-entry-section__content editor-detail-list">
-      <label>Type<input name="inquiry.type" value={data.inquiry.type} /></label>
-      <label
-        >URL<input
+    <div class="editor-entry-section__content editor-field-grid">
+      <label data-editor-field="inquiry.type">
+        <span
+          >Type <small class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        >
+        <input name="inquiry.type" value={data.inquiry.type} />
+      </label>
+      <label data-editor-field="inquiry.url">
+        <span
+          >URL <small class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        >
+        <input
           name="inquiry.url"
           value={"url" in data.inquiry ? (data.inquiry.url ?? "") : ""}
-        /></label
-      >
+        />
+      </label>
     </div>
   </section>
   <section class="editor-entry-section">
@@ -115,20 +152,46 @@ const { data } = draft;
     <p>
       Current flat storage has one localized source; no JA/EN parity is implied.
     </p>
-    <div class="editor-entry-section__content editor-readonly-fields">
-      <label>Title<input name="title" value={data.title} /></label>
-      <label
-        >Material<input name="material" value={data.material ?? ""} /></label
-      >
-      <label
-        >SEO title<input name="seo_title" value={data.seo_title ?? ""} /></label
-      >
-      <label
-        >Description<textarea name="description"
-          >{data.description ?? ""}</textarea
-        ></label
-      >
-      <label>Body<textarea name="body">{draft.body}</textarea></label>
+    <div class="editor-entry-section__content editor-field-grid">
+      <label class="editor-field-wide" data-editor-field="title">
+        <span>Title <small class="editor-field-badge">Required</small></span>
+        <input name="title" value={data.title} />
+      </label>
+      <label data-editor-field="material">
+        <span
+          >Material <small
+            class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        >
+        <input name="material" value={data.material ?? ""} />
+      </label>
+      <label data-editor-field="seo_title">
+        <span
+          >SEO title <small
+            class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        >
+        <input name="seo_title" value={data.seo_title ?? ""} />
+      </label>
+      <label class="editor-field-wide" data-editor-field="description">
+        <span
+          >Description <small
+            class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        >
+        <textarea name="description">{data.description ?? ""}</textarea>
+      </label>
+      <label class="editor-field-wide" data-editor-field="body">
+        <span
+          >Body <small class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        >
+        <textarea name="body">{draft.body}</textarea>
+      </label>
     </div>
   </section>
 </form>
