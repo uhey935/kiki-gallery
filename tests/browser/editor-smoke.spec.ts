@@ -56,17 +56,19 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
 
   await page.locator('input[name="contentId"]').fill(contentId);
   await page.locator('input[name="ja.title"]').fill("Browser foundation news");
+  await page
+    .locator('textarea[name="ja.summary"]')
+    .fill("Browser foundation News acceptance fixture.");
+  await page.locator('input[name="en.title"]').fill("Browser foundation news");
+  await page
+    .locator('textarea[name="en.summary"]')
+    .fill("Browser foundation News acceptance fixture.");
   await page.locator('input[name="shared.date"]').fill("2026-08-09");
   await page.locator('input[name="shared.show_on_home"]').check();
   await expect(page.locator("[data-create-save]")).toBeDisabled();
   await expect(page.locator("[data-create-preview]")).toBeDisabled();
 
   await page.locator('input[name="shared.show_on_home"]').uncheck();
-  await expect(page.locator("[data-create-save]")).toBeDisabled();
-  await page.locator('input[name="en.title"]').fill("Browser foundation news");
-  await page
-    .locator('textarea[name="en.summary"]')
-    .fill("Browser foundation News acceptance fixture.");
   await expect(page.locator("[data-create-save]")).toBeEnabled();
   const previewPagePromise = context.waitForEvent("page");
   await page.locator("[data-create-preview]").click();
