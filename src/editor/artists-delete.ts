@@ -191,10 +191,13 @@ async function assertNoIncomingReferences(
               referenced(
                 "Incoming Exhibitions.artists[] reference blocks Delete",
               );
-          } else if (canonicalPath.startsWith("src/content/news/")) {
+          } else if (
+            canonicalPath.startsWith("src/content/news/") &&
+            entry.name === "index.yaml"
+          ) {
             const item = await readNewsEditorEntry(
-              path.basename(file, ".md"),
-              path.dirname(file),
+              path.basename(path.dirname(file)),
+              path.dirname(path.dirname(file)),
             );
             if (item.structuralStatus !== "valid" || !item.data)
               throw new Error("invalid News reference source");

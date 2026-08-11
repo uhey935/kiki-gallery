@@ -21,7 +21,7 @@ test("flat Create screens begin with isolated validation-blocked scaffolds", () 
   ] as const;
   for (const [draft, validate] of scaffolds) {
     assert.equal(draft.contentId, "");
-    assert.equal(draft.sourceRaw, "");
+    if ("sourceRaw" in draft) assert.equal(draft.sourceRaw, "");
     const result = validate(draft as never);
     assert.equal(result.capabilities.save, false);
     if (typeof result.capabilities.preview === "boolean")

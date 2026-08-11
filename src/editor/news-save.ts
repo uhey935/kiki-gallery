@@ -143,10 +143,7 @@ export async function saveNewsEditorDraft(
 ) {
   if (!validateNewsEditorDraft(draft).capabilities.save)
     throw new NewsSaveError("News draft has blocking issues", "invalid-draft");
-  if (
-    draft.contentId !== baseline.contentId ||
-    baseline.sourceModel !== "three-file"
-  )
+  if (draft.contentId !== baseline.contentId)
     throw new NewsSaveError("Content baseline mismatch", "canonical-mismatch");
   const entry = await readNewsEditorEntry(draft.contentId, root);
   const canonical = createNewsEditorDraft(entry);

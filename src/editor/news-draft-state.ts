@@ -20,16 +20,13 @@ export type NewsEditorDraftSource<T> =
 
 export type NewsEditorDraftState = {
   contentId: string;
-  sourceModel: "legacy" | "three-file";
   shared: NewsEditorDraftSource<NewsShared>;
   locales: Record<
     NewsLocale,
     NewsEditorDraftSource<NewsLocalized & { body: string }>
   >;
-  /** Compatibility view for the legacy write APIs. */
+  /** JA compatibility view for the current form and preview APIs. */
   data: NewsData;
-  /** Legacy write preimage retained until transaction migration. */
-  sourceRaw: string;
 };
 
 const clone = <T>(value: T): T => structuredClone(value);
@@ -54,15 +51,12 @@ export const createNewsEditorDraft = (
   if (!entry.shared || !entry.locales.ja || !entry.data) return undefined;
   return {
     contentId: entry.contentId,
-    sourceModel: entry.sourceModel,
     shared: source(entry.shared),
     locales: {
       ja: source(entry.locales.ja),
       en: source(entry.locales.en),
     },
     data: compatibilityData(entry.shared, entry.locales.ja),
-    sourceRaw:
-      entry.sourceModel === "legacy" ? entry.raw : (entry.legacy?.raw ?? ""),
   };
 };
 
@@ -204,12 +198,11 @@ export function validateNewsEditorDraft(draft: NewsEditorDraftState) {
     };
   }
 
-  // Legacy callers still mutate `data`; keep their validation fail-closed
-  // until every write boundary accepts the localized draft directly.
-  const legacy = newsSchema.safeParse(draft.data);
-  if (!legacy.success)
+  // The current form APIs still mutate the JA compatibility view directly.
+  const compatibility = newsSchema.safeParse(draft.data);
+  if (!compatibility.success)
     issues.push(
-      ...legacy.error.issues.map((item) =>
+      ...compatibility.error.issues.map((item) =>
         validationIssue(draft.contentId, "ja", [item.path.join(".")]),
       ),
     );
@@ -221,16 +214,15 @@ export function validateNewsEditorDraft(draft: NewsEditorDraftState) {
     locales,
     issues,
   });
-  const legacyAllowed = draft.sourceModel === "legacy" && legacy.success;
   return {
     issues,
     capabilities: {
       save: capabilities.save.allowed,
       preview: {
-        ja: legacyAllowed || capabilities.preview.ja.allowed,
+        ja: capabilities.preview.ja.allowed,
         en: capabilities.preview.en.allowed,
       },
-      publish: legacyAllowed || capabilities.publish.allowed,
+      publish: capabilities.publish.allowed,
     },
   };
 }

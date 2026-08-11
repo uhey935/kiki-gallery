@@ -43,7 +43,6 @@ export const createNewExhibitionsDraft = (): ExhibitionsEditorDraftState => ({
 
 export const createNewNewsDraft = (): NewsEditorDraftState => ({
   contentId: "",
-  sourceModel: "legacy",
   shared: {
     state: "editable",
     value: { date: "", news_type: "general", show_on_home: false },
@@ -65,5 +64,4 @@ export const createNewNewsDraft = (): NewsEditorDraftState => ({
     title: "",
     show_on_home: false,
   },
-  sourceRaw: "",
 });

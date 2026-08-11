@@ -22,19 +22,8 @@ import {
 import { serializeNewsEditorDraft } from "./news-serializer.ts";
 import { readNewsEditorEntry, readNewsEditorState } from "./news-state.ts";
 
-const source = `---
-title: Test News
-date: "2026-08-07"
-news_type: artist
-summary: Summary.
-link: /artists/test-artist
-show_on_home: true
----
-`;
 async function fixture() {
-  const root = await mkdtemp(path.join(os.tmpdir(), "news-editor-"));
-  await writeFile(path.join(root, "test-news.md"), source);
-  return root;
+  return mkdtemp(path.join(os.tmpdir(), "news-editor-"));
 }
 
 async function writeThreeFileNews(
@@ -82,30 +71,27 @@ test("reads canonical News and preserves clean serialization", async () => {
     await rm(root, { recursive: true });
   }
 });
-test("prefers three-file News while retaining the legacy compatibility source", async () => {
+test("reads only the canonical three-file News entry", async () => {
   const root = await fixture();
   try {
     await writeThreeFileNews(root);
     const entry = await readNewsEditorEntry("test-news", root);
-    assert.equal(entry.sourceModel, "three-file");
     assert.equal(entry.shared?.date, "2026-08-07");
     assert.equal(entry.locales.ja?.title, "三ファイルニュース");
     assert.equal(entry.locales.en?.title, "Three-file News");
     assert.equal(entry.data?.title, "三ファイルニュース");
-    assert.equal(entry.legacy?.data?.title, "Test News");
     assert.equal((await readNewsEditorState(root)).entries.length, 1);
   } finally {
     await rm(root, { recursive: true });
   }
 });
-test("reports invalid three-file shared data without using legacy values", async () => {
+test("reports invalid three-file shared data without fallback values", async () => {
   const root = await fixture();
   try {
     await writeThreeFileNews(root, {
       index: `date: not-a-date\nnews_type: artist\nshow_on_home: false\n`,
     });
     const entry = await readNewsEditorEntry("test-news", root);
-    assert.equal(entry.sourceModel, "three-file");
     assert.equal(entry.shared, undefined);
     assert.equal(entry.data, undefined);
     assert.equal(entry.structuralStatus, "issues");
@@ -195,9 +181,11 @@ test("localized News Draft gates JA and EN Preview independently", async () => {
 test("Home-visible News requires a link and blocks every action", async () => {
   const root = await fixture();
   try {
+    await writeThreeFileNews(root);
     const draft = createNewsEditorDraft(
       await readNewsEditorEntry("test-news", root),
     )!;
+    if (draft.shared.state === "editable") draft.shared.value.link = undefined;
     draft.data.link = undefined;
     const validation = validateNewsEditorDraft(draft);
     assert.deepEqual(validation.capabilities, {

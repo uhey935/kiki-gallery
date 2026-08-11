@@ -69,10 +69,17 @@ test("Artists Delete requires exact backup bytes and refuses incoming references
     value.unit,
     "---\nhero:\n  image: /images/artists/delete-me.jpg\nname: Delete Me\nshort_bio: Delete me\nmedium:\n  - Painting\nhero_alt: Delete me\n---\n\nBody\n",
   );
+  const incomingNews = path.join(value.repository, "src/content/news/incoming");
+  await fs.mkdir(incomingNews);
   await fs.writeFile(
-    path.join(value.repository, "src/content/news/incoming.md"),
-    "---\ntitle: Artist News\ndate: 2026-08-09\nnews_type: artist\nlink: /artists/delete-me/\nshow_on_home: false\n---\n",
+    path.join(incomingNews, "index.yaml"),
+    "date: 2026-08-09\nnews_type: artist\nlink: /artists/delete-me/\nshow_on_home: false\n",
   );
+  for (const locale of ["ja", "en"])
+    await fs.writeFile(
+      path.join(incomingNews, `${locale}.md`),
+      `---\ntitle: Artist News ${locale}\n---\n`,
+    );
   await assert.rejects(
     () =>
       planArtistsDelete({
@@ -83,8 +90,12 @@ test("Artists Delete requires exact backup bytes and refuses incoming references
     (error: Error & { code?: string }) => error.code === "incoming-reference",
   );
   await fs.writeFile(
-    path.join(value.repository, "src/content/news/incoming.md"),
-    "[Unknown internal route](/unsupported/delete-me/)\n",
+    path.join(incomingNews, "ja.md"),
+    "---\ntitle: Artist News ja\n---\n[Unknown internal route](/unsupported/delete-me/)\n",
+  );
+  await fs.writeFile(
+    path.join(incomingNews, "index.yaml"),
+    "date: 2026-08-09\nnews_type: artist\nshow_on_home: false\n",
   );
   await assert.rejects(
     () =>
@@ -95,7 +106,7 @@ test("Artists Delete requires exact backup bytes and refuses incoming references
       }),
     (error: Error & { code?: string }) => error.code === "parser-uncertainty",
   );
-  await fs.unlink(path.join(value.repository, "src/content/news/incoming.md"));
+  await fs.rm(incomingNews, { recursive: true });
   const work = path.join(value.repository, "src/content/works/incoming.md");
   await fs.writeFile(
     work,

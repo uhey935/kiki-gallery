@@ -42,6 +42,12 @@ async function firstId(root: string) {
     .slice(0, -3);
 }
 
+async function firstNewsId(root: string) {
+  return (await fs.readdir(root, { withFileTypes: true })).find((entry) =>
+    entry.isDirectory(),
+  )!.name;
+}
+
 async function fixtures() {
   const work = createWorksEditorDraft(
     await readWorksEditorEntry(await firstId(sourceRoots.works)),
@@ -53,7 +59,7 @@ async function fixtures() {
     await readExhibitionsEditorEntry(await firstId(sourceRoots.exhibitions)),
   )!;
   const news = createNewsEditorDraft(
-    await readNewsEditorEntry(await firstId(sourceRoots.news)),
+    await readNewsEditorEntry(await firstNewsId(sourceRoots.news)),
   )!;
   return [
     {
@@ -73,7 +79,7 @@ async function fixtures() {
     },
     {
       name: "news",
-      draft: { ...news, contentId: "new-news", sourceRaw: "" },
+      draft: { ...news, contentId: "new-news" },
       create: createNewsEditorEntry,
     },
   ] as const;
@@ -178,12 +184,7 @@ test("a News post-install reread failure removes the exact created unit", async 
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "news-create-reread-"));
   try {
     await assert.rejects(
-      createNewsThreeFileEntry(
-        { ...fixture.draft, sourceModel: "three-file" },
-        root,
-        fs,
-        async () => undefined,
-      ),
+      createNewsThreeFileEntry(fixture.draft, root, fs, async () => undefined),
       (error: unknown) =>
         error instanceof NewsCreateError && error.code === "canonical-mismatch",
     );
@@ -209,7 +210,7 @@ test("a News Create rollback failure preserves the installed evidence", async ()
   try {
     await assert.rejects(
       createNewsThreeFileEntry(
-        { ...fixture.draft, sourceModel: "three-file" },
+        fixture.draft,
         root,
         failing,
         async () => undefined,

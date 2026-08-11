@@ -1,6 +1,5 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import path from "node:path";
-import { parse } from "yaml";
 import type { ContentIssue } from "../content-loaders/journal/contracts.ts";
 import { loadNewsUnit } from "../content-loaders/news/repository.ts";
 import type {
@@ -16,7 +15,6 @@ export type NewsEditorLocaleState = NewsLocalized & { body: string };
 
 export type NewsEditorEntryState = {
   contentId: string;
-  sourceModel: "legacy" | "three-file";
   file: string;
   raw: string;
   canonicalFiles?: { "index.yaml": string; "ja.md": string; "en.md": string };
@@ -25,12 +23,6 @@ export type NewsEditorEntryState = {
   /** Temporary JA compatibility view for the existing flat News Editor UI. */
   data?: NewsData;
   body: string;
-  legacy?: {
-    file: string;
-    raw: string;
-    body: string;
-    data?: NewsData;
-  };
   issues: ContentIssue[];
   structuralStatus: "valid" | "issues";
   issueCount: number;
@@ -39,119 +31,6 @@ export type NewsEditorEntryState = {
 export class NewsEditorEntryNotFoundError extends Error {}
 
 const canonicalRoot = path.resolve("src/content/news");
-const issue = (
-  contentId: string,
-  fieldPath: string,
-  messageKey: string,
-): ContentIssue => ({
-  ruleId: "content.news.structure",
-  severity: "error",
-  category: "structure",
-  collection: "news",
-  contentId,
-  fieldPath,
-  messageKey,
-  recovery: { kind: "edit-field", fieldPath },
-});
-
-function parseLegacySource(
-  contentId: string,
-  file: string,
-  raw: string,
-): NewsEditorEntryState {
-  const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)([\s\S]*)$/.exec(raw);
-  if (!match) {
-    const issues = [
-      issue(contentId, "frontmatter", "content.news.frontmatter.invalid"),
-    ];
-    return {
-      contentId,
-      sourceModel: "legacy",
-      file,
-      raw,
-      locales: {},
-      body: "",
-      issues,
-      structuralStatus: "issues",
-      issueCount: 1,
-    };
-  }
-  try {
-    const result = newsSchema.safeParse(parse(match[1]));
-    const body = match[2].trim();
-    if (result.success) {
-      const shared: NewsShared = {
-        date: result.data.date,
-        news_type: result.data.news_type,
-        ...(result.data.link === undefined ? {} : { link: result.data.link }),
-        show_on_home: result.data.show_on_home,
-      };
-      const ja: NewsEditorLocaleState = {
-        title: result.data.title,
-        ...(result.data.summary === undefined
-          ? {}
-          : { summary: result.data.summary }),
-        body,
-      };
-      return {
-        contentId,
-        sourceModel: "legacy",
-        file,
-        raw,
-        shared,
-        locales: { ja },
-        data: result.data,
-        body,
-        legacy: { file, raw, body, data: result.data },
-        issues: [],
-        structuralStatus: "valid",
-        issueCount: 0,
-      };
-    }
-    const issues = result.error.issues.map((item) =>
-      issue(contentId, item.path.join("."), item.message),
-    );
-    return {
-      contentId,
-      sourceModel: "legacy",
-      file,
-      raw,
-      locales: {},
-      body,
-      legacy: { file, raw, body },
-      issues,
-      structuralStatus: "issues",
-      issueCount: issues.length,
-    };
-  } catch {
-    const issues = [
-      issue(contentId, "frontmatter", "content.news.frontmatter.invalid"),
-    ];
-    return {
-      contentId,
-      sourceModel: "legacy",
-      file,
-      raw,
-      locales: {},
-      body: match[2].trim(),
-      legacy: { file, raw, body: match[2].trim() },
-      issues,
-      structuralStatus: "issues",
-      issueCount: 1,
-    };
-  }
-}
-
-async function readLegacyEntry(contentId: string, root: string) {
-  const file = path.join(root, `${contentId}.md`);
-  try {
-    return parseLegacySource(contentId, file, await readFile(file, "utf8"));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
-    throw error;
-  }
-}
-
 async function readThreeFileEntry(contentId: string, root: string) {
   const directory = path.join(root, contentId);
   const unit = await loadNewsUnit(directory);
@@ -176,10 +55,8 @@ async function readThreeFileEntry(contentId: string, root: string) {
       item.category,
     ),
   );
-  const legacy = await readLegacyEntry(contentId, root);
   return {
     contentId,
-    sourceModel: "three-file" as const,
     file: directory,
     raw: unit.shared.state === "missing" ? "" : unit.shared.raw,
     ...(unit.shared.state !== "missing" &&
@@ -197,16 +74,6 @@ async function readThreeFileEntry(contentId: string, root: string) {
     locales,
     data: data?.success ? data.data : undefined,
     body: ja?.body.trim() ?? "",
-    ...(legacy
-      ? {
-          legacy: {
-            file: legacy.file,
-            raw: legacy.raw,
-            body: legacy.body,
-            data: legacy.data,
-          },
-        }
-      : {}),
     issues,
     structuralStatus: structuralIssues.length
       ? ("issues" as const)
@@ -217,21 +84,12 @@ async function readThreeFileEntry(contentId: string, root: string) {
 
 async function readEntries(root: string): Promise<NewsEditorEntryState[]> {
   const directoryEntries = await readdir(root, { withFileTypes: true });
-  const directoryIds = new Set(
-    directoryEntries
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name),
-  );
-  const legacyIds = directoryEntries
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
-    .map((entry) => entry.name.slice(0, -3));
-  const contentIds = [...new Set([...directoryIds, ...legacyIds])].sort();
+  const contentIds = directoryEntries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
   return Promise.all(
-    contentIds.map(async (contentId) =>
-      directoryIds.has(contentId)
-        ? readThreeFileEntry(contentId, root)
-        : (await readLegacyEntry(contentId, root))!,
-    ),
+    contentIds.map((contentId) => readThreeFileEntry(contentId, root)),
   );
 }
 
@@ -262,7 +120,5 @@ export async function readNewsEditorEntry(
     (entry) => entry.name === contentId && entry.isDirectory(),
   );
   if (directory) return readThreeFileEntry(contentId, root);
-  const legacy = await readLegacyEntry(contentId, root);
-  if (!legacy) throw new NewsEditorEntryNotFoundError(contentId);
-  return legacy;
+  throw new NewsEditorEntryNotFoundError(contentId);
 }

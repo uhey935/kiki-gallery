@@ -25,23 +25,11 @@ export function findNewsReferenceSpan(
   newId: string,
 ): NewsReferenceSpan | undefined {
   const normalized = file.split(path.sep).join("/");
-  const legacy = normalized.match(/^src\/content\/news\/([^/]+)\.md$/);
   const shared = normalized.match(/^src\/content\/news\/([^/]+)\/index\.yaml$/);
-  if (!legacy && !shared) return;
+  if (!shared) return;
 
   const raw = bytes.toString("utf8");
-  let searchable = raw;
-  let searchableStart = 0;
-  if (legacy) {
-    const frontmatter = /^---(\r?\n)([\s\S]*?)\1---(?:\1|$)/.exec(raw);
-    if (!frontmatter) {
-      throw new NewsReferenceStructureError(
-        `News frontmatter cannot be inventoried: ${normalized}`,
-      );
-    }
-    searchable = frontmatter[2];
-    searchableStart = frontmatter.index + 3 + frontmatter[1].length;
-  }
+  const searchable = raw;
 
   const oldRouteToken = `/${kind}/${oldId}`;
   const exact = new RegExp(
@@ -60,11 +48,10 @@ export function findNewsReferenceSpan(
 
   const oldValue = match[3];
   const newValue = oldValue.replace(oldRouteToken, `/${kind}/${newId}`);
-  const characterStart =
-    searchableStart + match.index + match[1].length + match[2].length;
+  const characterStart = match.index + match[1].length + match[2].length;
   const start = Buffer.byteLength(raw.slice(0, characterStart));
   return {
-    contentId: (legacy ?? shared)![1],
+    contentId: shared[1],
     oldValue,
     newValue,
     start,

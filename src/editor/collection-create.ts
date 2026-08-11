@@ -88,7 +88,7 @@ export const createNewsEditorEntry = (
   options: NewsCreateOptions = {},
 ) =>
   createNewsThreeFileEntry(
-    { ...draft, sourceModel: "three-file" },
+    draft,
     options.root ?? path.resolve("src/content/news"),
     options.fileSystem,
   );

@@ -53,23 +53,20 @@ test("reviewed Artists Rename moves the source and byte-preservingly rewrites Wo
     const newId = "reiko-kinoshita-renamed";
     const source = path.join(repository, `src/content/artists/${oldId}.md`);
     const sourceBytes = await fs.readFile(source);
-    const news = path.join(repository, "src/content/news/2026-02-14.md");
     const shared = path.join(
       repository,
       "src/content/news/2026-02-14/index.yaml",
     );
-    for (const file of [news, shared])
-      await fs.writeFile(
-        file,
-        (await fs.readFile(file, "utf8")).replace(
-          "/artists/keisuke-matsuda",
-          `/artists/${oldId}`,
-        ),
-      );
-    await git(repository, "add", news, shared);
+    await fs.writeFile(
+      shared,
+      (await fs.readFile(shared, "utf8")).replace(
+        "/artists/keisuke-matsuda",
+        `/artists/${oldId}`,
+      ),
+    );
+    await git(repository, "add", shared);
     await git(repository, "commit", "-m", "Add Artist reference fixture");
     await git(repository, "push");
-    const before = await fs.readFile(news, "utf8");
     const sharedBefore = await fs.readFile(shared, "utf8");
     const ja = path.join(repository, "src/content/news/2026-02-14/ja.md");
     const en = path.join(repository, "src/content/news/2026-02-14/en.md");
@@ -90,7 +87,7 @@ test("reviewed Artists Rename moves the source and byte-preservingly rewrites Wo
     );
     assert.equal(
       plan.referenceEdits.filter((edit) => edit.collection === "news").length,
-      2,
+      1,
     );
     assert.deepEqual(plan.oldRoutes, [`/artists/${oldId}/`]);
     const result = await executeArtistsRename(plan, repository);
@@ -101,15 +98,6 @@ test("reviewed Artists Rename moves the source and byte-preservingly rewrites Wo
         path.join(repository, `src/content/artists/${newId}.md`),
       ),
       sourceBytes,
-    );
-    const after = await fs.readFile(news, "utf8");
-    assert.equal(
-      after,
-      before.replace(`/artists/${oldId}`, `/artists/${newId}`),
-    );
-    assert.equal(
-      after.replace(`/artists/${newId}`, `/artists/${oldId}`),
-      before,
     );
     assert.equal(
       await fs.readFile(shared, "utf8"),
@@ -160,7 +148,10 @@ test("planning fails closed for invalid IDs, case-fold collision, and unsupporte
     await fs.unlink(
       path.join(repository, "src/content/artists/Reiko-Renamed.md"),
     );
-    const news = path.join(repository, "src/content/news/2026-02-14.md");
+    const news = path.join(
+      repository,
+      "src/content/news/2026-02-14/index.yaml",
+    );
     await fs.writeFile(
       news,
       (await fs.readFile(news, "utf8")).replace(
@@ -190,7 +181,7 @@ test("execution rejects graph drift and lifecycle lock conflict without mutation
     };
     const plan = await planArtistsRename(input);
     await fs.appendFile(
-      path.join(repository, "src/content/news/2026-03-28.md"),
+      path.join(repository, "src/content/news/2026-03-28/index.yaml"),
       "drift\n",
     );
     await assert.rejects(
@@ -199,9 +190,12 @@ test("execution rejects graph drift and lifecycle lock conflict without mutation
         error instanceof ArtistsRenameError && error.code === "plan-stale",
     );
     await fs.writeFile(
-      path.join(repository, "src/content/news/2026-03-28.md"),
-      (await git(repository, "show", "HEAD:src/content/news/2026-03-28.md")) +
-        "\n",
+      path.join(repository, "src/content/news/2026-03-28/index.yaml"),
+      (await git(
+        repository,
+        "show",
+        "HEAD:src/content/news/2026-03-28/index.yaml",
+      )) + "\n",
     );
     const fresh = await planArtistsRename(input);
     await fs.mkdir(

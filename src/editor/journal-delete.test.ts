@@ -45,10 +45,17 @@ async function fixture() {
       path.join(unit, `${locale}.md`),
       `---\ntitle: ${locale} title\nsummary: valid summary for delete acceptance.\nhero_alt: Gallery fixture\n---\n\nBody\n`,
     );
+  const unrelatedNews = path.join(repository, "src/content/news/unrelated");
+  await fs.mkdir(unrelatedNews);
   await fs.writeFile(
-    path.join(repository, "src/content/news/unrelated.md"),
-    "---\ntitle: unrelated\n---\n\nNo reference.\n",
+    path.join(unrelatedNews, "index.yaml"),
+    "date: 2026-08-09\nnews_type: general\nshow_on_home: false\n",
   );
+  for (const locale of ["ja", "en"])
+    await fs.writeFile(
+      path.join(unrelatedNews, `${locale}.md`),
+      `---\ntitle: unrelated ${locale}\n---\n\nNo reference.\n`,
+    );
   await git(repository, ["init", "-b", "main"]);
   await git(repository, ["config", "user.email", "acceptance@example.test"]);
   await git(repository, ["config", "user.name", "Acceptance"]);
@@ -75,10 +82,17 @@ test("Journal Delete requires exact backup bytes and refuses incoming references
     path.join(value.unit, "ja.md"),
     "---\ntitle: ja title\nsummary: valid summary for delete acceptance.\nhero_alt: Gallery fixture\n---\n\nBody\n",
   );
+  const incomingNews = path.join(value.repository, "src/content/news/incoming");
+  await fs.mkdir(incomingNews);
   await fs.writeFile(
-    path.join(value.repository, "src/content/news/incoming.md"),
-    "[Journal](/journal/delete-me/)\n",
+    path.join(incomingNews, "index.yaml"),
+    "date: 2026-08-09\nnews_type: general\nlink: /journal/delete-me/\nshow_on_home: false\n",
   );
+  for (const locale of ["ja", "en"])
+    await fs.writeFile(
+      path.join(incomingNews, `${locale}.md`),
+      `---\ntitle: Journal ${locale}\n---\n`,
+    );
   await assert.rejects(
     () =>
       planJournalDelete({
@@ -118,7 +132,7 @@ test("reviewed Journal Delete moves the complete unit, records evidence, and Pub
   );
   assert.equal(evidence.state, "completed");
   await fs.appendFile(
-    path.join(value.repository, "src/content/news/unrelated.md"),
+    path.join(value.repository, "src/content/news/unrelated/ja.md"),
     "unrelated change\n",
   );
   const published = await publishJournalDelete(
@@ -135,7 +149,7 @@ test("reviewed Journal Delete moves the complete unit, records evidence, and Pub
   );
   assert.match(
     await git(value.repository, ["status", "--short"]),
-    /unrelated\.md/,
+    /unrelated\/ja\.md/,
   );
 });
 

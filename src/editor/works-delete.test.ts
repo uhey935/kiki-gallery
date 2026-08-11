@@ -87,10 +87,17 @@ test("Works Delete gates backup, incoming references, pending state, and asset l
     }),
     (e) => e instanceof WorksDeleteError && e.code === "pending-asset-state",
   );
+  const newsReference = path.join(value.repository, "src/content/news/ref");
+  await fs.mkdir(newsReference);
   await fs.writeFile(
-    path.join(value.repository, "src/content/news/ref.md"),
-    "---\ntitle: Ref\ndate: 2026-08-09\nnews_type: general\nlink: /works/delete-me/\nshow_on_home: false\n---\n",
+    path.join(newsReference, "index.yaml"),
+    "date: 2026-08-09\nnews_type: general\nlink: /works/delete-me/\nshow_on_home: false\n",
   );
+  for (const locale of ["ja", "en"])
+    await fs.writeFile(
+      path.join(newsReference, `${locale}.md`),
+      `---\ntitle: Ref ${locale}\n---\n`,
+    );
   await assert.rejects(
     planWorksDelete({
       repositoryRoot: value.repository,
@@ -100,8 +107,12 @@ test("Works Delete gates backup, incoming references, pending state, and asset l
     (e) => e instanceof WorksDeleteError && e.code === "incoming-reference",
   );
   await fs.writeFile(
-    path.join(value.repository, "src/content/news/ref.md"),
-    "[Unsupported local route](/unsupported/delete-me/)\n",
+    path.join(newsReference, "ja.md"),
+    "---\ntitle: Ref ja\n---\n[Unsupported local route](/unsupported/delete-me/)\n",
+  );
+  await fs.writeFile(
+    path.join(newsReference, "index.yaml"),
+    "date: 2026-08-09\nnews_type: general\nshow_on_home: false\n",
   );
   await assert.rejects(
     planWorksDelete({
@@ -111,7 +122,7 @@ test("Works Delete gates backup, incoming references, pending state, and asset l
     }),
     (e) => e instanceof WorksDeleteError && e.code === "parser-uncertainty",
   );
-  await fs.unlink(path.join(value.repository, "src/content/news/ref.md"));
+  await fs.rm(newsReference, { recursive: true });
   const plan = await planWorksDelete({
     repositoryRoot: value.repository,
     contentId: "delete-me",

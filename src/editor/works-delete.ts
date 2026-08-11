@@ -216,10 +216,13 @@ async function assertNoIncomingReferences(root: string, contentId: string) {
             `Incoming Exhibition.works reference blocks Delete: ${canonical}`,
             "incoming-reference",
           );
-      } else if (canonical.startsWith("src/content/news/")) {
+      } else if (
+        canonical.startsWith("src/content/news/") &&
+        path.basename(file) === "index.yaml"
+      ) {
         const item = await readNewsEditorEntry(
-          path.basename(file, ".md"),
-          path.dirname(file),
+          path.basename(path.dirname(file)),
+          path.dirname(path.dirname(file)),
         );
         if (!item.data || item.structuralStatus !== "valid")
           throw new Error("invalid News source");

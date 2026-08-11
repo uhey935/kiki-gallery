@@ -22,6 +22,7 @@ import {
   releaseContentLifecycleLock,
 } from "./content-lifecycle-lock.ts";
 import { isContentId } from "./content-id.ts";
+import { readNewsEditorEntry } from "./news-state.ts";
 
 const execFile = promisify(execFileCallback);
 const FILES = ["index.yaml", "ja.md", "en.md"] as const;
@@ -179,6 +180,31 @@ async function assertNoIncomingReferences(
             "parser-uncertainty",
           );
         const text = await fs.readFile(file, "utf8");
+        const canonical = relative(repositoryRoot, file);
+        if (
+          canonical.startsWith("src/content/news/") &&
+          entry.name === "index.yaml"
+        ) {
+          const item = await readNewsEditorEntry(
+            path.basename(path.dirname(file)),
+            path.dirname(path.dirname(file)),
+          );
+          if (item.structuralStatus !== "valid" || !item.data)
+            throw new JournalDeleteError(
+              `News reference source is invalid: ${canonical}`,
+              "parser-uncertainty",
+            );
+          if (
+            item.data.link &&
+            new RegExp(`^/journal/${contentId}/?(?:[?#].*)?$`).test(
+              item.data.link,
+            )
+          )
+            throw new JournalDeleteError(
+              `Incoming Journal reference blocks Delete: ${canonical}`,
+              "incoming-reference",
+            );
+        }
         if (entry.name.endsWith(".md")) {
           let references;
           try {
@@ -211,7 +237,11 @@ async function assertNoIncomingReferences(
           `(?:^|[\\s"'(:])\\/journal\\/${escapedId}\\/?(?:[?#][^\\s"')]+)?(?=$|[\\s"')])`,
           "m",
         );
-        if (entry.name.match(/ya?ml$/) && unresolvedRoute.test(text))
+        if (
+          entry.name.match(/ya?ml$/) &&
+          !canonical.startsWith("src/content/news/") &&
+          unresolvedRoute.test(text)
+        )
           throw new JournalDeleteError(
             `Unresolved typed Journal reference blocks Delete: ${relative(repositoryRoot, file)}`,
             "parser-uncertainty",

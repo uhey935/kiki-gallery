@@ -95,11 +95,16 @@ test("first Save transitions every flat collection to Publish with its new untra
         await git(repository, "push", "-u", "origin", "main");
 
         const sourceRoot = path.resolve(relativeRoot);
-        const sourceName = (await fs.readdir(sourceRoot)).find((name) =>
-          name.endsWith(".md"),
-        );
+        const sourceName = (
+          await fs.readdir(sourceRoot, { withFileTypes: true })
+        ).find((entry) =>
+          collection === "news"
+            ? entry.isDirectory()
+            : entry.isFile() && entry.name.endsWith(".md"),
+        )?.name;
         assert.ok(sourceName);
-        const sourceId = sourceName.slice(0, -3);
+        const sourceId =
+          collection === "news" ? sourceName : sourceName.slice(0, -3);
         const sourceDraft = makeDraft(
           (await read(sourceId, sourceRoot)) as never,
         );
@@ -114,10 +119,9 @@ test("first Save transitions every flat collection to Publish with its new untra
           }
         }
         const contentId = `browser-new-${collection}`;
-        const saved = await create(
-          { ...sourceDraft, contentId, sourceRaw: "" } as never,
-          { root },
-        );
+        const saved = await create({ ...sourceDraft, contentId } as never, {
+          root,
+        });
         const expectedPaths =
           collection === "news"
             ? ["en.md", "index.yaml", "ja.md"]

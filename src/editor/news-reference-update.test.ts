@@ -16,20 +16,10 @@ function apply(
   ]);
 }
 
-test("finds byte-preserving legacy and three-file News link updates", () => {
-  const legacy = Buffer.from(
-    '---\ntitle: News\nlink: "/artists/old-artist" # keep\nshow_on_home: true\n---\n',
-  );
+test("finds byte-preserving three-file News link updates", () => {
   const shared = Buffer.from(
     'date: "2026-01-01"\nlink: /artists/old-artist\nshow_on_home: true\n',
   );
-  const legacySpan = findNewsReferenceSpan(
-    "src/content/news/example.md",
-    legacy,
-    "artists",
-    "old-artist",
-    "new-artist",
-  )!;
   const sharedSpan = findNewsReferenceSpan(
     "src/content/news/example/index.yaml",
     shared,
@@ -38,12 +28,21 @@ test("finds byte-preserving legacy and three-file News link updates", () => {
     "new-artist",
   )!;
   assert.equal(
-    apply(legacy, legacySpan).toString(),
-    legacy.toString().replace("/artists/old-artist", "/artists/new-artist"),
-  );
-  assert.equal(
     apply(shared, sharedSpan).toString(),
     shared.toString().replace("/artists/old-artist", "/artists/new-artist"),
+  );
+});
+
+test("flat News Markdown is never a reference update target", () => {
+  assert.equal(
+    findNewsReferenceSpan(
+      "src/content/news/example.md",
+      Buffer.from("link: /artists/old-artist\n"),
+      "artists",
+      "old-artist",
+      "new-artist",
+    ),
+    undefined,
   );
 });
 

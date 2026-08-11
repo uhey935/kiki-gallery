@@ -55,12 +55,10 @@ test("reviewed Exhibitions Rename moves the source and byte-preservingly rewrite
     const newId = "reiko-kinoshita-renamed";
     const source = path.join(repository, `src/content/exhibitions/${oldId}.md`);
     const sourceBytes = await fs.readFile(source);
-    const news = path.join(repository, "src/content/news/2023-11-20.md");
     const shared = path.join(
       repository,
       "src/content/news/2023-11-20/index.yaml",
     );
-    const before = await fs.readFile(news, "utf8");
     const sharedBefore = await fs.readFile(shared, "utf8");
     const ja = path.join(repository, "src/content/news/2023-11-20/ja.md");
     const en = path.join(repository, "src/content/news/2023-11-20/en.md");
@@ -70,7 +68,7 @@ test("reviewed Exhibitions Rename moves the source and byte-preservingly rewrite
       sourceContentId: oldId,
       destinationContentId: newId,
     });
-    assert.equal(plan.referenceEdits.length, 2);
+    assert.equal(plan.referenceEdits.length, 1);
     assert.deepEqual(plan.oldRoutes, [`/exhibitions/${oldId}/`]);
     const result = await executeExhibitionsRename(plan, repository);
     assert.equal(result.draft.contentId, newId);
@@ -80,15 +78,6 @@ test("reviewed Exhibitions Rename moves the source and byte-preservingly rewrite
         path.join(repository, `src/content/exhibitions/${newId}.md`),
       ),
       sourceBytes,
-    );
-    const after = await fs.readFile(news, "utf8");
-    assert.equal(
-      after,
-      before.replace(`/exhibitions/${oldId}`, `/exhibitions/${newId}`),
-    );
-    assert.equal(
-      after.replace(`/exhibitions/${newId}`, `/exhibitions/${oldId}`),
-      before,
     );
     assert.equal(
       await fs.readFile(shared, "utf8"),
@@ -139,12 +128,15 @@ test("planning fails closed for invalid IDs, case-fold collision, and unsupporte
     await fs.unlink(
       path.join(repository, "src/content/exhibitions/Reiko-Renamed.md"),
     );
-    const news = path.join(repository, "src/content/news/2023-11-20.md");
+    const news = path.join(
+      repository,
+      "src/content/news/2023-11-20/index.yaml",
+    );
     await fs.writeFile(
       news,
       (await fs.readFile(news, "utf8")).replace(
-        'reiko-kinoshita-2023-12"',
-        'reiko-kinoshita-2023-12?from=x"',
+        "reiko-kinoshita-2023-12",
+        "reiko-kinoshita-2023-12?from=x",
       ),
     );
     await assert.rejects(
@@ -169,7 +161,7 @@ test("execution rejects graph drift and lifecycle lock conflict without mutation
     };
     const plan = await planExhibitionsRename(input);
     await fs.appendFile(
-      path.join(repository, "src/content/news/2026-03-28.md"),
+      path.join(repository, "src/content/news/2026-03-28/index.yaml"),
       "drift\n",
     );
     await assert.rejects(
@@ -178,9 +170,12 @@ test("execution rejects graph drift and lifecycle lock conflict without mutation
         error instanceof ExhibitionsRenameError && error.code === "plan-stale",
     );
     await fs.writeFile(
-      path.join(repository, "src/content/news/2026-03-28.md"),
-      (await git(repository, "show", "HEAD:src/content/news/2026-03-28.md")) +
-        "\n",
+      path.join(repository, "src/content/news/2026-03-28/index.yaml"),
+      (await git(
+        repository,
+        "show",
+        "HEAD:src/content/news/2026-03-28/index.yaml",
+      )) + "\n",
     );
     const fresh = await planExhibitionsRename(input);
     await fs.mkdir(

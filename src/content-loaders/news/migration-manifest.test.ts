@@ -10,18 +10,25 @@ import {
 } from "./migration-manifest.ts";
 import { convertLegacyNewsMarkdown } from "./migration-converter.ts";
 
-const newsRoot = path.resolve("src/content/news");
+const frozenManifestPath = path.resolve(
+  "docs/architecture/news-migration-manifest-2026-08-10.json",
+);
 
 test("dry-run records all legacy News sources and generated files without mutation", async () => {
-  const sourceNames = (await fs.readdir(newsRoot))
-    .filter((name) => name.endsWith(".md"))
-    .sort();
+  const frozen = JSON.parse(await fs.readFile(frozenManifestPath, "utf8"));
+  const sourceNames: string[] = frozen.entries.map(
+    (entry: { contentId: string }) => `${entry.contentId}.md`,
+  );
   const temporaryRoot = await fs.mkdtemp(
     path.join(os.tmpdir(), "news-migration-manifest-"),
   );
   await Promise.all(
-    sourceNames.map((name) =>
-      fs.copyFile(path.join(newsRoot, name), path.join(temporaryRoot, name)),
+    frozen.entries.map(
+      (entry: { contentId: string; rollback: { originalBase64: string } }) =>
+        fs.writeFile(
+          path.join(temporaryRoot, `${entry.contentId}.md`),
+          Buffer.from(entry.rollback.originalBase64, "base64"),
+        ),
     ),
   );
   const before = new Map(
@@ -43,6 +50,23 @@ test("dry-run records all legacy News sources and generated files without mutati
     sourceNames.map((name) => name.slice(0, -3)),
   );
   for (const entry of manifest.entries) {
+    const expected = frozen.entries.find(
+      (candidate: { contentId: string }) =>
+        candidate.contentId === entry.contentId,
+    );
+    assert.ok(expected);
+    assert.equal(entry.source.sha256, expected.source.sha256);
+    assert.equal(entry.source.byteLength, expected.source.byteLength);
+    assert.equal(
+      entry.generated.shared.sha256,
+      expected.generated.shared.sha256,
+    );
+    assert.equal(entry.generated.ja.sha256, expected.generated.ja.sha256);
+    assert.equal(entry.generated.en.sha256, expected.generated.en.sha256);
+    assert.equal(
+      entry.rollback.originalBase64,
+      expected.rollback.originalBase64,
+    );
     assert.match(entry.generated.en.content, /__TODO_EN_TITLE__/);
     assert.match(entry.generated.en.content, /__TODO_EN_SUMMARY__/);
     assert.equal(entry.generated.shared.sha256.length, 64);
