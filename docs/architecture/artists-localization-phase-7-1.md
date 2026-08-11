@@ -1,5 +1,10 @@
 # Artists Localization Expansion Phase 7-1
 
+> **Status: Historical design record — implemented and superseded.** This
+> document records the fixture-only Phase 7-1 state before the 2026-08-11
+> three-file migration. It is not the current Production or Editor contract.
+> See [Artists Architecture — Current](./artists-architecture-current.md).
+
 ## Status and scope
 
 Phase 7-1 is a fixture-only architecture prototype. It does not switch Production,

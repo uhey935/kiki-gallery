@@ -1,5 +1,10 @@
 # Editor Final Completion Audit / v1.x Finalization
 
+> **Status: Historical Editor completion record.** Artists-specific flat-file
+> statements in this document predate the 2026-08-11 Artists three-file
+> migration and are not the current Artists architecture. See
+> [Artists Architecture — Current](./artists-architecture-current.md).
+
 | Property | Value                                                                          |
 | -------- | ------------------------------------------------------------------------------ |
 | Status   | Complete                                                                       |

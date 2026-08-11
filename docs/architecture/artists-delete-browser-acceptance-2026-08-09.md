@@ -1,5 +1,10 @@
 # Artists Delete Browser Acceptance — 2026-08-09
 
+> **Status: Historical browser-acceptance record.** This records the flat
+> Artists implementation before the 2026-08-11 three-file migration; its path
+> examples are not the current Artists Delete contract. See
+> [Artists Architecture — Current](./artists-architecture-current.md).
+
 ## Scope
 
 Artists Delete only, following the finalized Journal, News, and Exhibitions Delete contract. Works Delete and asset lifecycle behavior remain deferred and unchanged.

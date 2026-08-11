@@ -12,8 +12,16 @@ The documentation is intended to evolve alongside the project while preserving a
 
 The documents are designed to be read in the following order.
 
+For Artists, read [Artists Architecture — Current](./artists-architecture-current.md)
+first, then the immutable
+[`artists-migration-manifest-2026-08-11.json`](./artists-migration-manifest-2026-08-11.json)
+as migration evidence. The Phase 7-1, Editor Phase 2, Rename, Delete, and Editor
+completion documents are historical implementation records and are not the
+current Artists topology or lifecycle authority.
+
 | Document                                                       | Purpose                                                                                                                                                    |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Artists Architecture — Current**                             | Current authority for the three-file topology, locale policy, Production facade, Editor lifecycle, references, and immutable migration evidence.          |
 | **Browser Automation Foundation**                              | Defines the disposable-repository Playwright harness, representative lifecycle smoke coverage, local/CI operation, and deferred browser cases.             |
 | **Editor Final Completion Audit**                              | Current authority for the completed Editor scope, final findings, verification, safety boundaries, and deferred work.                                      |
 | **Works Delete Asset Lifecycle Semantics**                     | Finalizes content-only Works deletion, post-Delete ALv2 handoff, dual-lock coordination, unchanged assets/evidence, and asset-free Publish.                |
@@ -55,6 +63,27 @@ The documents are designed to be read in the following order.
 ---
 
 ## Documents
+
+### Artists Architecture — Current
+
+**artists-architecture-current.md**
+
+Defines the implemented Artists three-file Content Unit, canonical Content ID,
+opaque localized entry IDs, shared/localized schema ownership, no-fallback
+locale policy, Production facade, complete Editor lifecycle, intentional
+read-only legacy detection, and completed migration evidence. Read this before
+the historical Artists prototype, Editor, Rename, Delete, and completion
+records.
+
+### Artists Migration Evidence
+
+**artists-migration-manifest-2026-08-11.json**
+
+Immutable evidence for the completed five-Artist migration, including original
+flat bytes, generated three-file outputs, hashes, inventory, and rollback data.
+Its SHA-256 is
+`6618fb544aeb3bb6b75b2904ebf734aba7ea066ad0fa03f62b9d2e7acdb42cde`.
+Migration tooling and tests remain retained recovery and audit evidence.
 
 ### Editor Final Completion Audit
 

@@ -1,5 +1,12 @@
 # Editor Phase 2 — Artists
 
+> **Status: Historical implementation record — superseded for current Artists
+> topology and lifecycle.** This document records the original flat-Markdown
+> Editor slice. Artists migrated to a three-file Content Unit on 2026-08-11 and
+> now supports the complete three-file Create, Preview, Save, Publish, Rename,
+> and Delete lifecycle. See
+> [Artists Architecture — Current](./artists-architecture-current.md).
+
 ## Production audit
 
 Artists is the fourth Editor collection. The canonical source is `src/content/artists/<contentId>.md`, loaded by Astro's flat Markdown glob loader. The production schema is now exported through `content-schemas/artist.ts` and consumed by both Astro and the Editor.

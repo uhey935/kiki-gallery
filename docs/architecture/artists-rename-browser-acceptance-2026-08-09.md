@@ -1,5 +1,10 @@
 # Artists Rename Browser Acceptance Closure
 
+> **Status: Historical browser-acceptance record.** This records the flat
+> Artists implementation before the 2026-08-11 three-file migration; its path
+> examples are not the current Artists Rename contract. See
+> [Artists Architecture — Current](./artists-architecture-current.md).
+
 | Property    | Value                                                              |
 | ----------- | ------------------------------------------------------------------ |
 | Date        | 2026-08-09                                                         |

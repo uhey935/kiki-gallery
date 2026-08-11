@@ -1,5 +1,10 @@
 # Exhibitions / Artists Rename Reference Update Architecture
 
+> **Status: Historical implementation record.** The flat Artists topology in
+> this document records the implementation state before the 2026-08-11 Artists
+> three-file migration; it is not the current Artists architecture. See
+> [Artists Architecture — Current](./artists-architecture-current.md).
+
 | Property  | Value                                                                      |
 | --------- | -------------------------------------------------------------------------- |
 | Status    | Implemented and browser-accepted for Exhibitions and Artists               |

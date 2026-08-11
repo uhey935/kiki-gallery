@@ -23,7 +23,8 @@ export const editorCollectionRegistry = {
   artists: {
     id: "artists",
     label: "Artists",
-    description: "Flat Markdown · identity, biography, and Work references",
+    description:
+      "Three-file Content Unit · localized biography and Work references",
     readState: readArtistsEditorState,
   },
   exhibitions: {

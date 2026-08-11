@@ -6,6 +6,7 @@ import {
   createNewsEditorEntry,
   createWorksEditorEntry,
 } from "../collection-create.ts";
+import { ArtistsCreateError } from "../artists-create.ts";
 import { FlatCreateError } from "../flat-create.ts";
 import { contentWriterRoute } from "./content-writer-route.ts";
 
@@ -15,6 +16,12 @@ const create = {
   exhibitions: createExhibitionsEditorEntry,
   news: createNewsEditorEntry,
 };
+
+export function createRouteErrorCode(error: unknown) {
+  return error instanceof FlatCreateError || error instanceof ArtistsCreateError
+    ? error.code
+    : "create-failed";
+}
 
 export function flatCreateRoute(collection: keyof typeof create): APIRoute {
   return contentWriterRoute("create", async ({ request }) => {
@@ -46,11 +53,13 @@ export function flatCreateRoute(collection: keyof typeof create): APIRoute {
             error instanceof Error
               ? error.message
               : `${collection} create failed`,
-          code: error instanceof FlatCreateError ? error.code : "create-failed",
+          code: createRouteErrorCode(error),
         },
         {
           status:
-            error instanceof SyntaxError || error instanceof FlatCreateError
+            error instanceof SyntaxError ||
+            error instanceof FlatCreateError ||
+            error instanceof ArtistsCreateError
               ? 400
               : 500,
         },

@@ -11,6 +11,7 @@ import {
   createWorksEditorEntry,
 } from "./collection-create.ts";
 import { createArtistsEditorDraft } from "./artists-draft-state.ts";
+import { ArtistsCreateError } from "./artists-create.ts";
 import { readArtistsEditorEntry } from "./artists-state.ts";
 import { createExhibitionsEditorDraft } from "./exhibitions-draft-state.ts";
 import { readExhibitionsEditorEntry } from "./exhibitions-state.ts";
@@ -29,6 +30,7 @@ import { readNewsEditorEntry } from "./news-state.ts";
 import { createWorksEditorDraft } from "./works-draft-state.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
 import { materializeLegacyArtistsFixture } from "./test-flat-artists-fixture.ts";
+import { createRouteErrorCode } from "./routes/flat-create-route.ts";
 
 const sourceRoots = {
   works: path.resolve("src/content/works"),
@@ -117,6 +119,19 @@ test("each create-capable collection first-saves its canonical unit", async (t) 
         await fs.rm(root, { recursive: true, force: true });
       }
     });
+});
+
+test("Artists Create route preserves collection-specific failure codes", () => {
+  assert.equal(
+    createRouteErrorCode(
+      new ArtistsCreateError(
+        "Artist Content ID already exists",
+        "content-id-collision",
+      ),
+    ),
+    "content-id-collision",
+  );
+  assert.equal(createRouteErrorCode(new Error("unexpected")), "create-failed");
 });
 
 test("flat Create fails closed for invalid IDs and case-fold collisions", async () => {

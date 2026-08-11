@@ -1,5 +1,10 @@
 # Delete Implementation Readiness Audit
 
+> **Status: Historical readiness record.** The flat Artists removal model in
+> this document predates the 2026-08-11 Artists three-file migration and is not
+> the current Artists architecture. See
+> [Artists Architecture — Current](./artists-architecture-current.md).
+
 | Property  | Value                                                               |
 | --------- | ------------------------------------------------------------------- |
 | Status    | Audit complete; all collection design gates subsequently closed     |

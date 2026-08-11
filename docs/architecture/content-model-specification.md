@@ -20,7 +20,7 @@ Collection
     └── en.md
 ```
 
-- Repository、Editor、および将来の CMS は、Content Unit のディレクトリ名を Content ID の Single Source of Truth とする。
+- Journal、News、およびArtistsのthree-file Content Unitでは、Repository、Editor、および将来の CMS はディレクトリ名を Content ID の Single Source of Truth とする。
 - Astro Adapter は導出した Content ID を locale-specific Entry の `entry.data.contentId` へ付与する。
 - Astro の `entry.id` は Store 内で Entry を一意に参照するための内部 lookup key とする。Consumer はその文字列形式を解析せず、Content ID、Route、または外部 Reference として使用しない。
 - Presentation、Route Helper、Map key、および Content Reference の解決は `entry.data.contentId`、または Repository／Editor 境界で同じ規則から導出した Content ID を基準にする。
@@ -159,18 +159,19 @@ home_hero:
 
 Shared:
 
-| Field          | Type             | Required |
-| -------------- | ---------------- | -------- |
-| `name`         | String           | Yes      |
-| `hero`         | Artist Hero      | Yes      |
-| `medium`       | English String[] | Yes      |
-| `works_layout` | Work Layout[]    | No       |
+| Field                      | Type              | Required    |
+| -------------------------- | ----------------- | ----------- |
+| `sort_name`                | String            | Yes         |
+| `hero.image`               | String            | Yes         |
+| `medium`                   | English String[]  | Yes         |
+| `works_layout`             | Work Layout[]     | No          |
+| `works_layout[].works[]`   | Work Content ID[] | Conditional |
 
 Localized:
 
 | Field          | Type   | Required |
 | -------------- | ------ | -------- |
-| `display_name` | String | No       |
+| `name`         | String | Yes      |
 | `hero_alt`     | String | Yes      |
 | `short_bio`    | String | Yes      |
 | `biography`    | String | No       |
@@ -181,9 +182,11 @@ Rules:
 
 - `medium` は Required の英語配列で、1件以上を必要とする。
 - `works_layout` は Optional とする。
+- `works_layout[].works[]` は Work Content ID を保持し、localized Artist Entry ID を保持しない。
 - Artist は Work や Exhibition の Canonical data を重複所有しない。
 - Exhibition 一覧は Exhibition の `artists` から Derived する。
-- `display_name` 未設定時は `name` を表示名にする。
+- `sort_name` は Shared の並び順・canonical英字名、`name` は各localeの表示名とする。
+- JA／EN間のruntime fallbackは禁止する。EN placeholderはEN capabilityだけをblockする。
 
 ### 4.2 Work Layout
 
