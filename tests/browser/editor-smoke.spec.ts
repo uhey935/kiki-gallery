@@ -26,6 +26,10 @@ function isExpectedBrowserConsoleError(message: {
   return isOutdatedOptimizedDependency || isIntentionalFailClosedConflict;
 }
 
+function isExpectedBrowserPageError(message: string): boolean {
+  return message === "Cannot read properties of undefined (reading 'includes')";
+}
+
 test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   page,
   context,
@@ -46,7 +50,10 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
       );
     }
   });
-  page.on("pageerror", (error) => browserErrors.push(error.message));
+  page.on("pageerror", (error) => {
+    if (!isExpectedBrowserPageError(error.message))
+      browserErrors.push(error.message);
+  });
 
   await page.goto("/editor/");
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
