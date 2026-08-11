@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
+import { getArtistsProductionFacade } from "../../content-boundaries/artists-production.ts";
 import { exhibitionArtistReferenceSchema } from "../../content-schemas/exhibition.ts";
 import { workArtistReferenceSchema } from "../../content-schemas/work.ts";
 import { evaluateArtistCapabilities } from "./capabilities.ts";
@@ -110,4 +111,23 @@ test("non-empty locale body is rejected by the initial prototype", async () => {
     ),
     false,
   );
+});
+
+test("Production exposes five canonical JA Artists and no placeholder EN entries", async () => {
+  const facade = await getArtistsProductionFacade();
+  const ja = facade.forLocale("ja");
+  assert.deepEqual(ja.map((entry) => entry.id).sort(), [
+    "alana-wilson",
+    "keisuke-matsuda",
+    "reiko-kinoshita",
+    "takeyoshi-mitsui",
+    "yuka-mori",
+  ]);
+  assert.equal(facade.forLocale("en").length, 0);
+  assert.ok(ja.every((entry) => !entry.id.includes("::")));
+  assert.equal(
+    facade.find("reiko-kinoshita", "ja")?.data.display_name,
+    "木下令子",
+  );
+  assert.equal(facade.find("reiko-kinoshita", "en"), undefined);
 });

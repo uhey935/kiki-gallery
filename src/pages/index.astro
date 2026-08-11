@@ -12,6 +12,7 @@ import { resolveNewsImage } from "../utils/resolveNewsImage";
 import { journalRouteRegistry } from "../content-boundaries/journal";
 import { getJournalProductionFacade } from "../content-boundaries/journal-production";
 import { getNewsProductionFacade } from "../content-boundaries/news-production";
+import { getArtistsProductionFacade } from "../content-boundaries/artists-production";
 
 /* =========================
    Home
@@ -28,7 +29,7 @@ if (!home) {
 ========================= */
 
 const exhibitions = await getCollection("exhibitions");
-const artists = await getCollection("artists");
+const artists = (await getArtistsProductionFacade()).forLocale("ja");
 const journal = await getJournalProductionFacade();
 const news = (await getNewsProductionFacade()).forHome("ja");
 

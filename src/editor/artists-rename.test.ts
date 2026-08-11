@@ -12,6 +12,7 @@ import {
   ArtistsRenameError,
   planArtistsRename,
 } from "./artists-rename.ts";
+import { materializeLegacyArtistsFixture } from "./test-flat-artists-fixture.ts";
 
 const execFile = promisify(execFileCallback);
 async function git(root: string, ...args: string[]) {
@@ -33,6 +34,9 @@ async function withRepository(
       path.join(repository, "src/content"),
       { recursive: true },
     );
+    await materializeLegacyArtistsFixture(
+      path.join(repository, "src/content/artists"),
+    );
     await git(repository, "init", "-b", "main");
     await git(repository, "config", "user.name", "Editor Test");
     await git(repository, "config", "user.email", "editor@example.test");
@@ -51,8 +55,8 @@ test("reviewed Artists Rename moves the source and byte-preservingly rewrites Wo
   await withRepository(async (repository) => {
     const oldId = "reiko-kinoshita";
     const newId = "reiko-kinoshita-renamed";
-    const source = path.join(repository, `src/content/artists/${oldId}.md`);
-    const sourceBytes = await fs.readFile(source);
+    const source = path.join(repository, `src/content/artists/${oldId}`);
+    const sourceBytes = await Promise.all(["index.yaml", "ja.md", "en.md"].map((name) => fs.readFile(path.join(source, name))));
     const shared = path.join(
       repository,
       "src/content/news/2026-02-14/index.yaml",
@@ -93,12 +97,7 @@ test("reviewed Artists Rename moves the source and byte-preservingly rewrites Wo
     const result = await executeArtistsRename(plan, repository);
     assert.equal(result.draft.contentId, newId);
     assert.equal(await fs.lstat(source).catch(() => undefined), undefined);
-    assert.deepEqual(
-      await fs.readFile(
-        path.join(repository, `src/content/artists/${newId}.md`),
-      ),
-      sourceBytes,
-    );
+    assert.deepEqual(await Promise.all(["index.yaml", "ja.md", "en.md"].map((name) => fs.readFile(path.join(repository, `src/content/artists/${newId}`, name)))), sourceBytes);
     assert.equal(
       await fs.readFile(shared, "utf8"),
       sharedBefore.replace(`/artists/${oldId}`, `/artists/${newId}`),
@@ -220,9 +219,7 @@ test("a post-mutation failure restores every touched file byte-for-byte", async 
     };
     const plan = await planArtistsRename(input);
     const originals = new Map<string, Buffer>();
-    for (const file of plan.touchedPaths.filter(
-      (file) => !file.endsWith("reiko-renamed.md"),
-    ))
+    for (const file of plan.touchedPaths.filter((file) => !file.startsWith("src/content/artists/reiko-renamed/")))
       originals.set(file, await fs.readFile(path.join(repository, file)));
     const originalRename = fs.rename.bind(fs);
     let installs = 0;
@@ -245,7 +242,7 @@ test("a post-mutation failure restores every touched file byte-for-byte", async 
       assert.deepEqual(await fs.readFile(path.join(repository, file)), bytes);
     assert.equal(
       await fs
-        .lstat(path.join(repository, "src/content/artists/reiko-renamed.md"))
+        .lstat(path.join(repository, "src/content/artists/reiko-renamed"))
         .catch(() => undefined),
       undefined,
     );

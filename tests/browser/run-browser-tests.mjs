@@ -1,6 +1,8 @@
 import { spawn, spawnSync } from "node:child_process";
 import {
   mkdtemp,
+  mkdir,
+  cp,
   readFile,
   readdir,
   rm,
@@ -39,6 +41,18 @@ function run(command, args, options = {}) {
     throw new Error(`${command} ${args.join(" ")} failed (${result.status})`);
 }
 
+function materializeWorkingTree() {
+  const patch = spawnSync("git", ["diff", "--binary", "HEAD"], { cwd: sourceRoot, encoding: "buffer" });
+  if (patch.status !== 0) throw new Error("Failed to capture browser-test working tree patch");
+  if (patch.stdout.length) {
+    const applied = spawnSync("git", ["apply", "--binary"], { cwd: repositoryRoot, input: patch.stdout, stdio: ["pipe", "inherit", "inherit"] });
+    if (applied.status !== 0) throw new Error("Failed to apply browser-test working tree patch");
+  }
+  const untracked = spawnSync("git", ["ls-files", "--others", "--exclude-standard", "-z"], { cwd: sourceRoot, encoding: "utf8" });
+  if (untracked.status !== 0) throw new Error("Failed to inventory browser-test untracked files");
+  return untracked.stdout.split("\0").filter(Boolean);
+}
+
 async function closeBrowserFixtureReferenceGraph(directory) {
   let changed = 0;
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -75,6 +89,11 @@ async function waitForServer() {
 
 try {
   run("git", ["clone", "--no-hardlinks", sourceRoot, repositoryRoot]);
+  for (const relative of materializeWorkingTree()) {
+    const destination = path.join(repositoryRoot, relative);
+    await mkdir(path.dirname(destination), { recursive: true });
+    await cp(path.join(sourceRoot, relative), destination, { recursive: true });
+  }
   run("git", ["init", "--bare", remoteRoot]);
   run("git", ["remote", "set-url", "origin", remoteRoot], {
     cwd: repositoryRoot,
@@ -115,6 +134,7 @@ try {
       "test",
       "--config",
       path.join(sourceRoot, "playwright.config.ts"),
+      ...(process.env.KIKI_BROWSER_GREP ? ["--grep", process.env.KIKI_BROWSER_GREP] : []),
     ],
     {
       cwd: sourceRoot,

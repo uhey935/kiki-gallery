@@ -173,7 +173,9 @@ const { collection, contentId } = Astro.props as {
           `${plan.sourceContentId} → ${plan.destinationContentId}`;
         panel.querySelector<HTMLElement>("[data-rename-git]")!.textContent =
           `${plan.repositoryBranch} @ ${plan.repositoryHead.slice(0, 12)}`;
-        const files = plan.sourceFiles
+        const files = Array.isArray(plan.sourceFiles)
+          ? plan.sourceFiles.map(({ file, hash }) => `${file} · sha256 ${hash.slice(0, 12)}…`)
+          : plan.sourceFiles
           ? Object.entries(plan.sourceFiles).map(
               ([name, hash]) =>
                 `src/content/journal/${plan!.sourceContentId}/${name} · sha256 ${hash.slice(0, 12)}…`,

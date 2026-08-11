@@ -162,14 +162,19 @@ export async function inspectArtistsPublish(
       "Repository already has staged changes",
       "unsafe-repository",
     );
-  const file = path.posix.join("src/content/artists", `${contentId}.md`);
+  const file = path.posix.join("src/content/artists", contentId, "index.yaml");
+  const canonicalFiles = ["index.yaml", "ja.md", "en.md"].map((name) => path.posix.join("src/content/artists", contentId, name));
   const stat = await fs
-    .lstat(path.join(repositoryRoot, file))
+    .lstat(path.join(repositoryRoot, "src/content/artists", contentId))
     .catch(() => null);
-  if (!stat?.isFile() || stat.isSymbolicLink())
+  if (!stat?.isDirectory() || stat.isSymbolicLink())
     throw new ArtistsPublishError("Unsafe Artist source", "unsafe-repository");
+  for (const candidate of canonicalFiles) {
+    const candidateStat = await fs.lstat(path.join(repositoryRoot, candidate)).catch(() => undefined);
+    if (!candidateStat?.isFile() || candidateStat.isSymbolicLink()) throw new ArtistsPublishError("Unsafe Artist source", "unsafe-repository");
+  }
   const evidence = await completedRenameEvidence(repositoryRoot, contentId);
-  const files = evidence?.plan.publishPaths ?? [file];
+  const files = evidence?.plan.publishPaths ?? canonicalFiles;
   if (evidence) {
     if (
       evidence.plan.repositoryBranch !== repositoryContext.branch ||
@@ -252,25 +257,20 @@ export async function publishSavedArtistsEntry(
       .split("\n")
       .filter(Boolean)
       .sort();
-    if (
-      JSON.stringify(stagedNames) !==
-      JSON.stringify([...inspection.files].sort())
-    )
+    if (!stagedNames.length || (inspection.evidence
+      ? JSON.stringify(stagedNames) !== JSON.stringify([...inspection.files].sort())
+      : stagedNames.some((file) => !inspection.files.includes(file))))
       throw new ArtistsPublishError(
         "Staging escaped Artist boundary",
         "unsafe-repository",
       );
-    const staged = await execFile("git", ["show", `:${inspection.file}`], {
-      cwd: repositoryRoot,
-    });
-    if (
-      hash(Buffer.from(staged.stdout)) !==
-      hash(Buffer.from(canonical.sourceRaw))
-    )
-      throw new ArtistsPublishError(
-        "Canonical Artist changed during Publish",
-        "canonical-mismatch",
-      );
+    if (!inspection.evidence) for (const name of ["index.yaml", "ja.md", "en.md"] as const) {
+      const file = `src/content/artists/${draft.contentId}/${name}`;
+      if (!stagedNames.includes(file)) continue;
+      const staged = await execFile("git", ["show", `:${file}`], { cwd: repositoryRoot });
+      const entry = await readArtistsEditorEntry(draft.contentId, root);
+      if (!entry.canonicalFiles || staged.stdout !== entry.canonicalFiles[name]) throw new ArtistsPublishError("Canonical Artist changed during Publish", "canonical-mismatch");
+    }
     await git(["commit", "-m", inspection.commitMessage]);
   } catch (error) {
     await git(["reset", "--", ...inspection.files]).catch(() => undefined);

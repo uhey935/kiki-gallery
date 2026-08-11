@@ -76,7 +76,15 @@ function readDraft(
     return {
       ...current,
       contentId,
-      body: value("body"),
+      body: "",
+      locales: {
+        ...current.locales,
+        en: { ...(current.locales.en.state === "editable" ? current.locales.en : {}), state: "editable" as const, value: {
+          name: value("en.name"), short_bio: value("en.short_bio"),
+          biography: optional(value("en.biography")), hero_alt: value("en.hero_alt"),
+          seo_title: optional(value("en.seo_title")), description: optional(value("en.description")), body: "",
+        } },
+      },
       data: {
         ...current.data,
         name: value("name"),

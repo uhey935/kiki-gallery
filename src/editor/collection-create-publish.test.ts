@@ -24,6 +24,7 @@ import { readNewsEditorEntry } from "./news-state.ts";
 import { publishSavedWorksEntry } from "./works-publish.ts";
 import { createWorksEditorDraft } from "./works-draft-state.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
+import { materializeLegacyArtistsFixture } from "./test-flat-artists-fixture.ts";
 
 const execFile = promisify(execFileCallback);
 async function git(root: string, ...args: string[]) {
@@ -94,17 +95,22 @@ test("first Save transitions every flat collection to Publish with its new untra
         await git(repository, "remote", "add", "origin", remote);
         await git(repository, "push", "-u", "origin", "main");
 
-        const sourceRoot = path.resolve(relativeRoot);
+        const sourceRoot =
+          collection === "artists"
+            ? path.join(temporary, "legacy-artists-source")
+            : path.resolve(relativeRoot);
+        if (collection === "artists")
+          await materializeLegacyArtistsFixture(sourceRoot);
         const sourceName = (
           await fs.readdir(sourceRoot, { withFileTypes: true })
         ).find((entry) =>
-          collection === "news"
+          collection === "news" || collection === "artists"
             ? entry.isDirectory()
             : entry.isFile() && entry.name.endsWith(".md"),
         )?.name;
         assert.ok(sourceName);
         const sourceId =
-          collection === "news" ? sourceName : sourceName.slice(0, -3);
+          collection === "news" || collection === "artists" ? sourceName : sourceName.slice(0, -3);
         const sourceDraft = makeDraft(
           (await read(sourceId, sourceRoot)) as never,
         );
@@ -123,7 +129,7 @@ test("first Save transitions every flat collection to Publish with its new untra
           root,
         });
         const expectedPaths =
-          collection === "news"
+          collection === "news" || collection === "artists"
             ? ["en.md", "index.yaml", "ja.md"]
                 .map((name) => `?? ${relativeRoot}/${contentId}/${name}`)
                 .join("\n")
@@ -142,7 +148,7 @@ test("first Save transitions every flat collection to Publish with its new untra
         );
         assert.equal(result.state, "published");
         const publishedPaths =
-          collection === "news"
+          collection === "news" || collection === "artists"
             ? ["en.md", "index.yaml", "ja.md"]
                 .map((name) => `${relativeRoot}/${contentId}/${name}`)
                 .join("\n")

@@ -1,13 +1,12 @@
-import type { CollectionEntry } from "astro:content";
 import type { ExhibitionWithStatus } from "./groupExhibitionsByArtist";
 
-type Artist = CollectionEntry<"artists">;
+type Artist = { id: string };
 
 export type ArtistStatus = "ongoing" | "upcoming" | "past";
 
 export function getArtistStatusMap(
   artists: Artist[],
-  exhibitionsByArtist: Record<string, ExhibitionWithStatus[]>
+  exhibitionsByArtist: Record<string, ExhibitionWithStatus[]>,
 ): Record<string, ArtistStatus> {
   const map: Record<string, ArtistStatus> = {};
 

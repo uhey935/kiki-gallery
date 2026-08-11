@@ -52,10 +52,11 @@ async function fixture() {
   const asset = path.join(repository, "public/images/works/delete-me.png");
   await fs.writeFile(unit, source);
   await fs.writeFile(asset, png);
-  await fs.writeFile(
-    path.join(repository, "src/content/artists/fixture-artist.md"),
-    "---\nhero:\n  image: /images/artists/fixture.jpg\nname: Fixture\nshort_bio: Fixture\nmedium:\n  - Painting\nhero_alt: Fixture\n---\n",
-  );
+  const artist = path.join(repository, "src/content/artists/fixture-artist");
+  await fs.mkdir(artist);
+  await fs.writeFile(path.join(artist, "index.yaml"), "sort_name: Fixture\nhero:\n  image: /images/artists/fixture.jpg\nmedium:\n  - Painting\n");
+  await fs.writeFile(path.join(artist, "ja.md"), "---\nname: Fixture\nshort_bio: Fixture\nhero_alt: Fixture\n---\n");
+  await fs.writeFile(path.join(artist, "en.md"), "---\nname: Fixture\nshort_bio: Fixture\nhero_alt: Fixture\n---\n");
   await git(repository, ["init", "-b", "main"]);
   await git(repository, ["config", "user.email", "test@example.test"]);
   await git(repository, ["config", "user.name", "Test"]);

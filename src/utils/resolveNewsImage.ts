@@ -4,6 +4,7 @@ import {
   journalRouteRegistry,
   type JournalIndexEntry,
 } from "../content-boundaries/journal.ts";
+import type { ArtistProductionEntry } from "../content-boundaries/artists-production.ts";
 
 type ImageSource = {
   image: string;
@@ -19,7 +20,7 @@ type JournalImageEntry = JournalIndexEntry & {
 
 type NewsImageCollections = {
   exhibitions: Map<string, CollectionEntry<"exhibitions">>;
-  artists: Map<string, CollectionEntry<"artists">>;
+  artists: Map<string, ArtistProductionEntry>;
   journal: JournalImageEntry[];
 };
 

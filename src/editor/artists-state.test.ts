@@ -19,25 +19,38 @@ import {
   readArtistsEditorState,
 } from "./artists-state.ts";
 
-const source = `---
-name: Test Artist
-display_name: テスト作家
+const shared = `sort_name: Test Artist
 hero:
   image: /images/artists/test.jpg
-hero_alt: Test artwork
-biography: Full biography.
-short_bio: Short biography.
 medium:
   - Painting
 works_layout:
   - layout: single-a
     works:
       - test-work
+`;
+const ja = `---
+name: テスト作家
+short_bio: Short biography.
+biography: Full biography.
+hero_alt: Test artwork
+---
+`;
+const en = `---
+name: Test Artist
+short_bio: Short biography.
+hero_alt: Test artwork
 ---
 `;
 async function fixture() {
   const root = await mkdtemp(path.join(os.tmpdir(), "artists-editor-"));
-  await writeFile(path.join(root, "test-artist.md"), source);
+  const directory = path.join(root, "test-artist");
+  await import("node:fs/promises").then(({ mkdir }) => mkdir(directory));
+  await Promise.all([
+    writeFile(path.join(directory, "index.yaml"), shared),
+    writeFile(path.join(directory, "ja.md"), ja),
+    writeFile(path.join(directory, "en.md"), en),
+  ]);
   return root;
 }
 
@@ -50,7 +63,7 @@ test("reads a canonical Artist and preserves a clean serialization", async () =>
       await readArtistsEditorEntry("test-artist", root),
     );
     assert.ok(draft);
-    assert.equal(serializeArtistsEditorDraft(draft), source);
+    assert.deepEqual(serializeArtistsEditorDraft(draft), { "index.yaml": shared, "ja.md": ja, "en.md": en });
   } finally {
     await rm(root, { recursive: true });
   }
@@ -74,6 +87,7 @@ test("layout count and duplicate Work references block all actions", async () =>
     assert.deepEqual(validation.capabilities, {
       save: false,
       preview: false,
+      localePreview: { ja: false, en: false },
       publish: false,
     });
     assert.throws(
@@ -97,8 +111,8 @@ test("Save atomically replaces only the selected canonical file", async () => {
     const saved = await saveArtistsEditorDraft(draft, baseline, root);
     assert.equal(saved.data.name, "Changed Artist");
     assert.match(
-      await readFile(path.join(root, "test-artist.md"), "utf8"),
-      /name: Changed Artist/,
+      await readFile(path.join(root, "test-artist/index.yaml"), "utf8"),
+      /sort_name: Changed Artist/,
     );
   } finally {
     await rm(root, { recursive: true });
@@ -113,8 +127,8 @@ test("Save refuses a stale baseline", async () => {
     const draft = structuredClone(baseline);
     draft.data.name = "Draft";
     await writeFile(
-      path.join(root, "test-artist.md"),
-      source.replace("Test Artist", "External"),
+      path.join(root, "test-artist/index.yaml"),
+      shared.replace("Test Artist", "External"),
     );
     await assert.rejects(
       saveArtistsEditorDraft(draft, baseline, root),

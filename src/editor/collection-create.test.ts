@@ -28,6 +28,7 @@ import {
 import { readNewsEditorEntry } from "./news-state.ts";
 import { createWorksEditorDraft } from "./works-draft-state.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
+import { materializeLegacyArtistsFixture } from "./test-flat-artists-fixture.ts";
 
 const sourceRoots = {
   works: path.resolve("src/content/works"),
@@ -49,12 +50,20 @@ async function firstNewsId(root: string) {
 }
 
 async function fixtures() {
+  const temporaryArtists = await fs.mkdtemp(
+    path.join(os.tmpdir(), "artists-create-source-"),
+  );
+  await materializeLegacyArtistsFixture(temporaryArtists);
   const work = createWorksEditorDraft(
     await readWorksEditorEntry(await firstId(sourceRoots.works)),
   )!;
   const artist = createArtistsEditorDraft(
-    await readArtistsEditorEntry(await firstId(sourceRoots.artists)),
+    await readArtistsEditorEntry(
+      await firstNewsId(temporaryArtists),
+      temporaryArtists,
+    ),
   )!;
+  await fs.rm(temporaryArtists, { recursive: true, force: true });
   const exhibition = createExhibitionsEditorDraft(
     await readExhibitionsEditorEntry(await firstId(sourceRoots.exhibitions)),
   )!;
@@ -69,7 +78,7 @@ async function fixtures() {
     },
     {
       name: "artists",
-      draft: { ...artist, contentId: "new-artist", sourceRaw: "" },
+      draft: { ...artist, contentId: "new-artist" },
       create: createArtistsEditorEntry,
     },
     {
@@ -95,11 +104,11 @@ test("each create-capable collection first-saves its canonical unit", async (t) 
         const saved = await fixture.create(fixture.draft as never, { root });
         assert.equal(saved.contentId, fixture.draft.contentId);
         assert.deepEqual(await fs.readdir(root), [
-          fixture.name === "news"
+          fixture.name === "news" || fixture.name === "artists"
             ? fixture.draft.contentId
             : `${fixture.draft.contentId}.md`,
         ]);
-        if (fixture.name === "news")
+        if (fixture.name === "news" || fixture.name === "artists")
           assert.deepEqual(
             (await fs.readdir(path.join(root, fixture.draft.contentId))).sort(),
             ["en.md", "index.yaml", "ja.md"],

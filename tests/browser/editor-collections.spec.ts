@@ -57,6 +57,7 @@ test("Artists operator flow validates, previews, saves, and publishes", async ({
 
   await page.locator('input[name="contentId"]').fill(contentId);
   await page.locator('input[name="name"]').fill("Browser Acceptance Artist");
+  await page.locator('input[name="display_name"]').fill("ブラウザ受入作家");
   await page.locator('textarea[name="medium"]').fill("Ceramics");
   await page
     .locator('textarea[name="short_bio"]')
@@ -85,6 +86,7 @@ test("Artists operator flow validates, previews, saves, and publishes", async ({
 
   await page.locator("[data-create-save]").click();
   await page.waitForURL(`**/editor/artists/workspace/${contentId}/`);
+  await page.waitForLoadState("networkidle");
   await expect(page.locator('textarea[name="biography"]')).toHaveValue(
     biography,
   );
@@ -95,6 +97,25 @@ test("Artists operator flow validates, previews, saves, and publishes", async ({
     /\/editor\/api\/artists-publish\//,
     "[data-artists-action-status]",
   );
+  const editedBiography = `${biography} Edited in the canonical three-file workspace.`;
+  await page.locator('textarea[name="biography"]').fill(editedBiography);
+  const jaPreview = await openPreview(context, page.locator('[data-preview-artists="ja"]'));
+  await expect(jaPreview.locator(".artists-bio-text")).toContainText(editedBiography);
+  await jaPreview.close();
+  await page.locator("[data-save-artists]").click();
+  await expect(page.locator("[data-artists-action-status]")).toContainText("Saved");
+  await publish(page, "[data-publish-artists]", /\/editor\/api\/artists-publish\//, "[data-artists-action-status]");
+  const renamedId = `${contentId}-renamed`;
+  await page.locator("[data-rename-destination]").fill(renamedId);
+  await page.locator("[data-rename-plan]").click();
+  await expect(page.locator("[data-rename-review]")).toBeVisible();
+  await page.locator("[data-rename-confirm]").check();
+  await page.locator("[data-rename-execute]").click();
+  await page.waitForURL(`**/editor/artists/workspace/${renamedId}/`);
+  await expect(page.locator("[data-publish-artists]")).toBeEnabled();
+  await publish(page, "[data-publish-artists]", /\/editor\/api\/artists-publish\//, "[data-artists-action-status]");
+  await expect(page.locator("[data-delete-plan]")).toBeDisabled();
+  await expect(page.locator("[data-delete-status]")).toContainText("backup");
 });
 
 test("Exhibitions operator flow validates, previews, saves, and publishes", async ({

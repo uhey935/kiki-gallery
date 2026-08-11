@@ -189,9 +189,10 @@ async function assertNoIncomingReferences(root: string, contentId: string) {
     const text = await fs.readFile(file, "utf8");
     try {
       if (canonical.startsWith("src/content/artists/")) {
+        if (path.basename(file) !== "index.yaml") continue;
         const item = await readArtistsEditorEntry(
-          path.basename(file, ".md"),
-          path.dirname(file),
+          path.basename(path.dirname(file)),
+          path.dirname(path.dirname(file)),
         );
         if (!item.data || item.structuralStatus !== "valid")
           throw new Error("invalid Artist source");

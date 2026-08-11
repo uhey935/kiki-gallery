@@ -8,12 +8,13 @@ import {
   resolveExhibitionArtists,
 } from "../../utils/exhibitionDisplay";
 import { getExhibitionStatus } from "../../utils/exhibitionStatus";
+import { getArtistsProductionFacade } from "../../content-boundaries/artists-production";
 
 // =====================
 // 1. データ取得
 // =====================
 const exhibitions = await getCollection("exhibitions");
-const artists = await getCollection("artists");
+const artists = (await getArtistsProductionFacade()).forLocale("ja");
 
 // 作家データを ID キーの Map に変換（計算量 O(N) に抑制）
 const artistMap = new Map(artists.map((artist) => [artist.id, artist]));

@@ -304,7 +304,11 @@ function referenceEdits(
     !file.startsWith("src/content/exhibitions/")
   )
     return [];
-  const { raw, body, bodyStart } = frontmatter(item, root);
+  if (file.startsWith("src/content/artists/") && !file.endsWith("/index.yaml")) return [];
+  const parsed = file.startsWith("src/content/artists/")
+    ? { raw: item.bytes.toString("utf8"), body: item.bytes.toString("utf8"), bodyStart: 0 }
+    : frontmatter(item, root);
+  const { raw, body, bodyStart } = parsed;
   const edits: WorksReferenceEdit[] = [];
   const lines = body.split(/(?<=\n)/);
   let offset = 0;
@@ -335,7 +339,7 @@ function referenceEdits(
         const start = Buffer.byteLength(raw.slice(0, character));
         edits.push({
           collection: section === "artist" ? "artists" : "exhibitions",
-          contentId: path.basename(file, ".md"),
+          contentId: file.startsWith("src/content/artists/") ? path.posix.basename(path.posix.dirname(file)) : path.basename(file, ".md"),
           file,
           fieldPath:
             section === "artist"
@@ -389,8 +393,8 @@ async function validateGraph(root: string, oldId: string, newId: string) {
   works.delete(oldId);
   works.add(newId);
   for (const name of await fs.readdir(path.join(root, "src/content/artists")))
-    if (name.endsWith(".md")) {
-      const id = path.basename(name, ".md");
+    if ((await fs.lstat(path.join(root, "src/content/artists", name))).isDirectory()) {
+      const id = name;
       const entry = await readArtistsEditorEntry(
         id,
         path.join(root, "src/content/artists"),
@@ -527,7 +531,7 @@ async function buildPlan(input: {
         "reference-rewrite-unsupported",
       );
     if (
-      (file.startsWith("src/content/artists/") ||
+      ((file.startsWith("src/content/artists/") && file.endsWith("/index.yaml")) ||
         file.startsWith("src/content/exhibitions/")) &&
       text.includes(input.sourceContentId) &&
       !edits.some((e) => e.file === file)

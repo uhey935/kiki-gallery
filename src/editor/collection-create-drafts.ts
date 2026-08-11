@@ -17,6 +17,25 @@ export const createNewWorksDraft = (): WorksEditorDraftState => ({
 
 export const createNewArtistsDraft = (): ArtistsEditorDraftState => ({
   contentId: "",
+  shared: {
+    state: "editable",
+    value: { sort_name: "", hero: { image: "" }, medium: [] },
+  },
+  locales: {
+    ja: {
+      state: "editable",
+      value: { name: "", short_bio: "", hero_alt: "", body: "" },
+    },
+    en: {
+      state: "editable",
+      value: {
+        name: "__TODO_EN_NAME__",
+        short_bio: "__TODO_EN_SHORT_BIO__",
+        hero_alt: "__TODO_EN_HERO_ALT__",
+        body: "",
+      },
+    },
+  },
   data: {
     hero: { image: "" },
     name: "",
@@ -25,7 +44,6 @@ export const createNewArtistsDraft = (): ArtistsEditorDraftState => ({
     hero_alt: "",
   },
   body: "",
-  sourceRaw: "",
 });
 
 export const createNewExhibitionsDraft = (): ExhibitionsEditorDraftState => ({

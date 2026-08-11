@@ -1,32 +1,25 @@
 import { stringify } from "yaml";
-import type { ArtistsEditorDraftState } from "./artists-draft-state.ts";
-export function serializeArtistsEditorDraft(draft: ArtistsEditorDraftState) {
-  const data = {
-    name: draft.data.name,
-    ...(draft.data.display_name === undefined
-      ? {}
-      : { display_name: draft.data.display_name }),
-    hero: draft.data.hero,
-    hero_alt: draft.data.hero_alt,
-    ...(draft.data.biography === undefined
-      ? {}
-      : { biography: draft.data.biography }),
-    short_bio: draft.data.short_bio,
-    medium: draft.data.medium,
-    ...(draft.data.works_layout === undefined
-      ? {}
-      : {
-          works_layout: draft.data.works_layout.map((section) => ({
-            layout: section.layout,
-            works: section.works.map(({ id }) => id),
-          })),
-        }),
-    ...(draft.data.seo_title === undefined
-      ? {}
-      : { seo_title: draft.data.seo_title }),
-    ...(draft.data.description === undefined
-      ? {}
-      : { description: draft.data.description }),
+import type { ArtistLocale } from "../content-loaders/artists/contracts.ts";
+import { normalizeArtistsEditorDraft, type ArtistsEditorDraftSource, type ArtistsEditorDraftState } from "./artists-draft-state.ts";
+
+export type ArtistsSerializedFiles = { "index.yaml": string; "ja.md": string; "en.md": string };
+export class ArtistsDraftNotSerializableError extends Error {}
+function value<T>(source: ArtistsEditorDraftSource<T>, scope: "shared" | ArtistLocale): T {
+  if (source.state === "unavailable") throw new ArtistsDraftNotSerializableError(`Artist draft source unavailable: ${scope}`);
+  return source.value;
+}
+function localeMarkdown(localized: Record<string, unknown> & { body: string }) {
+  const { body, ...frontmatter } = localized;
+  return `---\n${stringify(frontmatter, { lineWidth: 0 })}---\n${body}`;
+}
+function unchanged<T>(source: ArtistsEditorDraftSource<T>) {
+  return source.state === "editable" && source.raw !== undefined && source.baseline !== undefined && JSON.stringify(source.value) === JSON.stringify(source.baseline) ? source.raw : undefined;
+}
+export function serializeArtistsEditorDraft(input: ArtistsEditorDraftState): ArtistsSerializedFiles {
+  const draft = normalizeArtistsEditorDraft(input);
+  return {
+    "index.yaml": unchanged(draft.shared) ?? stringify(value(draft.shared, "shared"), { lineWidth: 0 }),
+    "ja.md": unchanged(draft.locales.ja) ?? localeMarkdown(value(draft.locales.ja, "ja")),
+    "en.md": unchanged(draft.locales.en) ?? localeMarkdown(value(draft.locales.en, "en")),
   };
-  return `---\n${stringify(data, { lineWidth: 0 }).trimEnd()}\n---\n${draft.body ? `\n${draft.body.trim()}\n` : ""}`;
 }

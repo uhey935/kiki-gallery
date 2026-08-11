@@ -18,7 +18,7 @@ const {
 } = Astro.props;
 const journalPreview =
   typeof preview === "boolean" ? { ja: preview, en: preview } : preview;
-const localizedCollection = mode === "news" ? "news" : "journal";
+const localizedCollection = mode === "news" ? "news" : mode === "artists" ? "artists" : "journal";
 const localizedPreviewAttributes = (locale: "ja" | "en") => ({
   ["data-preview-" + localizedCollection]: locale,
 });
@@ -49,7 +49,7 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
 
 <footer class="editor-action-bar" aria-label="Editor actions">
   {
-    mode !== "journal" && mode !== "news" ? (
+    mode !== "journal" && mode !== "news" && mode !== "artists" ? (
       <>
         <span
           data-action-status
@@ -103,7 +103,7 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
       <>
         <span
           data-action-status
-          {...(mode === "news" ? flatStatusAttributes : {})}
+          {...(mode === "news" || mode === "artists" ? flatStatusAttributes : {})}
           role="status"
           aria-live="polite"
         >

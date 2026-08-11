@@ -14,7 +14,7 @@ export type BrowserRenamePlan = {
   repositoryBranch: string;
   oldRoutes: string[];
   newRoutes: string[];
-  sourceFiles?: Record<string, string>;
+  sourceFiles?: Record<string, string> | Array<{ file: string; hash: string; size: number }>;
   sourceFile?: string | { file: string; hash: string; size: number };
   referenceEdits?: Array<{ file: string; oldValue: string; newValue: string }>;
   planHash: string;

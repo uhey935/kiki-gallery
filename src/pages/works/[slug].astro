@@ -4,10 +4,11 @@ import "../../styles/works.css";
 import WorkLayout from "../../layouts/WorkLayout.astro";
 
 import { getCollection, render } from "astro:content";
+import { getArtistsProductionFacade } from "../../content-boundaries/artists-production";
 
 export async function getStaticPaths() {
   const works = await getCollection("works");
-  const artists = await getCollection("artists");
+  const artists = (await getArtistsProductionFacade()).forLocale("ja");
 
   return works.map((work) => {
     const artistId = work.data.artist.id;

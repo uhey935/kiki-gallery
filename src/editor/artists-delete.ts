@@ -28,7 +28,7 @@ import { isContentId } from "./content-id.ts";
 
 const execFile = promisify(execFileCallback);
 const POLICY_COMMIT = "fe2d6fe2c1c5ff5ce1bf255af8207bfa43681971";
-const ADAPTER_VERSION = "artists-delete-v1" as const;
+const ADAPTER_VERSION = "artists-three-file-delete-v2" as const;
 const sha256 = (bytes: Uint8Array | string) =>
   createHash("sha256").update(bytes).digest("hex");
 
@@ -110,14 +110,14 @@ async function repositoryIdentity(repositoryRoot: string) {
 
 async function artistsInventory(repositoryRoot: string, contentId: string) {
   const root = path.join(repositoryRoot, "src/content/artists");
-  const file = path.resolve(root, `${contentId}.md`);
-  if (path.dirname(file) !== root)
+  const directory = path.resolve(root, contentId);
+  if (path.dirname(directory) !== root)
     throw new ArtistsDeleteError(
       "Unsafe Artists source.",
       "source-unavailable",
     );
-  const stat = await fs.lstat(file).catch(() => undefined);
-  if (!stat?.isFile() || stat.isSymbolicLink())
+  const stat = await fs.lstat(directory).catch(() => undefined);
+  if (!stat?.isDirectory() || stat.isSymbolicLink())
     throw new ArtistsDeleteError(
       "Artists source is unavailable.",
       "source-unavailable",
@@ -130,14 +130,13 @@ async function artistsInventory(repositoryRoot: string, contentId: string) {
       "Artists file must pass canonical validation before Delete.",
       "source-unavailable",
     );
-  const bytes = await fs.readFile(file);
-  return [
-    {
-      path: relative(repositoryRoot, file),
-      sha256: sha256(bytes),
-      byteSize: bytes.byteLength,
-    },
-  ];
+  const names = await fs.readdir(directory, { withFileTypes: true });
+  if (names.length !== 3 || names.some((item) => item.isSymbolicLink() || !item.isFile() || !["index.yaml", "ja.md", "en.md"].includes(item.name)))
+    throw new ArtistsDeleteError("Artists unit inventory is unsafe.", "source-unavailable");
+  return Promise.all(["index.yaml", "ja.md", "en.md"].map(async (name) => {
+    const file = path.join(directory, name); const bytes = await fs.readFile(file);
+    return { path: relative(repositoryRoot, file), sha256: sha256(bytes), byteSize: bytes.byteLength };
+  }));
 }
 
 async function assertNoIncomingReferences(
@@ -436,9 +435,9 @@ export async function executeArtistsDelete(
   const canonicalFile = path.join(
     repositoryRoot,
     "src/content/artists",
-    `${reviewedPlan.contentId}.md`,
+    reviewedPlan.contentId,
   );
-  const recoveryFile = path.join(repositoryRoot, reviewedPlan.recoveryPaths[0]);
+  const recoveryFile = path.dirname(path.join(repositoryRoot, reviewedPlan.recoveryPaths[0]));
   let moved = false;
   try {
     await assertContentLifecycleLock(repositoryRoot, lock.identity);
@@ -578,7 +577,7 @@ export async function publishArtistsDelete(
       "state-mismatch",
     );
   if (
-    files.some((file) => file !== `src/content/artists/${record.contentId}.md`)
+    files.some((file) => !["index.yaml", "ja.md", "en.md"].map((name) => `src/content/artists/${record.contentId}/${name}`).includes(file))
   )
     throw new ArtistsDeleteError(
       "Delete evidence escaped the Artists unit.",
@@ -602,7 +601,7 @@ export async function publishArtistsDelete(
     );
     if (status.some((line) => !line.startsWith("D\t")))
       throw new ArtistsDeleteError(
-        "Delete Publish requires one staged deletion.",
+        "Delete Publish requires exact staged deletions.",
         "state-mismatch",
       );
     await git(["commit", "-m", `Delete artists: ${record.contentId}`]);

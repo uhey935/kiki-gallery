@@ -1,18 +1,24 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import path from "node:path";
-import { parse } from "yaml";
 import type { ContentIssue } from "../content-loaders/journal/contracts.ts";
-import {
-  editorArtistSchema,
-  type ArtistData,
-} from "../content-schemas/artist.ts";
+import { loadArtistUnit } from "../content-loaders/artists/repository.ts";
+import type {
+  ArtistIdentity,
+  ArtistLocale,
+  ArtistLocalized,
+} from "../content-loaders/artists/contracts.ts";
+import { editorArtistSchema, type ArtistData } from "../content-schemas/artist.ts";
 import type { EditorCollectionState } from "./collection-contracts.ts";
 import { isContentId } from "./content-id.ts";
 
+export type ArtistsEditorLocaleState = ArtistLocalized & { body: string };
 export type ArtistsEditorEntryState = {
   contentId: string;
   file: string;
-  raw: string;
+  canonicalFiles?: { "index.yaml": string; "ja.md": string; "en.md": string };
+  shared?: ArtistIdentity;
+  locales: Partial<Record<ArtistLocale, ArtistsEditorLocaleState>>;
+  /** JA compatibility view for the existing operator form. */
   data?: ArtistData;
   body: string;
   issues: ContentIssue[];
@@ -20,118 +26,86 @@ export type ArtistsEditorEntryState = {
   issueCount: number;
 };
 export class ArtistsEditorEntryNotFoundError extends Error {}
+export class ArtistsLegacySourceDetectedError extends Error {}
 const canonicalRoot = path.resolve("src/content/artists");
-const issue = (
-  contentId: string,
-  fieldPath: string,
-  messageKey: string,
-): ContentIssue => ({
-  ruleId: "content.artist.structure",
-  severity: "error",
-  category: "structure",
-  collection: "artists",
-  contentId,
-  fieldPath,
-  messageKey,
-  recovery: { kind: "edit-field", fieldPath },
-});
 
-function parseSource(
-  contentId: string,
-  file: string,
-  raw: string,
-): ArtistsEditorEntryState {
-  const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)([\s\S]*)$/.exec(raw);
-  if (!match) {
-    const issues = [
-      issue(contentId, "frontmatter", "content.artist.frontmatter.invalid"),
-    ];
-    return {
-      contentId,
-      file,
-      raw,
-      body: "",
-      issues,
-      structuralStatus: "issues",
-      issueCount: 1,
-    };
-  }
-  try {
-    const result = editorArtistSchema.safeParse(parse(match[1]));
-    if (result.success)
-      return {
-        contentId,
-        file,
-        raw,
-        data: result.data,
-        body: match[2].trim(),
-        issues: [],
-        structuralStatus: "valid",
-        issueCount: 0,
-      };
-    const issues = result.error.issues.map((item) =>
-      issue(contentId, item.path.join("."), item.message),
-    );
-    return {
-      contentId,
-      file,
-      raw,
-      body: match[2].trim(),
-      issues,
-      structuralStatus: "issues",
-      issueCount: issues.length,
-    };
-  } catch {
-    const issues = [
-      issue(contentId, "frontmatter", "content.artist.frontmatter.invalid"),
-    ];
-    return {
-      contentId,
-      file,
-      raw,
-      body: match[2].trim(),
-      issues,
-      structuralStatus: "issues",
-      issueCount: 1,
-    };
-  }
+function body(raw: string) {
+  const match = /^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)([\s\S]*)$/.exec(raw);
+  return match?.[1].trim() ?? "";
 }
-async function readEntries(root: string) {
-  return Promise.all(
-    (await readdir(root))
-      .filter((name) => name.endsWith(".md"))
-      .sort()
-      .map(async (name) => {
-        const contentId = name.slice(0, -3);
-        const file = path.join(root, name);
-        return parseSource(contentId, file, await readFile(file, "utf8"));
-      }),
+
+async function readThreeFileEntry(contentId: string, root: string) {
+  const directory = path.join(root, contentId);
+  const unit = await loadArtistUnit(directory);
+  const shared = unit.identity.state === "valid" ? unit.identity.value : undefined;
+  const locales: ArtistsEditorEntryState["locales"] = {};
+  for (const locale of ["ja", "en"] as const) {
+    const source = unit.locales[locale];
+    if (source.state === "valid") locales[locale] = { ...source.value, body: body(source.raw) };
+  }
+  const ja = locales.ja;
+  const compatibility = shared && ja
+    ? editorArtistSchema.safeParse({
+        name: shared.sort_name,
+        display_name: ja.name,
+        hero: shared.hero,
+        medium: shared.medium,
+        works_layout: shared.works_layout?.map((section) => ({
+          layout: section.layout,
+          works: section.works.map((id) => ({ id, collection: "works" as const })),
+        })),
+        short_bio: ja.short_bio,
+        biography: ja.biography,
+        hero_alt: ja.hero_alt,
+        seo_title: ja.seo_title,
+        description: ja.description,
+      })
+    : undefined;
+  const issues = unit.issues as ContentIssue[];
+  const structural = issues.filter((item) =>
+    ["parse", "structure", "unit-integrity", "repository-integrity"].includes(item.category),
   );
-}
-export async function readArtistsEditorState(
-  root = canonicalRoot,
-): Promise<EditorCollectionState> {
   return {
-    entries: (await readEntries(root)).map((entry) => ({
-      contentId: entry.contentId,
-      title: entry.data?.display_name ?? entry.data?.name ?? entry.contentId,
-      detail: entry.data
-        ? `${entry.data.name} · ${entry.data.medium.join(" / ")}`
-        : "Invalid Artist data",
-      status: entry.structuralStatus,
-      statusLabel: entry.issueCount ? `${entry.issueCount} issues` : "Ready",
-    })),
+    contentId,
+    file: directory,
+    ...(unit.identity.state !== "missing" && unit.locales.ja.state !== "missing" && unit.locales.en.state !== "missing"
+      ? { canonicalFiles: {
+          "index.yaml": unit.identity.raw,
+          "ja.md": unit.locales.ja.raw,
+          "en.md": unit.locales.en.raw,
+        } }
+      : {}),
+    shared,
+    locales,
+    data: compatibility?.success ? compatibility.data : undefined,
+    body: ja?.body ?? "",
+    issues,
+    structuralStatus: structural.length ? "issues" as const : "valid" as const,
+    issueCount: issues.length,
   };
 }
-export async function readArtistsEditorEntry(
-  contentId: string,
-  root = canonicalRoot,
-) {
-  if (!isContentId(contentId))
-    throw new ArtistsEditorEntryNotFoundError(contentId);
-  const entry = (await readEntries(root)).find(
-    (candidate) => candidate.contentId === contentId,
-  );
-  if (!entry) throw new ArtistsEditorEntryNotFoundError(contentId);
-  return entry;
+
+async function readEntries(root: string) {
+  const entries = await readdir(root, { withFileTypes: true });
+  if (entries.some((entry) => entry.isFile() && entry.name.endsWith(".md")))
+    throw new ArtistsLegacySourceDetectedError("Legacy flat Artist source detected; Editor refuses mixed repositories.");
+  return Promise.all(entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort().map((id) => readThreeFileEntry(id, root)));
+}
+
+export async function readArtistsEditorState(root = canonicalRoot): Promise<EditorCollectionState> {
+  return { entries: (await readEntries(root)).map((entry) => ({
+    contentId: entry.contentId,
+    title: entry.locales.ja?.name ?? entry.contentId,
+    detail: entry.shared ? `${entry.shared.sort_name} · ${entry.shared.medium.join(" / ")}` : "Invalid Artist data",
+    status: entry.issueCount ? "issues" : entry.structuralStatus,
+    statusLabel: entry.issueCount ? `${entry.issueCount} issues` : "Ready",
+  })) };
+}
+
+export async function readArtistsEditorEntry(contentId: string, root = canonicalRoot) {
+  if (!isContentId(contentId)) throw new ArtistsEditorEntryNotFoundError(contentId);
+  const entries = await readdir(root, { withFileTypes: true });
+  if (entries.some((entry) => entry.isFile() && entry.name.toLowerCase() === `${contentId}.md`.toLowerCase())) throw new ArtistsLegacySourceDetectedError(contentId);
+  if (entries.some((entry) => entry.name === contentId && entry.isDirectory())) return readThreeFileEntry(contentId, root);
+  throw new ArtistsEditorEntryNotFoundError(contentId);
 }

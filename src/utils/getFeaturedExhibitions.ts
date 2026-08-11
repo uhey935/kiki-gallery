@@ -1,11 +1,10 @@
-import type { CollectionEntry } from "astro:content";
 import type { ExhibitionWithStatus } from "./groupExhibitionsByArtist";
 
-type Artist = CollectionEntry<"artists">;
+type Artist = { id: string };
 
 export function getFeaturedExhibitions(
   artists: Artist[],
-  exhibitionsByArtist: Record<string, ExhibitionWithStatus[]>
+  exhibitionsByArtist: Record<string, ExhibitionWithStatus[]>,
 ) {
   return artists
     .map((artist) => {
@@ -16,10 +15,10 @@ export function getFeaturedExhibitions(
         .filter((e) => e.status === "ongoing")
         .sort((a, b) => {
           const endA = new Date(
-            (a.data.end_date ?? a.data.start_date) + "T23:59:59"
+            (a.data.end_date ?? a.data.start_date) + "T23:59:59",
           ).getTime();
           const endB = new Date(
-            (b.data.end_date ?? b.data.start_date) + "T23:59:59"
+            (b.data.end_date ?? b.data.start_date) + "T23:59:59",
           ).getTime();
           return endA - endB;
         })[0];
@@ -36,12 +35,8 @@ export function getFeaturedExhibitions(
       const upcoming = related
         .filter((e) => e.status === "upcoming")
         .sort((a, b) => {
-          const startA = new Date(
-            a.data.start_date + "T00:00:00"
-          ).getTime();
-          const startB = new Date(
-            b.data.start_date + "T00:00:00"
-          ).getTime();
+          const startA = new Date(a.data.start_date + "T00:00:00").getTime();
+          const startB = new Date(b.data.start_date + "T00:00:00").getTime();
           return startA - startB;
         })[0];
 

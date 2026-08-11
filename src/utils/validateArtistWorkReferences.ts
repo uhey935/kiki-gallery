@@ -1,6 +1,7 @@
 import type { CollectionEntry } from "astro:content";
+import type { ArtistProductionEntry } from "../content-boundaries/artists-production";
 
-type ArtistEntry = CollectionEntry<"artists">;
+type ArtistEntry = ArtistProductionEntry;
 type WorkEntry = CollectionEntry<"works">;
 
 /**

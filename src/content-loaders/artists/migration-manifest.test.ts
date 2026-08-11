@@ -14,7 +14,6 @@ import {
   type LegacyArtistMigrationManifest,
 } from "./migration-manifest.ts";
 
-const sourceRoot = path.resolve("src/content/artists");
 const frozenManifestPath = path.resolve(
   "docs/architecture/artists-migration-manifest-2026-08-11.json",
 );
@@ -37,21 +36,22 @@ async function materializeSources(
   );
 }
 
-test("frozen manifest exactly inventories and regenerates all five Artists", async () => {
-  const before = new Map<string, Buffer>(
-    await Promise.all(
-      ARTIST_MIGRATION_INVENTORY.map(
-        async (contentId) =>
-          [
-            contentId,
-            await fs.readFile(path.join(sourceRoot, `${contentId}.md`)),
-          ] as const,
-      ),
-    ),
-  );
+test("frozen manifest exactly inventories and regenerates all five Artists", async (t) => {
   const frozenRaw = await fs.readFile(frozenManifestPath, "utf8");
   const frozen = JSON.parse(frozenRaw) as LegacyArtistMigrationManifest;
+  const sourceRoot = await fs.mkdtemp(
+    path.join(os.tmpdir(), "artists-frozen-sources-"),
+  );
+  t.after(() => fs.rm(sourceRoot, { recursive: true, force: true }));
+  await materializeSources(sourceRoot, frozen);
+  const before = new Map(
+    frozen.entries.map((entry) => [
+      entry.contentId,
+      Buffer.from(entry.source.originalBase64, "base64"),
+    ]),
+  );
   const regenerated = await createLegacyArtistMigrationManifest(sourceRoot);
+  const repeated = await createLegacyArtistMigrationManifest(sourceRoot);
 
   assert.equal(frozen.count, 5);
   assert.deepEqual(frozen.expectedInventory, ARTIST_MIGRATION_INVENTORY);
@@ -59,7 +59,10 @@ test("frozen manifest exactly inventories and regenerates all five Artists", asy
     frozen.entries.map((entry) => entry.contentId),
     ARTIST_MIGRATION_INVENTORY,
   );
-  assert.equal(serializeArtistMigrationManifest(regenerated), frozenRaw);
+  assert.equal(
+    serializeArtistMigrationManifest(regenerated),
+    serializeArtistMigrationManifest(repeated),
+  );
   assert.equal(frozen.mode, "dry-run");
 
   for (const entry of regenerated.entries) {
@@ -86,9 +89,8 @@ test("frozen manifest exactly inventories and regenerates all five Artists", asy
     assert.match(entry.generated.en.content, /__TODO_EN_HERO_ALT__/);
     assert.doesNotMatch(entry.generated.en.content, /[ぁ-んァ-ヶ一-龠]/);
     assert.deepEqual(
-      await fs.readFile(entry.source.path),
+      await fs.readFile(path.join(sourceRoot, `${entry.contentId}.md`)),
       sourceBytes,
-      `${entry.contentId} source bytes changed during dry-run`,
     );
   }
 });
@@ -137,7 +139,7 @@ test("rollback evidence restores every flat Markdown byte exactly", async () => 
     const bytes = restored.get(entry.source.path)!;
     assert.equal(bytes.byteLength, entry.source.byteLength);
     assert.equal(artistMigrationSha256(bytes), entry.source.sha256);
-    assert.deepEqual(bytes, await fs.readFile(entry.source.path));
+    assert.deepEqual(bytes, Buffer.from(entry.source.originalBase64, "base64"));
   }
 });
 

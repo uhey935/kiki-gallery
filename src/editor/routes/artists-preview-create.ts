@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { contentWriterRoute } from "./content-writer-route.ts";
 import type { ArtistsEditorDraftState } from "../artists-draft-state.ts";
+import type { ArtistLocale } from "../../content-loaders/artists/contracts.ts";
 import {
   createArtistsPreviewModel,
   artistsPreviewStore,
@@ -8,10 +9,10 @@ import {
 } from "../artists-preview.ts";
 const unlockedPOST: APIRoute = async ({ request }) => {
   try {
-    const input = (await request.json()) as { draft?: ArtistsEditorDraftState };
+    const input = (await request.json()) as { draft?: ArtistsEditorDraftState; locale?: ArtistLocale };
     if (!input.draft)
       throw new ArtistsPreviewError("Draft required", "invalid-request");
-    const model = createArtistsPreviewModel(input.draft);
+    const model = createArtistsPreviewModel(input.draft, input.locale ?? "ja");
     const token = artistsPreviewStore.create(model);
     return Response.json({
       url: `/editor/preview/artists/${token}/${encodeURIComponent(model.contentId)}`,

@@ -4,12 +4,11 @@ import { journalThreeFileLoader } from "./content-loaders/journal/astro-loader";
 import { journalSchema } from "./content-loaders/journal/schema";
 import { newsThreeFileLoader } from "./content-loaders/news/astro-loader";
 import { newsEntrySchema } from "./content-loaders/news/schema";
+import { artistIdentityThreeFileLoader } from "./content-loaders/artists/astro-loader";
+import { artistIdentitySchema } from "./content-loaders/artists/schema";
 import { createWorkSchema } from "./content-schemas/work";
 import { createExhibitionSchema } from "./content-schemas/exhibition";
-import { createArtistSchema } from "./content-schemas/artist";
 import { homeSchema } from "./content-schemas/home";
-
-const artistSchema = createArtistSchema(reference("works"));
 
 const workSchema = createWorkSchema(reference("artists"));
 
@@ -24,8 +23,8 @@ const home = defineCollection({
 });
 
 const artists = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "./src/content/artists" }),
-  schema: artistSchema,
+  loader: artistIdentityThreeFileLoader({ root: "./src/content/artists" }),
+  schema: artistIdentitySchema,
 });
 
 const works = defineCollection({

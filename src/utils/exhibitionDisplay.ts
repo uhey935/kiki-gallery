@@ -1,6 +1,7 @@
 import type { CollectionEntry } from "astro:content";
+import type { ArtistProductionEntry } from "../content-boundaries/artists-production";
 
-type Artist = CollectionEntry<"artists">;
+type Artist = ArtistProductionEntry;
 type Exhibition = CollectionEntry<"exhibitions">;
 
 export function getArtistDisplayName(artist: Artist): string {

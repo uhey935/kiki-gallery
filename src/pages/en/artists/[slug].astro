@@ -1,0 +1,49 @@
+---
+import { getArtistsProductionFacade } from "../../../content-boundaries/artists-production";
+import Layout from "../../../layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  return (await getArtistsProductionFacade()).forLocale("en").map((artist) => ({
+    params: { slug: artist.id },
+    props: { artist },
+  }));
+}
+
+const { artist } = Astro.props;
+---
+
+<Layout
+  title={artist.data.seo_title ?? artist.data.name}
+  description={artist.data.description ?? artist.data.short_bio}
+>
+  <article>
+    <section class="section artists-intro">
+      <div class="artists-intro__left">
+        <h1 class="artists-h1-title">{artist.data.name}</h1>
+        <p class="artists-intro__medium">
+          {artist.data.medium.join(", ")}
+        </p>
+      </div>
+      <div class="artists-intro__right">
+        <p class="artists-bio-short">{artist.data.short_bio}</p>
+      </div>
+    </section>
+    {
+      artist.data.biography && (
+        <section class="section artists-bio">
+          <h2 class="detail-h2-title">Biography</h2>
+          <div class="artists-bio-layout">
+            <div class="artists-bio-image">
+              <img
+                src={artist.data.hero.image}
+                alt={artist.data.hero_alt}
+                width="400"
+              />
+            </div>
+            <p class="artists-bio-text">{artist.data.biography}</p>
+          </div>
+        </section>
+      )
+    }
+  </article>
+</Layout>

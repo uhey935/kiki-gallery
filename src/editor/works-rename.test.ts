@@ -16,6 +16,7 @@ import {
   releaseWorksAssetRepositoryLock,
 } from "./works-asset-repository-lock.ts";
 import { publishSavedWorksEntry } from "./works-publish.ts";
+import { materializeLegacyArtistsFixture } from "./test-flat-artists-fixture.ts";
 
 const execFile = promisify(execFileCallback);
 async function git(root: string, ...args: string[]) {
@@ -34,6 +35,9 @@ async function withRepository(run: (repository: string) => Promise<void>) {
       path.resolve("src/content"),
       path.join(repository, "src/content"),
       { recursive: true },
+    );
+    await materializeLegacyArtistsFixture(
+      path.join(repository, "src/content/artists"),
     );
     await fs.mkdir(path.join(repository, "public/images"), { recursive: true });
     await fs.cp(
@@ -85,7 +89,7 @@ test("reviewed Works Rename moves byte-identical content, rewrites typed referen
     assert.deepEqual(await inventory(assetRoot), assetBefore);
     assert.match(
       await fs.readFile(
-        path.join(repository, "src/content/artists/reiko-kinoshita.md"),
+        path.join(repository, "src/content/artists/reiko-kinoshita/index.yaml"),
         "utf8",
       ),
       new RegExp(newId),

@@ -1,12 +1,7 @@
 import path from "node:path";
 
-import {
-  createArtistsEditorDraft,
-  type ArtistsEditorDraftState,
-  validateArtistsEditorDraft,
-} from "./artists-draft-state.ts";
-import { serializeArtistsEditorDraft } from "./artists-serializer.ts";
-import { readArtistsEditorEntry } from "./artists-state.ts";
+import { type ArtistsEditorDraftState } from "./artists-draft-state.ts";
+import { createArtistsThreeFileEntry, type ArtistsCreateFileSystem } from "./artists-create.ts";
 import {
   createExhibitionsEditorDraft,
   type ExhibitionsEditorDraftState,
@@ -33,6 +28,7 @@ import { readWorksEditorEntry } from "./works-state.ts";
 
 type FlatCreateOptions = { root?: string; fileSystem?: FlatCreateFileSystem };
 type NewsCreateOptions = { root?: string; fileSystem?: NewsCreateFileSystem };
+type ArtistsCreateOptions = { root?: string; fileSystem?: ArtistsCreateFileSystem };
 
 export const createWorksEditorEntry = (
   draft: WorksEditorDraftState,
@@ -52,19 +48,9 @@ export const createWorksEditorEntry = (
 
 export const createArtistsEditorEntry = (
   draft: ArtistsEditorDraftState,
-  options: FlatCreateOptions = {},
+  options: ArtistsCreateOptions = {},
 ) =>
-  createFlatEditorEntry({
-    collectionId: "artists",
-    collectionLabel: "Artist",
-    draft,
-    root: options.root ?? path.resolve("src/content/artists"),
-    validate: (value) => validateArtistsEditorDraft(value).capabilities.save,
-    serialize: serializeArtistsEditorDraft,
-    reread: async (id, root) =>
-      createArtistsEditorDraft(await readArtistsEditorEntry(id, root)),
-    fileSystem: options.fileSystem,
-  });
+  createArtistsThreeFileEntry(draft, options.root ?? path.resolve("src/content/artists"), options.fileSystem);
 
 export const createExhibitionsEditorEntry = (
   draft: ExhibitionsEditorDraftState,

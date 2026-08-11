@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
 import {
+  normalizeArtistsEditorDraft,
   validateArtistsEditorDraft,
   type ArtistsEditorDraftState,
 } from "./artists-draft-state.ts";
+import type { ArtistLocale } from "../content-loaders/artists/contracts.ts";
 export class ArtistsPreviewError extends Error {
   readonly code:
     | "invalid-request"
@@ -20,17 +22,33 @@ export type ArtistsPreviewModel = Pick<
   "contentId" | "data" | "body"
 >;
 export function createArtistsPreviewModel(
-  draft: ArtistsEditorDraftState,
+  input: ArtistsEditorDraftState,
+  locale: ArtistLocale = "ja",
 ): ArtistsPreviewModel {
-  if (!validateArtistsEditorDraft(draft).capabilities.preview)
+  const draft = normalizeArtistsEditorDraft(input);
+  if (!validateArtistsEditorDraft(draft).capabilities.localePreview[locale])
     throw new ArtistsPreviewError(
       "Artist is blocked from preview",
       "preview-blocked",
     );
+  if (draft.shared.state !== "editable" || draft.locales[locale].state !== "editable") throw new ArtistsPreviewError("Artist locale is unavailable for preview", "preview-blocked");
+  const shared = draft.shared.value;
+  const localized = draft.locales[locale].value;
   return {
     contentId: draft.contentId,
-    data: structuredClone(draft.data),
-    body: draft.body,
+    data: {
+      name: shared.sort_name,
+      display_name: localized.name,
+      hero: shared.hero,
+      medium: shared.medium,
+      ...(shared.works_layout ? { works_layout: shared.works_layout.map((section) => ({ layout: section.layout, works: section.works.map((id) => ({ id, collection: "works" as const })) })) } : {}),
+      short_bio: localized.short_bio,
+      biography: localized.biography,
+      hero_alt: localized.hero_alt,
+      seo_title: localized.seo_title,
+      description: localized.description,
+    },
+    body: localized.body,
   };
 }
 export class ArtistsPreviewStore {

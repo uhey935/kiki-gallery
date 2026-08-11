@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { promisify } from "node:util";
+import { materializeLegacyArtistsFixture } from "./test-flat-artists-fixture.ts";
 
 import { publishSavedExhibitionsEntry } from "./exhibitions-publish.ts";
 import {
@@ -34,6 +35,9 @@ async function withRepository(
       path.resolve("src/content"),
       path.join(repository, "src/content"),
       { recursive: true },
+    );
+    await materializeLegacyArtistsFixture(
+      path.join(repository, "src/content/artists"),
     );
     await git(repository, "init", "-b", "main");
     await git(repository, "config", "user.name", "Editor Test");

@@ -1,7 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
-import type { CollectionEntry } from "astro:content";
+import type { ArtistProductionEntry } from "../../content-boundaries/artists-production";
+import { getArtistsProductionFacade } from "../../content-boundaries/artists-production";
 import { formatDateRangeJa } from "../../utils/date";
 import { validateArtistWorkReferences } from "../../utils/validateArtistWorkReferences";
 import {
@@ -13,7 +14,7 @@ import {
    getStaticPaths
 ========================= */
 export async function getStaticPaths() {
-  const artists = await getCollection("artists");
+  const artists = (await getArtistsProductionFacade()).forLocale("ja");
   const works = await getCollection("works");
 
   validateArtistWorkReferences(artists, works);
@@ -28,7 +29,7 @@ export async function getStaticPaths() {
    Props
 ========================= */
 const { artist } = Astro.props as {
-  artist: CollectionEntry<"artists">;
+  artist: ArtistProductionEntry;
 };
 
 const artistName = artist.data.display_name || artist.data.name;
@@ -87,7 +88,7 @@ const rawExhibitions = await getCollection("exhibitions", ({ data }) => {
     (artistReference) => artistReference.id === artist.id,
   );
 });
-const allArtists = await getCollection("artists");
+const allArtists = (await getArtistsProductionFacade()).forLocale("ja");
 const artistMap = new Map(allArtists.map((item) => [item.id, item]));
 
 /* ▼ 日付ソート */

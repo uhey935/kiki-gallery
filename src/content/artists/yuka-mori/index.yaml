@@ -1,0 +1,9 @@
+sort_name: Yuka Mori
+hero:
+  image: /images/artists/yuka-mori.webp
+works_layout:
+  - layout: single-a
+    works:
+      - yuka-mori-01
+medium:
+  - Painting

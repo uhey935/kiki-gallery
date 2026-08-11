@@ -29,16 +29,15 @@ const git = (root: string, args: string[]) =>
 async function fixture() {
   const parent = await fs.mkdtemp(path.join(os.tmpdir(), "artists-delete-"));
   const repository = path.join(parent, "repository");
-  const unit = path.join(repository, "src/content/artists/delete-me.md");
+  const unit = path.join(repository, "src/content/artists/delete-me");
   for (const collection of ["artists", "works", "exhibitions", "news", "home"])
     await fs.mkdir(path.join(repository, "src/content", collection), {
       recursive: true,
     });
   await fs.mkdir(path.join(repository, "public/images"), { recursive: true });
-  await fs.writeFile(
-    unit,
-    "---\nhero:\n  image: /images/artists/delete-me.jpg\nname: Delete Me\nshort_bio: Delete me\nmedium:\n  - Painting\nhero_alt: Delete me\n---\n\nBody\n",
-  );
+  await fs.mkdir(unit);
+  await fs.writeFile(path.join(unit, "index.yaml"), "sort_name: Delete Me\nhero:\n  image: /images/artists/delete-me.jpg\nmedium:\n  - Painting\n");
+  for (const locale of ["ja", "en"]) await fs.writeFile(path.join(unit, `${locale}.md`), `---\nname: Delete Me\nshort_bio: Delete me\nhero_alt: Delete me\n---\n`);
   await fs.writeFile(
     path.join(repository, "src/content/home/home.md"),
     "---\ntitle: unrelated\n---\n\nNo reference.\n",
@@ -55,7 +54,7 @@ async function fixture() {
 
 test("Artists Delete requires exact backup bytes and refuses incoming references", async () => {
   const value = await fixture();
-  await fs.appendFile(value.unit, "drift\n");
+  await fs.writeFile(path.join(value.unit, "index.yaml"), "sort_name: Drifty\nhero:\n  image: /images/artists/delete-me.jpg\nmedium:\n  - Painting\n");
   await assert.rejects(
     () =>
       planArtistsDelete({
@@ -65,10 +64,7 @@ test("Artists Delete requires exact backup bytes and refuses incoming references
       }),
     (error: Error & { code?: string }) => error.code === "backup-proof-stale",
   );
-  await fs.writeFile(
-    value.unit,
-    "---\nhero:\n  image: /images/artists/delete-me.jpg\nname: Delete Me\nshort_bio: Delete me\nmedium:\n  - Painting\nhero_alt: Delete me\n---\n\nBody\n",
-  );
+  await fs.writeFile(path.join(value.unit, "index.yaml"), "sort_name: Delete Me\nhero:\n  image: /images/artists/delete-me.jpg\nmedium:\n  - Painting\n");
   const incomingNews = path.join(value.repository, "src/content/news/incoming");
   await fs.mkdir(incomingNews);
   await fs.writeFile(
@@ -174,11 +170,11 @@ test("reviewed Artists Delete moves the complete unit, records evidence, and Pub
   );
   assert.deepEqual(
     published.files,
-    plan.preimages.map((item) => item.path),
+    plan.preimages.map((item) => item.path).sort(),
   );
   assert.equal(
     await git(value.repository, ["show", "--name-only", "--format=", "HEAD"]),
-    plan.preimages.map((item) => item.path).join("\n"),
+    plan.preimages.map((item) => item.path).sort().join("\n"),
   );
   assert.match(await git(value.repository, ["status", "--short"]), /home\.md/);
 });
@@ -190,14 +186,14 @@ test("Artists Delete detects drift and non-stealing lock conflicts", async () =>
     contentId: "delete-me",
     backupRoot: value.backup,
   });
-  await fs.appendFile(value.unit, "drift\n");
+  await fs.appendFile(path.join(value.unit, "index.yaml"), "drift: true\n");
   await assert.rejects(
     () => executeArtistsDelete(plan, value.repository),
     (error: Error & { code?: string }) => error.code === "plan-stale",
   );
   await fs.writeFile(
-    value.unit,
-    "---\nhero:\n  image: /images/artists/delete-me.jpg\nname: Delete Me\nshort_bio: Delete me\nmedium:\n  - Painting\nhero_alt: Delete me\n---\n\nBody\n",
+    path.join(value.unit, "index.yaml"),
+    "sort_name: Delete Me\nhero:\n  image: /images/artists/delete-me.jpg\nmedium:\n  - Painting\n",
   );
   const fresh = await planArtistsDelete({
     repositoryRoot: value.repository,

@@ -1,9 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection } from "astro:content";
 import { Image } from "astro:assets";
+import { getArtistsProductionFacade } from "../../content-boundaries/artists-production";
 
-const artists = await getCollection("artists");
+const artists = (await getArtistsProductionFacade()).forLocale("ja");
 
 /* =========================
    英語（姓）ベースでソート

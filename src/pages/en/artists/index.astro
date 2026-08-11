@@ -1,0 +1,35 @@
+---
+import { Image } from "astro:assets";
+import { getArtistsProductionFacade } from "../../../content-boundaries/artists-production";
+import Layout from "../../../layouts/Layout.astro";
+
+const artists = (await getArtistsProductionFacade()).forLocale("en");
+---
+
+<Layout title="Artists">
+  <section class="section artists">
+    <h1 class="index-h1">Artists</h1>
+    <div class="artists-grid">
+      {
+        artists.map((artist) => (
+          <article class="artists-card">
+            <a href={`/en/artists/${artist.id}`} class="artists-link">
+              <div class="artists-image">
+                <Image
+                  src={artist.data.hero.image}
+                  alt={artist.data.hero_alt}
+                  width={600}
+                  height={600}
+                />
+              </div>
+              <div class="artists-meta">
+                <h2 class="artists-name">{artist.data.name}</h2>
+                <p class="artists-medium">{artist.data.medium.join(" / ")}</p>
+              </div>
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+</Layout>

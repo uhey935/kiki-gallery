@@ -8,11 +8,12 @@ import {
   resolveExhibitionArtists,
 } from "../../utils/exhibitionDisplay";
 import { getExhibitionStatus } from "../../utils/exhibitionStatus";
+import { getArtistsProductionFacade } from "../../content-boundaries/artists-production";
 
 // getStaticPaths
 export async function getStaticPaths() {
   const exhibitions = await getCollection("exhibitions");
-  const allArtists = await getCollection("artists");
+  const allArtists = (await getArtistsProductionFacade()).forLocale("ja");
   const artistMap = new Map(allArtists.map((artist) => [artist.id, artist]));
 
   return exhibitions.map((exh) => {
