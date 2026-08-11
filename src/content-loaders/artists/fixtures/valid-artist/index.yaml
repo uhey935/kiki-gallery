@@ -1,0 +1,9 @@
+sort_name: Reiko Kinoshita
+hero:
+  image: /images/artists/reiko-kinoshita.png
+medium:
+  - Painting
+works_layout:
+  - layout: single-a
+    works:
+      - reiko-kinoshita-01
