@@ -1,0 +1,583 @@
+{
+  "migrationVersion": 1,
+  "collection": "artists",
+  "mode": "dry-run",
+  "sourceRoot": "src/content/artists",
+  "expectedInventory": [
+    "alana-wilson",
+    "keisuke-matsuda",
+    "reiko-kinoshita",
+    "takeyoshi-mitsui",
+    "yuka-mori"
+  ],
+  "count": 5,
+  "entries": [
+    {
+      "contentId": "alana-wilson",
+      "source": {
+        "path": "src/content/artists/alana-wilson.md",
+        "byteLength": 1497,
+        "sha256": "8f8478f3bee34252581399ca47ba8897a2d2a73e2ae9c81e5ce3c5b9e5102af1",
+        "originalBase64": "LS0tCm5hbWU6IEFsYW5hIFdpbHNvbgpkaXNwbGF5X25hbWU6IOOCouODqeODvOODiuODu+OCpuOCo+ODq+OCveODswpoZXJvOgogIGltYWdlOiAvaW1hZ2VzL2FydGlzdHMvYWxhbmEtd2lsc29uLnBuZwpoZXJvX2FsdDog44Ki44Op44O844OK44O744Km44Kj44Or44K944Oz44Gr44KI44KL55m944GE6Zm25ZmoCgpiaW9ncmFwaHk6IHwKICAxOTg55bm044Kq44O844K544OI44Op44Oq44Ki44O744Kt44Oj44Oz44OZ44Op55Sf44G+44KM44CC44OL44Ol44O844K444O844Op44Oz44OJ5Zu957GN44KS5oyB44Gh44CB44K344OJ44OL44O8IE5hdGlvbmFsIEFydCBTY2hvb2zjgafpmbboirjjgpLlrabjgbPjgIHpmbblmajjgpLkuLvjgarjg6Hjg4fjgqPjgqLjgajjgZfjgabliLbkvZzjgpLooYzjgYbjgIIKICAKICDmtbflupXpgbrot6HjgYvjgonnmbrmjpjjgZXjgozjgZ/lo7rjga7jgojjgYbjgaros6rmhJ/jgajoibLoqr/jga7pmbblmajjga/jgIHnubDjgorov5TjgZXjgozjgovlrp/pqJPnmoTjgarph4nolqzjgajnhLzmiJDjgavjgojjgovjgoLjga7jgILlj6Tku6Pjga7lo7rjgoTlmajjgIHogIPlj6TlrabnmoTjgarjgoLjga7jgIHmtbfjgoTmsLTjgYvjgonlvLfjgYTjgqTjg7Pjgrnjg5Tjg6zjg7zjgrfjg6fjg7PjgpLlj5fjgZHjgIHlrp/nlKjjgpLkuLvpoYzjgajjgZvjgZrlu4Plop/jgpLmg7Pjgo/jgZvjgovlmajjga7ooajnj77jga/jgIHpmbboirjmioDooZPjga7plbfjgYTmrbTlj7Ig4oiSIOWPpOS7o+OBruS6uuOAheOBjOeUn+OBjeOBn+i7jOi3oeOAgeOBneOCjOOCieOBjOW7tuOAheOBqOe2muOBj+S7iuOBuOOBruaZgumWk+OBrua1geOCjOOBruODoeOCv+ODleOCoeODvOOBp+OBguOCi+OBqOWQjOaZguOBq+OAgeiHqueEtuOBqOS6uumWk+OBqOOBrumWouS/guaAp+OBq+WVj+mhjOOCkuaPkOi1t+OBmeOCi+OAguOBk+OCjOOBvuOBp+OBq+OAgeOCquODvOOCueODiOODqeODquOCouOCkuS4reW/g+OBq+OAgeOCouODoeODquOCq+OAgeODqOODvOODreODg+ODkeOBp+OCguS9nOWTgeOCkueZuuihqOOAgumZtuWZqOOBq+OCiOOCi+eri+S9k+S9nOWTgeOBoOOBkeOBp+OBquOBj+OAgeODieODreODvOOCpOODs+OCsOOAgeaYoOWDj+S9nOWTgeOBquOBqeOAgeODoeODh+OCo+OCouOBq+S+neOCieOBmuS4gOiyq+OBl+OBn+ODhuODvOODnuOBp+OBruS9nOWTgeOCkueZuuihqOOAgiAKCnNob3J0X2JpbzogQWxhbmEgV2lsc29u77yI44Ki44Op44O844OK44O744Km44Kj44Or44K944Oz77yJ44CCMTk4OeW5tOOCquODvOOCueODiOODqeODquOCouODu+OCreODo+ODs+ODmeODqeeUn+OBvuOCjOOAguODi+ODpeODvOOCuOODvOODqeODs+ODieWbveexjeOCkuaMgeOBoeOAgeOCt+ODieODi+ODvCBOYXRpb25hbCBBcnQgU2Nob29s44Gn6Zm26Iq444KS5a2m44Gz44CB6Zm25Zmo44KS5Li744Gq44Oh44OH44Kj44Ki44Go44GX44Gm5Yi25L2c44KS6KGM44GG44CCCgptZWRpdW06CiAgLSBDZXJhbWljcwotLS0K",
+        "bodyByteLength": 0
+      },
+      "targetDirectory": "src/content/artists/alana-wilson",
+      "generated": {
+        "shared": {
+          "path": "src/content/artists/alana-wilson/index.yaml",
+          "content": "sort_name: Alana Wilson\nhero:\n  image: /images/artists/alana-wilson.png\nmedium:\n  - Ceramics\n",
+          "byteLength": 93,
+          "sha256": "d9990f79b36204f183f24f5b72e4cdb1ce557867c2929f3715e627806eeb235c"
+        },
+        "ja": {
+          "path": "src/content/artists/alana-wilson/ja.md",
+          "content": "---\nname: アラーナ・ウィルソン\nshort_bio: Alana Wilson（アラーナ・ウィルソン）。1989年オーストラリア・キャンベラ生まれ。ニュージーランド国籍を持ち、シドニー\n  National Art Schoolで陶芸を学び、陶器を主なメディアとして制作を行う。\nbiography: |\n  1989年オーストラリア・キャンベラ生まれ。ニュージーランド国籍を持ち、シドニー National Art Schoolで陶芸を学び、陶器を主なメディアとして制作を行う。\n\n  海底遺跡から発掘された壺のような質感と色調の陶器は、繰り返される実験的な釉薬と焼成によるもの。古代の壺や器、考古学的なもの、海や水から強いインスピレーションを受け、実用を主題とせず廃墟を想わせる器の表現は、陶芸技術の長い歴史 − 古代の人々が生きた軌跡、それらが延々と続く今への時間の流れのメタファーであると同時に、自然と人間との関係性に問題を提起する。これまでに、オーストラリアを中心に、アメリカ、ヨーロッパでも作品を発表。陶器による立体作品だけでなく、ドローイング、映像作品など、メディアに依らず一貫したテーマでの作品を発表。 \nhero_alt: アラーナ・ウィルソンによる白い陶器\n---\n",
+          "byteLength": 1398,
+          "sha256": "ba061f18aad184d5f28bc3986735c5155430fdd60ed0c34d8bb9ecace3803653"
+        },
+        "en": {
+          "path": "src/content/artists/alana-wilson/en.md",
+          "content": "---\nname: Alana Wilson\nshort_bio: __TODO_EN_SHORT_BIO__\nbiography: __TODO_EN_BIOGRAPHY__\nhero_alt: __TODO_EN_HERO_ALT__\n---\n",
+          "byteLength": 124,
+          "sha256": "d8181e78dea72d9fe5d529ee77cda1e71ef0a9bc06a48dad98f527f7631f318f"
+        }
+      },
+      "fieldMapping": [
+        {
+          "sourceField": "name",
+          "destination": "index.yaml",
+          "targetField": "sort_name",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.image",
+          "destination": "index.yaml",
+          "targetField": "hero.image",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "medium",
+          "destination": "index.yaml",
+          "targetField": "medium",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "display_name",
+          "destination": "ja.md",
+          "targetField": "name",
+          "strategy": "display-name-or-name-materialized"
+        },
+        {
+          "sourceField": "short_bio",
+          "destination": "ja.md",
+          "targetField": "short_bio",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "biography",
+          "destination": "ja.md",
+          "targetField": "biography",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero_alt",
+          "destination": "ja.md",
+          "targetField": "hero_alt",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "name",
+          "destination": "en.md",
+          "targetField": "name",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "short_bio",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "hero_alt",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "biography",
+          "strategy": "explicit-placeholder-no-translation"
+        }
+      ],
+      "referenceIdentity": {
+        "externalId": "alana-wilson",
+        "localizedEntryIdsAreExternal": false,
+        "referenceRewriteRequired": false
+      },
+      "rollback": {
+        "action": "remove-target-directory-and-restore-source-bytes",
+        "sourcePath": "src/content/artists/alana-wilson.md",
+        "originalBase64": "LS0tCm5hbWU6IEFsYW5hIFdpbHNvbgpkaXNwbGF5X25hbWU6IOOCouODqeODvOODiuODu+OCpuOCo+ODq+OCveODswpoZXJvOgogIGltYWdlOiAvaW1hZ2VzL2FydGlzdHMvYWxhbmEtd2lsc29uLnBuZwpoZXJvX2FsdDog44Ki44Op44O844OK44O744Km44Kj44Or44K944Oz44Gr44KI44KL55m944GE6Zm25ZmoCgpiaW9ncmFwaHk6IHwKICAxOTg55bm044Kq44O844K544OI44Op44Oq44Ki44O744Kt44Oj44Oz44OZ44Op55Sf44G+44KM44CC44OL44Ol44O844K444O844Op44Oz44OJ5Zu957GN44KS5oyB44Gh44CB44K344OJ44OL44O8IE5hdGlvbmFsIEFydCBTY2hvb2zjgafpmbboirjjgpLlrabjgbPjgIHpmbblmajjgpLkuLvjgarjg6Hjg4fjgqPjgqLjgajjgZfjgabliLbkvZzjgpLooYzjgYbjgIIKICAKICDmtbflupXpgbrot6HjgYvjgonnmbrmjpjjgZXjgozjgZ/lo7rjga7jgojjgYbjgaros6rmhJ/jgajoibLoqr/jga7pmbblmajjga/jgIHnubDjgorov5TjgZXjgozjgovlrp/pqJPnmoTjgarph4nolqzjgajnhLzmiJDjgavjgojjgovjgoLjga7jgILlj6Tku6Pjga7lo7rjgoTlmajjgIHogIPlj6TlrabnmoTjgarjgoLjga7jgIHmtbfjgoTmsLTjgYvjgonlvLfjgYTjgqTjg7Pjgrnjg5Tjg6zjg7zjgrfjg6fjg7PjgpLlj5fjgZHjgIHlrp/nlKjjgpLkuLvpoYzjgajjgZvjgZrlu4Plop/jgpLmg7Pjgo/jgZvjgovlmajjga7ooajnj77jga/jgIHpmbboirjmioDooZPjga7plbfjgYTmrbTlj7Ig4oiSIOWPpOS7o+OBruS6uuOAheOBjOeUn+OBjeOBn+i7jOi3oeOAgeOBneOCjOOCieOBjOW7tuOAheOBqOe2muOBj+S7iuOBuOOBruaZgumWk+OBrua1geOCjOOBruODoeOCv+ODleOCoeODvOOBp+OBguOCi+OBqOWQjOaZguOBq+OAgeiHqueEtuOBqOS6uumWk+OBqOOBrumWouS/guaAp+OBq+WVj+mhjOOCkuaPkOi1t+OBmeOCi+OAguOBk+OCjOOBvuOBp+OBq+OAgeOCquODvOOCueODiOODqeODquOCouOCkuS4reW/g+OBq+OAgeOCouODoeODquOCq+OAgeODqOODvOODreODg+ODkeOBp+OCguS9nOWTgeOCkueZuuihqOOAgumZtuWZqOOBq+OCiOOCi+eri+S9k+S9nOWTgeOBoOOBkeOBp+OBquOBj+OAgeODieODreODvOOCpOODs+OCsOOAgeaYoOWDj+S9nOWTgeOBquOBqeOAgeODoeODh+OCo+OCouOBq+S+neOCieOBmuS4gOiyq+OBl+OBn+ODhuODvOODnuOBp+OBruS9nOWTgeOCkueZuuihqOOAgiAKCnNob3J0X2JpbzogQWxhbmEgV2lsc29u77yI44Ki44Op44O844OK44O744Km44Kj44Or44K944Oz77yJ44CCMTk4OeW5tOOCquODvOOCueODiOODqeODquOCouODu+OCreODo+ODs+ODmeODqeeUn+OBvuOCjOOAguODi+ODpeODvOOCuOODvOODqeODs+ODieWbveexjeOCkuaMgeOBoeOAgeOCt+ODieODi+ODvCBOYXRpb25hbCBBcnQgU2Nob29s44Gn6Zm26Iq444KS5a2m44Gz44CB6Zm25Zmo44KS5Li744Gq44Oh44OH44Kj44Ki44Go44GX44Gm5Yi25L2c44KS6KGM44GG44CCCgptZWRpdW06CiAgLSBDZXJhbWljcwotLS0K",
+        "originalByteLength": 1497,
+        "originalSha256": "8f8478f3bee34252581399ca47ba8897a2d2a73e2ae9c81e5ce3c5b9e5102af1"
+      }
+    },
+    {
+      "contentId": "keisuke-matsuda",
+      "source": {
+        "path": "src/content/artists/keisuke-matsuda.md",
+        "byteLength": 962,
+        "sha256": "5cc68832c3dd58e2f52997dba6bec9df04cd7d44a1802234d3b0381b45b1971b",
+        "originalBase64": "LS0tCm5hbWU6IEtlaXN1a2UgTWF0c3VkYQpkaXNwbGF5X25hbWU6IOadvueUsOWVk+S9kQpoZXJvOgogIGltYWdlOiAvaW1hZ2VzL2FydGlzdHMva2Vpc3VrZS1tYXRzdWRhLnBuZwpoZXJvX2FsdDog5p2+55Sw5ZWT5L2R44Gr44KI44KL44Oi44OO44Kv44Ot44Gu5oq96LGh55S7CgpiaW9ncmFwaHk6IHwKICDmnb7nlLDllZPkvZEg77yI44G+44Gk44Gg44O744GR44GE44GZ44GR77yJ44CCMTk4NOW5tOOAgee+pOmmrOecjOeUn+OBvuOCjOOAguS6rOmDveW6nOWcqOS9j+OAgjIwMDnlubTjgIHkuqzpg73luILnq4voirjooZPlpKflrablpKflrabpmaLnvo7ooZPnoJTnqbbnp5HntbXnlLvlsILmlLvmsrnnlLvkv67kuobjgIIKICAKICDjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgI3jgajjgYTjgYbmnb7nlLDjga/jgIHnm67jga7liY3jga7nj77lrp/jgYzpoK3jga7kuK3jga7oqIDokYnjgZ3jga7jgoLjga7jgaDjgajmhJ/jgZjjgovmmYLjgavjgIHoh6rliIbjga7mhI/orZjjgavlhYjnq4vjgaPjgabjgqTjg6Hjg7zjgrjjgYzotbfjgZPjgovjgajjgYTjgYbjgILjgZ3jga7jgqTjg6Hjg7zjgrjjgpLntrLohpznmoTjgavjgafjga/jgarjgY/jgIHjgqTjg6Hjg7zjgrjjgYzkvZPjga7li5XjgY3jgoTmhI/lm7PjgZ3jga7jgoLjga7jgajjgarjgaPjgablh7rmnaXkuIrjgYzjgovntbXjgpLnm67mjIfjgZnjgIIKCnNob3J0X2Jpbzog5p2+55Sw5ZWT5L2RIO+8iOOBvuOBpOOBoOODu+OBkeOBhOOBmeOBke+8ieOAgjE5ODTlubTjgIHnvqTppqznnIznlJ/jgb7jgozjgILkuqzpg73lupzlnKjkvY/jgIIyMDA55bm044CB5Lqs6YO95biC56uL6Iq46KGT5aSn5a2m5aSn5a2m6Zmi576O6KGT56CU56m256eR57W155S75bCC5pS75rK555S75L+u5LqG44CCCgptZWRpdW06CiAgLSBOaWhvbmdhCi0tLQo=",
+        "bodyByteLength": 0
+      },
+      "targetDirectory": "src/content/artists/keisuke-matsuda",
+      "generated": {
+        "shared": {
+          "path": "src/content/artists/keisuke-matsuda/index.yaml",
+          "content": "sort_name: Keisuke Matsuda\nhero:\n  image: /images/artists/keisuke-matsuda.png\nmedium:\n  - Nihonga\n",
+          "byteLength": 98,
+          "sha256": "2a4fdb065ad82de558fe1db19f60b6ddc40db602b6b1cbfac1d701f5dc31b376"
+        },
+        "ja": {
+          "path": "src/content/artists/keisuke-matsuda/ja.md",
+          "content": "---\nname: 松田啓佑\nshort_bio: 松田啓佑 （まつだ・けいすけ）。1984年、群馬県生まれ。京都府在住。2009年、京都市立芸術大学大学院美術研究科絵画専攻油画修了。\nbiography: |\n  松田啓佑 （まつだ・けいすけ）。1984年、群馬県生まれ。京都府在住。2009年、京都市立芸術大学大学院美術研究科絵画専攻油画修了。\n\n  「私は結果を意図するより手前の絵を描こうとしている」という松田は、目の前の現実が頭の中の言葉そのものだと感じる時に、自分の意識に先立ってイメージが起こるという。そのイメージを網膜的にではなく、イメージが体の動きや意図そのものとなって出来上がる絵を目指す。\nhero_alt: 松田啓佑によるモノクロの抽象画\n---\n",
+          "byteLength": 856,
+          "sha256": "07875c8e019ab0b3b03ad3a2c88d0d330c061d752863357479cdbb370ee9813d"
+        },
+        "en": {
+          "path": "src/content/artists/keisuke-matsuda/en.md",
+          "content": "---\nname: Keisuke Matsuda\nshort_bio: __TODO_EN_SHORT_BIO__\nbiography: __TODO_EN_BIOGRAPHY__\nhero_alt: __TODO_EN_HERO_ALT__\n---\n",
+          "byteLength": 127,
+          "sha256": "d717830dbd35796be97cfb6105d35ca94af21b4cd4c52374743edb266560832c"
+        }
+      },
+      "fieldMapping": [
+        {
+          "sourceField": "name",
+          "destination": "index.yaml",
+          "targetField": "sort_name",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.image",
+          "destination": "index.yaml",
+          "targetField": "hero.image",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "medium",
+          "destination": "index.yaml",
+          "targetField": "medium",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "display_name",
+          "destination": "ja.md",
+          "targetField": "name",
+          "strategy": "display-name-or-name-materialized"
+        },
+        {
+          "sourceField": "short_bio",
+          "destination": "ja.md",
+          "targetField": "short_bio",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "biography",
+          "destination": "ja.md",
+          "targetField": "biography",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero_alt",
+          "destination": "ja.md",
+          "targetField": "hero_alt",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "name",
+          "destination": "en.md",
+          "targetField": "name",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "short_bio",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "hero_alt",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "biography",
+          "strategy": "explicit-placeholder-no-translation"
+        }
+      ],
+      "referenceIdentity": {
+        "externalId": "keisuke-matsuda",
+        "localizedEntryIdsAreExternal": false,
+        "referenceRewriteRequired": false
+      },
+      "rollback": {
+        "action": "remove-target-directory-and-restore-source-bytes",
+        "sourcePath": "src/content/artists/keisuke-matsuda.md",
+        "originalBase64": "LS0tCm5hbWU6IEtlaXN1a2UgTWF0c3VkYQpkaXNwbGF5X25hbWU6IOadvueUsOWVk+S9kQpoZXJvOgogIGltYWdlOiAvaW1hZ2VzL2FydGlzdHMva2Vpc3VrZS1tYXRzdWRhLnBuZwpoZXJvX2FsdDog5p2+55Sw5ZWT5L2R44Gr44KI44KL44Oi44OO44Kv44Ot44Gu5oq96LGh55S7CgpiaW9ncmFwaHk6IHwKICDmnb7nlLDllZPkvZEg77yI44G+44Gk44Gg44O744GR44GE44GZ44GR77yJ44CCMTk4NOW5tOOAgee+pOmmrOecjOeUn+OBvuOCjOOAguS6rOmDveW6nOWcqOS9j+OAgjIwMDnlubTjgIHkuqzpg73luILnq4voirjooZPlpKflrablpKflrabpmaLnvo7ooZPnoJTnqbbnp5HntbXnlLvlsILmlLvmsrnnlLvkv67kuobjgIIKICAKICDjgIznp4Hjga/ntZDmnpzjgpLmhI/lm7PjgZnjgovjgojjgormiYvliY3jga7ntbXjgpLmj4/jgZPjgYbjgajjgZfjgabjgYTjgovjgI3jgajjgYTjgYbmnb7nlLDjga/jgIHnm67jga7liY3jga7nj77lrp/jgYzpoK3jga7kuK3jga7oqIDokYnjgZ3jga7jgoLjga7jgaDjgajmhJ/jgZjjgovmmYLjgavjgIHoh6rliIbjga7mhI/orZjjgavlhYjnq4vjgaPjgabjgqTjg6Hjg7zjgrjjgYzotbfjgZPjgovjgajjgYTjgYbjgILjgZ3jga7jgqTjg6Hjg7zjgrjjgpLntrLohpznmoTjgavjgafjga/jgarjgY/jgIHjgqTjg6Hjg7zjgrjjgYzkvZPjga7li5XjgY3jgoTmhI/lm7PjgZ3jga7jgoLjga7jgajjgarjgaPjgablh7rmnaXkuIrjgYzjgovntbXjgpLnm67mjIfjgZnjgIIKCnNob3J0X2Jpbzog5p2+55Sw5ZWT5L2RIO+8iOOBvuOBpOOBoOODu+OBkeOBhOOBmeOBke+8ieOAgjE5ODTlubTjgIHnvqTppqznnIznlJ/jgb7jgozjgILkuqzpg73lupzlnKjkvY/jgIIyMDA55bm044CB5Lqs6YO95biC56uL6Iq46KGT5aSn5a2m5aSn5a2m6Zmi576O6KGT56CU56m256eR57W155S75bCC5pS75rK555S75L+u5LqG44CCCgptZWRpdW06CiAgLSBOaWhvbmdhCi0tLQo=",
+        "originalByteLength": 962,
+        "originalSha256": "5cc68832c3dd58e2f52997dba6bec9df04cd7d44a1802234d3b0381b45b1971b"
+      }
+    },
+    {
+      "contentId": "reiko-kinoshita",
+      "source": {
+        "path": "src/content/artists/reiko-kinoshita.md",
+        "byteLength": 1924,
+        "sha256": "b9ba295ba661c6c5ac156f588d35224f9de2753a0f2f16151e948f13d73253f4",
+        "originalBase64": "LS0tCm5hbWU6IFJlaWtvIEtpbm9zaGl0YQpkaXNwbGF5X25hbWU6IOacqOS4i+S7pOWtkApoZXJvOgogIGltYWdlOiAvaW1hZ2VzL2FydGlzdHMvcmVpa28ta2lub3NoaXRhLnBuZwpoZXJvX2FsdDog5pyo5LiL5Luk5a2Q44Gr44KI44KL5YaG5b2i44Gu6buS44GE57W155S7CgpiaW9ncmFwaHk6IHwKICDmrabolLXph47nvo7ooZPlpKflrablpKflrabpmaIg6YCg5b2i56CU56m256eR576O6KGT5bCC5pS75rK557W144Kz44O844K55L+u5LqG44CC5pyo5LiL44Gu57W155S744Gv44CB562G44KS5L2/44KP44Ga5aGX6KOF55So44K544OX44Os44O844Ks44Oz44GL44KJ6Zyn54q244Gr5ouh5pWj44GV44KM44Gf44Ki44Kv44Oq44Or57W15YW344KS5ZC544GN5LuY44GR44KL44GT44Go44Gn5o+P44GL44KM44KL44CCCgogIOaUr+aMgeS9k+OBq+OBr+e0meOChOW4g+OBquOBqeOAgeOBleOBvuOBluOBvuOBqueJueaAp+OCkuaMgeOBpOe0oOadkOOBjOeUqOOBhOOCieOCjOOAgeOBneOBruihqOmdouOBq+WIu+OBvuOCjOOBn+OBsuOBoOOChOaKmOOCiuebruOBqOOBhOOBo+OBn+S4jeWPr+mAhueahOOBquizquaEn+OBqOWvvuipseOBl+OBquOBjOOCieWItuS9nOOBjOmAsuOCgeOCieOCjOOCi+OAguOBk+OBruaJi+azleOBr+OCouODiuODreOCsOWGmeecn+OBruePvuWDj+ODl+ODreOCu+OCueOBq+edgOaDs+OCkuW+l+OBn+OCguOBruOBp+OBguOCiuOAgeOAjOOBhuOBpOOCjeOBhuaZgumWk+OBrue1jOmBjuOCkue1teOBq+OBmeOCi+OBk+OBqOOBr+OBp+OBjeOCi+OBoOOCjeOBhuOBi+OAjeOBqOOBhOOBhuWVj+OBhOOCkui7uOOBq+WxlemWi+OBleOCjOOCi+OAggoKICDml6XnhLzjgZHjgoTmhJ/lhYnjgIHnp7vli5XjgoTpgJ/luqbjgajjgYTjgaPjgZ/nj77osaHjgbjjga7plqLlv4Pjga/jgIEi5omL44Gn5o+P44GL44KM44GW44KL44Kk44Oh44O844K4IuOCkueUn+OBv+WHuuOBmeWlkeapn+OBqOOBquOCi+OAguOBleOCieOBq+OAgeWItuS9nOW+jOOCguWkieWMluOBl+e2muOBkeOCi+S9nOWTgeOBruOBguOCiuaWueOChOOAgeOBqOOCieOBiOOBjeOCjOOBquOBhOWtmOWcqOOBq+i/q+OCjeOBhuOBqOOBmeOCi+ippuOBv+OBr+OAgeS6i+eJqeOBrueZuueUn+OBqOOBneOBruWkieWuueOCkuaYoOOBl+WHuuOBl+OBpuOBhOOBj+OAggoKc2hvcnRfYmlvOiDmrabolLXph47nvo7ooZPlpKflrablpKflrabpmaLkv67kuobjga7nlLvlrrbjgILnrYbjgpLkvb/jgo/jgZrjgrnjg5fjg6zjg7zjgqzjg7PjgafpnKfnirbjga7jgqLjgq/jg6rjg6vntbXlhbfjgpLlkLnjgY3ku5jjgZHjgIHntJnjgoTluIPjga7jgbLjgaDjgoTmipjjgornm67jgajjgYTjgaPjgZ/os6rmhJ/jgajlr77oqbHjgZfjgarjgYzjgonliLbkvZzjgZnjgovjgILjgqLjg4rjg63jgrDlhpnnnJ/jga7nj77lg4/jgavnnYDmg7PjgpLlvpfjgabjgIHjgIzmmYLplpPjga7np7vjgo3jgYTjgpLntbXjgavjgafjgY3jgovjgYvjgI3jgajjgYTjgYbllY/jgYTjgpLou7jjgavjgIHlpInljJbjgZfntprjgZHjgovjgqTjg6Hjg7zjgrjjgoTlrZjlnKjjga7nlJ/miJDjgajlpInlrrnjgpLmjqLmsYLjgZfjgabjgYTjgovjgIIKCm1lZGl1bToKICAtIFBhaW50aW5nCgp3b3Jrc19sYXlvdXQ6CiAgLSBsYXlvdXQ6IGRvdWJsZS1hCiAgICB3b3JrczoKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDEKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDIKCiAgLSBsYXlvdXQ6IHNpbmdsZS1hCiAgICB3b3JrczoKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDMKCiAgLSBsYXlvdXQ6IGRvdWJsZS1iCiAgICB3b3JrczoKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDQKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDUKCiAgLSBsYXlvdXQ6IHNpbmdsZS1iCiAgICB3b3JrczoKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDYKLS0tCg==",
+        "bodyByteLength": 0
+      },
+      "targetDirectory": "src/content/artists/reiko-kinoshita",
+      "generated": {
+        "shared": {
+          "path": "src/content/artists/reiko-kinoshita/index.yaml",
+          "content": "sort_name: Reiko Kinoshita\nhero:\n  image: /images/artists/reiko-kinoshita.png\nworks_layout:\n  - layout: double-a\n    works:\n      - reiko-kinoshita-01\n      - reiko-kinoshita-02\n  - layout: single-a\n    works:\n      - reiko-kinoshita-03\n  - layout: double-b\n    works:\n      - reiko-kinoshita-04\n      - reiko-kinoshita-05\n  - layout: single-b\n    works:\n      - reiko-kinoshita-06\nmedium:\n  - Painting\n",
+          "byteLength": 403,
+          "sha256": "cd4abbfe9b95e11693519d4abd8419ddf1544b32a42dfaede20bfdfd3b69776e"
+        },
+        "ja": {
+          "path": "src/content/artists/reiko-kinoshita/ja.md",
+          "content": "---\nname: 木下令子\nshort_bio: 武蔵野美術大学大学院修了の画家。筆を使わずスプレーガンで霧状のアクリル絵具を吹き付け、紙や布のひだや折り目といった質感と対話しながら制作する。アナログ写真の現像に着想を得て、「時間の移ろいを絵にできるか」という問いを軸に、変化し続けるイメージや存在の生成と変容を探求している。\nbiography: |\n  武蔵野美術大学大学院 造形研究科美術専攻油絵コース修了。木下の絵画は、筆を使わず塗装用スプレーガンから霧状に拡散されたアクリル絵具を吹き付けることで描かれる。\n\n  支持体には紙や布など、さまざまな特性を持つ素材が用いられ、その表面に刻まれたひだや折り目といった不可逆的な質感と対話しながら制作が進められる。この手法はアナログ写真の現像プロセスに着想を得たものであり、「うつろう時間の経過を絵にすることはできるだろうか」という問いを軸に展開される。\n\n  日焼けや感光、移動や速度といった現象への関心は、\"手で描かれざるイメージ\"を生み出す契機となる。さらに、制作後も変化し続ける作品のあり方や、とらえきれない存在に迫ろうとする試みは、事物の発生とその変容を映し出していく。\nhero_alt: 木下令子による円形の黒い絵画\n---\n",
+          "byteLength": 1511,
+          "sha256": "b2d6297d2744d2c9a1e7c2792bd0a89044b96a8dd1e4af2a0d78b1e076a85700"
+        },
+        "en": {
+          "path": "src/content/artists/reiko-kinoshita/en.md",
+          "content": "---\nname: Reiko Kinoshita\nshort_bio: __TODO_EN_SHORT_BIO__\nbiography: __TODO_EN_BIOGRAPHY__\nhero_alt: __TODO_EN_HERO_ALT__\n---\n",
+          "byteLength": 127,
+          "sha256": "44e5c9fb4c0aae036b50931be1411e7ec81936ef81f5d4894ebc4caf0190ad00"
+        }
+      },
+      "fieldMapping": [
+        {
+          "sourceField": "name",
+          "destination": "index.yaml",
+          "targetField": "sort_name",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.image",
+          "destination": "index.yaml",
+          "targetField": "hero.image",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "works_layout",
+          "destination": "index.yaml",
+          "targetField": "works_layout",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "medium",
+          "destination": "index.yaml",
+          "targetField": "medium",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "display_name",
+          "destination": "ja.md",
+          "targetField": "name",
+          "strategy": "display-name-or-name-materialized"
+        },
+        {
+          "sourceField": "short_bio",
+          "destination": "ja.md",
+          "targetField": "short_bio",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "biography",
+          "destination": "ja.md",
+          "targetField": "biography",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero_alt",
+          "destination": "ja.md",
+          "targetField": "hero_alt",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "name",
+          "destination": "en.md",
+          "targetField": "name",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "short_bio",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "hero_alt",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "biography",
+          "strategy": "explicit-placeholder-no-translation"
+        }
+      ],
+      "referenceIdentity": {
+        "externalId": "reiko-kinoshita",
+        "localizedEntryIdsAreExternal": false,
+        "referenceRewriteRequired": false
+      },
+      "rollback": {
+        "action": "remove-target-directory-and-restore-source-bytes",
+        "sourcePath": "src/content/artists/reiko-kinoshita.md",
+        "originalBase64": "LS0tCm5hbWU6IFJlaWtvIEtpbm9zaGl0YQpkaXNwbGF5X25hbWU6IOacqOS4i+S7pOWtkApoZXJvOgogIGltYWdlOiAvaW1hZ2VzL2FydGlzdHMvcmVpa28ta2lub3NoaXRhLnBuZwpoZXJvX2FsdDog5pyo5LiL5Luk5a2Q44Gr44KI44KL5YaG5b2i44Gu6buS44GE57W155S7CgpiaW9ncmFwaHk6IHwKICDmrabolLXph47nvo7ooZPlpKflrablpKflrabpmaIg6YCg5b2i56CU56m256eR576O6KGT5bCC5pS75rK557W144Kz44O844K55L+u5LqG44CC5pyo5LiL44Gu57W155S744Gv44CB562G44KS5L2/44KP44Ga5aGX6KOF55So44K544OX44Os44O844Ks44Oz44GL44KJ6Zyn54q244Gr5ouh5pWj44GV44KM44Gf44Ki44Kv44Oq44Or57W15YW344KS5ZC544GN5LuY44GR44KL44GT44Go44Gn5o+P44GL44KM44KL44CCCgogIOaUr+aMgeS9k+OBq+OBr+e0meOChOW4g+OBquOBqeOAgeOBleOBvuOBluOBvuOBqueJueaAp+OCkuaMgeOBpOe0oOadkOOBjOeUqOOBhOOCieOCjOOAgeOBneOBruihqOmdouOBq+WIu+OBvuOCjOOBn+OBsuOBoOOChOaKmOOCiuebruOBqOOBhOOBo+OBn+S4jeWPr+mAhueahOOBquizquaEn+OBqOWvvuipseOBl+OBquOBjOOCieWItuS9nOOBjOmAsuOCgeOCieOCjOOCi+OAguOBk+OBruaJi+azleOBr+OCouODiuODreOCsOWGmeecn+OBruePvuWDj+ODl+ODreOCu+OCueOBq+edgOaDs+OCkuW+l+OBn+OCguOBruOBp+OBguOCiuOAgeOAjOOBhuOBpOOCjeOBhuaZgumWk+OBrue1jOmBjuOCkue1teOBq+OBmeOCi+OBk+OBqOOBr+OBp+OBjeOCi+OBoOOCjeOBhuOBi+OAjeOBqOOBhOOBhuWVj+OBhOOCkui7uOOBq+WxlemWi+OBleOCjOOCi+OAggoKICDml6XnhLzjgZHjgoTmhJ/lhYnjgIHnp7vli5XjgoTpgJ/luqbjgajjgYTjgaPjgZ/nj77osaHjgbjjga7plqLlv4Pjga/jgIEi5omL44Gn5o+P44GL44KM44GW44KL44Kk44Oh44O844K4IuOCkueUn+OBv+WHuuOBmeWlkeapn+OBqOOBquOCi+OAguOBleOCieOBq+OAgeWItuS9nOW+jOOCguWkieWMluOBl+e2muOBkeOCi+S9nOWTgeOBruOBguOCiuaWueOChOOAgeOBqOOCieOBiOOBjeOCjOOBquOBhOWtmOWcqOOBq+i/q+OCjeOBhuOBqOOBmeOCi+ippuOBv+OBr+OAgeS6i+eJqeOBrueZuueUn+OBqOOBneOBruWkieWuueOCkuaYoOOBl+WHuuOBl+OBpuOBhOOBj+OAggoKc2hvcnRfYmlvOiDmrabolLXph47nvo7ooZPlpKflrablpKflrabpmaLkv67kuobjga7nlLvlrrbjgILnrYbjgpLkvb/jgo/jgZrjgrnjg5fjg6zjg7zjgqzjg7PjgafpnKfnirbjga7jgqLjgq/jg6rjg6vntbXlhbfjgpLlkLnjgY3ku5jjgZHjgIHntJnjgoTluIPjga7jgbLjgaDjgoTmipjjgornm67jgajjgYTjgaPjgZ/os6rmhJ/jgajlr77oqbHjgZfjgarjgYzjgonliLbkvZzjgZnjgovjgILjgqLjg4rjg63jgrDlhpnnnJ/jga7nj77lg4/jgavnnYDmg7PjgpLlvpfjgabjgIHjgIzmmYLplpPjga7np7vjgo3jgYTjgpLntbXjgavjgafjgY3jgovjgYvjgI3jgajjgYTjgYbllY/jgYTjgpLou7jjgavjgIHlpInljJbjgZfntprjgZHjgovjgqTjg6Hjg7zjgrjjgoTlrZjlnKjjga7nlJ/miJDjgajlpInlrrnjgpLmjqLmsYLjgZfjgabjgYTjgovjgIIKCm1lZGl1bToKICAtIFBhaW50aW5nCgp3b3Jrc19sYXlvdXQ6CiAgLSBsYXlvdXQ6IGRvdWJsZS1hCiAgICB3b3JrczoKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDEKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDIKCiAgLSBsYXlvdXQ6IHNpbmdsZS1hCiAgICB3b3JrczoKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDMKCiAgLSBsYXlvdXQ6IGRvdWJsZS1iCiAgICB3b3JrczoKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDQKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDUKCiAgLSBsYXlvdXQ6IHNpbmdsZS1iCiAgICB3b3JrczoKICAgICAgLSByZWlrby1raW5vc2hpdGEtMDYKLS0tCg==",
+        "originalByteLength": 1924,
+        "originalSha256": "b9ba295ba661c6c5ac156f588d35224f9de2753a0f2f16151e948f13d73253f4"
+      }
+    },
+    {
+      "contentId": "takeyoshi-mitsui",
+      "source": {
+        "path": "src/content/artists/takeyoshi-mitsui.md",
+        "byteLength": 595,
+        "sha256": "3a77c70c97d3b66a4a0356a90d4581acdecb82c01930c88510a8fa894105dd35",
+        "originalBase64": "LS0tCm5hbWU6IFRha2V5b3NoaSBNaXRzdWkKZGlzcGxheV9uYW1lOiDlhYnkupXlqIHlloQKaGVybzoKICBpbWFnZTogL2ltYWdlcy9hcnRpc3RzL3Rha2V5b3NoaS1taXRzdWkucG5nCmhlcm9fYWx0OiDlhYnkupXlqIHlloTjgavjgojjgovpnZLjgajpu4ToibLjga7jgqzjg6njgrnkvZzlk4EKCmJpb2dyYXBoeTogfAogIDE5ODflubTluoPls7bnnIznlJ/jgb7jgozjgILlgInmlbfoirjooZPnp5HlrablpKflrablpKflrabpmaLoirjooZPnoJTnqbbnp5Hlt6XoirjlsILmlLvkv67kuobjgIIyMDEy5bm044KI44KK5a+M5bGx44Ks44Op44K55bel5oi/44Gn44Gu5Yuk5YuZ44KS57WM44GmMjAxNuW5tOeLrOeri+OAguePvuWcqOWvjOWxseecjOOBq+OBpuWItuS9nOOAgueLrOiHquOBruiJsuW9qeaEn+immuOCkuaMgeOBoeOBquOBjOOCieOAgeaWsOOBn+OBquihqOePvuOCkui/veOBhOaxguOCgeOCi+OAgiAKCnNob3J0X2JpbzogMTk4N+W5tOW6g+WztuecjOeUn+OBvuOCjOOAguWAieaVt+iKuOihk+enkeWtpuWkp+WtpuWkp+WtpumZouiKuOihk+eglOeptuenkeW3peiKuOWwguaUu+S/ruS6huOAggoKbWVkaXVtOgogIC0gR2xhc3MKLS0tCg==",
+        "bodyByteLength": 0
+      },
+      "targetDirectory": "src/content/artists/takeyoshi-mitsui",
+      "generated": {
+        "shared": {
+          "path": "src/content/artists/takeyoshi-mitsui/index.yaml",
+          "content": "sort_name: Takeyoshi Mitsui\nhero:\n  image: /images/artists/takeyoshi-mitsui.png\nmedium:\n  - Glass\n",
+          "byteLength": 98,
+          "sha256": "66d2214e73bd6928a6ef3840023fd7ce6bfd07c5abf16792c95542a5a0151936"
+        },
+        "ja": {
+          "path": "src/content/artists/takeyoshi-mitsui/ja.md",
+          "content": "---\nname: 光井威善\nshort_bio: 1987年広島県生まれ。倉敷芸術科学大学大学院芸術研究科工芸専攻修了。\nbiography: |\n  1987年広島県生まれ。倉敷芸術科学大学大学院芸術研究科工芸専攻修了。2012年より富山ガラス工房での勤務を経て2016年独立。現在富山県にて制作。独自の色彩感覚を持ちながら、新たな表現を追い求める。 \nhero_alt: 光井威善による青と黄色のガラス作品\n---\n",
+          "byteLength": 491,
+          "sha256": "0f304903f975bf7965a9f4f51b69898a580975ad0242db48fcc758a1fa98fd4c"
+        },
+        "en": {
+          "path": "src/content/artists/takeyoshi-mitsui/en.md",
+          "content": "---\nname: Takeyoshi Mitsui\nshort_bio: __TODO_EN_SHORT_BIO__\nbiography: __TODO_EN_BIOGRAPHY__\nhero_alt: __TODO_EN_HERO_ALT__\n---\n",
+          "byteLength": 128,
+          "sha256": "c1bfc5104271794cab921649cd91610c3b7afd619d82e0117e86f6e316a296c8"
+        }
+      },
+      "fieldMapping": [
+        {
+          "sourceField": "name",
+          "destination": "index.yaml",
+          "targetField": "sort_name",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.image",
+          "destination": "index.yaml",
+          "targetField": "hero.image",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "medium",
+          "destination": "index.yaml",
+          "targetField": "medium",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "display_name",
+          "destination": "ja.md",
+          "targetField": "name",
+          "strategy": "display-name-or-name-materialized"
+        },
+        {
+          "sourceField": "short_bio",
+          "destination": "ja.md",
+          "targetField": "short_bio",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "biography",
+          "destination": "ja.md",
+          "targetField": "biography",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero_alt",
+          "destination": "ja.md",
+          "targetField": "hero_alt",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "name",
+          "destination": "en.md",
+          "targetField": "name",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "short_bio",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "hero_alt",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "biography",
+          "strategy": "explicit-placeholder-no-translation"
+        }
+      ],
+      "referenceIdentity": {
+        "externalId": "takeyoshi-mitsui",
+        "localizedEntryIdsAreExternal": false,
+        "referenceRewriteRequired": false
+      },
+      "rollback": {
+        "action": "remove-target-directory-and-restore-source-bytes",
+        "sourcePath": "src/content/artists/takeyoshi-mitsui.md",
+        "originalBase64": "LS0tCm5hbWU6IFRha2V5b3NoaSBNaXRzdWkKZGlzcGxheV9uYW1lOiDlhYnkupXlqIHlloQKaGVybzoKICBpbWFnZTogL2ltYWdlcy9hcnRpc3RzL3Rha2V5b3NoaS1taXRzdWkucG5nCmhlcm9fYWx0OiDlhYnkupXlqIHlloTjgavjgojjgovpnZLjgajpu4ToibLjga7jgqzjg6njgrnkvZzlk4EKCmJpb2dyYXBoeTogfAogIDE5ODflubTluoPls7bnnIznlJ/jgb7jgozjgILlgInmlbfoirjooZPnp5HlrablpKflrablpKflrabpmaLoirjooZPnoJTnqbbnp5Hlt6XoirjlsILmlLvkv67kuobjgIIyMDEy5bm044KI44KK5a+M5bGx44Ks44Op44K55bel5oi/44Gn44Gu5Yuk5YuZ44KS57WM44GmMjAxNuW5tOeLrOeri+OAguePvuWcqOWvjOWxseecjOOBq+OBpuWItuS9nOOAgueLrOiHquOBruiJsuW9qeaEn+immuOCkuaMgeOBoeOBquOBjOOCieOAgeaWsOOBn+OBquihqOePvuOCkui/veOBhOaxguOCgeOCi+OAgiAKCnNob3J0X2JpbzogMTk4N+W5tOW6g+WztuecjOeUn+OBvuOCjOOAguWAieaVt+iKuOihk+enkeWtpuWkp+WtpuWkp+WtpumZouiKuOihk+eglOeptuenkeW3peiKuOWwguaUu+S/ruS6huOAggoKbWVkaXVtOgogIC0gR2xhc3MKLS0tCg==",
+        "originalByteLength": 595,
+        "originalSha256": "3a77c70c97d3b66a4a0356a90d4581acdecb82c01930c88510a8fa894105dd35"
+      }
+    },
+    {
+      "contentId": "yuka-mori",
+      "source": {
+        "path": "src/content/artists/yuka-mori.md",
+        "byteLength": 1192,
+        "sha256": "3ab0cff248c3958e7a93c06a2540aad4c4b68a8e252230b49a940fc9cf9a90a4",
+        "originalBase64": "LS0tCm5hbWU6IFl1a2EgTW9yaQpkaXNwbGF5X25hbWU6IOajruWklemmmQpoZXJvOgogIGltYWdlOiAvaW1hZ2VzL2FydGlzdHMveXVrYS1tb3JpLndlYnAKaGVyb19hbHQ6IOajruWklemmmeOBq+OCiOOCi+akjeeJqeOBqOS6uueJqeOCkuaPj+OBhOOBn+e1teeUuwoKYmlvZ3JhcGh5OiB8CiAgMTk5MeW5tCDmu4vos4DnnIzlh7rouqvjgIIyMDE05bm0IOS6rOmDveW4gueri+iKuOihk+Wkp+WtpiDnvo7ooZPnp5Hml6XmnKznlLvlsILmlLsg5Y2S5qWt44CCMjAxNeW5tCDjg5Hjg6rlm73nq4vpq5jnrYnnvo7ooZPlrabmoKEg5rS+6YGj5Lqk5o+b55WZ5a2m44CCMjAxNuW5tCDkuqzpg73luILnq4voirjooZPlpKflrablpKflrabpmaLkv67lo6voqrLnqIsg5pel5pys55S75bCC5pS7IOS/ruS6huOAguW5vOWwkeacn+OBi+OCieS7j+aVmee+juihk+OBruW9semfv+OCkuWPl+OBkeOAgeaXpeacrOeUu+OCkuWHuuiHquOBqOOBmeOCi+iDjOaZr+OCkuaMgeOBpOajruOBr+OAgeiHquOCieOBruS9k+mok+OChOaEn+immuOCkuWFg+OBq+i6q+S9k+OBqOeSsOWig+OBruWig+eVjOOCkuaOouOCiuOAgeS4oeiAheOBjOWGheWMheOBl+WQiOOBhOa1geWLleeahOOBq+WkieWMluOBl+e2muOBkeOCi+OBleOBvuOCkue1teeUu+OBq+OBiuOBkeOCi+Wbs+OBqOWcsOOBrumWouS/guOCkueUqOOBhOOBpuaPj+OBj+OAggogIAogIDIwMTnlubTjgojjgormpI3nianjga7lhpnnlJ/jgpLlp4vjgoHjgIHmpI3nianjgpLjgIznva7jgYvjgozjgabjgYTjgovnkrDlooPjgajlnLDntprjgY3jgafkurrplpPjgajjga/nlbDjgarjgaPjgZ/mhJ/opprjgaflooPnlYzjgpLooYzjgY3mnaXjgZnjgovlrZjlnKjjgI3jgajjgZfjgabjgIHmpI3nianjga7ouqvkvZPmgKfjgYvjgonjgqTjg7Pjgrnjg5Tjg6zjg7zjgrfjg6fjg7PjgpLlvpfjgZ/ntbXnlLvkvZzlk4HjgoLliLbkvZzjgZnjgovjgIIKCnNob3J0X2Jpbzog44OR44Oq5Zu956uL6auY562J576O6KGT5a2m5qChIOa0vumBo+S6pOaPm+eVmeWtpuOAgjIwMTblubQg5Lqs6YO95biC56uL6Iq46KGT5aSn5a2m5aSn5a2m6Zmi5L+u5aOr6Kqy56iLIOaXpeacrOeUu+WwguaUuyDkv67kuobjgIIKCm1lZGl1bToKICAtIFBhaW50aW5nCgp3b3Jrc19sYXlvdXQ6CiAgLSBsYXlvdXQ6IHNpbmdsZS1hCiAgICB3b3JrczoKICAgICAgLSB5dWthLW1vcmktMDEKLS0tCg==",
+        "bodyByteLength": 0
+      },
+      "targetDirectory": "src/content/artists/yuka-mori",
+      "generated": {
+        "shared": {
+          "path": "src/content/artists/yuka-mori/index.yaml",
+          "content": "sort_name: Yuka Mori\nhero:\n  image: /images/artists/yuka-mori.webp\nworks_layout:\n  - layout: single-a\n    works:\n      - yuka-mori-01\nmedium:\n  - Painting\n",
+          "byteLength": 155,
+          "sha256": "0408474bfc1aa52572006cf01326360877c2fc2b936138395cb9b8134e2cdede"
+        },
+        "ja": {
+          "path": "src/content/artists/yuka-mori/ja.md",
+          "content": "---\nname: 森夕香\nshort_bio: パリ国立高等美術学校 派遣交換留学。2016年 京都市立芸術大学大学院修士課程 日本画専攻 修了。\nbiography: |\n  1991年 滋賀県出身。2014年 京都市立芸術大学 美術科日本画専攻 卒業。2015年 パリ国立高等美術学校 派遣交換留学。2016年 京都市立芸術大学大学院修士課程 日本画専攻 修了。幼少期から仏教美術の影響を受け、日本画を出自とする背景を持つ森は、自らの体験や感覚を元に身体と環境の境界を探り、両者が内包し合い流動的に変化し続けるさまを絵画における図と地の関係を用いて描く。\n\n  2019年より植物の写生を始め、植物を「置かれている環境と地続きで人間とは異なった感覚で境界を行き来する存在」として、植物の身体性からインスピレーションを得た絵画作品も制作する。\nhero_alt: 森夕香による植物と人物を描いた絵画\n---\n",
+          "byteLength": 1028,
+          "sha256": "dbd9c129654796638a0d55f183f9316bd044c471f9309d117199637772a6c053"
+        },
+        "en": {
+          "path": "src/content/artists/yuka-mori/en.md",
+          "content": "---\nname: Yuka Mori\nshort_bio: __TODO_EN_SHORT_BIO__\nbiography: __TODO_EN_BIOGRAPHY__\nhero_alt: __TODO_EN_HERO_ALT__\n---\n",
+          "byteLength": 121,
+          "sha256": "870eda3768c08997d311ce807a30618d3b0daf4250a976e061b94d0e71d2f348"
+        }
+      },
+      "fieldMapping": [
+        {
+          "sourceField": "name",
+          "destination": "index.yaml",
+          "targetField": "sort_name",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.image",
+          "destination": "index.yaml",
+          "targetField": "hero.image",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "works_layout",
+          "destination": "index.yaml",
+          "targetField": "works_layout",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "medium",
+          "destination": "index.yaml",
+          "targetField": "medium",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "display_name",
+          "destination": "ja.md",
+          "targetField": "name",
+          "strategy": "display-name-or-name-materialized"
+        },
+        {
+          "sourceField": "short_bio",
+          "destination": "ja.md",
+          "targetField": "short_bio",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "biography",
+          "destination": "ja.md",
+          "targetField": "biography",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero_alt",
+          "destination": "ja.md",
+          "targetField": "hero_alt",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "name",
+          "destination": "en.md",
+          "targetField": "name",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "short_bio",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "hero_alt",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "biography",
+          "strategy": "explicit-placeholder-no-translation"
+        }
+      ],
+      "referenceIdentity": {
+        "externalId": "yuka-mori",
+        "localizedEntryIdsAreExternal": false,
+        "referenceRewriteRequired": false
+      },
+      "rollback": {
+        "action": "remove-target-directory-and-restore-source-bytes",
+        "sourcePath": "src/content/artists/yuka-mori.md",
+        "originalBase64": "LS0tCm5hbWU6IFl1a2EgTW9yaQpkaXNwbGF5X25hbWU6IOajruWklemmmQpoZXJvOgogIGltYWdlOiAvaW1hZ2VzL2FydGlzdHMveXVrYS1tb3JpLndlYnAKaGVyb19hbHQ6IOajruWklemmmeOBq+OCiOOCi+akjeeJqeOBqOS6uueJqeOCkuaPj+OBhOOBn+e1teeUuwoKYmlvZ3JhcGh5OiB8CiAgMTk5MeW5tCDmu4vos4DnnIzlh7rouqvjgIIyMDE05bm0IOS6rOmDveW4gueri+iKuOihk+Wkp+WtpiDnvo7ooZPnp5Hml6XmnKznlLvlsILmlLsg5Y2S5qWt44CCMjAxNeW5tCDjg5Hjg6rlm73nq4vpq5jnrYnnvo7ooZPlrabmoKEg5rS+6YGj5Lqk5o+b55WZ5a2m44CCMjAxNuW5tCDkuqzpg73luILnq4voirjooZPlpKflrablpKflrabpmaLkv67lo6voqrLnqIsg5pel5pys55S75bCC5pS7IOS/ruS6huOAguW5vOWwkeacn+OBi+OCieS7j+aVmee+juihk+OBruW9semfv+OCkuWPl+OBkeOAgeaXpeacrOeUu+OCkuWHuuiHquOBqOOBmeOCi+iDjOaZr+OCkuaMgeOBpOajruOBr+OAgeiHquOCieOBruS9k+mok+OChOaEn+immuOCkuWFg+OBq+i6q+S9k+OBqOeSsOWig+OBruWig+eVjOOCkuaOouOCiuOAgeS4oeiAheOBjOWGheWMheOBl+WQiOOBhOa1geWLleeahOOBq+WkieWMluOBl+e2muOBkeOCi+OBleOBvuOCkue1teeUu+OBq+OBiuOBkeOCi+Wbs+OBqOWcsOOBrumWouS/guOCkueUqOOBhOOBpuaPj+OBj+OAggogIAogIDIwMTnlubTjgojjgormpI3nianjga7lhpnnlJ/jgpLlp4vjgoHjgIHmpI3nianjgpLjgIznva7jgYvjgozjgabjgYTjgovnkrDlooPjgajlnLDntprjgY3jgafkurrplpPjgajjga/nlbDjgarjgaPjgZ/mhJ/opprjgaflooPnlYzjgpLooYzjgY3mnaXjgZnjgovlrZjlnKjjgI3jgajjgZfjgabjgIHmpI3nianjga7ouqvkvZPmgKfjgYvjgonjgqTjg7Pjgrnjg5Tjg6zjg7zjgrfjg6fjg7PjgpLlvpfjgZ/ntbXnlLvkvZzlk4HjgoLliLbkvZzjgZnjgovjgIIKCnNob3J0X2Jpbzog44OR44Oq5Zu956uL6auY562J576O6KGT5a2m5qChIOa0vumBo+S6pOaPm+eVmeWtpuOAgjIwMTblubQg5Lqs6YO95biC56uL6Iq46KGT5aSn5a2m5aSn5a2m6Zmi5L+u5aOr6Kqy56iLIOaXpeacrOeUu+WwguaUuyDkv67kuobjgIIKCm1lZGl1bToKICAtIFBhaW50aW5nCgp3b3Jrc19sYXlvdXQ6CiAgLSBsYXlvdXQ6IHNpbmdsZS1hCiAgICB3b3JrczoKICAgICAgLSB5dWthLW1vcmktMDEKLS0tCg==",
+        "originalByteLength": 1192,
+        "originalSha256": "3ab0cff248c3958e7a93c06a2540aad4c4b68a8e252230b49a940fc9cf9a90a4"
+      }
+    }
+  ]
+}

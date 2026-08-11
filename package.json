@@ -14,6 +14,8 @@
     "journal:test": "node --experimental-strip-types --test src/content-loaders/journal/*.test.ts src/content-boundaries/journal.test.ts",
     "news:test": "node --experimental-strip-types --test src/content-loaders/news/*.test.ts src/content-boundaries/news.test.ts",
     "artists:test": "node --experimental-strip-types --test src/content-loaders/artists/*.test.ts",
+    "artists:migration:manifest": "node --experimental-strip-types src/content-loaders/artists/migration-manifest.ts",
+    "artists:migration:execute": "node --experimental-strip-types src/content-loaders/artists/migration-executor.ts",
     "editor:test": "node --experimental-strip-types --test src/editor/*.test.ts",
     "editor:test:browser": "node tests/browser/run-browser-tests.mjs",
     "backup": "node --experimental-strip-types src/editor/backup-cli.ts",
