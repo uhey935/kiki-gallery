@@ -1,8 +1,13 @@
 # Works Asset Manager Architecture & Safety Specification
 
+> **Historical / Superseded:** This records the original flat Works Asset
+> Manager boundary. For the implemented three-file topology and current asset
+> transaction contract, use
+> [Works Localization Architecture](./works-localization-architecture-2026-08-12.md).
+
 | Property      | Value                                                   |
 | ------------- | ------------------------------------------------------- |
-| Status        | Approved implementation specification                   |
+| Status        | Historical / superseded flat-runtime specification      |
 | Last reviewed | 2026-08-07                                              |
 | Scope         | Assets for existing Works entries in the local Editor   |
 | Supersedes    | No existing content, workflow, or storage specification |

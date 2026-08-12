@@ -237,7 +237,7 @@ const { contentId } = Astro.props as { contentId: string };
       pending = true;
       setLock(true);
       status.textContent =
-        "Publishing only the evidence-authorized Works Markdown deletion…";
+        "Publishing only the evidence-authorized three-file Works content-unit deletion…";
       render();
       try {
         const result = await request({ action: "publish", operationId });

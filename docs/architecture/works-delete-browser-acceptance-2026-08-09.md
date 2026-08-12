@@ -1,8 +1,12 @@
 # Works Delete Implementation and Browser Acceptance
 
+> **Historical / Superseded:** This is retained flat-runtime browser evidence.
+> Current three-file Delete and full lifecycle acceptance are tracked by
+> [Works Localization Architecture](./works-localization-architecture-2026-08-12.md).
+
 | Property | Value                                                              |
 | -------- | ------------------------------------------------------------------ |
-| Status   | Implemented and accepted                                           |
+| Status   | Historical / superseded flat-runtime acceptance                    |
 | Date     | 2026-08-09                                                         |
 | Baseline | `5eadcd4` (`Finalize Works delete asset lifecycle semantics`)      |
 | Scope    | Works content Delete, cross-writer exclusion, content-only Publish |

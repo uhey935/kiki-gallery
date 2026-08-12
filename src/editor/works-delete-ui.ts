@@ -4,7 +4,7 @@ export const worksDeleteFailureGuidance = (code?: string) =>
     "backup-proof-required":
       "Choose a complete backup generation, then review again.",
     "backup-proof-stale":
-      "Create and verify a fresh generation containing the exact current Works Markdown.",
+      "Create and verify a fresh generation containing the exact current three-file Works content unit.",
     "incoming-reference":
       "Remove the incoming reference in a separate reviewed Save or keep this Work.",
     "parser-uncertainty":

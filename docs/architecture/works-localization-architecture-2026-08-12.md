@@ -2,16 +2,17 @@
 
 | Property        | Value                                                                                                  |
 | --------------- | ------------------------------------------------------------------------------------------------------ |
-| Status          | Approved target architecture; implementation-ready                                                     |
+| Status          | Implemented current authority                                                                           |
 | Date            | 2026-08-12                                                                                             |
 | Scope           | Works three-file localization, Production, Editor, routes, references, lifecycle safety, and migration |
-| Current runtime | Flat Markdown remains authoritative until a separate migration and cutover                             |
-| Excluded        | Implementation, migration tooling, content migration, runtime cutover, and asset mutation              |
+| Current runtime | Strict three-file localized repository and Works Production facade                                      |
+| Excluded        | Asset mutation and new product features                                                                  |
 
-This is the target authority for Works localization. It does not claim the
-current flat runtime has migrated. The current seven Markdown sources remain
-authoritative until separately reviewed implementation and migration phases
-complete.
+This is the current implemented authority for Works localization. The reviewed
+migration, Production cutover, Editor three-file lifecycle, and isolated Works
+browser acceptance are complete. The seven canonical directories and their 21
+files are authoritative; legacy flat sources are retained only inside frozen
+migration and recovery evidence.
 
 The corrected migration baseline has empty bodies for Reiko Kinoshita 01/02,
 the approved Yuka Mori alt, authoritative current image references/order, and
@@ -253,15 +254,17 @@ placeholder only when present in JA. A non-empty JA body receives
 corrected Works bodies are empty. Optional SEO fields are omitted. Migration
 does not translate from JA, News/Exhibition prose, or existing alts.
 
-Implementation evidence (foundation phase): EN placeholders use the exact
+Implementation evidence: EN placeholders use the exact
 `__TODO_WORK_*__` tokens documented above. The frozen content-and-asset manifest
 is `docs/migrations/works-localization-manifest-2026-08-12.json`, SHA-256
 `5eddbe7015aa14c5bc6741cf84a5c14ea4d93cc75cebf9a6812c691daca10498`.
 Its asset invariance records normalized public URL, repository path, byte
 length, SHA-256, decoded byte format, and ordered Work references. The executor
 compares that evidence before staging, after installation, and after source
-removal. This records target-foundation evidence only; the flat runtime remains
-authoritative and no migration has been executed.
+removal. The completed migration installed the exact 21 frozen targets and
+removed the seven flat canonical sources. Production now reads the localized
+loader and Works Production facade without a flat fallback. The frozen manifest
+remains immutable rollback and audit evidence.
 
 ## 14. JA compatibility baseline
 
@@ -271,15 +274,27 @@ spacing; year; inquiry; body; layout behavior; SEO behavior; and routes. After
 migration, compare rendered semantics and preserve migrated JA values exactly.
 No display change is an implicit migration goal.
 
-## 15. Implementation sequence and verification
+## 15. Implemented lifecycle and verification
 
-1. strict schemas, repository, Issues, capability, and Route Registry;
-2. fixture-based adapter/facade and consumer integration;
-3. Editor image-slot state, Preview, Save/Create, and asset transaction;
-4. three-file Publish/Rename/Delete and recovery;
-5. frozen manifest and dry-run migration proof;
-6. all-seven migration, Production cutover, JA comparison, legacy removal; and
-7. isolated browser acceptance and current-authority status update.
+The implementation includes strict schemas and inventory, localized adapter and
+Production facade, locale capability and routes, complete three-file Editor
+Create/Load/Preview/Save/Publish/Rename/Delete, asset-safe transactions, frozen
+migration evidence, all-seven migration, and Production consumer cutover.
+
+The isolated browser acceptance in
+`tests/browser/works-lifecycle.spec.ts` covers Create validation, JA Preview,
+first Save and Publish, Edit/Preview/Save/Publish, temporary Asset Replace and
+Cancel, directory Rename and Publish, and Delete backup fail-closed behavior.
+Known Journal/Home navigation timeouts belong to the global browser suite and
+are not Works lifecycle acceptance failures.
+
+Create uncertainty is never treated as success. If post-install verification
+fails and rollback cannot be proved, Create writes
+`.works-create-recovery-<contentId>.json` with the target paths, intended and
+observed hashes/lengths, rollback error, and `manualRecoveryRequired: true`.
+The surviving target makes same-ID recreation fail closed. Operators must stop
+mutation, inspect the recorded paths and bytes, reconcile the unit manually,
+and preserve the evidence until recovery is independently verified.
 
 Each milestone runs focused and full affected tests, Astro check/build,
 formatting, and `git diff --check`. Mutating milestones require asset inventory
@@ -299,9 +314,8 @@ required execution gates, not unresolved human decisions.
 
 ### Should-fix
 
-- Mark flat Works documents historical/current appropriately after cutover.
-- Preserve historical safety evidence while correcting stale implementation
-  status claims.
+- Preserve historical safety and migration evidence with explicit superseded
+  status; do not delete it merely because runtime no longer imports it.
 
 ### Future enhancements
 

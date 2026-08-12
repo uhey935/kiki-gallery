@@ -1,8 +1,12 @@
 # Works Rename Implementation and Browser Acceptance Closure
 
+> **Historical / Superseded:** This is retained flat-runtime browser evidence.
+> Current three-file Rename and full lifecycle acceptance are tracked by
+> [Works Localization Architecture](./works-localization-architecture-2026-08-12.md).
+
 | Property | Value                                                                          |
 | -------- | ------------------------------------------------------------------------------ |
-| Status   | Implemented and accepted                                                       |
+| Status   | Historical / superseded flat-runtime acceptance                                |
 | Date     | 2026-08-09                                                                     |
 | Scope    | Reference-aware Works Rename and evidence-limited Publish                      |
 | Excluded | Delete, Production loaders, asset moves/deletes, canonical production mutation |

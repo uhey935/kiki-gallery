@@ -1,8 +1,12 @@
 # Works Rename Asset Lifecycle Semantics Finalization
 
+> **Historical / Superseded:** This is retained flat-runtime Rename and Asset
+> Lifecycle evidence. Current directory-unit semantics are defined by
+> [Works Localization Architecture](./works-localization-architecture-2026-08-12.md).
+
 | Property  | Value                                                                     |
 | --------- | ------------------------------------------------------------------------- |
-| Status    | Implemented; browser acceptance closed                                    |
+| Status    | Historical / superseded flat-runtime evidence                             |
 | Date      | 2026-08-09                                                                |
 | Scope     | Works Content ID Rename coordination with Works Asset Lifecycle v2        |
 | Preserved | Canonical asset bytes/paths, Asset Lifecycle v2 behavior, Delete, loaders |

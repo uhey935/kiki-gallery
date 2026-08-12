@@ -12,7 +12,7 @@ Exhibitions Delete follows the same one-file lifecycle and includes its public d
 
 Artists Delete follows the same one-file lifecycle and additionally closes typed `Works.artist` and `Exhibitions.artists[]` references plus known News links. It never cascades, rewrites references, or moves assets. Never infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
 
-Works Delete additionally requires the content lifecycle lock before the Asset Lifecycle repository lock. Release is asset first, content last. It moves and publishes only the selected Works Markdown; asset bytes, paths, and Asset Lifecycle v2 evidence remain unchanged.
+Works Delete additionally requires the content lifecycle lock before the Asset Lifecycle repository lock. Release is asset first, content last. It moves and publishes only the selected three-file Works content unit; asset bytes, paths, and Asset Lifecycle v2 evidence remain unchanged.
 
 ## Safe start
 
@@ -31,9 +31,10 @@ Create is supported for Journal, Works, Artists, Exhibitions, and News. A new
 entry remains Editor-only until first Save. Choose a lowercase hyphenated
 Content ID and complete the collection-owned required fields. First Save fails
 closed if the ID, a case-fold equivalent, or target path exists. Journal then
-creates `index.yaml`, `ja.md`, and `en.md` as one validated unit; each flat
-collection creates its one existing-format Markdown source through exclusive
-staging and a canonical reread. The normal saved workspace opens afterward.
+creates `index.yaml`, `ja.md`, and `en.md` as one validated unit. Works does the
+same while preserving Shared/JA/EN ownership; each remaining flat collection
+creates its existing-format Markdown source through exclusive staging and a
+canonical reread. The normal saved workspace opens afterward.
 Publish remains separate and includes only the exact new untracked source (and
 only an already-authorized Works saved-asset manifest). Create itself never
 uploads, moves, or infers ownership of assets.
@@ -324,13 +325,13 @@ incoming-reference graph with no references, review of the exact plan, and an
 explicit confirmation checkbox. Execution acquires the content lock and then
 the asset repository lock; neither lock is ever stolen.
 
-Only `src/content/works/<content-id>.md` moves to content recovery. No asset
+Only the exact `src/content/works/<content-id>/` three-file unit moves to content recovery. No asset
 path, byte, candidate, observation, quarantine record, deletion manifest, or
 retention clock changes. A possibly unreferenced asset is only a displayed
 consequence for a future independent ALv2 scan.
 
 After Delete, use its dedicated Publish button. It consumes completed recovery
-evidence and stages exactly the one deleted Works Markdown path. If rollback or
+evidence and stages exactly the deleted Works directory path. If rollback or
 invariance proof fails, stop all Editor writes, preserve both locks and the
 operation evidence, and perform manual recovery before retrying.
 

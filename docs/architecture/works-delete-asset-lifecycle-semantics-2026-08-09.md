@@ -1,5 +1,9 @@
 # Works Delete Asset Lifecycle Semantics Finalization
 
+> **Historical / Superseded:** This is retained flat-runtime Delete and Asset
+> Lifecycle evidence. Current three-file Delete semantics are defined by
+> [Works Localization Architecture](./works-localization-architecture-2026-08-12.md).
+
 | Property  | Value                                                                      |
 | --------- | -------------------------------------------------------------------------- |
 | Status    | Historical design authority; subsequently implemented and accepted         |

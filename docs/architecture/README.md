@@ -29,15 +29,16 @@ records and are not the current Exhibitions topology or lifecycle authority.
 
 For Works localization, read
 [Works Localization Architecture](./works-localization-architecture-2026-08-12.md)
-as the approved target authority. Works still uses the current flat Markdown
-runtime; the document does not claim migration or Production cutover is
-complete. Existing Works Asset Manager, Rename, Delete, and browser-acceptance
-documents remain flat-runtime lifecycle evidence until migration completes.
+first as the current implemented authority, then the immutable
+[`works-localization-manifest-2026-08-12.json`](../migrations/works-localization-manifest-2026-08-12.json)
+as migration, rollback, and asset-invariance evidence. Earlier Works Asset
+Manager, Rename, Delete, Editor, and browser records are historical flat-runtime
+evidence and are superseded for topology and lifecycle details.
 
 | Document                                                       | Purpose                                                                                                                                                               |
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Artists Architecture — Current**                             | Current authority for the three-file topology, locale policy, Production facade, Editor lifecycle, references, and immutable migration evidence.                      |
-| **Works Localization Architecture — Target**                   | Approved target for Works three-file localization, capability, Production/Editor cutover, asset-safe transactions, and migration.                                     |
+| **Works Localization Architecture — Current**                  | Current implemented authority for Works three-file localization, capability, Production/Editor lifecycle, asset safety, migration, recovery, and browser acceptance. |
 | **Browser Automation Foundation**                              | Defines the disposable-repository Playwright harness, representative lifecycle smoke coverage, local/CI operation, and deferred browser cases.                        |
 | **Editor Final Completion Audit**                              | Current authority for the completed Editor scope, final findings, verification, safety boundaries, and deferred work.                                                 |
 | **Works Delete Asset Lifecycle Semantics**                     | Finalizes content-only Works deletion, post-Delete ALv2 handoff, dual-lock coordination, unchanged assets/evidence, and asset-free Publish.                           |
@@ -132,22 +133,22 @@ Delete, reconciles the browser-acceptance record, verifies locking, recovery,
 Publish scope, dependency and Production boundaries, and records the canonical
 completion decision plus intentionally deferred future work.
 
-### Works Delete Asset Lifecycle Semantics
+### Works Delete Asset Lifecycle Semantics — Historical
 
 **works-delete-asset-lifecycle-semantics-2026-08-09.md**
 
-Finalizes the boundary between recoverable Works content removal and Asset
+Retains the flat-runtime boundary between recoverable Works content removal and Asset
 Lifecycle v2. It keeps every asset and lifecycle record unchanged, starts orphan
 retention only at a later independent complete scan, gates pending asset state,
 defines dual-lock inspection and rollback, and restricts Publish to the evidenced
-Work Markdown deletion. The design is implemented by the subsequent browser
-acceptance milestone.
+content deletion. Its topology is superseded by the current Works Localization
+Architecture.
 
-### Works Delete Implementation and Browser Acceptance
+### Works Delete Implementation and Browser Acceptance — Historical
 
 **works-delete-browser-acceptance-2026-08-09.md**
 
-Records the completed Works Delete service, route, reviewed-plan UI, dual-lock
+Records the completed flat-runtime Works Delete service, route, reviewed-plan UI, dual-lock
 transaction, byte-exact rollback, unchanged asset/lifecycle proof, single-path
 Publish, cross-writer server gate, isolated tests, and real-browser acceptance.
 
@@ -162,26 +163,25 @@ Exhibitions, and Artists as collection-ready under strict incoming-reference
 blocking. Its Works deferral is closed by the subsequent Works Delete lifecycle
 semantics finalization, while the audit remains the historical gate record.
 
-### Works Rename Asset Lifecycle Semantics
+### Works Rename Asset Lifecycle Semantics — Historical
 
 **works-rename-asset-lifecycle-semantics-2026-08-09.md**
 
-Finalizes the design boundary between Works Content ID Rename and Asset
+Retains the flat-runtime design boundary between Works Content ID Rename and Asset
 Lifecycle v2. It keeps asset URLs/bytes and durable lifecycle evidence
 unchanged, blocks pending unpublished asset state, composes the content and
 asset repository locks, defines prospective evidence validation and exact
 rollback, and prohibits Rename Publish from staging or re-materializing assets.
 
-### Works Rename Browser Acceptance Closure
+### Works Rename Browser Acceptance Closure — Historical
 
 **works-rename-browser-acceptance-2026-08-09.md**
 
-Records the completed implementation and isolated real-browser acceptance for
+Records the completed flat-runtime implementation and isolated browser acceptance for
 reviewed-plan confirmation, typed incoming references, unchanged asset URLs and
 bytes, dual-lock refusal, renamed-workspace Preview/Save continuity, rollback,
-and evidence-limited Publish.
-Production loader changes remain deferred. Works Delete is implemented by its
-separate acceptance milestone.
+and evidence-limited Publish. Its topology is superseded by the current Works
+Localization Architecture and isolated full-lifecycle acceptance.
 
 ### Exhibitions / Artists Rename Reference Update Architecture
 

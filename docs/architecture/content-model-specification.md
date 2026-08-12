@@ -10,7 +10,7 @@ Last Updated: 2026-08-12
 
 本仕様は KiKi Gallery の Schema、Editor、Astro、および将来の CMS 実装における正式な Content Model の基準である。対象は Artist、Work、Exhibition、Journal、News、Home とする。
 
-Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Journal で最初に検証し、Work、Home、その他の Collection へ一括適用しない。各 Collection の保存 adapter は Journal prototype 後に個別判断する。
+Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Collection ごとに承認・実装し、現在は Journal、Works、Artists、Exhibitionsでcanonicalである。HomeとNewsは各Collection固有の現行modelを維持する。
 
 ```text
 Collection
@@ -20,7 +20,7 @@ Collection
     └── en.md
 ```
 
-- Journal、News、およびArtistsのthree-file Content Unitでは、Repository、Editor、および将来の CMS はディレクトリ名を Content ID の Single Source of Truth とする。
+- Journal、Works、Artists、およびExhibitionsのthree-file Content Unitでは、Repository、Editor、および将来の CMS はディレクトリ名を Content ID の Single Source of Truth とする。
 - Astro Adapter は導出した Content ID を locale-specific Entry の `entry.data.contentId` へ付与する。
 - Astro の `entry.id` は Store 内で Entry を一意に参照するための内部 lookup key とする。Consumer はその文字列形式を解析せず、Content ID、Route、または外部 Reference として使用しない。
 - Presentation、Route Helper、Map key、および Content Reference の解決は `entry.data.contentId`、または Repository／Editor 境界で同じ規則から導出した Content ID を基準にする。
@@ -248,9 +248,9 @@ images:
 
 Rules:
 
-- `images` は1件以上。現在の単一ファイル構成では各画像が `src` と `alt` を持つ。Works three-file targetではShared `images[].src` とLocalized `images[].alt` をindex対応させ、件数不一致をfail-closedとする。
+- `images` は1件以上。Worksのcanonical three-file構成ではShared `images[].src` とLocalized `images[].alt` をindex対応させ、件数不一致をfail-closedとする。
 - 同一 Work 内で同じ `src` を重複させない。
-- Works three-file targetでは`src`はShared、`alt`はLocalizedとし、persistent image IDは導入しない。
+- Worksでは`src`はShared、`alt`はLocalizedとし、persistent image IDは導入しない。
 - `size` と `material` はLocalized Optionalとし、現在のJA表示文字列をnormalizeせず移行する。
 - Work は `medium` を持たない。
 - `orientation` は Optional で、現時点では `landscape` のみ許可する。
