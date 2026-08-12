@@ -1,5 +1,10 @@
 # Artists Rename Browser Acceptance Closure
 
+> **Historical Exhibitions reference evidence.** Exhibition paths in this
+> document record the former flat, single-Markdown topology. They are not the
+> current Exhibitions reference-scanner contract after the three-file migration.
+> See [Exhibitions Localization Architecture](./exhibitions-localization-architecture-2026-08-12.md).
+
 > **Status: Historical browser-acceptance record.** This records the flat
 > Artists implementation before the 2026-08-11 three-file migration; its path
 > examples are not the current Artists Rename contract. See

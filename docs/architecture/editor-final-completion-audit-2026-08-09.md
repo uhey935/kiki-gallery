@@ -4,6 +4,9 @@
 > statements in this document predate the 2026-08-11 Artists three-file
 > migration and are not the current Artists architecture. See
 > [Artists Architecture — Current](./artists-architecture-current.md).
+> Exhibitions-specific flat and single-file statements also predate the
+> three-file migration and are superseded by
+> [Exhibitions Localization Architecture](./exhibitions-localization-architecture-2026-08-12.md).
 
 | Property | Value                                                                          |
 | -------- | ------------------------------------------------------------------------------ |

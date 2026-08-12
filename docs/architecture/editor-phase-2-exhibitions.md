@@ -1,5 +1,10 @@
 # Editor Phase 2 — Exhibitions
 
+> **Historical / superseded Exhibitions implementation record.** This document
+> records the former flat, single-Markdown Editor slice. It is not the current
+> Exhibitions topology or lifecycle after the three-file migration. See
+> [Exhibitions Localization Architecture](./exhibitions-localization-architecture-2026-08-12.md).
+
 ## Selection
 
 Exhibitions is the first Phase 2 collection. Its flat Markdown shape reuses the Works safety boundary, while schedule rules, Artist/Work references, body content, and hero presentation provide enough collection-specific behavior to evaluate the platform after a third collection. Artists has a heavier Works layout dependency, News is too small to exercise the boundary, and Home is a singleton dominated by nested media configuration.

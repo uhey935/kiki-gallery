@@ -4,6 +4,9 @@
 > this document predates the 2026-08-11 Artists three-file migration and is not
 > the current Artists architecture. See
 > [Artists Architecture — Current](./artists-architecture-current.md).
+> Its flat Exhibitions removal model is also historical and superseded by the
+> three-file lifecycle in
+> [Exhibitions Localization Architecture](./exhibitions-localization-architecture-2026-08-12.md).
 
 | Property  | Value                                                               |
 | --------- | ------------------------------------------------------------------- |

@@ -1,5 +1,10 @@
 # Exhibitions Delete Implementation and Browser Acceptance
 
+> **Historical / superseded Exhibitions acceptance record.** This document
+> records the former flat, single-Markdown Delete implementation. It is retained
+> as historical safety evidence, not as the current lifecycle contract. See
+> [Exhibitions Localization Architecture](./exhibitions-localization-architecture-2026-08-12.md).
+
 | Field     | Value                                                                     |
 | --------- | ------------------------------------------------------------------------- |
 | Scope     | Exhibitions content Delete only                                           |

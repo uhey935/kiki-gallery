@@ -1,4 +1,7 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import { execFileSync } from "node:child_process";
+import { access, readFile, readdir } from "node:fs/promises";
+import path from "node:path";
 
 async function openCollectionWorkspace(page: Page, collection: string) {
   await page.goto("/editor/");
@@ -99,12 +102,24 @@ test("Artists operator flow validates, previews, saves, and publishes", async ({
   );
   const editedBiography = `${biography} Edited in the canonical three-file workspace.`;
   await page.locator('textarea[name="biography"]').fill(editedBiography);
-  const jaPreview = await openPreview(context, page.locator('[data-preview-artists="ja"]'));
-  await expect(jaPreview.locator(".artists-bio-text")).toContainText(editedBiography);
+  const jaPreview = await openPreview(
+    context,
+    page.locator('[data-preview-artists="ja"]'),
+  );
+  await expect(jaPreview.locator(".artists-bio-text")).toContainText(
+    editedBiography,
+  );
   await jaPreview.close();
   await page.locator("[data-save-artists]").click();
-  await expect(page.locator("[data-artists-action-status]")).toContainText("Saved");
-  await publish(page, "[data-publish-artists]", /\/editor\/api\/artists-publish\//, "[data-artists-action-status]");
+  await expect(page.locator("[data-artists-action-status]")).toContainText(
+    "Saved",
+  );
+  await publish(
+    page,
+    "[data-publish-artists]",
+    /\/editor\/api\/artists-publish\//,
+    "[data-artists-action-status]",
+  );
   const renamedId = `${contentId}-renamed`;
   await page.locator("[data-rename-destination]").fill(renamedId);
   await page.locator("[data-rename-plan]").click();
@@ -113,7 +128,12 @@ test("Artists operator flow validates, previews, saves, and publishes", async ({
   await page.locator("[data-rename-execute]").click();
   await page.waitForURL(`**/editor/artists/workspace/${renamedId}/`);
   await expect(page.locator("[data-publish-artists]")).toBeEnabled();
-  await publish(page, "[data-publish-artists]", /\/editor\/api\/artists-publish\//, "[data-artists-action-status]");
+  await publish(
+    page,
+    "[data-publish-artists]",
+    /\/editor\/api\/artists-publish\//,
+    "[data-artists-action-status]",
+  );
   await expect(page.locator("[data-delete-plan]")).toBeDisabled();
   await expect(page.locator("[data-delete-status]")).toContainText("backup");
 });
@@ -195,6 +215,83 @@ test("Exhibitions operator flow validates, previews, saves, and publishes", asyn
     /\/editor\/api\/exhibitions-publish\//,
     "[data-exhibitions-action-status]",
   );
+});
+
+test("Exhibitions three-file Rename publishes exact paths and Delete fails closed without backup", async ({
+  page,
+}) => {
+  const repository = process.env.KIKI_BROWSER_REPOSITORY!;
+  const sourceId = "alana-wilson-2027-04";
+  const destinationId = `${sourceId}-renamed`;
+  await page.goto(`/editor/exhibitions/workspace/${sourceId}/`);
+
+  await page.locator("[data-rename-destination]").fill(destinationId);
+  await page.locator("[data-rename-plan]").click();
+  await expect(page.locator("[data-rename-review]")).toBeVisible();
+  for (const name of ["en.md", "index.yaml", "ja.md"])
+    await expect(page.locator("[data-rename-files]")).toContainText(name);
+  await expect(page.locator("[data-rename-references]")).toContainText(
+    "src/content/news/2027-03-05/index.yaml",
+  );
+  await page.locator("[data-rename-confirm]").check();
+  await page.locator("[data-rename-execute]").click();
+  await page.waitForURL(`**/editor/exhibitions/workspace/${destinationId}/`);
+
+  const sourceDirectory = path.join(
+    repository,
+    "src/content/exhibitions",
+    sourceId,
+  );
+  const destinationDirectory = path.join(
+    repository,
+    "src/content/exhibitions",
+    destinationId,
+  );
+  await expect(
+    access(sourceDirectory)
+      .then(() => true)
+      .catch(() => false),
+  ).resolves.toBe(false);
+  await expect(readdir(destinationDirectory)).resolves.toEqual([
+    "en.md",
+    "index.yaml",
+    "ja.md",
+  ]);
+  await expect(
+    readFile(
+      path.join(repository, "src/content/news/2027-03-05/index.yaml"),
+      "utf8",
+    ),
+  ).resolves.toContain(`/exhibitions/${destinationId}`);
+
+  await publish(
+    page,
+    "[data-publish-exhibitions]",
+    /\/editor\/api\/exhibitions-publish\//,
+    "[data-exhibitions-action-status]",
+  );
+  const publishedPaths = execFileSync(
+    "git",
+    ["show", "--no-renames", "--pretty=format:", "--name-only", "HEAD"],
+    { cwd: repository, encoding: "utf8" },
+  )
+    .trim()
+    .split("\n")
+    .sort();
+  expect(publishedPaths).toEqual(
+    [
+      `src/content/exhibitions/${sourceId}/en.md`,
+      `src/content/exhibitions/${sourceId}/index.yaml`,
+      `src/content/exhibitions/${sourceId}/ja.md`,
+      `src/content/exhibitions/${destinationId}/en.md`,
+      `src/content/exhibitions/${destinationId}/index.yaml`,
+      `src/content/exhibitions/${destinationId}/ja.md`,
+      "src/content/news/2027-03-05/index.yaml",
+    ].sort(),
+  );
+
+  await expect(page.locator("[data-delete-plan]")).toBeDisabled();
+  await expect(page.locator("[data-delete-status]")).toContainText("backup");
 });
 
 test("Journal keeps locale preview isolated and blocks TODO publishing", async ({

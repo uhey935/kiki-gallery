@@ -91,18 +91,18 @@ hero:
   orientation: landscape
   position: center
   treatment: cover
-  hero_caption: Photo credit
 hero_alt: 展示画像の代替テキスト
+hero_caption: Photo credit
 ```
 
-| Field               | Classification | Required |
-| ------------------- | -------------- | -------- |
-| `hero.image`        | Shared         | Yes      |
-| `hero.orientation`  | Shared         | Yes      |
-| `hero.position`     | Shared         | No       |
-| `hero.treatment`    | Shared         | No       |
-| `hero.hero_caption` | Shared         | No       |
-| `hero_alt`          | Localized      | Yes      |
+| Field              | Classification | Required |
+| ------------------ | -------------- | -------- |
+| `hero.image`       | Shared         | Yes      |
+| `hero.orientation` | Shared         | Yes      |
+| `hero.position`    | Shared         | No       |
+| `hero.treatment`   | Shared         | No       |
+| `hero_alt`         | Localized      | Yes      |
+| `hero_caption`     | Localized      | No       |
 
 Allowed values:
 
@@ -159,24 +159,24 @@ home_hero:
 
 Shared:
 
-| Field                      | Type              | Required    |
-| -------------------------- | ----------------- | ----------- |
-| `sort_name`                | String            | Yes         |
-| `hero.image`               | String            | Yes         |
-| `medium`                   | English String[]  | Yes         |
-| `works_layout`             | Work Layout[]     | No          |
-| `works_layout[].works[]`   | Work Content ID[] | Conditional |
+| Field                    | Type              | Required    |
+| ------------------------ | ----------------- | ----------- |
+| `sort_name`              | String            | Yes         |
+| `hero.image`             | String            | Yes         |
+| `medium`                 | English String[]  | Yes         |
+| `works_layout`           | Work Layout[]     | No          |
+| `works_layout[].works[]` | Work Content ID[] | Conditional |
 
 Localized:
 
-| Field          | Type   | Required |
-| -------------- | ------ | -------- |
-| `name`         | String | Yes      |
-| `hero_alt`     | String | Yes      |
-| `short_bio`    | String | Yes      |
-| `biography`    | String | No       |
-| `seo_title`    | String | No       |
-| `description`  | String | No       |
+| Field         | Type   | Required |
+| ------------- | ------ | -------- |
+| `name`        | String | Yes      |
+| `hero_alt`    | String | Yes      |
+| `short_bio`   | String | Yes      |
+| `biography`   | String | No       |
+| `seo_title`   | String | No       |
+| `description` | String | No       |
 
 Rules:
 
@@ -284,38 +284,47 @@ inquiry:
 
 Shared:
 
-| Field             | Type               | Required |
-| ----------------- | ------------------ | -------- |
-| `artists`         | Artist Reference[] | Yes      |
-| `start_date`      | Date               | Yes      |
-| `end_date`        | Date               | Yes      |
-| `hero`            | Exhibition Hero    | Yes      |
-| `works`           | Work Reference[]   | No       |
-| `display_artists` | Boolean            | No       |
+| Field              | Type               | Required |
+| ------------------ | ------------------ | -------- |
+| `artists`          | Artist Reference[] | Yes      |
+| `start_date`       | Date               | Yes      |
+| `end_date`         | Date               | Yes      |
+| `hero`             | Exhibition Hero    | Yes      |
+| `works`            | Work Reference[]   | No       |
+| `display_artists`  | Boolean            | No       |
+| `hero.image`       | String             | Yes      |
+| `hero.orientation` | Enum               | Yes      |
+| `hero.position`    | Enum               | No       |
+| `hero.treatment`   | Enum               | No       |
 
 Localized:
 
 | Field           | Type     | Required |
 | --------------- | -------- | -------- |
-| `title`         | String   | No       |
+| `title`         | String   | Yes      |
 | `summary`       | String   | No       |
 | `hero_alt`      | String   | Yes      |
+| `hero_caption`  | String   | No       |
 | `venue`         | String   | No       |
 | `opening_hours` | String   | No       |
 | `closed_days`   | String   | No       |
 | `attendance`    | String   | No       |
+| `seo_title`     | String   | No       |
+| `description`   | String   | No       |
 | Markdown body   | Markdown | No       |
 
 Rules:
 
-- `artists` は Required で1件以上を必要とする。
+- `artists` は Required で1件以上を必要とし、Content ID は重複不可とする。
 - `start_date` / `end_date` は両方 Required で、`end_date >= start_date` とする。
-- `title` / `summary` は Optional、`venue` は Localized String とする。
-- `works` は Optional Work Reference 配列。
+- `title` / `hero_alt` は Required Localized String、`summary` / `venue` / `opening_hours` / `closed_days` / `attendance` / `hero_caption` / `seo_title` / `description` は Optional Localized String とする。
+- `works` は Optional Work Reference 配列で、Content ID は重複不可とする。
 - `display_artists` は Optional で、未指定時は表示する。
+- `hero.image` / `hero.orientation` は Required、`hero.position` / `hero.treatment` は Optional Shared presentation fieldsとする。
 - `status` は日付から Derived し、保存しない。
-- `artist_name` は持たない。
-- 保存済み `title` を優先し、未設定時のみ共通 Utility で個展・合同展タイトルを生成する。
+- Artist display nameを保存する旧`artist_name` fieldは持たず、`artists[]`のcanonical Content IDからlocaleごとに解決する。
+- `title` は必ずlocale sourceに保存し、Artist名から個展・合同展タイトルを生成しない。
+- `seo_title` / `description` がない場合のProduction metadataは決定的な表示policyに従うが、migration・Save・runtimeはSEO文章をcanonical sourceへ生成しない。
 - 参照 Artist / Work の存在と、表示Workの所属Artistが `artists` に含まれることを検証する。
 
 ---

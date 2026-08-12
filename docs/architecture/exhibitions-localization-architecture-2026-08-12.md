@@ -2,22 +2,28 @@
 
 | Property | Value                                                                                                        |
 | -------- | ------------------------------------------------------------------------------------------------------------ |
-| Status   | Implementation-ready target architecture; not yet implemented                                                |
+| Status   | Implemented; current authority                                                                               |
 | Date     | 2026-08-12                                                                                                   |
 | Scope    | Exhibitions three-file localization, Production, Editor, routes, references, lifecycle safety, and migration |
-| Excluded | Migration execution, Production cutover, Editor implementation, Works localization, asset lifecycle changes  |
+| Excluded | Works localization and asset lifecycle changes                                                               |
 
-This document is the authority for the next Exhibitions Localization
-implementation. The repository remains on the flat Markdown runtime until a
-separately reviewed migration and cutover are completed. The normalized bytes
-currently present in `src/content/exhibitions/*.md` are the only migration
-source of truth. Earlier Exhibitions Editor, Rename, and Delete documents remain
-authoritative for the current flat implementation and historical safety
-evidence; after cutover, their topology descriptions become historical.
+This document is the current authority for the implemented Exhibitions
+Localization architecture. Migration, Production cutover, and the Editor
+three-file lifecycle are complete. The normalized legacy flat bytes retained in
+the frozen migration manifest are the migration and rollback source evidence.
+Earlier Exhibitions Editor, Rename, and Delete documents remain historical
+safety evidence; their flat topology descriptions are superseded by this
+document.
+
+The current canonical inventory contains five Content IDs and fifteen regular
+files. Production uses the three-file loader and facade. The Editor uses the
+same exact three-file Content Unit for Create, Load, Preview, Save, Publish,
+Rename, and Delete. There is no flat Production or Editor read/write fallback;
+legacy flat or mixed inventory is detected read-only and fails closed.
 
 ## 1. Canonical topology and identity
 
-Each Exhibition becomes one exact three-file Content Unit:
+Each Exhibition is one exact three-file Content Unit:
 
 ```text
 src/content/exhibitions/<contentId>/
@@ -153,7 +159,7 @@ replaceable without changing Exhibition topology or `works[]`.
 
 ## 6. Production architecture
 
-The target read flow is:
+The implemented read flow is:
 
 ```text
 three-file repository
@@ -182,7 +188,7 @@ Required modules and responsibilities:
 - **route registry**: build/parse canonical locale routes and enumerate only
   capable Detail routes.
 
-Production code must stop calling `getCollection("exhibitions")` directly.
+Production code does not call `getCollection("exhibitions")` directly.
 Exhibitions Index, Detail, Home, JA/EN Artist Details, and News image/link
 resolution consume the facade or a boundary projection. The Artists/News
 repository, loader, adapter, capability, facade, and stale-store patterns are
@@ -195,6 +201,11 @@ and reverse associations remain Exhibitions-specific.
 | ------ | ------------------ | ------------------------------ |
 | JA     | `/exhibitions/`    | `/exhibitions/<contentId>/`    |
 | EN     | `/en/exhibitions/` | `/en/exhibitions/<contentId>/` |
+
+The current build emits the JA Index and five JA Detail routes, plus the EN
+Index. EN Detail routes are emitted only for EN-capable entries. All five
+migrated EN sources currently contain reserved placeholders, so the current EN
+Detail count is zero.
 
 The registry accepts canonical Content ID plus locale. It builds a Detail route
 only for a capable locale entry. Internal localized IDs are never route input.
@@ -228,7 +239,7 @@ canonical reference token. It is not a locale-specific href.
 Rename continues to rewrite the one shared canonical News route token. It does
 not write locale routes into News source.
 
-## 9. Editor target lifecycle
+## 9. Editor lifecycle
 
 Editor state independently retains raw/parsed `index.yaml`, `ja.md`, and
 `en.md`, their issues, and one exact three-file baseline. Shared, JA, and EN
@@ -276,11 +287,11 @@ Delete blockers for an Exhibition. Execution, recovery, rollback proof,
 non-stealing lock, retained assets, and evidence-limited Publish remain at least
 as strict as the current implementation. Assets are never inferred or deleted.
 
-## 11. Migration contract
+## 11. Completed migration contract
 
-One reviewed all-items transaction converts exactly five flat Markdown files to
-five directories and fifteen files. The normalized current flat bytes—not an
-older commit—are the source.
+One reviewed all-items transaction converted exactly five flat Markdown files
+to five directories and fifteen files. The normalized flat bytes captured in
+the frozen manifest—not an older commit—were the source.
 
 Deterministic mapping:
 
@@ -320,27 +331,22 @@ are collection-specific.
 
 ## 12. Legacy policy
 
-After cutover there is no flat Exhibitions Production or Editor read/write
+There is no flat Exhibitions Production or Editor read/write
 fallback. Read-only detection of any legacy flat source is retained so a mixed
 repository fails closed. Migration converter, executor tests, frozen manifest,
 rollback evidence, and safety regressions remain historical/recovery tooling,
 not runtime adapters.
 
-Cutover may then retire the Astro glob collection, flat schema entry point,
-flat Editor state/draft/serializer/save/create/preview assumptions, flat
-Rename/Delete inventory, generated-title helper, and direct
-`getCollection("exhibitions")` consumers. Removal happens only after the new
-facade, lifecycle, migration evidence, and acceptance suite prove no runtime or
-recovery dependency.
-
-At implementation completion, this document should be renamed or promoted to
-`exhibitions-architecture-current.md`. Existing flat Phase 2, Rename, Delete,
-and browser-acceptance documents receive explicit historical/superseded status
-links; their evidence is retained.
+The Astro flat collection, flat Editor lifecycle, flat Rename/Delete inventory,
+generated-title behavior, and direct `getCollection("exhibitions")` consumers
+have been retired from runtime. The legacy schema remains only where migration
+and recovery evidence still depends on it. Existing flat Phase 2, Rename,
+Delete, and browser-acceptance documents retain explicit historical/superseded
+status links; their evidence is retained.
 
 ## 13. Test and acceptance strategy
 
-Implementation is gated by:
+Implementation and continuing regression safety are covered by:
 
 - strict shared/localized schema ownership, exact inventory, unknown-field,
   date-order, reference, and body parsing tests;
@@ -371,9 +377,9 @@ Reuse the Artists repository/migration/lifecycle harnesses, News
 cross-capability fixtures, current Exhibitions isolated Git tests, and existing
 browser runner. Do not mutate Production content to manufacture failure cases.
 
-## 14. Implementation sequencing and gates
+## 14. Completed implementation sequencing
 
-The architecture is implementation-ready in these bounded slices:
+The architecture was implemented in these bounded slices:
 
 1. contracts, schemas, repository, adapter, capabilities, facade, and fixtures;
 2. route registry and read-only Production consumer integration behind tests;
@@ -382,8 +388,8 @@ The architecture is implementation-ready in these bounded slices:
 5. isolated all-five migration plus Production cutover;
 6. browser acceptance, obsolete runtime removal, and current-authority docs.
 
-The normalized Exhibition sources are committed in `a39eb68` and are the
-required migration baseline. The frozen manifest must bind the exact source
-bytes present at its reviewed generation point and must not use a pre-correction
-tree. No additional content, translation, Works localization, asset, or route
-decision blocks the first implementation slice.
+The normalized legacy Exhibition sources committed in `a39eb68` formed the
+reviewed migration baseline. The frozen manifest binds the exact corrected
+source bytes used by the completed migration and does not use a pre-correction
+tree. Translation completion, Works localization, and asset-lifecycle changes
+remain separate from the completed Exhibitions localization expansion.

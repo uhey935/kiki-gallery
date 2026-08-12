@@ -4,6 +4,9 @@
 > this document records the implementation state before the 2026-08-11 Artists
 > three-file migration; it is not the current Artists architecture. See
 > [Artists Architecture — Current](./artists-architecture-current.md).
+> Its flat Exhibitions Rename topology is likewise historical and superseded by
+> the implemented three-file lifecycle in
+> [Exhibitions Localization Architecture](./exhibitions-localization-architecture-2026-08-12.md).
 
 | Property  | Value                                                                      |
 | --------- | -------------------------------------------------------------------------- |

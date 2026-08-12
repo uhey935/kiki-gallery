@@ -159,7 +159,6 @@ async function build(
   root = path.resolve(root);
   const base = path.join(root, "src/content/exhibitions"),
     source = path.join(base, sourceContentId),
-    destination = path.join(base, destinationContentId),
     stat = await fs.lstat(source).catch(() => undefined);
   if (!stat?.isDirectory() || stat.isSymbolicLink())
     throw new ExhibitionsRenameError(
