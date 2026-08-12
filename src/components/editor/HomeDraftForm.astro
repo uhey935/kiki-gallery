@@ -152,32 +152,14 @@ const { data } = draft;
             </span>
             <input name={"section_" + index + "_href"} value={section.href} />
           </label>
-          <label data-editor-field={"sections." + index + ".image.landscape"}>
+          <label data-editor-field={"sections." + index + ".image.src"}>
             <span>
-              Landscape image
+              Image
               <small class="editor-field-badge">Required</small>
             </span>
             <input
-              name={"section_" + index + "_landscape"}
-              value={section.image.landscape}
-            />
-          </label>
-          <label data-editor-field={"sections." + index + ".image.square"}>
-            <span>
-              Square image <small class="editor-field-badge">Required</small>
-            </span>
-            <input
-              name={"section_" + index + "_square"}
-              value={section.image.square}
-            />
-          </label>
-          <label data-editor-field={"sections." + index + ".image.portrait"}>
-            <span>
-              Portrait image <small class="editor-field-badge">Required</small>
-            </span>
-            <input
-              name={"section_" + index + "_portrait"}
-              value={section.image.portrait}
+              name={"section_" + index + "_image"}
+              value={section.image.src}
             />
           </label>
         </div>

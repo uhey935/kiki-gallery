@@ -45,4 +45,4 @@ Do not introduce a generic repository, shared Draft data type, schema-driven for
 
 ## Remaining work and next candidate
 
-News is the preferred next collection because it tests a smaller flat schema and explicit link/type rules without creating another asset transaction. Home should remain later: it is a singleton with nested responsive media and requires a distinct workspace model. Before either slice, the flat-Markdown validation-panel extraction can be performed independently if desired.
+News is the preferred next collection because it tests a smaller flat schema and explicit link/type rules without creating another asset transaction. Home should remain later: it is a singleton with nested section media and requires a distinct workspace model. Before either slice, the flat-Markdown validation-panel extraction can be performed independently if desired.

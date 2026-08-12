@@ -77,9 +77,7 @@ export const homeSchema = z
             href: link,
             image: z
               .object({
-                landscape: imagePath,
-                square: imagePath,
-                portrait: imagePath,
+                src: imagePath,
               })
               .strict(),
           })

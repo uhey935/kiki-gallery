@@ -17,7 +17,7 @@ export const editorCollectionRegistry = {
   home: {
     id: "home",
     label: "Home",
-    description: "Singleton · hero and nested responsive sections",
+    description: "Singleton · hero and canonical section images",
     readState: readHomeEditorState,
   },
   artists: {

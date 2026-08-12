@@ -21,7 +21,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
 <EditorLayout title="Home" section="Home"
   ><header class="editor-page-heading">
     <p class="editor-eyebrow">Home workspace</p><h1>Home</h1><p>
-      Singleton · canonical home.md · nested responsive media
+      Singleton · canonical home.md · canonical section images
     </p>
   </header><div class="editor-workspace">
     <main class="editor-panel editor-canvas">
@@ -134,9 +134,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
             title: value(`section_${index}_title`),
             href: value(`section_${index}_href`),
             image: {
-              landscape: value(`section_${index}_landscape`),
-              square: value(`section_${index}_square`),
-              portrait: value(`section_${index}_portrait`),
+              src: value(`section_${index}_image`),
             },
           })),
         },

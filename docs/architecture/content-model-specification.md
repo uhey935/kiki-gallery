@@ -427,14 +427,12 @@ Home は Navigation / Composition Layer であり、独立した記事 Collectio
 
 Home Section:
 
-| Field             | Type                      | Required |
-| ----------------- | ------------------------- | -------- |
-| `id`              | String                    | Yes      |
-| `title`           | English Navigation String | Yes      |
-| `href`            | Internal Path or URL      | Yes      |
-| `image.landscape` | Image Path                | Yes      |
-| `image.square`    | Image Path                | Yes      |
-| `image.portrait`  | Image Path                | Yes      |
+| Field       | Type                      | Required |
+| ----------- | ------------------------- | -------- |
+| `id`        | String                    | Yes      |
+| `title`     | English Navigation String | Yes      |
+| `href`      | Internal Path or URL      | Yes      |
+| `image.src` | Image Path                | Yes      |
 
 Rules:
 
@@ -442,6 +440,7 @@ Rules:
 - `title` は Shared の英語 Navigation Language。
 - `sections` の順序はコンテンツが所有し、`id` は同一 Home Entry 内で一意とする。
 - 現在の表示実装では `artists` / `about` の固定構成を維持する。
+- 各Sectionは現在の表示が使用する単一のCanonical Imageを`image.src`として所有する。Responsive derivativeやsource switchingは現行modelに含めない。
 - 参照先 Collection の Canonical data を Home へ複製しない。
 - Fallback Hero は表示ロジック側で `/images/home/fallback-hero.webp` を使用する。
 

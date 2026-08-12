@@ -18,4 +18,4 @@ Works, Exhibitions, Artists, and News now share the same presentation contract: 
 
 ## Remaining work
 
-News known-route reference existence is still enforced by production consumers at build time. Moving this to a reusable reference validator would cross into the deferred reference/repository boundary and is not part of this minimal slice. Home is the next candidate; its singleton and nested responsive media model should be audited independently before implementation.
+News known-route reference existence is still enforced by production consumers at build time. Moving this to a reusable reference validator would cross into the deferred reference/repository boundary and is not part of this minimal slice. Home is the next candidate; its singleton and nested section media model should be audited independently before implementation.

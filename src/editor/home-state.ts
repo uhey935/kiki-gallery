@@ -97,7 +97,7 @@ export async function readHomeEditorState(
       {
         contentId: HOME_CONTENT_ID,
         title: entry.data?.title ?? "Home",
-        detail: "Singleton · nested responsive media",
+        detail: "Singleton · canonical section images",
         status: entry.structuralStatus,
         statusLabel: entry.issueCount ? `${entry.issueCount} issues` : "Ready",
       },
