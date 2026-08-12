@@ -305,6 +305,13 @@ five units; any failure restores every original flat byte and removes every
 transaction-owned target. Uncertain rollback preserves staging and manual
 recovery evidence.
 
+The frozen implementation manifest is
+`docs/architecture/exhibitions-migration-manifest-2026-08-12.json`; its
+immutable SHA-256 is
+`246edf641a799c4dc46624700653d0e50250168a729e33f0ca5933b458989725`.
+Required EN fields and a non-empty source body receive reserved placeholders;
+optional EN fields remain absent, so no optional prose or SEO text is invented.
+
 Artists migration manifest/executor infrastructure, hashing, collision checks,
 staging, global rollback, and evidence format are reusable. Exhibition
 frontmatter/body conversion, date and reference validation, nullable/optional

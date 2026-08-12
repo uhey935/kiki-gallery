@@ -1,0 +1,728 @@
+{
+  "migrationVersion": 1,
+  "collection": "exhibitions",
+  "mode": "dry-run",
+  "sourceRoot": "src/content/exhibitions",
+  "expectedInventory": [
+    "alana-wilson-2027-04",
+    "group-exhibition-2026-03",
+    "keisuke-matsuda-2024-07",
+    "reiko-kinoshita-2023-12",
+    "yuka-mori-2025-07"
+  ],
+  "count": 5,
+  "entries": [
+    {
+      "contentId": "alana-wilson-2027-04",
+      "source": {
+        "path": "src/content/exhibitions/alana-wilson-2027-04.md",
+        "byteLength": 344,
+        "sha256": "9c958cff8fe8adabc09746c17b4b5feb1e9e9e94e9f1f9658e1c856b7f9a2102",
+        "originalBase64": "LS0tCnRpdGxlOiBSb290cwphcnRpc3RzOgogIC0gYWxhbmEtd2lsc29uCnN0YXJ0X2RhdGU6ICIyMDI3LTA0LTA0IgplbmRfZGF0ZTogIjIwMjctMDQtMDciCm9wZW5pbmdfaG91cnM6ICIxMzowMC0xNzowMCIKY2xvc2VkX2RheXM6ICLmsLTmm5zjg7vmnKjmm5wiCgpoZXJvOgogIGltYWdlOiAvaW1hZ2VzL2V4aGliaXRpb25zL2FsYW5hLXdpbHNvbi0yMDI0LTA0LnBuZwogIG9yaWVudGF0aW9uOiBwb3J0cmFpdApoZXJvX2FsdDog55m944GE5bGV56S65Y+w44Gr5Lim44G244CB55Ww44Gq44KL5b2i44Go6LOq5oSf44KS5oyB44Gk6KSH5pWw44Gu6Zm25ZmoCgp2ZW51ZTogS2lLaSBHYWxsZXJ5Ci0tLQo=",
+        "bodyBase64": ""
+      },
+      "targetDirectory": "src/content/exhibitions/alana-wilson-2027-04",
+      "generated": {
+        "shared": {
+          "path": "src/content/exhibitions/alana-wilson-2027-04/index.yaml",
+          "content": "artists:\n  - alana-wilson\nstart_date: 2027-04-04\nend_date: 2027-04-07\nhero:\n  image: /images/exhibitions/alana-wilson-2024-04.png\n  orientation: portrait\n",
+          "byteLength": 154,
+          "sha256": "b9c708a984c818ebc2a46702b1d0808ddb5aee7a6a2c9c1b60c8b04557de4d37"
+        },
+        "ja": {
+          "path": "src/content/exhibitions/alana-wilson-2027-04/ja.md",
+          "content": "---\ntitle: Roots\nvenue: KiKi Gallery\nopening_hours: 13:00-17:00\nclosed_days: 水曜・木曜\nhero_alt: 白い展示台に並ぶ、異なる形と質感を持つ複数の陶器\n---\n",
+          "byteLength": 180,
+          "sha256": "b80877c83476919cc07b51ba2201cf100a10ab5447caf13e186ae915ae77cc32"
+        },
+        "en": {
+          "path": "src/content/exhibitions/alana-wilson-2027-04/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nhero_alt: __TODO_EN_HERO_ALT__\n---\n",
+          "byteLength": 64,
+          "sha256": "83f9171a1fd0bd352e9fc39e49b9d758d3a0a0907958c8ff0b66346f5b2effc1"
+        }
+      },
+      "fieldMapping": [
+        {
+          "sourceField": "artists",
+          "destination": "index.yaml",
+          "targetField": "artists",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "start_date",
+          "destination": "index.yaml",
+          "targetField": "start_date",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "end_date",
+          "destination": "index.yaml",
+          "targetField": "end_date",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.image",
+          "destination": "index.yaml",
+          "targetField": "hero.image",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.orientation",
+          "destination": "index.yaml",
+          "targetField": "hero.orientation",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "title",
+          "destination": "ja.md",
+          "targetField": "title",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "venue",
+          "destination": "ja.md",
+          "targetField": "venue",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "opening_hours",
+          "destination": "ja.md",
+          "targetField": "opening_hours",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "closed_days",
+          "destination": "ja.md",
+          "targetField": "closed_days",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero_alt",
+          "destination": "ja.md",
+          "targetField": "hero_alt",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "Markdown body",
+          "destination": "ja.md",
+          "targetField": "Markdown body",
+          "strategy": "body-byte-copy"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "title",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "hero_alt",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "ja.md",
+          "targetField": "seo_title",
+          "strategy": "absent-no-generation"
+        },
+        {
+          "sourceField": null,
+          "destination": "ja.md",
+          "targetField": "description",
+          "strategy": "absent-no-generation"
+        }
+      ],
+      "referenceIdentity": {
+        "externalId": "alana-wilson-2027-04",
+        "localizedEntryIdsAreExternal": false,
+        "referenceRewriteRequired": false
+      },
+      "rollback": {
+        "sourcePath": "src/content/exhibitions/alana-wilson-2027-04.md",
+        "originalBase64": "LS0tCnRpdGxlOiBSb290cwphcnRpc3RzOgogIC0gYWxhbmEtd2lsc29uCnN0YXJ0X2RhdGU6ICIyMDI3LTA0LTA0IgplbmRfZGF0ZTogIjIwMjctMDQtMDciCm9wZW5pbmdfaG91cnM6ICIxMzowMC0xNzowMCIKY2xvc2VkX2RheXM6ICLmsLTmm5zjg7vmnKjmm5wiCgpoZXJvOgogIGltYWdlOiAvaW1hZ2VzL2V4aGliaXRpb25zL2FsYW5hLXdpbHNvbi0yMDI0LTA0LnBuZwogIG9yaWVudGF0aW9uOiBwb3J0cmFpdApoZXJvX2FsdDog55m944GE5bGV56S65Y+w44Gr5Lim44G244CB55Ww44Gq44KL5b2i44Go6LOq5oSf44KS5oyB44Gk6KSH5pWw44Gu6Zm25ZmoCgp2ZW51ZTogS2lLaSBHYWxsZXJ5Ci0tLQo=",
+        "originalByteLength": 344,
+        "originalSha256": "9c958cff8fe8adabc09746c17b4b5feb1e9e9e94e9f1f9658e1c856b7f9a2102"
+      }
+    },
+    {
+      "contentId": "group-exhibition-2026-03",
+      "source": {
+        "path": "src/content/exhibitions/group-exhibition-2026-03.md",
+        "byteLength": 508,
+        "sha256": "3fab866f19f4d923ba66fbcc68c10ff3391b6b9f311932bb9595940dba65ed8f",
+        "originalBase64": "LS0tCnRpdGxlOiAi5ZCI5ZCM5bGVIgoKYXJ0aXN0czoKICAtIHJlaWtvLWtpbm9zaGl0YQogIC0geXVrYS1tb3JpCmRpc3BsYXlfYXJ0aXN0czogdHJ1ZQoKc3RhcnRfZGF0ZTogIjIwMjYtMDMtMDUiCmVuZF9kYXRlOiAiMjAyNi0wNy0wOSIKCmhlcm86CiAgaW1hZ2U6IC9pbWFnZXMvZXhoaWJpdGlvbnMvZ3JvdXAtZXhoaWJpdGlvbi0yMDI2LTAzLmpwZwogIG9yaWVudGF0aW9uOiBsYW5kc2NhcGUKaGVyb19hbHQ6IOW8t+OBhOWFieOBqOW9seOBruS4reOBq+e9ruOBi+OCjOOBn+OAgem7kuOBqOeBsOiJsuOBruikh+aVsOOBruWZqAoKb3BlbmluZ19ob3VyczogIjEzOjAwLTE3OjAwIgpjbG9zZWRfZGF5czogIuawtOabnOODu+acqOabnCIKCnZlbnVlOiB8CiAgS2lLaSBHYWxsZXJ5CiAg56We5aWI5bed55yM5qiq5rWc5biC6KW/5Yy65YyX5bm4Mi0xMC00OOOAgOOCgOOBpOOBv+ODk+ODqzPpmo4KCndvcmtzOgogIC0geXVrYS1tb3JpLTAxCiAgLSByZWlrby1raW5vc2hpdGEtMDEKLS0tCg==",
+        "bodyBase64": ""
+      },
+      "targetDirectory": "src/content/exhibitions/group-exhibition-2026-03",
+      "generated": {
+        "shared": {
+          "path": "src/content/exhibitions/group-exhibition-2026-03/index.yaml",
+          "content": "artists:\n  - reiko-kinoshita\n  - yuka-mori\nworks:\n  - yuka-mori-01\n  - reiko-kinoshita-01\nstart_date: 2026-03-05\nend_date: 2026-07-09\ndisplay_artists: true\nhero:\n  image: /images/exhibitions/group-exhibition-2026-03.jpg\n  orientation: landscape\n",
+          "byteLength": 245,
+          "sha256": "7a413ee2ad9691bff537a310786498e845d987894218ec70c6bb06c92f598717"
+        },
+        "ja": {
+          "path": "src/content/exhibitions/group-exhibition-2026-03/ja.md",
+          "content": "---\ntitle: 合同展\nvenue: |\n  KiKi Gallery\n  神奈川県横浜市西区北幸2-10-48　むつみビル3階\nopening_hours: 13:00-17:00\nclosed_days: 水曜・木曜\nhero_alt: 強い光と影の中に置かれた、黒と灰色の複数の器\n---\n",
+          "byteLength": 247,
+          "sha256": "0a59d3a1e2cb6951f3b2e20f0335efe291cebde334d8db046270a7cf24909e9c"
+        },
+        "en": {
+          "path": "src/content/exhibitions/group-exhibition-2026-03/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nhero_alt: __TODO_EN_HERO_ALT__\n---\n",
+          "byteLength": 64,
+          "sha256": "83f9171a1fd0bd352e9fc39e49b9d758d3a0a0907958c8ff0b66346f5b2effc1"
+        }
+      },
+      "fieldMapping": [
+        {
+          "sourceField": "artists",
+          "destination": "index.yaml",
+          "targetField": "artists",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "works",
+          "destination": "index.yaml",
+          "targetField": "works",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "start_date",
+          "destination": "index.yaml",
+          "targetField": "start_date",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "end_date",
+          "destination": "index.yaml",
+          "targetField": "end_date",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "display_artists",
+          "destination": "index.yaml",
+          "targetField": "display_artists",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.image",
+          "destination": "index.yaml",
+          "targetField": "hero.image",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.orientation",
+          "destination": "index.yaml",
+          "targetField": "hero.orientation",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "title",
+          "destination": "ja.md",
+          "targetField": "title",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "venue",
+          "destination": "ja.md",
+          "targetField": "venue",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "opening_hours",
+          "destination": "ja.md",
+          "targetField": "opening_hours",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "closed_days",
+          "destination": "ja.md",
+          "targetField": "closed_days",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero_alt",
+          "destination": "ja.md",
+          "targetField": "hero_alt",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "Markdown body",
+          "destination": "ja.md",
+          "targetField": "Markdown body",
+          "strategy": "body-byte-copy"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "title",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "hero_alt",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "ja.md",
+          "targetField": "seo_title",
+          "strategy": "absent-no-generation"
+        },
+        {
+          "sourceField": null,
+          "destination": "ja.md",
+          "targetField": "description",
+          "strategy": "absent-no-generation"
+        }
+      ],
+      "referenceIdentity": {
+        "externalId": "group-exhibition-2026-03",
+        "localizedEntryIdsAreExternal": false,
+        "referenceRewriteRequired": false
+      },
+      "rollback": {
+        "sourcePath": "src/content/exhibitions/group-exhibition-2026-03.md",
+        "originalBase64": "LS0tCnRpdGxlOiAi5ZCI5ZCM5bGVIgoKYXJ0aXN0czoKICAtIHJlaWtvLWtpbm9zaGl0YQogIC0geXVrYS1tb3JpCmRpc3BsYXlfYXJ0aXN0czogdHJ1ZQoKc3RhcnRfZGF0ZTogIjIwMjYtMDMtMDUiCmVuZF9kYXRlOiAiMjAyNi0wNy0wOSIKCmhlcm86CiAgaW1hZ2U6IC9pbWFnZXMvZXhoaWJpdGlvbnMvZ3JvdXAtZXhoaWJpdGlvbi0yMDI2LTAzLmpwZwogIG9yaWVudGF0aW9uOiBsYW5kc2NhcGUKaGVyb19hbHQ6IOW8t+OBhOWFieOBqOW9seOBruS4reOBq+e9ruOBi+OCjOOBn+OAgem7kuOBqOeBsOiJsuOBruikh+aVsOOBruWZqAoKb3BlbmluZ19ob3VyczogIjEzOjAwLTE3OjAwIgpjbG9zZWRfZGF5czogIuawtOabnOODu+acqOabnCIKCnZlbnVlOiB8CiAgS2lLaSBHYWxsZXJ5CiAg56We5aWI5bed55yM5qiq5rWc5biC6KW/5Yy65YyX5bm4Mi0xMC00OOOAgOOCgOOBpOOBv+ODk+ODqzPpmo4KCndvcmtzOgogIC0geXVrYS1tb3JpLTAxCiAgLSByZWlrby1raW5vc2hpdGEtMDEKLS0tCg==",
+        "originalByteLength": 508,
+        "originalSha256": "3fab866f19f4d923ba66fbcc68c10ff3391b6b9f311932bb9595940dba65ed8f"
+      }
+    },
+    {
+      "contentId": "keisuke-matsuda-2024-07",
+      "source": {
+        "path": "src/content/exhibitions/keisuke-matsuda-2024-07.md",
+        "byteLength": 1750,
+        "sha256": "343ce2124a54f43cab2f24132dbfd7161267ff2c5a8d97c02026a249d244bf52",
+        "originalBase64": "LS0tCnRpdGxlOiBVbmR1bGF0aW9uCmFydGlzdHM6CiAgLSBrZWlzdWtlLW1hdHN1ZGEKc3RhcnRfZGF0ZTogIjIwMjQtMDctMDUiCmVuZF9kYXRlOiAiMjAyNC0wNy0wOSIKb3BlbmluZ19ob3VyczogIjEzOjAwLTE3OjAwIgpjbG9zZWRfZGF5czogIuawtOabnOODu+acqOabnCIKCmhlcm86CiAgaW1hZ2U6IC9pbWFnZXMvZXhoaWJpdGlvbnMva2Vpc3VrZS1tYXRzdWRhLTIwMjQtMDcuanBnCiAgb3JpZW50YXRpb246IGxhbmRzY2FwZQpoZXJvX2FsdDog6Z2S54Gw6Imy44Gu5r+D5reh44Go5rWB44KM44KL44KI44GG44Gq57ea44Gn5qeL5oiQ44GV44KM44Gf5oq96LGh55S7Cgp2ZW51ZTogS2lLaSBHYWxsZXJ5Ci0tLQoK5p2+55Sw5ZWT5L2R44Gu57W155S744KS6KiA6JGJ44Gn56uv55qE44Gr6Kqs5piO44GZ44KL44Gu44Gv6Zuj44GX44GE44CC562G6Leh44Gr5a6/44KL6Lqr5L2T5oCn44KE6YCf5bqm44CB6Imy5b2p44Gu5Y2w6LGh44CB5L2Z55m944GM44Gk44GP44KK5Ye644GZ56m66ZaT5oCn44Go44GE44Gj44Gf6KaB57Sg44KS5oyZ44GS44KL44GT44Go44Gv44Gn44GN44KL44GM44CB44CM5L2V44GM5o+P44GL44KM44Gm44GE44KL44Gu44GL44CN44Go44GE44GG5ZWP44GE44Gr44Gv562U44GI44KJ44KM44Gq44GE44CC57ea44Gn44KC6Z2i44Gn44KC44CB5paH5a2X44Gn44KC44Gq44GP44CB5YW35L2T55qE44Gq5b2i44Gn44KC44Gq44GE44CC44GX44GL44GX6IGe44GR44Gw5oq96LGh44Gn44Gv44Gq44GE44CC5p2+55Sw6Ieq6Lqr44Gv44CM5LiW55WM44Gd44Gu44KC44Gu44KS5o+P44GE44Gm44GE44KL44CN44Go6Kqe44KL44CC6KaL44Gf44KC44Gu44GM44Kk44Oh44O844K444Go44Gq44KL5YmN44Gr5o+P44GP4oCV44Gd44KT44Gq44GT44Go44GM5Y+v6IO944Gq44Gu44GL44Gv44KP44GL44KJ44Gq44GE44GM44CB5b2844Gv44Gd44KM44KS5a6f6Le144GX57aa44GR44Gm44GE44KL44CC5Zu65a6a44GV44KM44Gf44Kk44Oh44O844K444Gn44Gv44Gq44GP44CB44GX44GL44GX5YG944KK44Gu44Gq44GE57ea44CC5rGC5b+D55qE44Gr44CB55yf5pGv44Gr44CB44Gf44Gg5LiW55WM44Gu5pys6LOq44KS5o6044KC44GG44Go44GZ44KL5pmC44CB562G44Gv44GT44GG44GX44Gf5oyv44KL6Iie44GE44KS6KaL44Gb44KL44Gu44GL44KC44GX44KM44Gq44GE44CC5b2844Gu5L2c5ZOB44Gv57W155S744CB44OJ44Ot44O844Kk44Oz44Kw44CB5pu444CB5pys5Lq644Gu5oSP5Zuz44GZ44KL44Gr44Gb44KI44CB44GX44Gq44GE44Gr44Gb44KI44GV44G+44GW44G+44Gq6aCY5Z+f44Gr6Kem44KM44Gq44GM44KJ44CB44Gd44KM44KJ44KS5rCX5oyB44Gh44KI44GP44GZ44KK5oqc44GR44KL44CC5rqi44KM44KL6Jma5qeL44Gu44Kk44Oh44O844K444Gr6aO944GN6aO944GN44GX44Gf5LuK44Gr44CB5paw44GX44GE5L2V44GL44GM55Sf44G+44KM44KL5LqI5oSf44KS44GV44Gb44Gm44GP44KM44KL5p2+55Sw44Gu5L2c5ZOB44Gr44CB5b+D44GM6LqN44KL44CCCgrimqvvuI4xMOaciDEz5pelKOaciOODu+elnSkgMTQ6MDAtMTU6MzAK6ZW35bm044Gr5rih44KK44CB5p2+55Sw5L2c5ZOB44KS6KaL57aa44GR44KL576O6KGT6KmV6KuW5a6244O75riF5rC056mj5rCP44KS44Ky44K544OI44Gr44CB44Ki44O844OG44Kj44K544OI44OI44O844Kv44KS6ZaL5YKs44GE44Gf44GX44G+44GZ44CC44Gc44Gy44GU5Y+C5Yqg44GP44Gg44GV44GE44CCCg==",
+        "bodyBase64": "CuadvueUsOWVk+S9keOBrue1teeUu+OCkuiogOiRieOBp+err+eahOOBq+iqrOaYjuOBmeOCi+OBruOBr+mbo+OBl+OBhOOAguethui3oeOBq+Wuv+OCi+i6q+S9k+aAp+OChOmAn+W6puOAgeiJsuW9qeOBruWNsOixoeOAgeS9meeZveOBjOOBpOOBj+OCiuWHuuOBmeepuumWk+aAp+OBqOOBhOOBo+OBn+imgee0oOOCkuaMmeOBkuOCi+OBk+OBqOOBr+OBp+OBjeOCi+OBjOOAgeOAjOS9leOBjOaPj+OBi+OCjOOBpuOBhOOCi+OBruOBi+OAjeOBqOOBhOOBhuWVj+OBhOOBq+OBr+etlOOBiOOCieOCjOOBquOBhOOAgue3muOBp+OCgumdouOBp+OCguOAgeaWh+Wtl+OBp+OCguOBquOBj+OAgeWFt+S9k+eahOOBquW9ouOBp+OCguOBquOBhOOAguOBl+OBi+OBl+iBnuOBkeOBsOaKveixoeOBp+OBr+OBquOBhOOAguadvueUsOiHqui6q+OBr+OAjOS4lueVjOOBneOBruOCguOBruOCkuaPj+OBhOOBpuOBhOOCi+OAjeOBqOiqnuOCi+OAguimi+OBn+OCguOBruOBjOOCpOODoeODvOOCuOOBqOOBquOCi+WJjeOBq+aPj+OBj+KAleOBneOCk+OBquOBk+OBqOOBjOWPr+iDveOBquOBruOBi+OBr+OCj+OBi+OCieOBquOBhOOBjOOAgeW9vOOBr+OBneOCjOOCkuWun+i3teOBl+e2muOBkeOBpuOBhOOCi+OAguWbuuWumuOBleOCjOOBn+OCpOODoeODvOOCuOOBp+OBr+OBquOBj+OAgeOBl+OBi+OBl+WBveOCiuOBruOBquOBhOe3muOAguaxguW/g+eahOOBq+OAgeecn+aRr+OBq+OAgeOBn+OBoOS4lueVjOOBruacrOizquOCkuaOtOOCguOBhuOBqOOBmeOCi+aZguOAgeethuOBr+OBk+OBhuOBl+OBn+aMr+OCi+iInuOBhOOCkuimi+OBm+OCi+OBruOBi+OCguOBl+OCjOOBquOBhOOAguW9vOOBruS9nOWTgeOBr+e1teeUu+OAgeODieODreODvOOCpOODs+OCsOOAgeabuOOAgeacrOS6uuOBruaEj+Wbs+OBmeOCi+OBq+OBm+OCiOOAgeOBl+OBquOBhOOBq+OBm+OCiOOBleOBvuOBluOBvuOBqumgmOWfn+OBq+inpuOCjOOBquOBjOOCieOAgeOBneOCjOOCieOCkuawl+aMgeOBoeOCiOOBj+OBmeOCiuaKnOOBkeOCi+OAgua6ouOCjOOCi+iZmuani+OBruOCpOODoeODvOOCuOOBq+mjveOBjemjveOBjeOBl+OBn+S7iuOBq+OAgeaWsOOBl+OBhOS9leOBi+OBjOeUn+OBvuOCjOOCi+S6iOaEn+OCkuOBleOBm+OBpuOBj+OCjOOCi+advueUsOOBruS9nOWTgeOBq+OAgeW/g+OBjOi6jeOCi+OAggoK4pqr77iOMTDmnIgxM+aXpSjmnIjjg7vnpZ0pIDE0OjAwLTE1OjMwCumVt+W5tOOBq+a4oeOCiuOAgeadvueUsOS9nOWTgeOCkuimi+e2muOBkeOCi+e+juihk+ipleirluWutuODu+a4heawtOepo+awj+OCkuOCsuOCueODiOOBq+OAgeOCouODvOODhuOCo+OCueODiOODiOODvOOCr+OCkumWi+WCrOOBhOOBn+OBl+OBvuOBmeOAguOBnOOBsuOBlOWPguWKoOOBj+OBoOOBleOBhOOAggo="
+      },
+      "targetDirectory": "src/content/exhibitions/keisuke-matsuda-2024-07",
+      "generated": {
+        "shared": {
+          "path": "src/content/exhibitions/keisuke-matsuda-2024-07/index.yaml",
+          "content": "artists:\n  - keisuke-matsuda\nstart_date: 2024-07-05\nend_date: 2024-07-09\nhero:\n  image: /images/exhibitions/keisuke-matsuda-2024-07.jpg\n  orientation: landscape\n",
+          "byteLength": 161,
+          "sha256": "99a8d21ecb77c243f1eb74eee6bcf0419cbd7e628ed49f0db4a238f2356ba569"
+        },
+        "ja": {
+          "path": "src/content/exhibitions/keisuke-matsuda-2024-07/ja.md",
+          "content": "---\ntitle: Undulation\nvenue: KiKi Gallery\nopening_hours: 13:00-17:00\nclosed_days: 水曜・木曜\nhero_alt: 青灰色の濃淡と流れるような線で構成された抽象画\n---\n\n松田啓佑の絵画を言葉で端的に説明するのは難しい。筆跡に宿る身体性や速度、色彩の印象、余白がつくり出す空間性といった要素を挙げることはできるが、「何が描かれているのか」という問いには答えられない。線でも面でも、文字でもなく、具体的な形でもない。しかし聞けば抽象ではない。松田自身は「世界そのものを描いている」と語る。見たものがイメージとなる前に描く―そんなことが可能なのかはわからないが、彼はそれを実践し続けている。固定されたイメージではなく、しかし偽りのない線。求心的に、真摯に、ただ世界の本質を掴もうとする時、筆はこうした振る舞いを見せるのかもしれない。彼の作品は絵画、ドローイング、書、本人の意図するにせよ、しないにせよさまざまな領域に触れながら、それらを気持ちよくすり抜ける。溢れる虚構のイメージに飽き飽きした今に、新しい何かが生まれる予感をさせてくれる松田の作品に、心が躍る。\n\n⚫︎10月13日(月・祝) 14:00-15:30\n長年に渡り、松田作品を見続ける美術評論家・清水穣氏をゲストに、アーティストトークを開催いたします。ぜひご参加ください。\n",
+          "byteLength": 1579,
+          "sha256": "394f45a9919611054793dd1b09ed4893f477f05b1cfd75d59d8f7385083a44a8"
+        },
+        "en": {
+          "path": "src/content/exhibitions/keisuke-matsuda-2024-07/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nhero_alt: __TODO_EN_HERO_ALT__\n---\n__TODO_EN_BODY__",
+          "byteLength": 80,
+          "sha256": "4f92bd7206488f3a5e15d65357b1b73bfb2cae90af7be7a9a92e3b5482f1a063"
+        }
+      },
+      "fieldMapping": [
+        {
+          "sourceField": "artists",
+          "destination": "index.yaml",
+          "targetField": "artists",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "start_date",
+          "destination": "index.yaml",
+          "targetField": "start_date",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "end_date",
+          "destination": "index.yaml",
+          "targetField": "end_date",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.image",
+          "destination": "index.yaml",
+          "targetField": "hero.image",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.orientation",
+          "destination": "index.yaml",
+          "targetField": "hero.orientation",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "title",
+          "destination": "ja.md",
+          "targetField": "title",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "venue",
+          "destination": "ja.md",
+          "targetField": "venue",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "opening_hours",
+          "destination": "ja.md",
+          "targetField": "opening_hours",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "closed_days",
+          "destination": "ja.md",
+          "targetField": "closed_days",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero_alt",
+          "destination": "ja.md",
+          "targetField": "hero_alt",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "Markdown body",
+          "destination": "ja.md",
+          "targetField": "Markdown body",
+          "strategy": "body-byte-copy"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "title",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "hero_alt",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "Markdown body",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "ja.md",
+          "targetField": "seo_title",
+          "strategy": "absent-no-generation"
+        },
+        {
+          "sourceField": null,
+          "destination": "ja.md",
+          "targetField": "description",
+          "strategy": "absent-no-generation"
+        }
+      ],
+      "referenceIdentity": {
+        "externalId": "keisuke-matsuda-2024-07",
+        "localizedEntryIdsAreExternal": false,
+        "referenceRewriteRequired": false
+      },
+      "rollback": {
+        "sourcePath": "src/content/exhibitions/keisuke-matsuda-2024-07.md",
+        "originalBase64": "LS0tCnRpdGxlOiBVbmR1bGF0aW9uCmFydGlzdHM6CiAgLSBrZWlzdWtlLW1hdHN1ZGEKc3RhcnRfZGF0ZTogIjIwMjQtMDctMDUiCmVuZF9kYXRlOiAiMjAyNC0wNy0wOSIKb3BlbmluZ19ob3VyczogIjEzOjAwLTE3OjAwIgpjbG9zZWRfZGF5czogIuawtOabnOODu+acqOabnCIKCmhlcm86CiAgaW1hZ2U6IC9pbWFnZXMvZXhoaWJpdGlvbnMva2Vpc3VrZS1tYXRzdWRhLTIwMjQtMDcuanBnCiAgb3JpZW50YXRpb246IGxhbmRzY2FwZQpoZXJvX2FsdDog6Z2S54Gw6Imy44Gu5r+D5reh44Go5rWB44KM44KL44KI44GG44Gq57ea44Gn5qeL5oiQ44GV44KM44Gf5oq96LGh55S7Cgp2ZW51ZTogS2lLaSBHYWxsZXJ5Ci0tLQoK5p2+55Sw5ZWT5L2R44Gu57W155S744KS6KiA6JGJ44Gn56uv55qE44Gr6Kqs5piO44GZ44KL44Gu44Gv6Zuj44GX44GE44CC562G6Leh44Gr5a6/44KL6Lqr5L2T5oCn44KE6YCf5bqm44CB6Imy5b2p44Gu5Y2w6LGh44CB5L2Z55m944GM44Gk44GP44KK5Ye644GZ56m66ZaT5oCn44Go44GE44Gj44Gf6KaB57Sg44KS5oyZ44GS44KL44GT44Go44Gv44Gn44GN44KL44GM44CB44CM5L2V44GM5o+P44GL44KM44Gm44GE44KL44Gu44GL44CN44Go44GE44GG5ZWP44GE44Gr44Gv562U44GI44KJ44KM44Gq44GE44CC57ea44Gn44KC6Z2i44Gn44KC44CB5paH5a2X44Gn44KC44Gq44GP44CB5YW35L2T55qE44Gq5b2i44Gn44KC44Gq44GE44CC44GX44GL44GX6IGe44GR44Gw5oq96LGh44Gn44Gv44Gq44GE44CC5p2+55Sw6Ieq6Lqr44Gv44CM5LiW55WM44Gd44Gu44KC44Gu44KS5o+P44GE44Gm44GE44KL44CN44Go6Kqe44KL44CC6KaL44Gf44KC44Gu44GM44Kk44Oh44O844K444Go44Gq44KL5YmN44Gr5o+P44GP4oCV44Gd44KT44Gq44GT44Go44GM5Y+v6IO944Gq44Gu44GL44Gv44KP44GL44KJ44Gq44GE44GM44CB5b2844Gv44Gd44KM44KS5a6f6Le144GX57aa44GR44Gm44GE44KL44CC5Zu65a6a44GV44KM44Gf44Kk44Oh44O844K444Gn44Gv44Gq44GP44CB44GX44GL44GX5YG944KK44Gu44Gq44GE57ea44CC5rGC5b+D55qE44Gr44CB55yf5pGv44Gr44CB44Gf44Gg5LiW55WM44Gu5pys6LOq44KS5o6044KC44GG44Go44GZ44KL5pmC44CB562G44Gv44GT44GG44GX44Gf5oyv44KL6Iie44GE44KS6KaL44Gb44KL44Gu44GL44KC44GX44KM44Gq44GE44CC5b2844Gu5L2c5ZOB44Gv57W155S744CB44OJ44Ot44O844Kk44Oz44Kw44CB5pu444CB5pys5Lq644Gu5oSP5Zuz44GZ44KL44Gr44Gb44KI44CB44GX44Gq44GE44Gr44Gb44KI44GV44G+44GW44G+44Gq6aCY5Z+f44Gr6Kem44KM44Gq44GM44KJ44CB44Gd44KM44KJ44KS5rCX5oyB44Gh44KI44GP44GZ44KK5oqc44GR44KL44CC5rqi44KM44KL6Jma5qeL44Gu44Kk44Oh44O844K444Gr6aO944GN6aO944GN44GX44Gf5LuK44Gr44CB5paw44GX44GE5L2V44GL44GM55Sf44G+44KM44KL5LqI5oSf44KS44GV44Gb44Gm44GP44KM44KL5p2+55Sw44Gu5L2c5ZOB44Gr44CB5b+D44GM6LqN44KL44CCCgrimqvvuI4xMOaciDEz5pelKOaciOODu+elnSkgMTQ6MDAtMTU6MzAK6ZW35bm044Gr5rih44KK44CB5p2+55Sw5L2c5ZOB44KS6KaL57aa44GR44KL576O6KGT6KmV6KuW5a6244O75riF5rC056mj5rCP44KS44Ky44K544OI44Gr44CB44Ki44O844OG44Kj44K544OI44OI44O844Kv44KS6ZaL5YKs44GE44Gf44GX44G+44GZ44CC44Gc44Gy44GU5Y+C5Yqg44GP44Gg44GV44GE44CCCg==",
+        "originalByteLength": 1750,
+        "originalSha256": "343ce2124a54f43cab2f24132dbfd7161267ff2c5a8d97c02026a249d244bf52"
+      }
+    },
+    {
+      "contentId": "reiko-kinoshita-2023-12",
+      "source": {
+        "path": "src/content/exhibitions/reiko-kinoshita-2023-12.md",
+        "byteLength": 1857,
+        "sha256": "014a2e2bdd92d3ead78c9a8c177a5606163390bbfc9481020472aef38a3e9e1b",
+        "originalBase64": "LS0tCnRpdGxlOiDnspLjgajmiL8KYXJ0aXN0czoKICAtIHJlaWtvLWtpbm9zaGl0YQpzdGFydF9kYXRlOiAiMjAyMy0xMi0wOSIKZW5kX2RhdGU6ICIyMDI0LTAxLTI2IgpvcGVuaW5nX2hvdXJzOiAiMTM6MDAtMTc6MDAiCmNsb3NlZF9kYXlzOiAi5rC05puc44O75pyo5pucIgoKaGVybzoKICBpbWFnZTogL2ltYWdlcy9leGhpYml0aW9ucy9yZWlrby1raW5vc2hpdGEtMjAyMy0xMi5wbmcKICBvcmllbnRhdGlvbjogcG9ydHJhaXQKaGVyb19hbHQ6IOeZveOBhOWjgeOBq+aOm+OBkeOCieOCjOOBn+OAgemdkuOBqOiMtuOBruiJsumdouOBq+OCiOOCi+mhjeijheS9nOWTgQoKd29ya3M6CiAgLSByZWlrby1raW5vc2hpdGEtMDQKICAtIHJlaWtvLWtpbm9zaGl0YS0wMgp2ZW51ZTogfAogIEtpS2kgR2FsbGVyeQogIOelnuWliOW3neecjOaoqua1nOW4guilv+WMuuWMl+W5uDItMTAtNDjjgIDjgoDjgaTjgb/jg5Pjg6sz6ZqOCi0tLQoK5pyo5LiL5Luk5a2Q44Gu57W155S744Gv44CB5pel5YWJ44Gr44KI44KL5Y2w55S757SZ44Gu5oSf5YWJ44CB57SZ44Gu5pel54S844GR44CB55q644KE5oqY55uu44Gq44Gp5LiN5Y+v6YCG55qE44GqIOePvuixoeOCkuaMgeOBpOaUr+aMgeS9k+OBq+WvvuOBl+OAgeOBneOCjOOCieOBrueXlei3oeOBruS4iuOBq+OCueODl+ODrOODvOOCrOODs+OBi+OCieaLoeaVo+OBleOCjOOCi+mcp+eKtuOBriDjgqLjgq/jg6rjg6vntbXjga7lhbfjgpLlkLnjgY3ku5jjgZHjgIHliqDnrYbjgZnjgovooYzngrrjgavjgojjgorliLbkvZzjgZXjgozjgb7jgZnjgILoqJjmhrbjgajoqJjpjLLjga7jgYLjgo/jgYQg44KS6KaL44Gk44KB44CB56e744KN44GG5pmC6ZaT44Gr5LuL5YWl44GX44CB55Sf44GN44KL5LiK44Gn44Gu5Lqb5pyr44Gq5Ye65p2l5LqL44Gu55eV6Leh44CB5a+G44KE44GL44Gq5oaC44GE44KEIOaEm+OBl+OBleOCkuOBmeOBj+OBhOOBqOOCi+WWnOOBs+OBr+acqOS4i+OBruWJtemAoOaAp+OBruWOn+eCueOBqOiogOOBiOOCi+OBp+OBl+OCh+OBhuOAgueUu+mdouOBq+WumuedgOOBleOCjOOBnyDnhKHmlbDjga7nspLlrZDjga/jgIHjgZ3jga7jg6rjgqLjg6vjgaros6rph4/jgavjgojjgaPjgabmmYLjga7miYvop6bjgorjgpLpoZXjgavjgZfjgb7jgZnjgILjg4bjg7zjg5bjg6vjga7kuIrjga4g6JGh6JCE44Gr5omL44KS5Ly444Gw44GX44CB44Gd44Gu5LiA57KS44Gr6Kem44KM44KL556s6ZaT44Gu44KI44GG44Gq55Ge44CF44GX44GV44Go44CB5ZCM5pmC44Gr44CB6Kem44KM44Gf556s6ZaT44GrIOeggueykuOBruOCiOOBhuOBq+a1geOCjOOAgeWkieWMluOBl+OAgeaNieOBiOOBqeOBk+OCjeOBquOBj+mcp+aVo+OBmeOCi+OCiOOBhuOBquiZmueEoeaEn+OAguOBneOCjOOBr+aZguOBqOOBhOOBhiDjgoLjga7jga7mnKzos6rjgpLnnLrjgoHjgovkvZPmhJ/jgafjgZnjgIIKCuW9k+OCruODo+ODqeODquODvOOBpzMg5Zue55uu44Gu5YCL5bGV44Go44Gq44KL5pys5bGV44Gn44Gv44CBMjAxNCDlubTjgYvjgonnj77lnKjjgb7jgafjgIHntIQxMCDlubTplpPjgavliLbkvZwg44GV44KM44Gf5pyq55m66KGo44KS5ZCr44KA5pen5L2c44GL44KJ44CB5paw5L2c44G+44Gn44KS5YyF5ous55qE44Gr5bGV6Kan44GX44G+44GZ44CC44OQ44Oq44Ko44O844K344On44Oz44GrIOWvjOOCk+OBoOaUr+aMgeS9k+OAgeODhuODvOODnuOBuOOBruOCouODl+ODreODvOODgeOBruaVsOOAheOBi+OCieOAgeWAi+OAheOBruWcsOeCueOBp+OBruihqOePvuOBqOOAgeWFqOS9k+OBi+OCiSDnq4vjgaHnj77jgozjgovmnKjkuIvjga7nnLzlt67jgZfjgpLmhJ/jgZjjgovjgZPjgajjgYzjgafjgY3jgovjgafjgZfjgofjgYbjgIIK",
+        "bodyBase64": "CuacqOS4i+S7pOWtkOOBrue1teeUu+OBr+OAgeaXpeWFieOBq+OCiOOCi+WNsOeUu+e0meOBruaEn+WFieOAgee0meOBruaXpeeEvOOBkeOAgeeauuOChOaKmOebruOBquOBqeS4jeWPr+mAhueahOOBqiDnj77osaHjgpLmjIHjgaTmlK/mjIHkvZPjgavlr77jgZfjgIHjgZ3jgozjgonjga7nl5Xot6Hjga7kuIrjgavjgrnjg5fjg6zjg7zjgqzjg7PjgYvjgonmi6HmlaPjgZXjgozjgovpnKfnirbjga4g44Ki44Kv44Oq44Or57W144Gu5YW344KS5ZC544GN5LuY44GR44CB5Yqg562G44GZ44KL6KGM54K644Gr44KI44KK5Yi25L2c44GV44KM44G+44GZ44CC6KiY5oa244Go6KiY6Yyy44Gu44GC44KP44GEIOOCkuimi+OBpOOCgeOAgeenu+OCjeOBhuaZgumWk+OBq+S7i+WFpeOBl+OAgeeUn+OBjeOCi+S4iuOBp+OBruS6m+acq+OBquWHuuadpeS6i+OBrueXlei3oeOAgeWvhuOChOOBi+OBquaGguOBhOOChCDmhJvjgZfjgZXjgpLjgZnjgY/jgYTjgajjgovllpzjgbPjga/mnKjkuIvjga7libXpgKDmgKfjga7ljp/ngrnjgajoqIDjgYjjgovjgafjgZfjgofjgYbjgILnlLvpnaLjgavlrprnnYDjgZXjgozjgZ8g54Sh5pWw44Gu57KS5a2Q44Gv44CB44Gd44Gu44Oq44Ki44Or44Gq6LOq6YeP44Gr44KI44Gj44Gm5pmC44Gu5omL6Kem44KK44KS6aGV44Gr44GX44G+44GZ44CC44OG44O844OW44Or44Gu5LiK44GuIOiRoeiQhOOBq+aJi+OCkuS8uOOBsOOBl+OAgeOBneOBruS4gOeykuOBq+inpuOCjOOCi+eerOmWk+OBruOCiOOBhuOBqueRnuOAheOBl+OBleOBqOOAgeWQjOaZguOBq+OAgeinpuOCjOOBn+eerOmWk+OBqyDnoILnspLjga7jgojjgYbjgavmtYHjgozjgIHlpInljJbjgZfjgIHmjYnjgYjjganjgZPjgo3jgarjgY/pnKfmlaPjgZnjgovjgojjgYbjgaromZrnhKHmhJ/jgILjgZ3jgozjga/mmYLjgajjgYTjgYYg44KC44Gu44Gu5pys6LOq44KS55y644KB44KL5L2T5oSf44Gn44GZ44CCCgrlvZPjgq7jg6Pjg6njg6rjg7zjgaczIOWbnuebruOBruWAi+WxleOBqOOBquOCi+acrOWxleOBp+OBr+OAgTIwMTQg5bm044GL44KJ54++5Zyo44G+44Gn44CB57SEMTAg5bm06ZaT44Gr5Yi25L2cIOOBleOCjOOBn+acqueZuuihqOOCkuWQq+OCgOaXp+S9nOOBi+OCieOAgeaWsOS9nOOBvuOBp+OCkuWMheaLrOeahOOBq+Wxleimp+OBl+OBvuOBmeOAguODkOODquOCqOODvOOCt+ODp+ODs+OBqyDlr4zjgpPjgaDmlK/mjIHkvZPjgIHjg4bjg7zjg57jgbjjga7jgqLjg5fjg63jg7zjg4Hjga7mlbDjgIXjgYvjgonjgIHlgIvjgIXjga7lnLDngrnjgafjga7ooajnj77jgajjgIHlhajkvZPjgYvjgokg56uL44Gh54++44KM44KL5pyo5LiL44Gu55y85beu44GX44KS5oSf44GY44KL44GT44Go44GM44Gn44GN44KL44Gn44GX44KH44GG44CCCg=="
+      },
+      "targetDirectory": "src/content/exhibitions/reiko-kinoshita-2023-12",
+      "generated": {
+        "shared": {
+          "path": "src/content/exhibitions/reiko-kinoshita-2023-12/index.yaml",
+          "content": "artists:\n  - reiko-kinoshita\nworks:\n  - reiko-kinoshita-04\n  - reiko-kinoshita-02\nstart_date: 2023-12-09\nend_date: 2024-01-26\nhero:\n  image: /images/exhibitions/reiko-kinoshita-2023-12.png\n  orientation: portrait\n",
+          "byteLength": 213,
+          "sha256": "9d5a838376cb58886460f83f5b9228a5b8eed9a4d36434dd45b464e40b6da931"
+        },
+        "ja": {
+          "path": "src/content/exhibitions/reiko-kinoshita-2023-12/ja.md",
+          "content": "---\ntitle: 粒と房\nvenue: |\n  KiKi Gallery\n  神奈川県横浜市西区北幸2-10-48　むつみビル3階\nopening_hours: 13:00-17:00\nclosed_days: 水曜・木曜\nhero_alt: 白い壁に掛けられた、青と茶の色面による額装作品\n---\n\n木下令子の絵画は、日光による印画紙の感光、紙の日焼け、皺や折目など不可逆的な 現象を持つ支持体に対し、それらの痕跡の上にスプレーガンから拡散される霧状の アクリル絵の具を吹き付け、加筆する行為により制作されます。記憶と記録のあわい を見つめ、移ろう時間に介入し、生きる上での些末な出来事の痕跡、密やかな憂いや 愛しさをすくいとる喜びは木下の創造性の原点と言えるでしょう。画面に定着された 無数の粒子は、そのリアルな質量によって時の手触りを顕にします。テーブルの上の 葡萄に手を伸ばし、その一粒に触れる瞬間のような瑞々しさと、同時に、触れた瞬間に 砂粒のように流れ、変化し、捉えどころなく霧散するような虚無感。それは時という ものの本質を眺める体感です。\n\n当ギャラリーで3 回目の個展となる本展では、2014 年から現在まで、約10 年間に制作 された未発表を含む旧作から、新作までを包括的に展覧します。バリエーションに 富んだ支持体、テーマへのアプローチの数々から、個々の地点での表現と、全体から 立ち現れる木下の眼差しを感じることができるでしょう。\n",
+          "byteLength": 1634,
+          "sha256": "2532e417c6874d9f2cc3a3ce8530132161f766aeda205bfb55fef82cf2f905e9"
+        },
+        "en": {
+          "path": "src/content/exhibitions/reiko-kinoshita-2023-12/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nhero_alt: __TODO_EN_HERO_ALT__\n---\n__TODO_EN_BODY__",
+          "byteLength": 80,
+          "sha256": "4f92bd7206488f3a5e15d65357b1b73bfb2cae90af7be7a9a92e3b5482f1a063"
+        }
+      },
+      "fieldMapping": [
+        {
+          "sourceField": "artists",
+          "destination": "index.yaml",
+          "targetField": "artists",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "works",
+          "destination": "index.yaml",
+          "targetField": "works",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "start_date",
+          "destination": "index.yaml",
+          "targetField": "start_date",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "end_date",
+          "destination": "index.yaml",
+          "targetField": "end_date",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.image",
+          "destination": "index.yaml",
+          "targetField": "hero.image",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.orientation",
+          "destination": "index.yaml",
+          "targetField": "hero.orientation",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "title",
+          "destination": "ja.md",
+          "targetField": "title",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "venue",
+          "destination": "ja.md",
+          "targetField": "venue",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "opening_hours",
+          "destination": "ja.md",
+          "targetField": "opening_hours",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "closed_days",
+          "destination": "ja.md",
+          "targetField": "closed_days",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero_alt",
+          "destination": "ja.md",
+          "targetField": "hero_alt",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "Markdown body",
+          "destination": "ja.md",
+          "targetField": "Markdown body",
+          "strategy": "body-byte-copy"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "title",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "hero_alt",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "Markdown body",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "ja.md",
+          "targetField": "seo_title",
+          "strategy": "absent-no-generation"
+        },
+        {
+          "sourceField": null,
+          "destination": "ja.md",
+          "targetField": "description",
+          "strategy": "absent-no-generation"
+        }
+      ],
+      "referenceIdentity": {
+        "externalId": "reiko-kinoshita-2023-12",
+        "localizedEntryIdsAreExternal": false,
+        "referenceRewriteRequired": false
+      },
+      "rollback": {
+        "sourcePath": "src/content/exhibitions/reiko-kinoshita-2023-12.md",
+        "originalBase64": "LS0tCnRpdGxlOiDnspLjgajmiL8KYXJ0aXN0czoKICAtIHJlaWtvLWtpbm9zaGl0YQpzdGFydF9kYXRlOiAiMjAyMy0xMi0wOSIKZW5kX2RhdGU6ICIyMDI0LTAxLTI2IgpvcGVuaW5nX2hvdXJzOiAiMTM6MDAtMTc6MDAiCmNsb3NlZF9kYXlzOiAi5rC05puc44O75pyo5pucIgoKaGVybzoKICBpbWFnZTogL2ltYWdlcy9leGhpYml0aW9ucy9yZWlrby1raW5vc2hpdGEtMjAyMy0xMi5wbmcKICBvcmllbnRhdGlvbjogcG9ydHJhaXQKaGVyb19hbHQ6IOeZveOBhOWjgeOBq+aOm+OBkeOCieOCjOOBn+OAgemdkuOBqOiMtuOBruiJsumdouOBq+OCiOOCi+mhjeijheS9nOWTgQoKd29ya3M6CiAgLSByZWlrby1raW5vc2hpdGEtMDQKICAtIHJlaWtvLWtpbm9zaGl0YS0wMgp2ZW51ZTogfAogIEtpS2kgR2FsbGVyeQogIOelnuWliOW3neecjOaoqua1nOW4guilv+WMuuWMl+W5uDItMTAtNDjjgIDjgoDjgaTjgb/jg5Pjg6sz6ZqOCi0tLQoK5pyo5LiL5Luk5a2Q44Gu57W155S744Gv44CB5pel5YWJ44Gr44KI44KL5Y2w55S757SZ44Gu5oSf5YWJ44CB57SZ44Gu5pel54S844GR44CB55q644KE5oqY55uu44Gq44Gp5LiN5Y+v6YCG55qE44GqIOePvuixoeOCkuaMgeOBpOaUr+aMgeS9k+OBq+WvvuOBl+OAgeOBneOCjOOCieOBrueXlei3oeOBruS4iuOBq+OCueODl+ODrOODvOOCrOODs+OBi+OCieaLoeaVo+OBleOCjOOCi+mcp+eKtuOBriDjgqLjgq/jg6rjg6vntbXjga7lhbfjgpLlkLnjgY3ku5jjgZHjgIHliqDnrYbjgZnjgovooYzngrrjgavjgojjgorliLbkvZzjgZXjgozjgb7jgZnjgILoqJjmhrbjgajoqJjpjLLjga7jgYLjgo/jgYQg44KS6KaL44Gk44KB44CB56e744KN44GG5pmC6ZaT44Gr5LuL5YWl44GX44CB55Sf44GN44KL5LiK44Gn44Gu5Lqb5pyr44Gq5Ye65p2l5LqL44Gu55eV6Leh44CB5a+G44KE44GL44Gq5oaC44GE44KEIOaEm+OBl+OBleOCkuOBmeOBj+OBhOOBqOOCi+WWnOOBs+OBr+acqOS4i+OBruWJtemAoOaAp+OBruWOn+eCueOBqOiogOOBiOOCi+OBp+OBl+OCh+OBhuOAgueUu+mdouOBq+WumuedgOOBleOCjOOBnyDnhKHmlbDjga7nspLlrZDjga/jgIHjgZ3jga7jg6rjgqLjg6vjgaros6rph4/jgavjgojjgaPjgabmmYLjga7miYvop6bjgorjgpLpoZXjgavjgZfjgb7jgZnjgILjg4bjg7zjg5bjg6vjga7kuIrjga4g6JGh6JCE44Gr5omL44KS5Ly444Gw44GX44CB44Gd44Gu5LiA57KS44Gr6Kem44KM44KL556s6ZaT44Gu44KI44GG44Gq55Ge44CF44GX44GV44Go44CB5ZCM5pmC44Gr44CB6Kem44KM44Gf556s6ZaT44GrIOeggueykuOBruOCiOOBhuOBq+a1geOCjOOAgeWkieWMluOBl+OAgeaNieOBiOOBqeOBk+OCjeOBquOBj+mcp+aVo+OBmeOCi+OCiOOBhuOBquiZmueEoeaEn+OAguOBneOCjOOBr+aZguOBqOOBhOOBhiDjgoLjga7jga7mnKzos6rjgpLnnLrjgoHjgovkvZPmhJ/jgafjgZnjgIIKCuW9k+OCruODo+ODqeODquODvOOBpzMg5Zue55uu44Gu5YCL5bGV44Go44Gq44KL5pys5bGV44Gn44Gv44CBMjAxNCDlubTjgYvjgonnj77lnKjjgb7jgafjgIHntIQxMCDlubTplpPjgavliLbkvZwg44GV44KM44Gf5pyq55m66KGo44KS5ZCr44KA5pen5L2c44GL44KJ44CB5paw5L2c44G+44Gn44KS5YyF5ous55qE44Gr5bGV6Kan44GX44G+44GZ44CC44OQ44Oq44Ko44O844K344On44Oz44GrIOWvjOOCk+OBoOaUr+aMgeS9k+OAgeODhuODvOODnuOBuOOBruOCouODl+ODreODvOODgeOBruaVsOOAheOBi+OCieOAgeWAi+OAheOBruWcsOeCueOBp+OBruihqOePvuOBqOOAgeWFqOS9k+OBi+OCiSDnq4vjgaHnj77jgozjgovmnKjkuIvjga7nnLzlt67jgZfjgpLmhJ/jgZjjgovjgZPjgajjgYzjgafjgY3jgovjgafjgZfjgofjgYbjgIIK",
+        "originalByteLength": 1857,
+        "originalSha256": "014a2e2bdd92d3ead78c9a8c177a5606163390bbfc9481020472aef38a3e9e1b"
+      }
+    },
+    {
+      "contentId": "yuka-mori-2025-07",
+      "source": {
+        "path": "src/content/exhibitions/yuka-mori-2025-07.md",
+        "byteLength": 2141,
+        "sha256": "eb7dcca94c507eeb7e28144f4ee7d80200116a878452a2b2a1019df629a6f318",
+        "originalBase64": "LS0tCnRpdGxlOiBJbnRlcnR3aW5lZCDjg7wg5oiv44KM44KL44Oh44OD44K344OlCgphcnRpc3RzOgogIC0geXVrYS1tb3JpCmRpc3BsYXlfYXJ0aXN0czogdHJ1ZQoKc3RhcnRfZGF0ZTogIjIwMjUtMDctMDIiCmVuZF9kYXRlOiAiMjAyNS0wNy0yNiIKb3BlbmluZ19ob3VyczogIjEzOjAwLTE3OjAwIgpjbG9zZWRfZGF5czogIuawtOabnOODu+acqOabnCIKCmhlcm86CiAgaW1hZ2U6IC9pbWFnZXMvZXhoaWJpdGlvbnMveXVrYS1tb3JpLTIwMjUtMDcuanBnCiAgb3JpZW50YXRpb246IHBvcnRyYWl0Cmhlcm9fYWx0OiDmt6HjgYTpnZLngbDoibLjga7pnaLjgavombnoibLjgpLluK/jgbPjgZ/lhYnjgYzlvKfjgpLmj4/jgY/mp5jlrZAKCnZlbnVlOiB8CiAgS2lLaSBHYWxsZXJ5CiAg56We5aWI5bed55yM5qiq5rWc5biC6KW/5Yy65YyX5bm4Mi0xMC00OOOAgOOCgOOBpOOBv+ODk+ODqzPpmo4KLS0tCgpHQUxMRVJZIGNyb3NzaW5n77yI5bKQ6Zic44O7576O5r+D5Yqg6IyC77yJ44GvMjAyNeW5tDfmnIgxMuaXpSjlnJ8p44GL44KJOOaciDPml6Uo5ZyfKeOBvuOBp+OAgeajruWklemmmeOBq+OCiOOCi+OAjEludGVydHdpbmVkIOODvCDmiK/jgozjgovjg6Hjg4Pjgrfjg6XjgI3jgpLplovlgqzjgYTjgZ/jgZfjgb7jgZnjgILmnKzlsZXjga/mo67lpJXpppnjga7lvZPjgq7jg6Pjg6njg6rjg7zjgafjga7liJ3jga7lgIvlsZXjgajjgarjgorjgIHmnIDmlrDkvZzjga7jg5rjgqTjg7Pjg4bjgqPjg7PjgrDkvZzlk4HjgpLlsZXnpLrjgYTjgZ/jgZfjgb7jgZnjgIIKCuiHquOCieOBruearuiGmuOBqOOBhOOBhuWig+eVjOOCkui2iuOBiOOBpuOAgei6q+S9k+OBqOeSsOWig+OBjOa6tuOBkeWQiOOBhOOAgeS4lueVjOOBqOiHquWIhuOBruWGheWBtOOBjOWcsOe2muOBjeOBq+OBquOCi+aEn+immuOCkuaDs+WDj+OBmeOCi+KAlOa3seOBhOWuieWgteOBq+S8vOOBn+WFseaEn+OBqOOAgeWAi+OBjOmjsuOBv+i+vOOBvuOCjOOCi+OCiOOBhuOBquS4jeWPr+imluOBruWtmOWcqOOBuOOBrueVj+aAluOBjOe+juOBl+OBleOCkuWRvOOBtuOAguaXpeacrOeUu+OBrue0oOadkOOCkueUqOOBhOOAgeS6uuOBqOakjeeJqeOAgeiHquW3seOBqOS7luiAheOAgeWun+S9k+OBqOawl+mFjeOAgeOBneOCjOOCieOBruWig+eVjOOBruabluaYp+OBquOBguOCiuOCiOOBhuOBqOOBneOBruaEn+inpuOCkuaPj+OBj+ajruWklemmmeOBrue1teeUu+OBr+OAgeS7j+aVmeaAneaDs+OChOadsea0i+eahOOBqui6q+S9k+aEn+OBq+mAmuOBmOOBquOBjOOCieOAgeilv+a0i+e1teeUu+OCkuiDjOaZr+OBqOOBl+OBn+ODouODgeODvOODleOCkuOCguWPluOCiui+vOOBv+OAgeWSjOOBqOOCgua0i+OBqOOCguOBpOOBi+OBquOBhOeLrOiHquOBruS4lueVjOims+OCkuaMgeOBpOOAguOCouODvOODhuOCo+OCueODiOiHqui6q+OBjOaGp+OCjOOBruWvvuixoeOBqOOBmeOCi+OAjOakjeeJqeOBrui6q+S9k+aAp+OAjeOBqOOBneOBrueUn+aFi+OBuOOBruimlueCueOBr+i/keW5tOOCiOOCiua3seOBvuOCiuOAgeaWsOOBn+OBq+WxlemWi+OBmeOCi+OCt+ODquODvOOCuuOBp+OBr+OAgeakjeeJqeOBqOS6uuOAgeOBneOBl+OBpuS4lueVjOOCkuani+aIkOOBmeOCi+OBmeOBueOBpuOBruOCguOBruOBjOS6pOW3ruOBl+OAgee2suebruOBruOCiOOBhuOBq+e5lOOCiuOBquOBmeebruOBq+imi+OBiOOBquOBhOOBpOOBquOBjOOCiuOBqOOBneOBruaLoeOBjOOCiuOCkuaPj+OBhOOBpuOBhOOCi+OAguW9vOWls+OBi+OCieaEn+OBmOOCi+OAgeiHquOCieOBrui6q+S9k+aEn+immuOBqOS4lueVjOOBqOOBruS6pOOCj+OCiuOBuOOBruiqoOWun+OBleOBr+OAgeePvuS7o+OBruS4reOBp+S6uuOBjOaIkOmVt+OBqOWFseOBq+W/mOWNtOOBl+OBpuOBhOOBj+i6q+S9k+OBruWOn+WIneeahOaEn+immuOCkuWPluOCiuaIu+OBmeihjOeCuuOBruOCiOOBhuOBq+imi+OBiOOCi+OAggoK4pqr77iO6Zai6YCj44Kk44OZ44Oz44OI44Go44GX44Gm44CBN+aciDEy5pelKOWcnykxNjowMOOCiOOCiuOAgemItOacqOS/iuaZtOawj++8iOixiueUsOW4gue+juihk+mkqOWtpuiKuOWToe+8ieOCkuOCsuOCueODiOOBq+OBiuaLm+OBjeOBl+OAgeS9nOWutuOBqOOBruWvvuirh+OCkumWi+WCrOOBl+OBvuOBmeOAggo=",
+        "bodyBase64": "CkdBTExFUlkgY3Jvc3NpbmfvvIjlspDpmJzjg7vnvo7mv4PliqDojILvvInjga8yMDI15bm0N+aciDEy5pelKOWcnynjgYvjgok45pyIM+aXpSjlnJ8p44G+44Gn44CB5qOu5aSV6aaZ44Gr44KI44KL44CMSW50ZXJ0d2luZWQg44O8IOaIr+OCjOOCi+ODoeODg+OCt+ODpeOAjeOCkumWi+WCrOOBhOOBn+OBl+OBvuOBmeOAguacrOWxleOBr+ajruWklemmmeOBruW9k+OCruODo+ODqeODquODvOOBp+OBruWIneOBruWAi+WxleOBqOOBquOCiuOAgeacgOaWsOS9nOOBruODmuOCpOODs+ODhuOCo+ODs+OCsOS9nOWTgeOCkuWxleekuuOBhOOBn+OBl+OBvuOBmeOAggoK6Ieq44KJ44Gu55qu6Iaa44Go44GE44GG5aKD55WM44KS6LaK44GI44Gm44CB6Lqr5L2T44Go55Kw5aKD44GM5rq244GR5ZCI44GE44CB5LiW55WM44Go6Ieq5YiG44Gu5YaF5YG044GM5Zyw57aa44GN44Gr44Gq44KL5oSf6Kaa44KS5oOz5YOP44GZ44KL4oCU5rex44GE5a6J5aC144Gr5Ly844Gf5YWx5oSf44Go44CB5YCL44GM6aOy44G/6L6844G+44KM44KL44KI44GG44Gq5LiN5Y+v6KaW44Gu5a2Y5Zyo44G444Gu55WP5oCW44GM576O44GX44GV44KS5ZG844G244CC5pel5pys55S744Gu57Sg5p2Q44KS55So44GE44CB5Lq644Go5qSN54mp44CB6Ieq5bex44Go5LuW6ICF44CB5a6f5L2T44Go5rCX6YWN44CB44Gd44KM44KJ44Gu5aKD55WM44Gu5puW5pin44Gq44GC44KK44KI44GG44Go44Gd44Gu5oSf6Kem44KS5o+P44GP5qOu5aSV6aaZ44Gu57W155S744Gv44CB5LuP5pWZ5oCd5oOz44KE5p2x5rSL55qE44Gq6Lqr5L2T5oSf44Gr6YCa44GY44Gq44GM44KJ44CB6KW/5rSL57W155S744KS6IOM5pmv44Go44GX44Gf44Oi44OB44O844OV44KS44KC5Y+W44KK6L6844G/44CB5ZKM44Go44KC5rSL44Go44KC44Gk44GL44Gq44GE54us6Ieq44Gu5LiW55WM6Kaz44KS5oyB44Gk44CC44Ki44O844OG44Kj44K544OI6Ieq6Lqr44GM5oan44KM44Gu5a++6LGh44Go44GZ44KL44CM5qSN54mp44Gu6Lqr5L2T5oCn44CN44Go44Gd44Gu55Sf5oWL44G444Gu6KaW54K544Gv6L+R5bm044KI44KK5rex44G+44KK44CB5paw44Gf44Gr5bGV6ZaL44GZ44KL44K344Oq44O844K644Gn44Gv44CB5qSN54mp44Go5Lq644CB44Gd44GX44Gm5LiW55WM44KS5qeL5oiQ44GZ44KL44GZ44G544Gm44Gu44KC44Gu44GM5Lqk5beu44GX44CB57ay55uu44Gu44KI44GG44Gr57mU44KK44Gq44GZ55uu44Gr6KaL44GI44Gq44GE44Gk44Gq44GM44KK44Go44Gd44Gu5ouh44GM44KK44KS5o+P44GE44Gm44GE44KL44CC5b285aWz44GL44KJ5oSf44GY44KL44CB6Ieq44KJ44Gu6Lqr5L2T5oSf6Kaa44Go5LiW55WM44Go44Gu5Lqk44KP44KK44G444Gu6Kqg5a6f44GV44Gv44CB54++5Luj44Gu5Lit44Gn5Lq644GM5oiQ6ZW344Go5YWx44Gr5b+Y5Y2044GX44Gm44GE44GP6Lqr5L2T44Gu5Y6f5Yid55qE5oSf6Kaa44KS5Y+W44KK5oi744GZ6KGM54K644Gu44KI44GG44Gr6KaL44GI44KL44CCCgrimqvvuI7plqLpgKPjgqTjg5njg7Pjg4jjgajjgZfjgabjgIE35pyIMTLml6Uo5ZyfKTE2OjAw44KI44KK44CB6Yi05pyo5L+K5pm05rCP77yI6LGK55Sw5biC576O6KGT6aSo5a2m6Iq45ZOh77yJ44KS44Ky44K544OI44Gr44GK5oub44GN44GX44CB5L2c5a6244Go44Gu5a++6KuH44KS6ZaL5YKs44GX44G+44GZ44CCCg=="
+      },
+      "targetDirectory": "src/content/exhibitions/yuka-mori-2025-07",
+      "generated": {
+        "shared": {
+          "path": "src/content/exhibitions/yuka-mori-2025-07/index.yaml",
+          "content": "artists:\n  - yuka-mori\nstart_date: 2025-07-02\nend_date: 2025-07-26\ndisplay_artists: true\nhero:\n  image: /images/exhibitions/yuka-mori-2025-07.jpg\n  orientation: portrait\n",
+          "byteLength": 170,
+          "sha256": "63ae8a89196fac1ee3ba645988064f826bdf87fb4ab63a761102252eb86b30c9"
+        },
+        "ja": {
+          "path": "src/content/exhibitions/yuka-mori-2025-07/ja.md",
+          "content": "---\ntitle: Intertwined ー 戯れるメッシュ\nvenue: |\n  KiKi Gallery\n  神奈川県横浜市西区北幸2-10-48　むつみビル3階\nopening_hours: 13:00-17:00\nclosed_days: 水曜・木曜\nhero_alt: 淡い青灰色の面に虹色を帯びた光が弧を描く様子\n---\n\nGALLERY crossing（岐阜・美濃加茂）は2025年7月12日(土)から8月3日(土)まで、森夕香による「Intertwined ー 戯れるメッシュ」を開催いたします。本展は森夕香の当ギャラリーでの初の個展となり、最新作のペインティング作品を展示いたします。\n\n自らの皮膚という境界を越えて、身体と環境が溶け合い、世界と自分の内側が地続きになる感覚を想像する—深い安堵に似た共感と、個が飲み込まれるような不可視の存在への畏怖が美しさを呼ぶ。日本画の素材を用い、人と植物、自己と他者、実体と気配、それらの境界の曖昧なありようとその感触を描く森夕香の絵画は、仏教思想や東洋的な身体感に通じながら、西洋絵画を背景としたモチーフをも取り込み、和とも洋ともつかない独自の世界観を持つ。アーティスト自身が憧れの対象とする「植物の身体性」とその生態への視点は近年より深まり、新たに展開するシリーズでは、植物と人、そして世界を構成するすべてのものが交差し、網目のように織りなす目に見えないつながりとその拡がりを描いている。彼女から感じる、自らの身体感覚と世界との交わりへの誠実さは、現代の中で人が成長と共に忘却していく身体の原初的感覚を取り戻す行為のように見える。\n\n⚫︎関連イベントとして、7月12日(土)16:00より、鈴木俊晴氏（豊田市美術館学芸員）をゲストにお招きし、作家との対談を開催します。\n",
+          "byteLength": 1959,
+          "sha256": "aa23029cc5831866ac58473ef66ee06c42d6ed8ae12dc8fd8fdf3a750f5e2414"
+        },
+        "en": {
+          "path": "src/content/exhibitions/yuka-mori-2025-07/en.md",
+          "content": "---\ntitle: __TODO_EN_TITLE__\nhero_alt: __TODO_EN_HERO_ALT__\n---\n__TODO_EN_BODY__",
+          "byteLength": 80,
+          "sha256": "4f92bd7206488f3a5e15d65357b1b73bfb2cae90af7be7a9a92e3b5482f1a063"
+        }
+      },
+      "fieldMapping": [
+        {
+          "sourceField": "artists",
+          "destination": "index.yaml",
+          "targetField": "artists",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "start_date",
+          "destination": "index.yaml",
+          "targetField": "start_date",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "end_date",
+          "destination": "index.yaml",
+          "targetField": "end_date",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "display_artists",
+          "destination": "index.yaml",
+          "targetField": "display_artists",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.image",
+          "destination": "index.yaml",
+          "targetField": "hero.image",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero.orientation",
+          "destination": "index.yaml",
+          "targetField": "hero.orientation",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "title",
+          "destination": "ja.md",
+          "targetField": "title",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "venue",
+          "destination": "ja.md",
+          "targetField": "venue",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "opening_hours",
+          "destination": "ja.md",
+          "targetField": "opening_hours",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "closed_days",
+          "destination": "ja.md",
+          "targetField": "closed_days",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "hero_alt",
+          "destination": "ja.md",
+          "targetField": "hero_alt",
+          "strategy": "copy"
+        },
+        {
+          "sourceField": "Markdown body",
+          "destination": "ja.md",
+          "targetField": "Markdown body",
+          "strategy": "body-byte-copy"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "title",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "hero_alt",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "en.md",
+          "targetField": "Markdown body",
+          "strategy": "explicit-placeholder-no-translation"
+        },
+        {
+          "sourceField": null,
+          "destination": "ja.md",
+          "targetField": "seo_title",
+          "strategy": "absent-no-generation"
+        },
+        {
+          "sourceField": null,
+          "destination": "ja.md",
+          "targetField": "description",
+          "strategy": "absent-no-generation"
+        }
+      ],
+      "referenceIdentity": {
+        "externalId": "yuka-mori-2025-07",
+        "localizedEntryIdsAreExternal": false,
+        "referenceRewriteRequired": false
+      },
+      "rollback": {
+        "sourcePath": "src/content/exhibitions/yuka-mori-2025-07.md",
+        "originalBase64": "LS0tCnRpdGxlOiBJbnRlcnR3aW5lZCDjg7wg5oiv44KM44KL44Oh44OD44K344OlCgphcnRpc3RzOgogIC0geXVrYS1tb3JpCmRpc3BsYXlfYXJ0aXN0czogdHJ1ZQoKc3RhcnRfZGF0ZTogIjIwMjUtMDctMDIiCmVuZF9kYXRlOiAiMjAyNS0wNy0yNiIKb3BlbmluZ19ob3VyczogIjEzOjAwLTE3OjAwIgpjbG9zZWRfZGF5czogIuawtOabnOODu+acqOabnCIKCmhlcm86CiAgaW1hZ2U6IC9pbWFnZXMvZXhoaWJpdGlvbnMveXVrYS1tb3JpLTIwMjUtMDcuanBnCiAgb3JpZW50YXRpb246IHBvcnRyYWl0Cmhlcm9fYWx0OiDmt6HjgYTpnZLngbDoibLjga7pnaLjgavombnoibLjgpLluK/jgbPjgZ/lhYnjgYzlvKfjgpLmj4/jgY/mp5jlrZAKCnZlbnVlOiB8CiAgS2lLaSBHYWxsZXJ5CiAg56We5aWI5bed55yM5qiq5rWc5biC6KW/5Yy65YyX5bm4Mi0xMC00OOOAgOOCgOOBpOOBv+ODk+ODqzPpmo4KLS0tCgpHQUxMRVJZIGNyb3NzaW5n77yI5bKQ6Zic44O7576O5r+D5Yqg6IyC77yJ44GvMjAyNeW5tDfmnIgxMuaXpSjlnJ8p44GL44KJOOaciDPml6Uo5ZyfKeOBvuOBp+OAgeajruWklemmmeOBq+OCiOOCi+OAjEludGVydHdpbmVkIOODvCDmiK/jgozjgovjg6Hjg4Pjgrfjg6XjgI3jgpLplovlgqzjgYTjgZ/jgZfjgb7jgZnjgILmnKzlsZXjga/mo67lpJXpppnjga7lvZPjgq7jg6Pjg6njg6rjg7zjgafjga7liJ3jga7lgIvlsZXjgajjgarjgorjgIHmnIDmlrDkvZzjga7jg5rjgqTjg7Pjg4bjgqPjg7PjgrDkvZzlk4HjgpLlsZXnpLrjgYTjgZ/jgZfjgb7jgZnjgIIKCuiHquOCieOBruearuiGmuOBqOOBhOOBhuWig+eVjOOCkui2iuOBiOOBpuOAgei6q+S9k+OBqOeSsOWig+OBjOa6tuOBkeWQiOOBhOOAgeS4lueVjOOBqOiHquWIhuOBruWGheWBtOOBjOWcsOe2muOBjeOBq+OBquOCi+aEn+immuOCkuaDs+WDj+OBmeOCi+KAlOa3seOBhOWuieWgteOBq+S8vOOBn+WFseaEn+OBqOOAgeWAi+OBjOmjsuOBv+i+vOOBvuOCjOOCi+OCiOOBhuOBquS4jeWPr+imluOBruWtmOWcqOOBuOOBrueVj+aAluOBjOe+juOBl+OBleOCkuWRvOOBtuOAguaXpeacrOeUu+OBrue0oOadkOOCkueUqOOBhOOAgeS6uuOBqOakjeeJqeOAgeiHquW3seOBqOS7luiAheOAgeWun+S9k+OBqOawl+mFjeOAgeOBneOCjOOCieOBruWig+eVjOOBruabluaYp+OBquOBguOCiuOCiOOBhuOBqOOBneOBruaEn+inpuOCkuaPj+OBj+ajruWklemmmeOBrue1teeUu+OBr+OAgeS7j+aVmeaAneaDs+OChOadsea0i+eahOOBqui6q+S9k+aEn+OBq+mAmuOBmOOBquOBjOOCieOAgeilv+a0i+e1teeUu+OCkuiDjOaZr+OBqOOBl+OBn+ODouODgeODvOODleOCkuOCguWPluOCiui+vOOBv+OAgeWSjOOBqOOCgua0i+OBqOOCguOBpOOBi+OBquOBhOeLrOiHquOBruS4lueVjOims+OCkuaMgeOBpOOAguOCouODvOODhuOCo+OCueODiOiHqui6q+OBjOaGp+OCjOOBruWvvuixoeOBqOOBmeOCi+OAjOakjeeJqeOBrui6q+S9k+aAp+OAjeOBqOOBneOBrueUn+aFi+OBuOOBruimlueCueOBr+i/keW5tOOCiOOCiua3seOBvuOCiuOAgeaWsOOBn+OBq+WxlemWi+OBmeOCi+OCt+ODquODvOOCuuOBp+OBr+OAgeakjeeJqeOBqOS6uuOAgeOBneOBl+OBpuS4lueVjOOCkuani+aIkOOBmeOCi+OBmeOBueOBpuOBruOCguOBruOBjOS6pOW3ruOBl+OAgee2suebruOBruOCiOOBhuOBq+e5lOOCiuOBquOBmeebruOBq+imi+OBiOOBquOBhOOBpOOBquOBjOOCiuOBqOOBneOBruaLoeOBjOOCiuOCkuaPj+OBhOOBpuOBhOOCi+OAguW9vOWls+OBi+OCieaEn+OBmOOCi+OAgeiHquOCieOBrui6q+S9k+aEn+immuOBqOS4lueVjOOBqOOBruS6pOOCj+OCiuOBuOOBruiqoOWun+OBleOBr+OAgeePvuS7o+OBruS4reOBp+S6uuOBjOaIkOmVt+OBqOWFseOBq+W/mOWNtOOBl+OBpuOBhOOBj+i6q+S9k+OBruWOn+WIneeahOaEn+immuOCkuWPluOCiuaIu+OBmeihjOeCuuOBruOCiOOBhuOBq+imi+OBiOOCi+OAggoK4pqr77iO6Zai6YCj44Kk44OZ44Oz44OI44Go44GX44Gm44CBN+aciDEy5pelKOWcnykxNjowMOOCiOOCiuOAgemItOacqOS/iuaZtOawj++8iOixiueUsOW4gue+juihk+mkqOWtpuiKuOWToe+8ieOCkuOCsuOCueODiOOBq+OBiuaLm+OBjeOBl+OAgeS9nOWutuOBqOOBruWvvuirh+OCkumWi+WCrOOBl+OBvuOBmeOAggo=",
+        "originalByteLength": 2141,
+        "originalSha256": "eb7dcca94c507eeb7e28144f4ee7d80200116a878452a2b2a1019df629a6f318"
+      }
+    }
+  ]
+}
