@@ -6,7 +6,6 @@ start_date: "2023-12-09"
 end_date: "2024-01-26"
 opening_hours: "13:00-17:00"
 closed_days: "水曜・木曜"
-attendance: "7月17、18日"
 
 hero:
   image: /images/exhibitions/reiko-kinoshita-2023-12.png
