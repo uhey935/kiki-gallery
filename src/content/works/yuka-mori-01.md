@@ -4,7 +4,7 @@ artist: yuka-mori
 
 images:
   - src: /images/works/yuka-mori-01.png
-    alt: Reiko Kinoshita abstract painting, spray technique, Mandylion - time, acrylic on paper
+    alt: Yuka Mori, Mesh — yellow, purple, and white pansies
 
 size: H300 × W200mm
 material: アクリル、紙
