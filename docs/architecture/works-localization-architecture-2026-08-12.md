@@ -253,6 +253,16 @@ placeholder only when present in JA. A non-empty JA body receives
 corrected Works bodies are empty. Optional SEO fields are omitted. Migration
 does not translate from JA, News/Exhibition prose, or existing alts.
 
+Implementation evidence (foundation phase): EN placeholders use the exact
+`__TODO_WORK_*__` tokens documented above. The frozen content-and-asset manifest
+is `docs/migrations/works-localization-manifest-2026-08-12.json`, SHA-256
+`5eddbe7015aa14c5bc6741cf84a5c14ea4d93cc75cebf9a6812c691daca10498`.
+Its asset invariance records normalized public URL, repository path, byte
+length, SHA-256, decoded byte format, and ordered Work references. The executor
+compares that evidence before staging, after installation, and after source
+removal. This records target-foundation evidence only; the flat runtime remains
+authoritative and no migration has been executed.
+
 ## 14. JA compatibility baseline
 
 Before migration, freeze all seven JA Detail routes; Artist Detail Works;

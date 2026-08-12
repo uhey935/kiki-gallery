@@ -1,0 +1,524 @@
+{
+  "migrationVersion": 1,
+  "collection": "works",
+  "mode": "dry-run",
+  "sourceRoot": "src/content/works",
+  "expectedInventory": [
+    "reiko-kinoshita-01",
+    "reiko-kinoshita-02",
+    "reiko-kinoshita-03",
+    "reiko-kinoshita-04",
+    "reiko-kinoshita-05",
+    "reiko-kinoshita-06",
+    "yuka-mori-01"
+  ],
+  "count": 7,
+  "entries": [
+    {
+      "contentId": "reiko-kinoshita-01",
+      "source": {
+        "path": "src/content/works/reiko-kinoshita-01.md",
+        "byteLength": 724,
+        "sha256": "c0d39f08546abe1124025b2028a8d5978cddcc0f01609ef0c4c1d7b377af9a99",
+        "originalBase64": "LS0tCnRpdGxlOiBNYW5keWxpb24gLSB0aW1lCmFydGlzdDogcmVpa28ta2lub3NoaXRhCgppbWFnZXM6CiAgLSBzcmM6IC9pbWFnZXMvd29ya3MvcmVpa28ta2lub3NoaXRhLTAxLnBuZwogICAgYWx0OiBSZWlrbyBLaW5vc2hpdGEgYWJzdHJhY3QgcGFpbnRpbmcsIHNwcmF5IHRlY2huaXF1ZSwgTWFuZHlsaW9uIC0gdGltZSwgYWNyeWxpYyBvbiBwYXBlcgoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDIucG5nCiAgICBhbHQ6IFJlaWtvIEtpbm9zaGl0YSBhYnN0cmFjdCBwYWludGluZywgc3ByYXkgdGVjaG5pcXVlLCBNYW5keWxpb24gLSB0aW1lLCBhY3J5bGljIG9uIHBhcGVyCgogIC0gc3JjOiAvaW1hZ2VzL3dvcmtzL3JlaWtvLWtpbm9zaGl0YS0wMy5wbmcKICAgIGFsdDogUmVpa28gS2lub3NoaXRhIGFic3RyYWN0IHBhaW50aW5nLCBzcHJheSB0ZWNobmlxdWUsIE1hbmR5bGlvbiAtIHRpbWUsIGFjcnlsaWMgb24gcGFwZXIKCiAgLSBzcmM6IC9pbWFnZXMvd29ya3MvcmVpa28ta2lub3NoaXRhLTA0LmpwZwogICAgYWx0OiBSZWlrbyBLaW5vc2hpdGEgYWJzdHJhY3QgcGFpbnRpbmcsIHNwcmF5IHRlY2huaXF1ZSwgTWFuZHlsaW9uIC0gdGltZSwgYWNyeWxpYyBvbiBwYXBlcgoKc2l6ZTogSDMwMCDDlyBXMjAwbW0KbWF0ZXJpYWw6IOOCouOCr+ODquODq+OAgee0mQp5ZWFyOiAyMDI1CgppbnF1aXJ5OgogIHR5cGU6IGlucXVpcnkKLS0tCg=="
+      },
+      "body": {
+        "sourceBase64": "",
+        "byteLength": 0,
+        "empty": true
+      },
+      "mapping": {
+        "artist": "reiko-kinoshita",
+        "imageSlots": [
+          {
+            "index": 0,
+            "src": "/images/works/reiko-kinoshita-01.png",
+            "jaAlt": "Reiko Kinoshita abstract painting, spray technique, Mandylion - time, acrylic on paper",
+            "enAlt": "__TODO_WORK_IMAGE_ALT_1__"
+          },
+          {
+            "index": 1,
+            "src": "/images/works/reiko-kinoshita-02.png",
+            "jaAlt": "Reiko Kinoshita abstract painting, spray technique, Mandylion - time, acrylic on paper",
+            "enAlt": "__TODO_WORK_IMAGE_ALT_2__"
+          },
+          {
+            "index": 2,
+            "src": "/images/works/reiko-kinoshita-03.png",
+            "jaAlt": "Reiko Kinoshita abstract painting, spray technique, Mandylion - time, acrylic on paper",
+            "enAlt": "__TODO_WORK_IMAGE_ALT_3__"
+          },
+          {
+            "index": 3,
+            "src": "/images/works/reiko-kinoshita-04.jpg",
+            "jaAlt": "Reiko Kinoshita abstract painting, spray technique, Mandylion - time, acrylic on paper",
+            "enAlt": "__TODO_WORK_IMAGE_ALT_4__"
+          }
+        ],
+        "size": "H300 × W200mm",
+        "material": "アクリル、紙"
+      },
+      "targetDirectory": "src/content/works/reiko-kinoshita-01",
+      "generated": {
+        "shared": {
+          "path": "src/content/works/reiko-kinoshita-01/index.yaml",
+          "content": "artist: reiko-kinoshita\nimages:\n  - src: /images/works/reiko-kinoshita-01.png\n  - src: /images/works/reiko-kinoshita-02.png\n  - src: /images/works/reiko-kinoshita-03.png\n  - src: /images/works/reiko-kinoshita-04.jpg\nyear: 2025\ninquiry:\n  type: inquiry\n",
+          "byteLength": 252,
+          "sha256": "3a5f02415762daecad8cae332c4617a59d7cdf34a283397723353f8a2d154c9a"
+        },
+        "ja": {
+          "path": "src/content/works/reiko-kinoshita-01/ja.md",
+          "content": "---\ntitle: Mandylion - time\nimages:\n  - alt: Reiko Kinoshita abstract painting, spray technique, Mandylion - time,\n      acrylic on paper\n  - alt: Reiko Kinoshita abstract painting, spray technique, Mandylion - time,\n      acrylic on paper\n  - alt: Reiko Kinoshita abstract painting, spray technique, Mandylion - time,\n      acrylic on paper\n  - alt: Reiko Kinoshita abstract painting, spray technique, Mandylion - time,\n      acrylic on paper\nmaterial: アクリル、紙\nsize: H300 × W200mm\n---\n",
+          "byteLength": 498,
+          "sha256": "3819697631ab69d9ab4a564f3bfe5b766a1e98902e826a6b8b0eeae6dfbb1c87"
+        },
+        "en": {
+          "path": "src/content/works/reiko-kinoshita-01/en.md",
+          "content": "---\ntitle: __TODO_WORK_TITLE__\nimages:\n  - alt: __TODO_WORK_IMAGE_ALT_1__\n  - alt: __TODO_WORK_IMAGE_ALT_2__\n  - alt: __TODO_WORK_IMAGE_ALT_3__\n  - alt: __TODO_WORK_IMAGE_ALT_4__\nmaterial: __TODO_WORK_MATERIAL__\nsize: __TODO_WORK_SIZE__\n---\n",
+          "byteLength": 241,
+          "sha256": "896501e8f839e9ed575f3e95ed1b65012642060de09205ef6d980d58e056d1de"
+        }
+      },
+      "rollback": {
+        "sourcePath": "src/content/works/reiko-kinoshita-01.md",
+        "originalBase64": "LS0tCnRpdGxlOiBNYW5keWxpb24gLSB0aW1lCmFydGlzdDogcmVpa28ta2lub3NoaXRhCgppbWFnZXM6CiAgLSBzcmM6IC9pbWFnZXMvd29ya3MvcmVpa28ta2lub3NoaXRhLTAxLnBuZwogICAgYWx0OiBSZWlrbyBLaW5vc2hpdGEgYWJzdHJhY3QgcGFpbnRpbmcsIHNwcmF5IHRlY2huaXF1ZSwgTWFuZHlsaW9uIC0gdGltZSwgYWNyeWxpYyBvbiBwYXBlcgoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDIucG5nCiAgICBhbHQ6IFJlaWtvIEtpbm9zaGl0YSBhYnN0cmFjdCBwYWludGluZywgc3ByYXkgdGVjaG5pcXVlLCBNYW5keWxpb24gLSB0aW1lLCBhY3J5bGljIG9uIHBhcGVyCgogIC0gc3JjOiAvaW1hZ2VzL3dvcmtzL3JlaWtvLWtpbm9zaGl0YS0wMy5wbmcKICAgIGFsdDogUmVpa28gS2lub3NoaXRhIGFic3RyYWN0IHBhaW50aW5nLCBzcHJheSB0ZWNobmlxdWUsIE1hbmR5bGlvbiAtIHRpbWUsIGFjcnlsaWMgb24gcGFwZXIKCiAgLSBzcmM6IC9pbWFnZXMvd29ya3MvcmVpa28ta2lub3NoaXRhLTA0LmpwZwogICAgYWx0OiBSZWlrbyBLaW5vc2hpdGEgYWJzdHJhY3QgcGFpbnRpbmcsIHNwcmF5IHRlY2huaXF1ZSwgTWFuZHlsaW9uIC0gdGltZSwgYWNyeWxpYyBvbiBwYXBlcgoKc2l6ZTogSDMwMCDDlyBXMjAwbW0KbWF0ZXJpYWw6IOOCouOCr+ODquODq+OAgee0mQp5ZWFyOiAyMDI1CgppbnF1aXJ5OgogIHR5cGU6IGlucXVpcnkKLS0tCg==",
+        "byteLength": 724,
+        "sha256": "c0d39f08546abe1124025b2028a8d5978cddcc0f01609ef0c4c1d7b377af9a99"
+      }
+    },
+    {
+      "contentId": "reiko-kinoshita-02",
+      "source": {
+        "path": "src/content/works/reiko-kinoshita-02.md",
+        "byteLength": 274,
+        "sha256": "0dde7a37fb18673a8300b1bfa6b11ee043ae213fc1fa8c219704636f2212fe5f",
+        "originalBase64": "LS0tCnRpdGxlOiDlho3luLAKYXJ0aXN0OiByZWlrby1raW5vc2hpdGEKCmltYWdlczoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDIucG5nCiAgICBhbHQ6IFJlaWtvIEtpbm9zaGl0YSBhYnN0cmFjdCBwYWludGluZywgc3ByYXkgdGVjaG5pcXVlLCByZWN1cnNpb24gY29uY2VwdCwgYWNyeWxpYyBvbiBwYXBlcgoKc2l6ZTogSDMwMCDDlyBXMjAwIG1tCm1hdGVyaWFsOiDjgqLjgq/jg6rjg6vjgIHntJkKCmlucXVpcnk6CiAgdHlwZTogbm9uZQoKLS0tCg=="
+      },
+      "body": {
+        "sourceBase64": "",
+        "byteLength": 0,
+        "empty": true
+      },
+      "mapping": {
+        "artist": "reiko-kinoshita",
+        "imageSlots": [
+          {
+            "index": 0,
+            "src": "/images/works/reiko-kinoshita-02.png",
+            "jaAlt": "Reiko Kinoshita abstract painting, spray technique, recursion concept, acrylic on paper",
+            "enAlt": "__TODO_WORK_IMAGE_ALT_1__"
+          }
+        ],
+        "size": "H300 × W200 mm",
+        "material": "アクリル、紙"
+      },
+      "targetDirectory": "src/content/works/reiko-kinoshita-02",
+      "generated": {
+        "shared": {
+          "path": "src/content/works/reiko-kinoshita-02/index.yaml",
+          "content": "artist: reiko-kinoshita\nimages:\n  - src: /images/works/reiko-kinoshita-02.png\ninquiry:\n  type: none\n",
+          "byteLength": 100,
+          "sha256": "ffd519cb5b8ef14cb77a8df0bfde6b88a00ef94a93f68a1c175f0abd918265e6"
+        },
+        "ja": {
+          "path": "src/content/works/reiko-kinoshita-02/ja.md",
+          "content": "---\ntitle: 再帰\nimages:\n  - alt: Reiko Kinoshita abstract painting, spray technique, recursion concept,\n      acrylic on paper\nmaterial: アクリル、紙\nsize: H300 × W200 mm\n---\n",
+          "byteLength": 184,
+          "sha256": "e911c303abd89b12393c15978b09e6c51f3830c0d384b958c9303078577721ba"
+        },
+        "en": {
+          "path": "src/content/works/reiko-kinoshita-02/en.md",
+          "content": "---\ntitle: __TODO_WORK_TITLE__\nimages:\n  - alt: __TODO_WORK_IMAGE_ALT_1__\nmaterial: __TODO_WORK_MATERIAL__\nsize: __TODO_WORK_SIZE__\n---\n",
+          "byteLength": 136,
+          "sha256": "092173052a6b0bf11ac244af70337176109161320c91411f310e8be99e21ad0b"
+        }
+      },
+      "rollback": {
+        "sourcePath": "src/content/works/reiko-kinoshita-02.md",
+        "originalBase64": "LS0tCnRpdGxlOiDlho3luLAKYXJ0aXN0OiByZWlrby1raW5vc2hpdGEKCmltYWdlczoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDIucG5nCiAgICBhbHQ6IFJlaWtvIEtpbm9zaGl0YSBhYnN0cmFjdCBwYWludGluZywgc3ByYXkgdGVjaG5pcXVlLCByZWN1cnNpb24gY29uY2VwdCwgYWNyeWxpYyBvbiBwYXBlcgoKc2l6ZTogSDMwMCDDlyBXMjAwIG1tCm1hdGVyaWFsOiDjgqLjgq/jg6rjg6vjgIHntJkKCmlucXVpcnk6CiAgdHlwZTogbm9uZQoKLS0tCg==",
+        "byteLength": 274,
+        "sha256": "0dde7a37fb18673a8300b1bfa6b11ee043ae213fc1fa8c219704636f2212fe5f"
+      }
+    },
+    {
+      "contentId": "reiko-kinoshita-03",
+      "source": {
+        "path": "src/content/works/reiko-kinoshita-03.md",
+        "byteLength": 298,
+        "sha256": "b3479820761c0e62bbe4eed7aa75e578993edaf8ea888f526cc57c4edc0895e4",
+        "originalBase64": "LS0tCnRpdGxlOiDlho3luLAKYXJ0aXN0OiByZWlrby1raW5vc2hpdGEKCmltYWdlczoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDMucG5nCiAgICBhbHQ6IFJlaWtvIEtpbm9zaGl0YSBhYnN0cmFjdCBwYWludGluZywgc3ByYXkgdGVjaG5pcXVlLCByZWN1cnNpb24gY29uY2VwdCwgYWNyeWxpYyBvbiBwYXBlcgoKb3JpZW50YXRpb246IGxhbmRzY2FwZQoKc2l6ZTogSDMwMCDDlyBXMjAwIG1tCm1hdGVyaWFsOiDjgqLjgq/jg6rjg6vjgIHntJkKCmlucXVpcnk6CiAgdHlwZTogbm9uZQoKLS0tCg=="
+      },
+      "body": {
+        "sourceBase64": "",
+        "byteLength": 0,
+        "empty": true
+      },
+      "mapping": {
+        "artist": "reiko-kinoshita",
+        "imageSlots": [
+          {
+            "index": 0,
+            "src": "/images/works/reiko-kinoshita-03.png",
+            "jaAlt": "Reiko Kinoshita abstract painting, spray technique, recursion concept, acrylic on paper",
+            "enAlt": "__TODO_WORK_IMAGE_ALT_1__"
+          }
+        ],
+        "size": "H300 × W200 mm",
+        "material": "アクリル、紙"
+      },
+      "targetDirectory": "src/content/works/reiko-kinoshita-03",
+      "generated": {
+        "shared": {
+          "path": "src/content/works/reiko-kinoshita-03/index.yaml",
+          "content": "artist: reiko-kinoshita\nimages:\n  - src: /images/works/reiko-kinoshita-03.png\norientation: landscape\ninquiry:\n  type: none\n",
+          "byteLength": 123,
+          "sha256": "cea3f328fc015cc3e9fdb2777acdbc03ce17855b8deb33694783c9ed49b464f2"
+        },
+        "ja": {
+          "path": "src/content/works/reiko-kinoshita-03/ja.md",
+          "content": "---\ntitle: 再帰\nimages:\n  - alt: Reiko Kinoshita abstract painting, spray technique, recursion concept,\n      acrylic on paper\nmaterial: アクリル、紙\nsize: H300 × W200 mm\n---\n",
+          "byteLength": 184,
+          "sha256": "e911c303abd89b12393c15978b09e6c51f3830c0d384b958c9303078577721ba"
+        },
+        "en": {
+          "path": "src/content/works/reiko-kinoshita-03/en.md",
+          "content": "---\ntitle: __TODO_WORK_TITLE__\nimages:\n  - alt: __TODO_WORK_IMAGE_ALT_1__\nmaterial: __TODO_WORK_MATERIAL__\nsize: __TODO_WORK_SIZE__\n---\n",
+          "byteLength": 136,
+          "sha256": "092173052a6b0bf11ac244af70337176109161320c91411f310e8be99e21ad0b"
+        }
+      },
+      "rollback": {
+        "sourcePath": "src/content/works/reiko-kinoshita-03.md",
+        "originalBase64": "LS0tCnRpdGxlOiDlho3luLAKYXJ0aXN0OiByZWlrby1raW5vc2hpdGEKCmltYWdlczoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDMucG5nCiAgICBhbHQ6IFJlaWtvIEtpbm9zaGl0YSBhYnN0cmFjdCBwYWludGluZywgc3ByYXkgdGVjaG5pcXVlLCByZWN1cnNpb24gY29uY2VwdCwgYWNyeWxpYyBvbiBwYXBlcgoKb3JpZW50YXRpb246IGxhbmRzY2FwZQoKc2l6ZTogSDMwMCDDlyBXMjAwIG1tCm1hdGVyaWFsOiDjgqLjgq/jg6rjg6vjgIHntJkKCmlucXVpcnk6CiAgdHlwZTogbm9uZQoKLS0tCg==",
+        "byteLength": 298,
+        "sha256": "b3479820761c0e62bbe4eed7aa75e578993edaf8ea888f526cc57c4edc0895e4"
+      }
+    },
+    {
+      "contentId": "reiko-kinoshita-04",
+      "source": {
+        "path": "src/content/works/reiko-kinoshita-04.md",
+        "byteLength": 298,
+        "sha256": "a19652be99eaa25cf93e3dd6077be08d3f6989c90dcd6fcda8df2c3c58698be3",
+        "originalBase64": "LS0tCnRpdGxlOiDlho3luLAKYXJ0aXN0OiByZWlrby1raW5vc2hpdGEKCmltYWdlczoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDQuanBnCiAgICBhbHQ6IFJlaWtvIEtpbm9zaGl0YSBhYnN0cmFjdCBwYWludGluZywgc3ByYXkgdGVjaG5pcXVlLCByZWN1cnNpb24gY29uY2VwdCwgYWNyeWxpYyBvbiBwYXBlcgoKb3JpZW50YXRpb246IGxhbmRzY2FwZQoKc2l6ZTogSDMwMCDDlyBXMjAwIG1tCm1hdGVyaWFsOiDjgqLjgq/jg6rjg6vjgIHntJkKCmlucXVpcnk6CiAgdHlwZTogbm9uZQoKLS0tCg=="
+      },
+      "body": {
+        "sourceBase64": "",
+        "byteLength": 0,
+        "empty": true
+      },
+      "mapping": {
+        "artist": "reiko-kinoshita",
+        "imageSlots": [
+          {
+            "index": 0,
+            "src": "/images/works/reiko-kinoshita-04.jpg",
+            "jaAlt": "Reiko Kinoshita abstract painting, spray technique, recursion concept, acrylic on paper",
+            "enAlt": "__TODO_WORK_IMAGE_ALT_1__"
+          }
+        ],
+        "size": "H300 × W200 mm",
+        "material": "アクリル、紙"
+      },
+      "targetDirectory": "src/content/works/reiko-kinoshita-04",
+      "generated": {
+        "shared": {
+          "path": "src/content/works/reiko-kinoshita-04/index.yaml",
+          "content": "artist: reiko-kinoshita\nimages:\n  - src: /images/works/reiko-kinoshita-04.jpg\norientation: landscape\ninquiry:\n  type: none\n",
+          "byteLength": 123,
+          "sha256": "ec7c5040d4d49dfe18af3bccce13d1b837b646b5355500fb112c2066fc8cb633"
+        },
+        "ja": {
+          "path": "src/content/works/reiko-kinoshita-04/ja.md",
+          "content": "---\ntitle: 再帰\nimages:\n  - alt: Reiko Kinoshita abstract painting, spray technique, recursion concept,\n      acrylic on paper\nmaterial: アクリル、紙\nsize: H300 × W200 mm\n---\n",
+          "byteLength": 184,
+          "sha256": "e911c303abd89b12393c15978b09e6c51f3830c0d384b958c9303078577721ba"
+        },
+        "en": {
+          "path": "src/content/works/reiko-kinoshita-04/en.md",
+          "content": "---\ntitle: __TODO_WORK_TITLE__\nimages:\n  - alt: __TODO_WORK_IMAGE_ALT_1__\nmaterial: __TODO_WORK_MATERIAL__\nsize: __TODO_WORK_SIZE__\n---\n",
+          "byteLength": 136,
+          "sha256": "092173052a6b0bf11ac244af70337176109161320c91411f310e8be99e21ad0b"
+        }
+      },
+      "rollback": {
+        "sourcePath": "src/content/works/reiko-kinoshita-04.md",
+        "originalBase64": "LS0tCnRpdGxlOiDlho3luLAKYXJ0aXN0OiByZWlrby1raW5vc2hpdGEKCmltYWdlczoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDQuanBnCiAgICBhbHQ6IFJlaWtvIEtpbm9zaGl0YSBhYnN0cmFjdCBwYWludGluZywgc3ByYXkgdGVjaG5pcXVlLCByZWN1cnNpb24gY29uY2VwdCwgYWNyeWxpYyBvbiBwYXBlcgoKb3JpZW50YXRpb246IGxhbmRzY2FwZQoKc2l6ZTogSDMwMCDDlyBXMjAwIG1tCm1hdGVyaWFsOiDjgqLjgq/jg6rjg6vjgIHntJkKCmlucXVpcnk6CiAgdHlwZTogbm9uZQoKLS0tCg==",
+        "byteLength": 298,
+        "sha256": "a19652be99eaa25cf93e3dd6077be08d3f6989c90dcd6fcda8df2c3c58698be3"
+      }
+    },
+    {
+      "contentId": "reiko-kinoshita-05",
+      "source": {
+        "path": "src/content/works/reiko-kinoshita-05.md",
+        "byteLength": 298,
+        "sha256": "8f97fcfb624647ef92ae5d07e0b0b3bca0ab12425826a76ccbde3c77ed12bc52",
+        "originalBase64": "LS0tCnRpdGxlOiDlho3luLAKYXJ0aXN0OiByZWlrby1raW5vc2hpdGEKCmltYWdlczoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDUuanBnCiAgICBhbHQ6IFJlaWtvIEtpbm9zaGl0YSBhYnN0cmFjdCBwYWludGluZywgc3ByYXkgdGVjaG5pcXVlLCByZWN1cnNpb24gY29uY2VwdCwgYWNyeWxpYyBvbiBwYXBlcgoKb3JpZW50YXRpb246IGxhbmRzY2FwZQoKc2l6ZTogSDMwMCDDlyBXMjAwIG1tCm1hdGVyaWFsOiDjgqLjgq/jg6rjg6vjgIHntJkKCmlucXVpcnk6CiAgdHlwZTogbm9uZQoKLS0tCg=="
+      },
+      "body": {
+        "sourceBase64": "",
+        "byteLength": 0,
+        "empty": true
+      },
+      "mapping": {
+        "artist": "reiko-kinoshita",
+        "imageSlots": [
+          {
+            "index": 0,
+            "src": "/images/works/reiko-kinoshita-05.jpg",
+            "jaAlt": "Reiko Kinoshita abstract painting, spray technique, recursion concept, acrylic on paper",
+            "enAlt": "__TODO_WORK_IMAGE_ALT_1__"
+          }
+        ],
+        "size": "H300 × W200 mm",
+        "material": "アクリル、紙"
+      },
+      "targetDirectory": "src/content/works/reiko-kinoshita-05",
+      "generated": {
+        "shared": {
+          "path": "src/content/works/reiko-kinoshita-05/index.yaml",
+          "content": "artist: reiko-kinoshita\nimages:\n  - src: /images/works/reiko-kinoshita-05.jpg\norientation: landscape\ninquiry:\n  type: none\n",
+          "byteLength": 123,
+          "sha256": "dc71674f54cb4620c0b80a88f5c49b600343205fdf0b98cd2e15d9c7e4868266"
+        },
+        "ja": {
+          "path": "src/content/works/reiko-kinoshita-05/ja.md",
+          "content": "---\ntitle: 再帰\nimages:\n  - alt: Reiko Kinoshita abstract painting, spray technique, recursion concept,\n      acrylic on paper\nmaterial: アクリル、紙\nsize: H300 × W200 mm\n---\n",
+          "byteLength": 184,
+          "sha256": "e911c303abd89b12393c15978b09e6c51f3830c0d384b958c9303078577721ba"
+        },
+        "en": {
+          "path": "src/content/works/reiko-kinoshita-05/en.md",
+          "content": "---\ntitle: __TODO_WORK_TITLE__\nimages:\n  - alt: __TODO_WORK_IMAGE_ALT_1__\nmaterial: __TODO_WORK_MATERIAL__\nsize: __TODO_WORK_SIZE__\n---\n",
+          "byteLength": 136,
+          "sha256": "092173052a6b0bf11ac244af70337176109161320c91411f310e8be99e21ad0b"
+        }
+      },
+      "rollback": {
+        "sourcePath": "src/content/works/reiko-kinoshita-05.md",
+        "originalBase64": "LS0tCnRpdGxlOiDlho3luLAKYXJ0aXN0OiByZWlrby1raW5vc2hpdGEKCmltYWdlczoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDUuanBnCiAgICBhbHQ6IFJlaWtvIEtpbm9zaGl0YSBhYnN0cmFjdCBwYWludGluZywgc3ByYXkgdGVjaG5pcXVlLCByZWN1cnNpb24gY29uY2VwdCwgYWNyeWxpYyBvbiBwYXBlcgoKb3JpZW50YXRpb246IGxhbmRzY2FwZQoKc2l6ZTogSDMwMCDDlyBXMjAwIG1tCm1hdGVyaWFsOiDjgqLjgq/jg6rjg6vjgIHntJkKCmlucXVpcnk6CiAgdHlwZTogbm9uZQoKLS0tCg==",
+        "byteLength": 298,
+        "sha256": "8f97fcfb624647ef92ae5d07e0b0b3bca0ab12425826a76ccbde3c77ed12bc52"
+      }
+    },
+    {
+      "contentId": "reiko-kinoshita-06",
+      "source": {
+        "path": "src/content/works/reiko-kinoshita-06.md",
+        "byteLength": 299,
+        "sha256": "8feda59a463a4344e468f7b11f7fc192d92e5c06640b9581bf5458b023867de9",
+        "originalBase64": "LS0tCnRpdGxlOiDlho3luLAKYXJ0aXN0OiByZWlrby1raW5vc2hpdGEKCmltYWdlczoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDYuanBlZwogICAgYWx0OiBSZWlrbyBLaW5vc2hpdGEgYWJzdHJhY3QgcGFpbnRpbmcsIHNwcmF5IHRlY2huaXF1ZSwgcmVjdXJzaW9uIGNvbmNlcHQsIGFjcnlsaWMgb24gcGFwZXIKCm9yaWVudGF0aW9uOiBsYW5kc2NhcGUKCnNpemU6IEgzMDAgw5cgVzIwMCBtbQptYXRlcmlhbDog44Ki44Kv44Oq44Or44CB57SZCgppbnF1aXJ5OgogIHR5cGU6IG5vbmUKCi0tLQo="
+      },
+      "body": {
+        "sourceBase64": "",
+        "byteLength": 0,
+        "empty": true
+      },
+      "mapping": {
+        "artist": "reiko-kinoshita",
+        "imageSlots": [
+          {
+            "index": 0,
+            "src": "/images/works/reiko-kinoshita-06.jpeg",
+            "jaAlt": "Reiko Kinoshita abstract painting, spray technique, recursion concept, acrylic on paper",
+            "enAlt": "__TODO_WORK_IMAGE_ALT_1__"
+          }
+        ],
+        "size": "H300 × W200 mm",
+        "material": "アクリル、紙"
+      },
+      "targetDirectory": "src/content/works/reiko-kinoshita-06",
+      "generated": {
+        "shared": {
+          "path": "src/content/works/reiko-kinoshita-06/index.yaml",
+          "content": "artist: reiko-kinoshita\nimages:\n  - src: /images/works/reiko-kinoshita-06.jpeg\norientation: landscape\ninquiry:\n  type: none\n",
+          "byteLength": 124,
+          "sha256": "a70017522982fbd2f0846c3340d8fc63f3b4f6185de85cdb8382f01106f1fea3"
+        },
+        "ja": {
+          "path": "src/content/works/reiko-kinoshita-06/ja.md",
+          "content": "---\ntitle: 再帰\nimages:\n  - alt: Reiko Kinoshita abstract painting, spray technique, recursion concept,\n      acrylic on paper\nmaterial: アクリル、紙\nsize: H300 × W200 mm\n---\n",
+          "byteLength": 184,
+          "sha256": "e911c303abd89b12393c15978b09e6c51f3830c0d384b958c9303078577721ba"
+        },
+        "en": {
+          "path": "src/content/works/reiko-kinoshita-06/en.md",
+          "content": "---\ntitle: __TODO_WORK_TITLE__\nimages:\n  - alt: __TODO_WORK_IMAGE_ALT_1__\nmaterial: __TODO_WORK_MATERIAL__\nsize: __TODO_WORK_SIZE__\n---\n",
+          "byteLength": 136,
+          "sha256": "092173052a6b0bf11ac244af70337176109161320c91411f310e8be99e21ad0b"
+        }
+      },
+      "rollback": {
+        "sourcePath": "src/content/works/reiko-kinoshita-06.md",
+        "originalBase64": "LS0tCnRpdGxlOiDlho3luLAKYXJ0aXN0OiByZWlrby1raW5vc2hpdGEKCmltYWdlczoKICAtIHNyYzogL2ltYWdlcy93b3Jrcy9yZWlrby1raW5vc2hpdGEtMDYuanBlZwogICAgYWx0OiBSZWlrbyBLaW5vc2hpdGEgYWJzdHJhY3QgcGFpbnRpbmcsIHNwcmF5IHRlY2huaXF1ZSwgcmVjdXJzaW9uIGNvbmNlcHQsIGFjcnlsaWMgb24gcGFwZXIKCm9yaWVudGF0aW9uOiBsYW5kc2NhcGUKCnNpemU6IEgzMDAgw5cgVzIwMCBtbQptYXRlcmlhbDog44Ki44Kv44Oq44Or44CB57SZCgppbnF1aXJ5OgogIHR5cGU6IG5vbmUKCi0tLQo=",
+        "byteLength": 299,
+        "sha256": "8feda59a463a4344e468f7b11f7fc192d92e5c06640b9581bf5458b023867de9"
+      }
+    },
+    {
+      "contentId": "yuka-mori-01",
+      "source": {
+        "path": "src/content/works/yuka-mori-01.md",
+        "byteLength": 236,
+        "sha256": "4ba3d4501a15273bd4a07bfe65fe4ada3b104ba8114b142ddfca8f9c6127222b",
+        "originalBase64": "LS0tCnRpdGxlOiBNZXNoCmFydGlzdDogeXVrYS1tb3JpCgppbWFnZXM6CiAgLSBzcmM6IC9pbWFnZXMvd29ya3MveXVrYS1tb3JpLTAxLnBuZwogICAgYWx0OiBZdWthIE1vcmksIE1lc2gg4oCUIHllbGxvdywgcHVycGxlLCBhbmQgd2hpdGUgcGFuc2llcwoKc2l6ZTogSDMwMCDDlyBXMjAwbW0KbWF0ZXJpYWw6IOOCouOCr+ODquODq+OAgee0mQp5ZWFyOiAyMDI1CgppbnF1aXJ5OgogIHR5cGU6IG5vbmUKCi0tLQo="
+      },
+      "body": {
+        "sourceBase64": "",
+        "byteLength": 0,
+        "empty": true
+      },
+      "mapping": {
+        "artist": "yuka-mori",
+        "imageSlots": [
+          {
+            "index": 0,
+            "src": "/images/works/yuka-mori-01.png",
+            "jaAlt": "Yuka Mori, Mesh — yellow, purple, and white pansies",
+            "enAlt": "__TODO_WORK_IMAGE_ALT_1__"
+          }
+        ],
+        "size": "H300 × W200mm",
+        "material": "アクリル、紙"
+      },
+      "targetDirectory": "src/content/works/yuka-mori-01",
+      "generated": {
+        "shared": {
+          "path": "src/content/works/yuka-mori-01/index.yaml",
+          "content": "artist: yuka-mori\nimages:\n  - src: /images/works/yuka-mori-01.png\nyear: 2025\ninquiry:\n  type: none\n",
+          "byteLength": 99,
+          "sha256": "dde2a6239f1cc3ee0634f7009a9a793e7bc09f6c4d7ea2ff73ea27af08efc08e"
+        },
+        "ja": {
+          "path": "src/content/works/yuka-mori-01/ja.md",
+          "content": "---\ntitle: Mesh\nimages:\n  - alt: Yuka Mori, Mesh — yellow, purple, and white pansies\nmaterial: アクリル、紙\nsize: H300 × W200mm\n---\n",
+          "byteLength": 141,
+          "sha256": "4c97ee521791df0a77fc25f83b9c9ec53dd66d47f4d4c62419d549b18bd465f4"
+        },
+        "en": {
+          "path": "src/content/works/yuka-mori-01/en.md",
+          "content": "---\ntitle: __TODO_WORK_TITLE__\nimages:\n  - alt: __TODO_WORK_IMAGE_ALT_1__\nmaterial: __TODO_WORK_MATERIAL__\nsize: __TODO_WORK_SIZE__\n---\n",
+          "byteLength": 136,
+          "sha256": "092173052a6b0bf11ac244af70337176109161320c91411f310e8be99e21ad0b"
+        }
+      },
+      "rollback": {
+        "sourcePath": "src/content/works/yuka-mori-01.md",
+        "originalBase64": "LS0tCnRpdGxlOiBNZXNoCmFydGlzdDogeXVrYS1tb3JpCgppbWFnZXM6CiAgLSBzcmM6IC9pbWFnZXMvd29ya3MveXVrYS1tb3JpLTAxLnBuZwogICAgYWx0OiBZdWthIE1vcmksIE1lc2gg4oCUIHllbGxvdywgcHVycGxlLCBhbmQgd2hpdGUgcGFuc2llcwoKc2l6ZTogSDMwMCDDlyBXMjAwbW0KbWF0ZXJpYWw6IOOCouOCr+ODquODq+OAgee0mQp5ZWFyOiAyMDI1CgppbnF1aXJ5OgogIHR5cGU6IG5vbmUKCi0tLQo=",
+        "byteLength": 236,
+        "sha256": "4ba3d4501a15273bd4a07bfe65fe4ada3b104ba8114b142ddfca8f9c6127222b"
+      }
+    }
+  ],
+  "assetInvariance": {
+    "policy": "content-only-no-asset-mutation",
+    "before": [
+      {
+        "url": "/images/works/reiko-kinoshita-01.png",
+        "path": "public/images/works/reiko-kinoshita-01.png",
+        "byteLength": 2543717,
+        "sha256": "16a7210484618e4a0d85dd2108dabc595676fe24f2224d8ca862c7a4d8ed3ab3",
+        "decodedFormat": "png",
+        "references": [
+          {
+            "contentId": "reiko-kinoshita-01",
+            "order": 0
+          }
+        ]
+      },
+      {
+        "url": "/images/works/reiko-kinoshita-02.png",
+        "path": "public/images/works/reiko-kinoshita-02.png",
+        "byteLength": 2593218,
+        "sha256": "f548b7c90daf284c82733db18d5f8b5449e936b7833db7270a75807e79bcd672",
+        "decodedFormat": "png",
+        "references": [
+          {
+            "contentId": "reiko-kinoshita-01",
+            "order": 1
+          },
+          {
+            "contentId": "reiko-kinoshita-02",
+            "order": 0
+          }
+        ]
+      },
+      {
+        "url": "/images/works/reiko-kinoshita-03.png",
+        "path": "public/images/works/reiko-kinoshita-03.png",
+        "byteLength": 107052,
+        "sha256": "d9701561b304b9cd143a846b91b1cf990514364c805b8faba1b5bc0228c72369",
+        "decodedFormat": "webp",
+        "references": [
+          {
+            "contentId": "reiko-kinoshita-01",
+            "order": 2
+          },
+          {
+            "contentId": "reiko-kinoshita-03",
+            "order": 0
+          }
+        ]
+      },
+      {
+        "url": "/images/works/reiko-kinoshita-04.jpg",
+        "path": "public/images/works/reiko-kinoshita-04.jpg",
+        "byteLength": 28597,
+        "sha256": "349aa7b8803791aa7a2b44a9013a3c6e55ccf45b9b6cb4cd83a527faa4f33fad",
+        "decodedFormat": "avif",
+        "references": [
+          {
+            "contentId": "reiko-kinoshita-01",
+            "order": 3
+          },
+          {
+            "contentId": "reiko-kinoshita-04",
+            "order": 0
+          }
+        ]
+      },
+      {
+        "url": "/images/works/reiko-kinoshita-05.jpg",
+        "path": "public/images/works/reiko-kinoshita-05.jpg",
+        "byteLength": 39679,
+        "sha256": "7eb50aa858cec6feb01a64c5451ba414f6a5195187c65701bdf7d3a722f0d955",
+        "decodedFormat": "avif",
+        "references": [
+          {
+            "contentId": "reiko-kinoshita-05",
+            "order": 0
+          }
+        ]
+      },
+      {
+        "url": "/images/works/reiko-kinoshita-06.jpeg",
+        "path": "public/images/works/reiko-kinoshita-06.jpeg",
+        "byteLength": 338173,
+        "sha256": "564f07639bd159a6c7312d465118af24e8e56dfa8fa67fae57bde129373a9c0b",
+        "decodedFormat": "avif",
+        "references": [
+          {
+            "contentId": "reiko-kinoshita-06",
+            "order": 0
+          }
+        ]
+      },
+      {
+        "url": "/images/works/yuka-mori-01.png",
+        "path": "public/images/works/yuka-mori-01.png",
+        "byteLength": 162450,
+        "sha256": "7bf36ac26f305889feceaec6bcb466a0af1ae8de64fbb89a146aebc793f8e805",
+        "decodedFormat": "webp",
+        "references": [
+          {
+            "contentId": "yuka-mori-01",
+            "order": 0
+          }
+        ]
+      }
+    ],
+    "afterMustEqualBefore": true,
+    "lifecycleEvidenceMutationAllowed": false
+  }
+}
