@@ -10,7 +10,7 @@ Last Updated: 2026-08-12
 
 本仕様は KiKi Gallery の Schema、Editor、Astro、および将来の CMS 実装における正式な Content Model の基準である。対象は Artist、Work、Exhibition、Journal、News、Home とする。
 
-Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Collection ごとに承認・実装し、現在は Journal、Works、Artists、Exhibitionsでcanonicalである。HomeとNewsは各Collection固有の現行modelを維持する。
+Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Collection ごとに承認・実装し、現在は Journal、Works、Artists、Exhibitionsでcanonicalである。Home の3ファイル形式は implementation-ready target として承認済みだが未migrationであり、現行canonicalは修正済みflat modelである。NewsもCollection固有の現行modelを維持する。
 
 ```text
 Collection
@@ -418,6 +418,12 @@ Home 掲載条件:
 
 Home は Navigation / Composition Layer であり、独立した記事 Collection ではない。
 
+### 9.1 Current corrected flat runtime
+
+現在のcanonical sourceは`src/content/home/home.md`である。以下はmigration
+およびProduction cutoverまで維持される現行modelであり、localized targetを
+実装済みと解釈してはならない。
+
 | Field         | Type           | Required |
 | ------------- | -------------- | -------- |
 | `home_hero`   | Home Hero      | No       |
@@ -438,11 +444,34 @@ Rules:
 
 - `home_hero` は Optional。
 - `title` は Shared の英語 Navigation Language。
-- `sections` の順序はコンテンツが所有し、`id` は同一 Home Entry 内で一意とする。
-- 現在の表示実装では `artists` / `about` の固定構成を維持する。
+- 現在の表示実装は `artists` → `about` の固定構成を維持し、配列順をsemantic authorityとして扱わない。`id` は同一 Home Entry 内で一意とする。
 - 各Sectionは現在の表示が使用する単一のCanonical Imageを`image.src`として所有する。Responsive derivativeやsource switchingは現行modelに含めない。
 - 参照先 Collection の Canonical data を Home へ複製しない。
 - Fallback Hero は表示ロジック側で `/images/home/fallback-hero.webp` を使用する。
+
+### 9.2 Approved localized target (not migrated)
+
+TargetはContent ID `home`のsingleton
+`src/content/home/home/{index.yaml,ja.md,en.md}`である。exact three-file
+inventoryを要求し、missing、extra、symlink、legacy flat sourceとの混在を
+fail-closedにする。Create、Rename、Deleteは持たない。
+
+`index.yaml`はShared hero mediaと、named objectとして固定されたArtists →
+About sectionsを所有する。Section destinationは`artists` / `about`の論理ID、
+画像はそれぞれ`/images/home/artists-square.jpg`と
+`/images/home/about-landscape.jpg`である。Responsive variantsは持たず、
+obsoleteな`home_hero.layout`も持たない。
+
+`ja.md`と`en.md`はrequired `about_intro`、optional `seo_title`、optional
+`description`のみを所有し、Markdown bodyやdecorative image alt fieldsを
+持たない。Locale fallbackはなく、Shared、localized source、assets、required
+destination routes、route projectionがすべてvalidなlocaleだけがHome routeを
+生成できる。
+
+完全なschema、capability、route/Editor/migration契約は
+[Home Localization Architecture](./home-localization-architecture-2026-08-12.md)
+をtarget authorityとする。同文書はimplementation-readyだが、current runtime、
+Production cutover、またはEditor localizationの完了を示さない。
 
 ---
 

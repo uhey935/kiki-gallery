@@ -35,53 +35,73 @@ as migration, rollback, and asset-invariance evidence. Earlier Works Asset
 Manager, Rename, Delete, Editor, and browser records are historical flat-runtime
 evidence and are superseded for topology and lifecycle details.
 
-| Document                                                       | Purpose                                                                                                                                                               |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Artists Architecture — Current**                             | Current authority for the three-file topology, locale policy, Production facade, Editor lifecycle, references, and immutable migration evidence.                      |
-| **Works Localization Architecture — Current**                  | Current implemented authority for Works three-file localization, capability, Production/Editor lifecycle, asset safety, migration, recovery, and browser acceptance. |
-| **Browser Automation Foundation**                              | Defines the disposable-repository Playwright harness, representative lifecycle smoke coverage, local/CI operation, and deferred browser cases.                        |
-| **Editor Final Completion Audit**                              | Current authority for the completed Editor scope, final findings, verification, safety boundaries, and deferred work.                                                 |
-| **Works Delete Asset Lifecycle Semantics**                     | Finalizes content-only Works deletion, post-Delete ALv2 handoff, dual-lock coordination, unchanged assets/evidence, and asset-free Publish.                           |
-| **Works Delete Implementation and Browser Acceptance**         | Records implemented content-only Delete, cross-writer server locking, unchanged asset/lifecycle proof, one-path Publish, and browser acceptance.                      |
-| **Journal Delete Browser Acceptance**                          | Records exact-backup gating, no-cascade analysis, atomic three-file recovery, explicit confirmation, evidence-only Publish, and real-browser acceptance.              |
-| **News Delete Browser Acceptance**                             | Records exact-backup gating, fail-closed reference analysis, atomic single-file recovery, explicit confirmation, and evidence-only Publish.                           |
-| **Exhibitions Delete Browser Acceptance — Historical**         | Historical flat/single-file Delete acceptance evidence; superseded by the current Exhibitions three-file architecture and lifecycle.                                  |
-| **Delete Safety Prerequisites Finalization**                   | Finalizes verified backup proof, durable recovery evidence, Delete-only Publish paths, shared locking, reference parsing, and Works dual-lock order.                  |
-| **Delete Implementation Readiness Audit**                      | Reconciles Delete with finalized Create/Rename and Asset Lifecycle semantics; classifies every collection and records the remaining implementation gates.             |
-| **Works Rename Asset Lifecycle Semantics**                     | Approves unchanged asset paths/evidence, pending-manifest gating, dual-lock coordination, prospective validation, rollback, and asset-free Rename Publish.            |
-| **Works Rename Browser Acceptance Closure**                    | Records the implemented dual-lock transaction, typed Artist/Exhibition rewrites, unchanged assets, renamed workspace continuity, and exact Publish set.               |
-| **Exhibitions / Artists Rename Reference Update — Historical** | Historical flat/single-file Exhibitions and Artists Rename design evidence; current three-file authorities supersede its topology.                                    |
-| **Artists Rename Browser Acceptance Closure**                  | Records typed Works/Exhibitions/News rewrites, renamed-workspace continuity, fail-closed collision, and exact Publish evidence.                                       |
-| **Exhibitions Localization Architecture — Current**            | Current implemented authority for three-file topology, locale capabilities, facade/routes, Editor lifecycle, references, Works compatibility, and migration evidence. |
-| **Exhibitions Three-File Lifecycle Browser Acceptance**        | Current isolated browser evidence for three-file Create/Preview/Save/Publish, Rename path/reference integrity, exact Publish scope, and Delete backup refusal.        |
-| **Exhibitions Rename Browser Acceptance — Historical**         | Historical flat/single-file acceptance evidence retained for safety history; superseded by the current three-file lifecycle.                                          |
-| **Rename Dependency and Reference Audit**                      | Classifies collection Rename safety, the News expansion, and deferred reference/asset blockers.                                                                       |
-| **Create / Rename / Delete Architecture & Safety**             | Defines reviewed, conflict-safe, rollback-aware semantics for future content lifecycle operations without authorizing implementation.                                 |
-| **Retention Policy Finalization**                              | Approves retention floors, deletion authority, holds, evidence preservation, remote-storage requirements, and the separate implementation gate.                       |
-| **Backup & Recovery Architecture / Tooling**                   | Defines Git versus explicit-backup protection, integrity verification, exact restore, lock evidence, retention boundary, and disaster recovery.                       |
-| **Asset Lifecycle v2 — Physical Delete & Finalization**        | Defines per-asset explicit confirmation, quarantine retention, final locked re-audit, quarantine-only physical deletion, and durable final evidence.                  |
-| **Asset Lifecycle v2 — Reversible Cleanup**                    | Defines locked fresh re-audit, reversible quarantine/restore, crash recovery, and the continued no-delete boundary.                                                   |
-| **Asset Lifecycle v2 — Second Milestone**                      | Defines the durable candidate ledger, retention state, and continued no-delete boundary.                                                                              |
-| **Asset Lifecycle v2 — First Milestone**                       | Defines read-only orphan detection, deferred-cleanup evidence, and the no-delete boundary.                                                                            |
-| **Editor v1 Finalization Audit**                               | Declares the six-target Editor v1 boundary complete and records final cross-collection verification.                                                                  |
-| **Editor Platform Audit**                                      | Records the post-Works platform audit, resolved Journal recovery blockers, and retained shared boundaries.                                                            |
-| **Editor Phase 2 — Home**                                      | Records the singleton Home contract, nested media slice, and Phase 2 platform assessment.                                                                             |
-| **Editor Phase 2 — Artists**                                   | Records the fourth-collection production audit, minimal slice, relationship ownership, and platform reassessment.                                                     |
-| **Journal Architecture — Current**                             | Current authority for the implemented Journal read path and production boundaries.                                                                                    |
-| **Collection Framework Audit**                                 | Records the Works Editor v1 finalization audit and the proven Journal/Works boundaries.                                                                               |
-| **Works Asset Manager Specification**                          | Defines the Works asset source of truth, mutation transactions, Preview/Publish boundaries, and safety invariants.                                                    |
-| **Content Model Specification**                                | Defines the canonical content architecture and data model.                                                                                                            |
-| **Loader Architecture Specification**                          | Defines how Content Units are loaded and adapted for Astro while preserving validation boundaries.                                                                    |
-| **Workflow Architecture Audit**                                | Audits Editor save, rename, removal, and Git publish workflows before implementation.                                                                                 |
-| **Cross-Architecture Review**                                  | Sets the prototype gate across content, Editor, infrastructure, routing, migration, and consumers.                                                                    |
-| **Decisions 029–031**                                          | Fixes Issue/Capability, surface visibility, Route Registry, and the exact Journal prototype gate.                                                                     |
-| **CSS Style Guide**                                            | Defines the presentation architecture and CSS conventions.                                                                                                            |
-| **Architecture Audit**                                         | Evaluates the current implementation and identifies improvements.                                                                                                     |
-| **Architecture Review Report**                                 | Verifies architectural consistency before implementation.                                                                                                             |
+For Home localization, read
+[Home Localization Architecture](./home-localization-architecture-2026-08-12.md)
+as the implementation-ready target authority. It is not the current runtime:
+Home remains the corrected flat `src/content/home/home.md` singleton until an
+evidenced migration and separate Production and Editor cutovers. The earlier
+Editor Phase 2 Home document remains historical evidence for the flat runtime.
+The frozen Home migration manifest records source, asset, and rollback evidence
+but intentionally leaves final target hashes pending human JA/EN input.
+
+| Document                                                       | Purpose                                                                                                                                                                         |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Artists Architecture — Current**                             | Current authority for the three-file topology, locale policy, Production facade, Editor lifecycle, references, and immutable migration evidence.                                |
+| **Works Localization Architecture — Current**                  | Current implemented authority for Works three-file localization, capability, Production/Editor lifecycle, asset safety, migration, recovery, and browser acceptance.            |
+| **Home Localization Architecture — Target**                    | Implementation-ready target for Home three-file localization, capability-aware routes, shared/localized ownership, Editor parity, and evidenced migration; not current runtime. |
+| **Browser Automation Foundation**                              | Defines the disposable-repository Playwright harness, representative lifecycle smoke coverage, local/CI operation, and deferred browser cases.                                  |
+| **Editor Final Completion Audit**                              | Current authority for the completed Editor scope, final findings, verification, safety boundaries, and deferred work.                                                           |
+| **Works Delete Asset Lifecycle Semantics**                     | Finalizes content-only Works deletion, post-Delete ALv2 handoff, dual-lock coordination, unchanged assets/evidence, and asset-free Publish.                                     |
+| **Works Delete Implementation and Browser Acceptance**         | Records implemented content-only Delete, cross-writer server locking, unchanged asset/lifecycle proof, one-path Publish, and browser acceptance.                                |
+| **Journal Delete Browser Acceptance**                          | Records exact-backup gating, no-cascade analysis, atomic three-file recovery, explicit confirmation, evidence-only Publish, and real-browser acceptance.                        |
+| **News Delete Browser Acceptance**                             | Records exact-backup gating, fail-closed reference analysis, atomic single-file recovery, explicit confirmation, and evidence-only Publish.                                     |
+| **Exhibitions Delete Browser Acceptance — Historical**         | Historical flat/single-file Delete acceptance evidence; superseded by the current Exhibitions three-file architecture and lifecycle.                                            |
+| **Delete Safety Prerequisites Finalization**                   | Finalizes verified backup proof, durable recovery evidence, Delete-only Publish paths, shared locking, reference parsing, and Works dual-lock order.                            |
+| **Delete Implementation Readiness Audit**                      | Reconciles Delete with finalized Create/Rename and Asset Lifecycle semantics; classifies every collection and records the remaining implementation gates.                       |
+| **Works Rename Asset Lifecycle Semantics**                     | Approves unchanged asset paths/evidence, pending-manifest gating, dual-lock coordination, prospective validation, rollback, and asset-free Rename Publish.                      |
+| **Works Rename Browser Acceptance Closure**                    | Records the implemented dual-lock transaction, typed Artist/Exhibition rewrites, unchanged assets, renamed workspace continuity, and exact Publish set.                         |
+| **Exhibitions / Artists Rename Reference Update — Historical** | Historical flat/single-file Exhibitions and Artists Rename design evidence; current three-file authorities supersede its topology.                                              |
+| **Artists Rename Browser Acceptance Closure**                  | Records typed Works/Exhibitions/News rewrites, renamed-workspace continuity, fail-closed collision, and exact Publish evidence.                                                 |
+| **Exhibitions Localization Architecture — Current**            | Current implemented authority for three-file topology, locale capabilities, facade/routes, Editor lifecycle, references, Works compatibility, and migration evidence.           |
+| **Exhibitions Three-File Lifecycle Browser Acceptance**        | Current isolated browser evidence for three-file Create/Preview/Save/Publish, Rename path/reference integrity, exact Publish scope, and Delete backup refusal.                  |
+| **Exhibitions Rename Browser Acceptance — Historical**         | Historical flat/single-file acceptance evidence retained for safety history; superseded by the current three-file lifecycle.                                                    |
+| **Rename Dependency and Reference Audit**                      | Classifies collection Rename safety, the News expansion, and deferred reference/asset blockers.                                                                                 |
+| **Create / Rename / Delete Architecture & Safety**             | Defines reviewed, conflict-safe, rollback-aware semantics for future content lifecycle operations without authorizing implementation.                                           |
+| **Retention Policy Finalization**                              | Approves retention floors, deletion authority, holds, evidence preservation, remote-storage requirements, and the separate implementation gate.                                 |
+| **Backup & Recovery Architecture / Tooling**                   | Defines Git versus explicit-backup protection, integrity verification, exact restore, lock evidence, retention boundary, and disaster recovery.                                 |
+| **Asset Lifecycle v2 — Physical Delete & Finalization**        | Defines per-asset explicit confirmation, quarantine retention, final locked re-audit, quarantine-only physical deletion, and durable final evidence.                            |
+| **Asset Lifecycle v2 — Reversible Cleanup**                    | Defines locked fresh re-audit, reversible quarantine/restore, crash recovery, and the continued no-delete boundary.                                                             |
+| **Asset Lifecycle v2 — Second Milestone**                      | Defines the durable candidate ledger, retention state, and continued no-delete boundary.                                                                                        |
+| **Asset Lifecycle v2 — First Milestone**                       | Defines read-only orphan detection, deferred-cleanup evidence, and the no-delete boundary.                                                                                      |
+| **Editor v1 Finalization Audit**                               | Declares the six-target Editor v1 boundary complete and records final cross-collection verification.                                                                            |
+| **Editor Platform Audit**                                      | Records the post-Works platform audit, resolved Journal recovery blockers, and retained shared boundaries.                                                                      |
+| **Editor Phase 2 — Home**                                      | Records the singleton Home contract, nested media slice, and Phase 2 platform assessment.                                                                                       |
+| **Editor Phase 2 — Artists**                                   | Records the fourth-collection production audit, minimal slice, relationship ownership, and platform reassessment.                                                               |
+| **Journal Architecture — Current**                             | Current authority for the implemented Journal read path and production boundaries.                                                                                              |
+| **Collection Framework Audit**                                 | Records the Works Editor v1 finalization audit and the proven Journal/Works boundaries.                                                                                         |
+| **Works Asset Manager Specification**                          | Defines the Works asset source of truth, mutation transactions, Preview/Publish boundaries, and safety invariants.                                                              |
+| **Content Model Specification**                                | Defines the canonical content architecture and data model.                                                                                                                      |
+| **Loader Architecture Specification**                          | Defines how Content Units are loaded and adapted for Astro while preserving validation boundaries.                                                                              |
+| **Workflow Architecture Audit**                                | Audits Editor save, rename, removal, and Git publish workflows before implementation.                                                                                           |
+| **Cross-Architecture Review**                                  | Sets the prototype gate across content, Editor, infrastructure, routing, migration, and consumers.                                                                              |
+| **Decisions 029–031**                                          | Fixes Issue/Capability, surface visibility, Route Registry, and the exact Journal prototype gate.                                                                               |
+| **CSS Style Guide**                                            | Defines the presentation architecture and CSS conventions.                                                                                                                      |
+| **Architecture Audit**                                         | Evaluates the current implementation and identifies improvements.                                                                                                               |
+| **Architecture Review Report**                                 | Verifies architectural consistency before implementation.                                                                                                                       |
 
 ---
 
 ## Documents
+
+### Home Localization Architecture — Target
+
+**home-localization-architecture-2026-08-12.md**
+
+Defines the approved but not-yet-migrated Home singleton target: exact
+three-file topology, strict Shared and localized ownership, decorative-media
+accessibility, locale capability and route projection, dynamic composition,
+Editor parity, and byte-evidenced migration. It does not describe a completed
+Production or Editor cutover.
 
 ### Artists Architecture — Current
 

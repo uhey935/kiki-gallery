@@ -1,0 +1,72 @@
+{
+  "migrationVersion": 1,
+  "collection": "home",
+  "mode": "blocked-dry-run",
+  "identity": { "contentId": "home", "singleton": true },
+  "source": {
+    "path": "src/content/home/home.md",
+    "byteLength": 230,
+    "sha256": "e6ff731bab106185610314c04fe429e75da04c531a8d635796254de4ce93b08a",
+    "originalBase64": "LS0tCnNlY3Rpb25zOgogIC0gaWQ6IGFydGlzdHMKICAgIHRpdGxlOiBBcnRpc3RzCiAgICBocmVmOiAvYXJ0aXN0cwogICAgaW1hZ2U6CiAgICAgIHNyYzogL2ltYWdlcy9ob21lL2FydGlzdHMtc3F1YXJlLmpwZwoKICAtIGlkOiBhYm91dAogICAgdGl0bGU6IEFib3V0CiAgICBocmVmOiAvYWJvdXQKICAgIGltYWdlOgogICAgICBzcmM6IC9pbWFnZXMvaG9tZS9hYm91dC1sYW5kc2NhcGUuanBnCi0tLQo="
+  },
+  "targetPlan": {
+    "directory": "src/content/home/home",
+    "exactInventory": ["index.yaml", "ja.md", "en.md"],
+    "finalTargetEvidence": "pending-human-input",
+    "files": [
+      {
+        "path": "src/content/home/home/index.yaml",
+        "sha256": null,
+        "byteLength": null
+      },
+      {
+        "path": "src/content/home/home/ja.md",
+        "sha256": null,
+        "byteLength": null
+      },
+      {
+        "path": "src/content/home/home/en.md",
+        "sha256": null,
+        "byteLength": null
+      }
+    ]
+  },
+  "prerequisites": {
+    "jaAboutIntroHumanApproved": false,
+    "enAboutIntroHumanApproved": false,
+    "realMigrationAllowed": false
+  },
+  "unresolvedHumanInput": ["ja.about_intro", "en.about_intro"],
+  "assets": [
+    {
+      "canonicalUrl": "/images/home/artists-square.jpg",
+      "path": "public/images/home/artists-square.jpg",
+      "byteLength": 95398,
+      "sha256": "44868dca47e3d150ac60e1af73b366e771541e381d06e6ee4743e6d26296c653",
+      "decodedFormat": "webp",
+      "mutated": false
+    },
+    {
+      "canonicalUrl": "/images/home/about-landscape.jpg",
+      "path": "public/images/home/about-landscape.jpg",
+      "byteLength": 322786,
+      "sha256": "d1a0d07a85e02fa70beff1fe0207c658a8bb7d53b701627861eff0d0fd77e414",
+      "decodedFormat": "webp",
+      "mutated": false
+    },
+    {
+      "canonicalUrl": "/images/home/fallback-hero.webp",
+      "path": "public/images/home/fallback-hero.webp",
+      "byteLength": 462102,
+      "sha256": "7f513a9a5035eaf7fac76314676274cf1e1b74da842a5228971a9c0dfd387006",
+      "decodedFormat": "webp",
+      "mutated": false
+    }
+  ],
+  "rollback": {
+    "sourcePath": "src/content/home/home.md",
+    "originalBase64": "LS0tCnNlY3Rpb25zOgogIC0gaWQ6IGFydGlzdHMKICAgIHRpdGxlOiBBcnRpc3RzCiAgICBocmVmOiAvYXJ0aXN0cwogICAgaW1hZ2U6CiAgICAgIHNyYzogL2ltYWdlcy9ob21lL2FydGlzdHMtc3F1YXJlLmpwZwoKICAtIGlkOiBhYm91dAogICAgdGl0bGU6IEFib3V0CiAgICBocmVmOiAvYWJvdXQKICAgIGltYWdlOgogICAgICBzcmM6IC9pbWFnZXMvaG9tZS9hYm91dC1sYW5kc2NhcGUuanBnCi0tLQo=",
+    "byteLength": 230,
+    "sha256": "e6ff731bab106185610314c04fe429e75da04c531a8d635796254de4ce93b08a"
+  }
+}

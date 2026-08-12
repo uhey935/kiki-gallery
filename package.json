@@ -16,6 +16,8 @@
     "artists:test": "node --experimental-strip-types --test src/content-loaders/artists/*.test.ts",
     "exhibitions:test": "node --experimental-strip-types --test src/content-loaders/exhibitions/*.test.ts",
     "works:localization:test": "node --experimental-strip-types --test src/content-loaders/works/*.test.ts",
+    "home:localization:test": "node --experimental-strip-types --test src/content-loaders/home/*.test.ts",
+    "home:migration:manifest": "node --experimental-strip-types src/content-loaders/home/migration-manifest.ts",
     "works:migration:manifest": "node --experimental-strip-types src/content-loaders/works/freeze-manifest.ts",
     "artists:migration:manifest": "node --experimental-strip-types src/content-loaders/artists/migration-manifest.ts",
     "artists:migration:execute": "node --experimental-strip-types src/content-loaders/artists/migration-executor.ts",
