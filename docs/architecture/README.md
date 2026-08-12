@@ -27,9 +27,17 @@ as migration and rollback evidence. The earlier Phase 2, Rename, Delete, and
 Editor completion documents are historical flat/single-file implementation
 records and are not the current Exhibitions topology or lifecycle authority.
 
+For Works localization, read
+[Works Localization Architecture](./works-localization-architecture-2026-08-12.md)
+as the approved target authority. Works still uses the current flat Markdown
+runtime; the document does not claim migration or Production cutover is
+complete. Existing Works Asset Manager, Rename, Delete, and browser-acceptance
+documents remain flat-runtime lifecycle evidence until migration completes.
+
 | Document                                                       | Purpose                                                                                                                                                               |
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Artists Architecture — Current**                             | Current authority for the three-file topology, locale policy, Production facade, Editor lifecycle, references, and immutable migration evidence.                      |
+| **Works Localization Architecture — Target**                   | Approved target for Works three-file localization, capability, Production/Editor cutover, asset-safe transactions, and migration.                                     |
 | **Browser Automation Foundation**                              | Defines the disposable-repository Playwright harness, representative lifecycle smoke coverage, local/CI operation, and deferred browser cases.                        |
 | **Editor Final Completion Audit**                              | Current authority for the completed Editor scope, final findings, verification, safety boundaries, and deferred work.                                                 |
 | **Works Delete Asset Lifecycle Semantics**                     | Finalizes content-only Works deletion, post-Delete ALv2 handoff, dual-lock coordination, unchanged assets/evidence, and asset-free Publish.                           |

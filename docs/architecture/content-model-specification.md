@@ -1,8 +1,8 @@
 # Content Model Specification
 
-Version: v1.0
+Version: v1.1
 Status: Approved
-Last Updated: 2026-08-06
+Last Updated: 2026-08-12
 
 ---
 
@@ -220,24 +220,25 @@ Work は Hero を持たず、`images[0]` を代表画像として使用する。
 
 Shared:
 
-| Field         | Type             | Required |
-| ------------- | ---------------- | -------- |
-| `artist`      | Artist Reference | Yes      |
-| `images`      | Work Image[]     | Yes      |
-| `year`        | Positive Integer | No       |
-| `size`        | String           | No       |
-| `orientation` | Enum             | No       |
-| `inquiry`     | Inquiry          | Yes      |
+| Field         | Type                | Required |
+| ------------- | ------------------- | -------- |
+| `artist`      | Artist Reference    | Yes      |
+| `images`      | Shared Work Image[] | Yes      |
+| `year`        | Positive Integer    | No       |
+| `orientation` | Enum                | No       |
+| `inquiry`     | Inquiry             | Yes      |
 
 Localized:
 
-| Field         | Type     | Required |
-| ------------- | -------- | -------- |
-| `title`       | String   | Yes      |
-| `material`    | String   | No       |
-| `description` | String   | No       |
-| `seo_title`   | String   | No       |
-| Markdown body | Markdown | No       |
+| Field         | Type                   | Required |
+| ------------- | ---------------------- | -------- |
+| `title`       | String                 | Yes      |
+| `images`      | Localized Work Image[] | Yes      |
+| `material`    | String                 | No       |
+| `size`        | String                 | No       |
+| `description` | String                 | No       |
+| `seo_title`   | String                 | No       |
+| Markdown body | Markdown               | No       |
 
 ```yaml
 images:
@@ -247,10 +248,10 @@ images:
 
 Rules:
 
-- `images` は1件以上。各画像は現在の単一ファイル構成では `src` と `alt` を持つ。
+- `images` は1件以上。現在の単一ファイル構成では各画像が `src` と `alt` を持つ。Works three-file targetではShared `images[].src` とLocalized `images[].alt` をindex対応させ、件数不一致をfail-closedとする。
 - 同一 Work 内で同じ `src` を重複させない。
-- 将来 Publication Unit 化した場合、`src` は Shared、`alt` は Localized へ分離する。
-- `size` は Shared Optional、`material` は Localized Optional とする。
+- Works three-file targetでは`src`はShared、`alt`はLocalizedとし、persistent image IDは導入しない。
+- `size` と `material` はLocalized Optionalとし、現在のJA表示文字列をnormalizeせず移行する。
 - Work は `medium` を持たない。
 - `orientation` は Optional で、現時点では `landscape` のみ許可する。
 - `images.length === 1 && orientation === "landscape"` の場合に専用表示を使用する。

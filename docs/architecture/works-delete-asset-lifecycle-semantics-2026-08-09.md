@@ -2,7 +2,7 @@
 
 | Property  | Value                                                                      |
 | --------- | -------------------------------------------------------------------------- |
-| Status    | Design finalized; implementation-ready, implementation remains unavailable |
+| Status    | Historical design authority; subsequently implemented and accepted         |
 | Date      | 2026-08-09                                                                 |
 | Baseline  | `43a6f66` (`Implement safe Artists delete`)                                |
 | Scope     | Works content Delete coordination with Works Asset Lifecycle v2            |
@@ -30,11 +30,10 @@ repository, and create the first audit-clean orphan observation. Only that later
 observation starts candidate retention. Existing candidate, quarantine, restore,
 and physical-delete rules remain unchanged.
 
-This milestone finalizes design only. It adds no Works Delete service, route,
-button, Publish behavior, asset operation, schema transition, Production loader
-change, or canonical content/asset mutation. Works Delete remains unavailable
-until a separate implementation and browser-acceptance milestone proves this
-contract.
+This milestone finalized design only and added no implementation itself. The
+subsequent [Works Delete Implementation and Browser Acceptance](./works-delete-browser-acceptance-2026-08-09.md)
+implemented and accepted the flat-Works contract. This document remains its
+historical semantic authority.
 
 ## Authority and identity model
 
@@ -274,13 +273,13 @@ lock-stealing mode. Planning or execution stops for:
 ## Implementation readiness and acceptance gate
 
 The collection-specific semantic blocker recorded by the Delete readiness audit
-is closed. Works Delete is **implementation-ready** under this design, but remains
-unimplemented and unavailable. Implementation must reuse the shared exact-backup,
+was closed here. Works Delete was subsequently implemented and accepted. The
+implementation reuses the shared exact-backup,
 content-recovery, reference-parser, no-cascade, content-lock, and evidence-only
 Publish contracts; compose them with the existing asset lock and lifecycle
 inspection rather than changing Asset Lifecycle v2.
 
-A separate milestone must add focused service/UI tests and real-browser acceptance
+A separate milestone added focused service/UI tests and real-browser acceptance
 for reviewed consequences, explicit confirmation, incoming-reference refusal,
 pending upload/Draft/manifest refusal, both lock conflicts, lifecycle stop states,
 byte-exact rollback, unchanged asset/evidence hashes, content-only Publish, success
