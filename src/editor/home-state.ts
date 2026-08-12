@@ -1,105 +1,97 @@
-import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
-import { parse } from "yaml";
-import type { ContentIssue } from "../content-loaders/journal/contracts.ts";
-import { homeSchema, type HomeData } from "../content-schemas/home.ts";
-import type { EditorCollectionState } from "./collection-contracts.ts";
+import {
+  assertHomeTopology,
+  loadHomeUnit,
+} from "../content-loaders/home/repository.ts";
+import type {
+  HomeIssue,
+  HomeSourceState,
+} from "../content-loaders/home/contracts.ts";
+import type {
+  HomeLocalized,
+  HomeShared,
+} from "../content-loaders/home/schema.ts";
 
 export const HOME_CONTENT_ID = "home";
 export type HomeEditorEntryState = {
-  contentId: typeof HOME_CONTENT_ID;
-  file: string;
-  raw: string;
-  data?: HomeData;
-  body: string;
-  issues: ContentIssue[];
+  contentId: "home";
+  shared: HomeSourceState<HomeShared>;
+  locales: Record<"ja" | "en", HomeSourceState<HomeLocalized>>;
+  issues: HomeIssue[];
   structuralStatus: "valid" | "issues";
   issueCount: number;
+  copyStatus: { ja: "temporary" | "approved"; en: "placeholder" | "approved" };
+  capabilities: {
+    save: boolean;
+    preview: { ja: boolean; en: boolean };
+    formal: { ja: boolean; en: boolean };
+    publish: boolean;
+  };
 };
 export class HomeEditorEntryNotFoundError extends Error {}
 const canonicalRoot = path.resolve("src/content/home");
-const issue = (fieldPath: string, messageKey: string): ContentIssue => ({
-  ruleId: "content.home.structure",
-  severity: "error",
-  category: "structure",
-  collection: "home",
-  contentId: HOME_CONTENT_ID,
-  fieldPath,
-  messageKey,
-  recovery: { kind: "edit-field", fieldPath },
-});
 
 export async function readHomeEditorEntry(
   root = canonicalRoot,
 ): Promise<HomeEditorEntryState> {
-  const names = (await readdir(root)).filter((name) => name.endsWith(".md"));
-  if (names.length !== 1 || names[0] !== `${HOME_CONTENT_ID}.md`)
+  const unit = await loadHomeUnit(await assertHomeTopology(root));
+  const structuralIssues = unit.issues.filter(
+    ({ category }) => category !== "content-quality",
+  );
+  const valid =
+    unit.shared.state === "valid" &&
+    unit.locales.ja.state === "valid" &&
+    unit.locales.en.state === "valid" &&
+    structuralIssues.length === 0;
+  if (
+    !valid &&
+    unit.shared.state === "missing" &&
+    unit.locales.ja.state === "missing"
+  )
     throw new HomeEditorEntryNotFoundError(
-      "Home must be exactly src/content/home/home.md",
+      "Home exact three-file unit is missing",
     );
-  const file = path.join(root, names[0]);
-  const raw = await readFile(file, "utf8");
-  const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)([\s\S]*)$/.exec(raw);
-  if (!match)
-    return {
-      contentId: HOME_CONTENT_ID,
-      file,
-      raw,
-      body: "",
-      issues: [issue("frontmatter", "content.home.frontmatter.invalid")],
-      structuralStatus: "issues",
-      issueCount: 1,
-    };
-  try {
-    const result = homeSchema.safeParse(parse(match[1]));
-    if (result.success)
-      return {
-        contentId: HOME_CONTENT_ID,
-        file,
-        raw,
-        data: result.data,
-        body: match[2].trim(),
-        issues: [],
-        structuralStatus: "valid",
-        issueCount: 0,
-      };
-    const issues = result.error.issues.map((item) =>
-      issue(item.path.join("."), item.message),
-    );
-    return {
-      contentId: HOME_CONTENT_ID,
-      file,
-      raw,
-      body: match[2].trim(),
-      issues,
-      structuralStatus: "issues",
-      issueCount: issues.length,
-    };
-  } catch {
-    return {
-      contentId: HOME_CONTENT_ID,
-      file,
-      raw,
-      body: match[2].trim(),
-      issues: [issue("frontmatter", "content.home.frontmatter.invalid")],
-      structuralStatus: "issues",
-      issueCount: 1,
-    };
-  }
+  const jaTemporary = unit.issues.some(
+    ({ locale, category }) => locale === "ja" && category === "content-quality",
+  );
+  const enPlaceholder = unit.issues.some(
+    ({ locale, category }) => locale === "en" && category === "content-quality",
+  );
+  return {
+    contentId: "home",
+    shared: unit.shared,
+    locales: unit.locales,
+    issues: unit.issues,
+    structuralStatus: valid ? "valid" : "issues",
+    issueCount: unit.issues.length,
+    copyStatus: {
+      ja: jaTemporary ? "temporary" : "approved",
+      en: enPlaceholder ? "placeholder" : "approved",
+    },
+    capabilities: {
+      save: valid,
+      preview: { ja: valid, en: valid && !enPlaceholder },
+      formal: {
+        ja: valid && !jaTemporary,
+        en: valid && !enPlaceholder && false,
+      },
+      publish: valid,
+    },
+  };
 }
 
-export async function readHomeEditorState(
-  root = canonicalRoot,
-): Promise<EditorCollectionState> {
+export async function readHomeEditorState(root = canonicalRoot) {
   const entry = await readHomeEditorEntry(root);
   return {
     entries: [
       {
-        contentId: HOME_CONTENT_ID,
-        title: entry.data?.title ?? "Home",
-        detail: "Singleton · canonical section images",
+        contentId: "home",
+        title: "Home",
+        detail: `Shared · JA ${entry.copyStatus.ja} · EN ${entry.copyStatus.en}`,
         status: entry.structuralStatus,
-        statusLabel: entry.issueCount ? `${entry.issueCount} issues` : "Ready",
+        statusLabel: entry.issueCount
+          ? `${entry.issueCount} content status item(s)`
+          : "Ready",
       },
     ],
   };

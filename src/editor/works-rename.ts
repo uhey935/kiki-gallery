@@ -3,12 +3,12 @@ import { createHash, randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
+import { loadHomeUnit } from "../content-loaders/home/repository.ts";
 
 import { isContentId } from "./content-id.ts";
 import { createWorksEditorDraft } from "./works-draft-state.ts";
 import { readArtistsEditorEntry } from "./artists-state.ts";
 import { readExhibitionsEditorEntry } from "./exhibitions-state.ts";
-import { readHomeEditorEntry } from "./home-state.ts";
 import { readJournalEditorState } from "./journal-state.ts";
 import { readNewsEditorEntry } from "./news-state.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
@@ -304,10 +304,19 @@ function referenceEdits(
     !file.startsWith("src/content/exhibitions/")
   )
     return [];
-  if (file.startsWith("src/content/artists/") && !file.endsWith("/index.yaml")) return [];
-  if (file.startsWith("src/content/exhibitions/") && !file.endsWith("/index.yaml")) return [];
+  if (file.startsWith("src/content/artists/") && !file.endsWith("/index.yaml"))
+    return [];
+  if (
+    file.startsWith("src/content/exhibitions/") &&
+    !file.endsWith("/index.yaml")
+  )
+    return [];
   const parsed = file.endsWith("/index.yaml")
-    ? { raw: item.bytes.toString("utf8"), body: item.bytes.toString("utf8"), bodyStart: 0 }
+    ? {
+        raw: item.bytes.toString("utf8"),
+        body: item.bytes.toString("utf8"),
+        bodyStart: 0,
+      }
     : frontmatter(item, root);
   const { raw, body, bodyStart } = parsed;
   const edits: WorksReferenceEdit[] = [];
@@ -340,7 +349,9 @@ function referenceEdits(
         const start = Buffer.byteLength(raw.slice(0, character));
         edits.push({
           collection: section === "artist" ? "artists" : "exhibitions",
-          contentId: file.startsWith("src/content/artists/") ? path.posix.basename(path.posix.dirname(file)) : path.basename(file, ".md"),
+          contentId: file.startsWith("src/content/artists/")
+            ? path.posix.basename(path.posix.dirname(file))
+            : path.basename(file, ".md"),
           file,
           fieldPath:
             section === "artist"
@@ -387,13 +398,18 @@ function rewrite(bytes: Buffer, edits: WorksReferenceEdit[]) {
 
 async function validateGraph(root: string, oldId: string, newId: string) {
   const works = new Set(
-    (await fs.readdir(path.join(root, "src/content/works")))
-      .filter((x) => !x.endsWith(".md")),
+    (await fs.readdir(path.join(root, "src/content/works"))).filter(
+      (x) => !x.endsWith(".md"),
+    ),
   );
   works.delete(oldId);
   works.add(newId);
   for (const name of await fs.readdir(path.join(root, "src/content/artists")))
-    if ((await fs.lstat(path.join(root, "src/content/artists", name))).isDirectory()) {
+    if (
+      (
+        await fs.lstat(path.join(root, "src/content/artists", name))
+      ).isDirectory()
+    ) {
       const id = name;
       const entry = await readArtistsEditorEntry(
         id,
@@ -413,7 +429,11 @@ async function validateGraph(root: string, oldId: string, newId: string) {
   for (const name of await fs.readdir(
     path.join(root, "src/content/exhibitions"),
   ))
-    if ((await fs.lstat(path.join(root, "src/content/exhibitions", name))).isDirectory()) {
+    if (
+      (
+        await fs.lstat(path.join(root, "src/content/exhibitions", name))
+      ).isDirectory()
+    ) {
       const id = name;
       const entry = await readExhibitionsEditorEntry(
         id,
@@ -431,7 +451,9 @@ async function validateGraph(root: string, oldId: string, newId: string) {
         );
     }
   for (const name of await fs.readdir(path.join(root, "src/content/news")))
-    if ((await fs.lstat(path.join(root, "src/content/news", name))).isDirectory()) {
+    if (
+      (await fs.lstat(path.join(root, "src/content/news", name))).isDirectory()
+    ) {
       const id = name;
       const entry = await readNewsEditorEntry(
         id,
@@ -443,9 +465,12 @@ async function validateGraph(root: string, oldId: string, newId: string) {
           "reference-graph-incomplete",
         );
     }
+  const home = await loadHomeUnit(path.join(root, "src/content/home/home"));
   if (
-    (await readHomeEditorEntry(path.join(root, "src/content/home")))
-      .structuralStatus !== "valid"
+    home.shared.state !== "valid" ||
+    home.locales.ja.state !== "valid" ||
+    home.locales.en.state !== "valid" ||
+    home.issues.some(({ category }) => category !== "content-quality")
   )
     throw new WorksRenameError(
       "Invalid Home blocks the prospective graph.",
@@ -483,9 +508,17 @@ async function buildPlan(input: {
   const sourceNames = await fs.readdir(source, { withFileTypes: true });
   if (
     sourceNames.length !== 3 ||
-    sourceNames.some((item) => item.isSymbolicLink() || !item.isFile() || !["index.yaml", "ja.md", "en.md"].includes(item.name))
+    sourceNames.some(
+      (item) =>
+        item.isSymbolicLink() ||
+        !item.isFile() ||
+        !["index.yaml", "ja.md", "en.md"].includes(item.name),
+    )
   )
-    throw new WorksRenameError("Work source inventory is unsafe.", "source-unavailable");
+    throw new WorksRenameError(
+      "Work source inventory is unsafe.",
+      "source-unavailable",
+    );
   const destinationName = input.destinationContentId.toLocaleLowerCase("en-US");
   if (
     (await fs.readdir(worksRoot)).some(
@@ -535,7 +568,8 @@ async function buildPlan(input: {
         "reference-rewrite-unsupported",
       );
     if (
-      ((file.startsWith("src/content/artists/") && file.endsWith("/index.yaml")) ||
+      ((file.startsWith("src/content/artists/") &&
+        file.endsWith("/index.yaml")) ||
         file.startsWith("src/content/exhibitions/")) &&
       text.includes(input.sourceContentId) &&
       !edits.some((e) => e.file === file)
@@ -574,7 +608,8 @@ async function buildPlan(input: {
   const lifecycleEvidenceHash = await lifecycleHash(root);
   const sourceFiles = await Promise.all(
     ["index.yaml", "ja.md", "en.md"].map(async (name) => {
-      const file = path.join(source, name), bytes = await fs.readFile(file);
+      const file = path.join(source, name),
+        bytes = await fs.readFile(file);
       return { file: rel(root, file), hash: sha256(bytes), size: bytes.length };
     }),
   );
@@ -733,7 +768,9 @@ export async function executeWorksRename(
       { hash: string; mode: number; bytes: string }
     > = {};
     const newPrefix = `src/content/works/${reviewed.destinationContentId}/`;
-    for (const file of reviewed.touchedPaths.filter((f) => !f.startsWith(newPrefix))) {
+    for (const file of reviewed.touchedPaths.filter(
+      (f) => !f.startsWith(newPrefix),
+    )) {
       const absolute = path.join(repositoryRoot, file);
       const stat = await fs.lstat(absolute);
       const bytes = await fs.readFile(absolute);
@@ -749,10 +786,14 @@ export async function executeWorksRename(
       };
     }
     for (const sourceFile of reviewed.sourceFiles) {
-      const sourceBytes = Buffer.from(preimages[sourceFile.file].bytes, "base64");
+      const sourceBytes = Buffer.from(
+        preimages[sourceFile.file].bytes,
+        "base64",
+      );
       const newFile = `${newPrefix}${path.posix.basename(sourceFile.file)}`;
       prospective[newFile] = {
-        hash: sha256(sourceBytes), mode: preimages[sourceFile.file].mode,
+        hash: sha256(sourceBytes),
+        mode: preimages[sourceFile.file].mode,
         bytes: sourceBytes.toString("base64"),
       };
     }
@@ -805,8 +846,19 @@ export async function executeWorksRename(
       record.completedSteps.push(`recover:${file}`);
       await writeRecord();
     }
-    await fs.rm(path.join(repositoryRoot, `src/content/works/${reviewed.sourceContentId}`), { recursive: true });
-    await fs.mkdir(path.join(repositoryRoot, `src/content/works/${reviewed.destinationContentId}`));
+    await fs.rm(
+      path.join(
+        repositoryRoot,
+        `src/content/works/${reviewed.sourceContentId}`,
+      ),
+      { recursive: true },
+    );
+    await fs.mkdir(
+      path.join(
+        repositoryRoot,
+        `src/content/works/${reviewed.destinationContentId}`,
+      ),
+    );
     for (const file of Object.keys(prospective).sort()) {
       await fs.rename(
         path.join(staged, file.replaceAll("/", "__")),
@@ -901,8 +953,20 @@ export async function executeWorksRename(
             await fs.rm(target);
           }
         }
-        await fs.rm(path.join(repositoryRoot, `src/content/works/${reviewed.destinationContentId}`), { recursive: true, force: true });
-        await fs.mkdir(path.join(repositoryRoot, `src/content/works/${reviewed.sourceContentId}`), { recursive: true });
+        await fs.rm(
+          path.join(
+            repositoryRoot,
+            `src/content/works/${reviewed.destinationContentId}`,
+          ),
+          { recursive: true, force: true },
+        );
+        await fs.mkdir(
+          path.join(
+            repositoryRoot,
+            `src/content/works/${reviewed.sourceContentId}`,
+          ),
+          { recursive: true },
+        );
         for (const [file, expected] of Object.entries(
           record.preimages as Record<
             string,

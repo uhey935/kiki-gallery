@@ -10,7 +10,7 @@ Last Updated: 2026-08-12
 
 本仕様は KiKi Gallery の Schema、Editor、Astro、および将来の CMS 実装における正式な Content Model の基準である。対象は Artist、Work、Exhibition、Journal、News、Home とする。
 
-Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Collection ごとに承認・実装し、現在は Journal、Works、Artists、Exhibitionsでcanonicalである。Home の3ファイル形式は implementation-ready target として承認済みだが未migrationであり、現行canonicalは修正済みflat modelである。NewsもCollection固有の現行modelを維持する。
+Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Collection ごとに承認・実装し、現在は Journal、Works、Artists、Exhibitions、Homeでcanonicalである。Home Editor localizationは未実装であり、NewsはCollection固有の現行modelを維持する。
 
 ```text
 Collection
@@ -418,11 +418,10 @@ Home 掲載条件:
 
 Home は Navigation / Composition Layer であり、独立した記事 Collection ではない。
 
-### 9.1 Current corrected flat runtime
+### 9.1 Historical corrected flat runtime
 
-現在のcanonical sourceは`src/content/home/home.md`である。以下はmigration
-およびProduction cutoverまで維持される現行modelであり、localized targetを
-実装済みと解釈してはならない。
+以下はmigration evidenceに保存されたhistorical flat modelであり、現在の
+Production canonical sourceではない。
 
 | Field         | Type           | Required |
 | ------------- | -------------- | -------- |
@@ -449,7 +448,7 @@ Rules:
 - 参照先 Collection の Canonical data を Home へ複製しない。
 - Fallback Hero は表示ロジック側で `/images/home/fallback-hero.webp` を使用する。
 
-### 9.2 Approved localized target (not migrated)
+### 9.2 Current localized Production model
 
 TargetはContent ID `home`のsingleton
 `src/content/home/home/{index.yaml,ja.md,en.md}`である。exact three-file
@@ -470,8 +469,8 @@ destination routes、route projectionがすべてvalidなlocaleだけがHome rou
 
 完全なschema、capability、route/Editor/migration契約は
 [Home Localization Architecture](./home-localization-architecture-2026-08-12.md)
-をtarget authorityとする。同文書はimplementation-readyだが、current runtime、
-Production cutover、またはEditor localizationの完了を示さない。
+をcurrent Production authorityとする。MigrationとProduction cutoverは完了済み
+だが、temporary JA copyの正式化、EN capability、Editor localizationは未完了である。
 
 ---
 

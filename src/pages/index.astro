@@ -1,6 +1,5 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { getCollection } from "astro:content";
 import { getWeekday } from "../utils/date";
 import {
   getArtistDisplayName,
@@ -14,16 +13,16 @@ import { getJournalProductionFacade } from "../content-boundaries/journal-produc
 import { getNewsProductionFacade } from "../content-boundaries/news-production";
 import { getArtistsProductionFacade } from "../content-boundaries/artists-production";
 import { getExhibitionsProductionFacade } from "../content-boundaries/exhibitions-production";
+import {
+  getHomeProductionFacade,
+  projectHomeDestination,
+} from "../content-boundaries/home-production";
 
 /* =========================
    Home
 ========================= */
 
-const [home] = await getCollection("home");
-
-if (!home) {
-  throw new Error("Missing home content.");
-}
+const home = (await getHomeProductionFacade()).developmentJa();
 
 /* =========================
    Collections
@@ -157,17 +156,8 @@ const stories = [...newsStories, ...journalStories]
   })
   .slice(0, 6);
 
-const artistsSection = home.data.sections.find(
-  (section) => section.id === "artists",
-);
-
-const aboutSection = home.data.sections.find(
-  (section) => section.id === "about",
-);
-
-if (!artistsSection || !aboutSection) {
-  throw new Error("Missing home sections.");
-}
+const artistsSection = home.data.sections.artists;
+const aboutSection = home.data.sections.about;
 ---
 
 <Layout flush={true}>
@@ -294,11 +284,12 @@ if (!artistsSection || !aboutSection) {
     <section class="home-sections">
       <div class="home-sections__inner">
         <div class="home-sections__artists">
-          <h2 class="home-sections__artists-title">
-            {artistsSection.title}
-          </h2>
+          <h2 class="home-sections__artists-title">Artists</h2>
 
-          <a href={artistsSection.href} class="home-sections__link">
+          <a
+            href={projectHomeDestination(artistsSection.destination, "ja")}
+            class="home-sections__link"
+          >
             <figure class="home-sections__artists-media home-sections__media">
               <img src={artistsSection.image.src} alt="" />
             </figure>
@@ -306,18 +297,18 @@ if (!artistsSection || !aboutSection) {
         </div>
 
         <div class="home-sections__about">
-          <a href={aboutSection.href} class="home-sections__link">
+          <a
+            href={projectHomeDestination(aboutSection.destination, "ja")}
+            class="home-sections__link"
+          >
             <figure class="home-sections__about-media home-sections__media">
               <img src={aboutSection.image.src} alt="" />
             </figure>
 
-            <h2 class="home-sections__about-title">
-              {aboutSection.title}
-            </h2>
+            <h2 class="home-sections__about-title">About</h2>
 
             <p class="home-sections__description">
-              GALLERY
-              crossingは2017年岐阜県美濃加茂市にオープンしたアートギャラリーです。ギャラリーの位置する旧中山道・太田宿は、江戸時代には宿場町として栄え、並行して流れる木曽川と共に、人と物のクロスポイントとなる場所でした。
+              {home.data.about_intro}
               <span class="home-sections__learn-more">Learn More</span>
             </p>
           </a>

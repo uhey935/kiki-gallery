@@ -1,6 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { homePreviewStore, HomePreviewError } from "../home-preview";
+import { getExhibitionsProductionFacade } from "../../content-boundaries/exhibitions-production.ts";
+import { getJournalProductionFacade } from "../../content-boundaries/journal-production.ts";
+import { getNewsProductionFacade } from "../../content-boundaries/news-production.ts";
 const { token, contentId } = Astro.params;
 let preview;
 let previewError;
@@ -15,11 +18,23 @@ try {
       : 404;
   previewError = error instanceof Error ? error.message : "Preview unavailable";
 }
-const artists = preview?.data.sections.find(
-  (section) => section.id === "artists",
-);
-const about = preview?.data.sections.find((section) => section.id === "about");
-const hero = preview?.data.home_hero?.media;
+const artists = preview?.shared.sections.artists;
+const about = preview?.shared.sections.about;
+const hero = preview?.shared.home_hero?.media;
+const locale = preview?.locale ?? "ja";
+const featured = preview
+  ? (await getExhibitionsProductionFacade()).forHome(locale, 2)
+  : [];
+const stories = preview
+  ? [
+      ...(await getNewsProductionFacade())
+        .forHome(locale)
+        .map((entry) => ({ title: entry.data.title })),
+      ...(await getJournalProductionFacade())
+        .forHomeStories(locale)
+        .map((entry) => ({ title: entry.data.title })),
+    ].slice(0, 6)
+  : [];
 ---
 
 {
@@ -64,25 +79,40 @@ const hero = preview?.data.home_hero?.media;
               <>
                 <div class="home-sections__artists">
                   <>
-                    <h2 class="home-sections__artists-title">
-                      {artists?.title}
-                    </h2>
-                    <a href={artists?.href}>
+                    <h2 class="home-sections__artists-title">Artists</h2>
+                    <a href={preview.destinations.artists}>
                       <img src={artists?.image.src} alt="" />
                     </a>
                   </>
                 </div>
                 <div class="home-sections__about">
-                  <a href={about?.href}>
+                  <a href={preview.destinations.about}>
                     <>
                       <img src={about?.image.src} alt="" />
-                      <h2>{about?.title}</h2>
+                      <h2>About</h2>
+                      <p>{preview.localized.about_intro}</p>
                     </>
                   </a>
                 </div>
               </>
             </div>
           </section>
+          {featured.length ? (
+            <section>
+              <h2>Exhibitions</h2>
+              {featured.map((entry) => (
+                <article>{entry.data.title}</article>
+              ))}
+            </section>
+          ) : null}
+          {stories.length ? (
+            <section>
+              <h2>Stories</h2>
+              {stories.map((entry) => (
+                <article>{entry.title}</article>
+              ))}
+            </section>
+          ) : null}
         </>
       </div>
     </Layout>

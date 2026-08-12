@@ -4,11 +4,17 @@ import path from "node:path";
 import { promisify } from "node:util";
 import {
   createHomeEditorDraft,
+  isHomeEditorDraftDirty,
   validateHomeEditorDraft,
   type HomeEditorDraftState,
 } from "./home-draft-state.ts";
 import { readHomeEditorEntry } from "./home-state.ts";
 const execFile = promisify(execFileCallback);
+const files = [
+  "src/content/home/home/en.md",
+  "src/content/home/home/index.yaml",
+  "src/content/home/home/ja.md",
+] as const;
 type Git = (args: string[]) => Promise<string>;
 export type HomePublishResult =
   | { state: "published"; commit: string; branch: string; remote: string }
@@ -25,6 +31,7 @@ export class HomePublishError extends Error {
     | "publish-blocked"
     | "canonical-mismatch"
     | "unsafe-repository"
+    | "publish-set-mismatch"
     | "nothing-to-publish"
     | "publish-failed";
   constructor(
@@ -42,13 +49,13 @@ const createGit =
     (
       await execFile("git", args, { cwd: root, encoding: "utf8" })
     ).stdout.trim();
-async function context(git: Git, expectedRoot: string) {
+export async function inspectHomePublish(
+  repositoryRoot = path.resolve("."),
+  git = createGit(repositoryRoot),
+) {
   try {
-    if (
-      (await fs.realpath(await git(["rev-parse", "--show-toplevel"]))) !==
-      (await fs.realpath(expectedRoot))
-    )
-      throw new Error("root mismatch");
+    if (await git(["diff", "--cached", "--name-only", "-z"]))
+      throw new Error("staged changes exist");
     const branch = await git(["symbolic-ref", "--quiet", "--short", "HEAD"]);
     const upstream = await git([
       "rev-parse",
@@ -60,38 +67,28 @@ async function context(git: Git, expectedRoot: string) {
     const remote = upstream.slice(0, separator);
     if (separator < 1 || upstream.slice(separator + 1) !== branch)
       throw new Error("upstream mismatch");
-    await git(["remote", "get-url", remote]);
-    return { branch, remote };
+    for (const file of files) {
+      const stat = await fs.lstat(path.join(repositoryRoot, file));
+      if (!stat.isFile() || stat.isSymbolicLink())
+        throw new Error("unsafe Home file");
+    }
+    if (!(await git(["status", "--porcelain", "--", ...files])))
+      throw new HomePublishError(
+        "Canonical Home has no changes",
+        "nothing-to-publish",
+      );
+    return {
+      branch,
+      remote,
+      files: [...files],
+      commitMessage: "Publish localized Home",
+    };
   } catch (error) {
-    throw new HomePublishError(
-      "Repository requires a matching branch upstream",
-      "unsafe-repository",
-      { cause: error },
-    );
+    if (error instanceof HomePublishError) throw error;
+    throw new HomePublishError("Unsafe Home repository", "unsafe-repository", {
+      cause: error,
+    });
   }
-}
-export async function inspectHomePublish(
-  repositoryRoot = path.resolve("."),
-  git = createGit(repositoryRoot),
-) {
-  const repositoryContext = await context(git, repositoryRoot);
-  if ((await git(["diff", "--cached", "--name-only", "-z"])).length)
-    throw new HomePublishError(
-      "Repository already has staged changes",
-      "unsafe-repository",
-    );
-  const file = "src/content/home/home.md";
-  const stat = await fs
-    .lstat(path.join(repositoryRoot, file))
-    .catch(() => null);
-  if (!stat?.isFile() || stat.isSymbolicLink())
-    throw new HomePublishError("Unsafe Home source", "unsafe-repository");
-  if (!(await git(["status", "--porcelain", "--", file])))
-    throw new HomePublishError(
-      "Canonical Home has no changes",
-      "nothing-to-publish",
-    );
-  return { ...repositoryContext, file, commitMessage: "Publish home" };
 }
 export async function publishSavedHomeEntry(
   draft: HomeEditorDraftState,
@@ -100,15 +97,15 @@ export async function publishSavedHomeEntry(
   repositoryRoot = path.resolve("."),
   root = path.join(repositoryRoot, "src/content/home"),
 ): Promise<HomePublishResult> {
-  if (dirty || JSON.stringify(draft) !== JSON.stringify(baseline))
+  if (dirty || isHomeEditorDraftDirty(draft, baseline))
     throw new HomePublishError("Save before publishing", "dirty-draft");
   if (!validateHomeEditorDraft(draft).capabilities.publish)
     throw new HomePublishError(
-      "Home is blocked from publishing",
+      "Home draft is structurally blocked",
       "publish-blocked",
     );
   const canonical = createHomeEditorDraft(await readHomeEditorEntry(root));
-  if (!canonical || JSON.stringify(canonical) !== JSON.stringify(baseline))
+  if (JSON.stringify(canonical) !== JSON.stringify(baseline))
     throw new HomePublishError(
       "Saved baseline does not match canonical Home",
       "canonical-mismatch",
@@ -116,43 +113,50 @@ export async function publishSavedHomeEntry(
   const git = createGit(repositoryRoot);
   const inspection = await inspectHomePublish(repositoryRoot, git);
   try {
-    await git(["add", "--", inspection.file]);
-    if ((await git(["diff", "--cached", "--name-only"])) !== inspection.file)
+    await git(["add", "--", ...inspection.files]);
+    const staged = (
+      await git(["diff", "--cached", "--name-only", "--no-renames"])
+    )
+      .split("\n")
+      .filter(Boolean)
+      .sort();
+    if (
+      staged.length === 0 ||
+      staged.some((file) => !inspection.files.includes(file as (typeof files)[number]))
+    )
       throw new HomePublishError(
         "Staging escaped Home boundary",
-        "unsafe-repository",
+        "publish-set-mismatch",
       );
-    const staged = (
-      await execFile("git", ["show", `:${inspection.file}`], {
-        cwd: repositoryRoot,
-        encoding: "utf8",
-      })
-    ).stdout;
-    if (staged !== canonical.sourceRaw)
-      throw new HomePublishError(
-        "Canonical Home changed during Publish",
-        "canonical-mismatch",
-      );
-    await git(["commit", "-m", inspection.commitMessage]);
+    await git([
+      "commit",
+      "-m",
+      inspection.commitMessage,
+      "--",
+      ...inspection.files,
+    ]);
+    const commit = await git(["rev-parse", "HEAD"]);
+    try {
+      await git(["push", inspection.remote, inspection.branch]);
+    } catch (error) {
+      return {
+        state: "committed-push-failed",
+        commit,
+        branch: inspection.branch,
+        remote: inspection.remote,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+    return {
+      state: "published",
+      commit,
+      branch: inspection.branch,
+      remote: inspection.remote,
+    };
   } catch (error) {
-    await git(["reset", "--", inspection.file]).catch(() => undefined);
     if (error instanceof HomePublishError) throw error;
-    throw new HomePublishError("Failed to commit Home", "publish-failed", {
+    throw new HomePublishError("Failed to publish Home", "publish-failed", {
       cause: error,
     });
-  }
-  const commit = await git(["rev-parse", "HEAD"]);
-  const { branch, remote } = inspection;
-  try {
-    await git(["push", remote, `HEAD:${branch}`]);
-    return { state: "published", commit, branch, remote };
-  } catch (error) {
-    return {
-      state: "committed-push-failed",
-      commit,
-      branch,
-      remote,
-      error: error instanceof Error ? error.message : "Push failed",
-    };
   }
 }

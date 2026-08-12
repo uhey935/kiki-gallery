@@ -66,6 +66,15 @@ export const homeLocalizedSchema = z
   })
   .strict();
 
+export const homeAstroEntrySchema = z.intersection(
+  z.object({
+    contentId: z.literal("home"),
+    locale: z.enum(HOME_LOCALES),
+    copyStatus: z.enum(["approved", "temporary", "placeholder"]),
+  }),
+  z.intersection(homeSharedSchema, homeLocalizedSchema),
+);
+
 export type HomeShared = z.infer<typeof homeSharedSchema>;
 export type HomeLocalized = z.infer<typeof homeLocalizedSchema>;
 export type HomeLocale = (typeof HOME_LOCALES)[number];

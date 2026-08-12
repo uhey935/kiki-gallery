@@ -1,5 +1,4 @@
 import { defineCollection } from "astro:content";
-import { glob } from "astro/loaders";
 import { journalThreeFileLoader } from "./content-loaders/journal/astro-loader";
 import { journalSchema } from "./content-loaders/journal/schema";
 import { newsThreeFileLoader } from "./content-loaders/news/astro-loader";
@@ -10,11 +9,12 @@ import { worksThreeFileLoader } from "./content-loaders/works/astro-loader";
 import { workAstroEntrySchema } from "./content-loaders/works/schema";
 import { exhibitionThreeFileLoader } from "./content-loaders/exhibitions/astro-loader";
 import { exhibitionAstroEntrySchema } from "./content-loaders/exhibitions/schema";
-import { homeSchema } from "./content-schemas/home";
+import { homeThreeFileLoader } from "./content-loaders/home/astro-loader";
+import { homeAstroEntrySchema } from "./content-loaders/home/schema";
 
-const home = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "./src/content/home" }),
-  schema: homeSchema,
+const homeThreeFile = defineCollection({
+  loader: homeThreeFileLoader({ root: "./src/content/home" }),
+  schema: homeAstroEntrySchema,
 });
 
 const artists = defineCollection({
@@ -46,7 +46,7 @@ const newsThreeFile = defineCollection({
 });
 
 export const collections = {
-  home,
+  homeThreeFile,
   artists,
   worksLocalized,
   exhibitionsThreeFile,

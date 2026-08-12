@@ -1,14 +1,16 @@
 # Home Localization Architecture
 
-**Status:** Implementation-ready target  
-**Date:** 2026-08-12  
-**Runtime status:** Not migrated, not Production-cutover, and not Editor-localized
+**Status:** Implemented Production architecture
 
-This document is the target authority for localizing the singleton Home Content
-Unit. It is an implementation contract, not a description of the current
-runtime. The current runtime remains the corrected flat
-`src/content/home/home.md` source until an evidenced migration and separate
-Production cutover are completed.
+**Date:** 2026-08-12
+
+**Runtime status:** Migrated and Production-cutover; JA temporary-copy bridge; EN absent; Editor not localized
+
+This document is the current Production authority for the localized singleton
+Home Content Unit. The exact three-file migration and Production loader/facade
+cutover are complete. JA currently uses the explicit temporary-copy development
+projection and is not formally copy-capable; EN is non-capable and absent. The
+Editor remains intentionally disabled pending its separate localization phase.
 
 ## 1. Scope and invariants
 

@@ -1,14 +1,9 @@
----
 sections:
-  - id: artists
-    title: Artists
-    href: /artists
+  artists:
+    destination: artists
     image:
       src: /images/home/artists-square.jpg
-
-  - id: about
-    title: About
-    href: /about
+  about:
+    destination: about
     image:
       src: /images/home/about-landscape.jpg
----

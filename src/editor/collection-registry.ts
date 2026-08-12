@@ -17,7 +17,7 @@ export const editorCollectionRegistry = {
   home: {
     id: "home",
     label: "Home",
-    description: "Singleton · hero and canonical section images",
+    description: "Localized singleton · Shared, JA, and EN drafts",
     readState: readHomeEditorState,
   },
   artists: {

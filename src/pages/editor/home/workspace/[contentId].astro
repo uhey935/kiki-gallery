@@ -1,9 +1,8 @@
 ---
 import ActionBar from "../../../../components/editor/ActionBar.astro";
 import HomeDraftForm from "../../../../components/editor/HomeDraftForm.astro";
-import HomeValidationPanel from "../../../../components/editor/HomeValidationPanel.astro";
-import { createHomeEditorDraft } from "../../../../editor/home-draft-state";
-import { readHomeEditorEntry } from "../../../../editor/home-state";
+import { createHomeEditorDraft } from "../../../../editor/home-draft-state.ts";
+import { readHomeEditorEntry } from "../../../../editor/home-state.ts";
 import EditorLayout from "../../../../layouts/EditorLayout.astro";
 export async function getStaticPaths() {
   return [
@@ -15,51 +14,54 @@ export async function getStaticPaths() {
 }
 const { entry } = Astro.props;
 const draft = createHomeEditorDraft(entry);
-const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
+const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
 ---
 
-<EditorLayout title="Home" section="Home"
-  ><header class="editor-page-heading">
+<EditorLayout title="Home" section="Home">
+  <header class="editor-page-heading">
     <p class="editor-eyebrow">Home workspace</p><h1>Home</h1><p>
-      Singleton · canonical home.md · canonical section images
+      Singleton · Shared + JA + EN · exact three-file Save/Publish
     </p>
-  </header><div class="editor-workspace">
+  </header>
+  <div class="editor-workspace">
     <main class="editor-panel editor-canvas">
-      {
-        draft ? (
-          <HomeDraftForm draft={draft} />
-        ) : (
-          <p>
-            Source cannot be represented as a Draft until validation issues are
-            fixed.
-          </p>
-        )
-      }
-    </main><HomeValidationPanel entry={entry} />
-  </div><ActionBar
+      <HomeDraftForm draft={draft} />
+    </main>
+    <aside class="editor-panel">
+      <h2>Capability</h2><dl>
+        <dt>JA Preview</dt><dd data-home-capability="ja-preview">
+          Available (temporary allowed)
+        </dd><dt>JA formal</dt><dd data-home-capability="ja-formal">
+          Temporary copy pending
+        </dd><dt>EN Preview</dt><dd data-home-capability="en-preview">
+          Blocked by placeholder
+        </dd><dt>EN Production</dt><dd>
+          Blocked: copy, /en/about/, and route projection
+        </dd>
+      </dl><p>Home has no Create, Rename, or Delete lifecycle.</p>
+    </aside>
+  </div>
+  <ActionBar
     mode="home"
-    loaded={Boolean(draft)}
-    preview={false}
-  /></EditorLayout
->
+    loaded={true}
+    preview={entry.capabilities.preview}
+    save={true}
+    publish={true}
+  />
+</EditorLayout>
 <script
   type="application/json"
   is:inline
   id="home-editor-draft"
-  set:html={serializedDraft}
+  set:html={serialized}
 />
 <script>
   import {
+    homeDirtyScopes,
     isHomeEditorDraftDirty,
     validateHomeEditorDraft,
     type HomeEditorDraftState,
-  } from "../../../../editor/home-draft-state";
-  import {
-    editorFailureGuidance,
-    isEditorSaveShortcut,
-    renderFlatValidationPanel,
-    worksWorkspaceUxState,
-  } from "../../../../editor/ux";
+  } from "../../../../editor/home-draft-state.ts";
   const raw =
     document.querySelector<HTMLScriptElement>(
       "#home-editor-draft",
@@ -68,189 +70,156 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     "[data-home-draft-form]",
   );
   const save = document.querySelector<HTMLButtonElement>("[data-save-home]");
-  const preview = document.querySelector<HTMLButtonElement>(
-    "[data-preview-home]",
-  );
   const publish = document.querySelector<HTMLButtonElement>(
     "[data-publish-home]",
+  );
+  const previewJa = document.querySelector<HTMLButtonElement>(
+    '[data-preview-home="ja"]',
+  );
+  const previewEn = document.querySelector<HTMLButtonElement>(
+    '[data-preview-home="en"]',
   );
   const status = document.querySelector<HTMLElement>(
     "[data-home-action-status]",
   );
-  if (raw && form && save && preview && publish && status) {
+  if (raw && form && save && publish && previewJa && previewEn && status) {
     let baseline = JSON.parse(raw) as HomeEditorDraftState;
     let draft = structuredClone(baseline);
-    let pending: "save" | "preview" | "publish" | null = null;
-    let savedSincePublish = false;
-    let statusMessage: string | null = null;
-    let terminal = false;
-    const setActionReason = (action: string, reason: string) => {
-      const container = document.querySelector<HTMLElement>(
-        '[data-action="' + action + '"]',
-      );
-      const hint = container?.querySelector<HTMLElement>(
-        "[data-action-reason]",
-      );
-      const actionButton =
-        container?.querySelector<HTMLButtonElement>("button");
-      if (hint) hint.textContent = reason;
-      if (actionButton) actionButton.title = reason;
-    };
-    const optional = (value: string) => value.trim() || undefined;
+    const optional = (v: FormDataEntryValue | null) =>
+      String(v ?? "").trim() || undefined;
     const read = () => {
       const data = new FormData(form);
-      const value = (name: string) => String(data.get(name) ?? "");
-      const heroType = value("hero_type") as "image" | "video";
-      const media =
-        heroType === "image"
-          ? { type: "image" as const, image: optional(value("hero_image")) }
-          : {
-              type: "video" as const,
-              video: optional(value("hero_video")),
-              poster: optional(value("hero_poster")),
-            };
-      const layout = optional(value("hero_layout"));
-      const home_hero =
-        data.get("hero_enabled") === "on"
-          ? {
-              media,
-              ...(layout
-                ? { layout: layout as "default" | "portrait" | "alternate" }
-                : {}),
-            }
-          : undefined;
-      draft = {
-        ...draft,
-        data: {
-          ...(optional(value("title"))
-            ? { title: optional(value("title")) }
-            : {}),
-          ...(optional(value("description"))
-            ? { description: optional(value("description")) }
-            : {}),
-          ...(home_hero ? { home_hero } : {}),
-          sections: [0, 1].map((index) => ({
-            id: value(`section_${index}_id`) as "artists" | "about",
-            title: value(`section_${index}_title`),
-            href: value(`section_${index}_href`),
-            image: {
-              src: value(`section_${index}_image`),
+      const heroType = String(data.get("hero_type"));
+      if (draft.shared.state === "editable") {
+        draft.shared.value = {
+          ...(heroType === "image"
+            ? {
+                home_hero: {
+                  media: {
+                    type: "image",
+                    image: String(data.get("hero_image")),
+                  },
+                },
+              }
+            : heroType === "video"
+              ? {
+                  home_hero: {
+                    media: {
+                      type: "video",
+                      video: String(data.get("hero_video")),
+                      ...(optional(data.get("hero_poster"))
+                        ? { poster: optional(data.get("hero_poster")) }
+                        : {}),
+                    },
+                  },
+                }
+              : {}),
+          sections: {
+            artists: {
+              destination: "artists",
+              image: {
+                src: String(
+                  data.get("artists_image"),
+                ) as "/images/home/artists-square.jpg",
+              },
             },
-          })),
-        },
-      };
+            about: {
+              destination: "about",
+              image: {
+                src: String(
+                  data.get("about_image"),
+                ) as "/images/home/about-landscape.jpg",
+              },
+            },
+          },
+        };
+      }
+      for (const locale of ["ja", "en"] as const)
+        if (draft.locales[locale].state === "editable") {
+          draft.locales[locale].value = {
+            about_intro: String(data.get(`${locale}_about_intro`)),
+            ...(optional(data.get(`${locale}_seo_title`))
+              ? { seo_title: optional(data.get(`${locale}_seo_title`)) }
+              : {}),
+            ...(optional(data.get(`${locale}_description`))
+              ? { description: optional(data.get(`${locale}_description`)) }
+              : {}),
+          };
+          if (locale === "ja")
+            draft.copyStatus.ja =
+              data.get("ja_copy_approved") === "on" ? "approved" : "temporary";
+          else
+            draft.copyStatus.en =
+              data.get("en_copy_approved") === "on"
+                ? "approved"
+                : "placeholder";
+        }
     };
     const render = () => {
-      const dirty = isHomeEditorDraftDirty(baseline, draft);
+      read();
       const validation = validateHomeEditorDraft(draft);
-      const capabilities = validation.capabilities;
-      renderFlatValidationPanel(form, validation);
-      const locked = pending !== null || terminal;
-      save.disabled = locked || !dirty || !capabilities.save;
-      preview.disabled = locked || !capabilities.preview;
-      publish.disabled = locked || dirty || !capabilities.publish;
-      form
-        .querySelectorAll<
-          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        >("input, textarea, select")
-        .forEach((control) => (control.disabled = locked));
-      const ux = worksWorkspaceUxState({
-        collectionName: "Home",
-        pending,
-        dirty,
-        canSave: capabilities.save,
-        canPreview: capabilities.preview,
-        canPublish: capabilities.publish,
-        savedSincePublish,
-        recoveryRequired: terminal,
-        statusMessage,
-      });
-      status.textContent = terminal
-        ? (statusMessage ?? "Manual recovery required")
-        : ux.status;
-      status.dataset.state = pending ? "pending" : dirty ? "dirty" : "saved";
-      setActionReason("save", ux.saveTitle);
-      setActionReason("preview", ux.previewTitle);
-      setActionReason("publish", ux.publishTitle);
+      const dirty = isHomeEditorDraftDirty(baseline, draft);
+      const scopes = homeDirtyScopes(baseline, draft);
+      save.disabled = !dirty || !validation.capabilities.save;
+      publish.disabled = dirty || !validation.capabilities.publish;
+      previewJa.disabled = !validation.capabilities.preview.ja;
+      previewEn.disabled = !validation.capabilities.preview.en;
+      status.textContent = dirty
+        ? `Unsaved: ${Object.entries(scopes)
+            .filter(([, v]) => v)
+            .map(([k]) => k.toUpperCase())
+            .join(", ")}`
+        : "Saved · ready";
     };
-    const request = async (url: string, body: unknown) => {
-      const response = await fetch(url, {
+    form.addEventListener("input", render);
+    form.addEventListener("change", render);
+    const preview = async (locale: "ja" | "en") => {
+      read();
+      const response = await fetch("/editor/api/home-preview/create", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ draft, locale }),
       });
       const result = await response.json();
-      if (!response.ok)
-        throw Object.assign(new Error(result.error), { code: result.code });
-      return result;
+      if (!response.ok) {
+        status.textContent = result.error;
+        return;
+      }
+      window.open(result.url, "_blank", "noopener");
     };
-    form.addEventListener("input", () => {
-      read();
-      statusMessage = null;
-      render();
-    });
+    previewJa.addEventListener("click", () => void preview("ja"));
+    previewEn.addEventListener("click", () => void preview("en"));
     save.addEventListener("click", async () => {
-      pending = "save";
-      render();
-      try {
-        const result = await request("/editor/api/home", { draft, baseline });
-        baseline = result.draft;
-        draft = structuredClone(baseline);
-        savedSincePublish = true;
-        statusMessage = "Saved · unpublished changes ready to publish";
-      } catch (error) {
-        const value = error as Error & { code?: string };
-        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
-      } finally {
-        pending = null;
-        render();
+      read();
+      const response = await fetch("/editor/api/home", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ draft, baseline }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        status.textContent = result.error;
+        return;
       }
-    });
-    preview.addEventListener("click", async () => {
-      pending = "preview";
+      baseline = result.draft;
+      draft = structuredClone(baseline);
       render();
-      try {
-        const result = await request("/editor/api/home-preview/create", {
-          draft,
-        });
-        window.open(result.url, "_blank", "noopener,noreferrer");
-        statusMessage = "Draft preview opened";
-      } catch (error) {
-        const value = error as Error & { code?: string };
-        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
-      } finally {
-        pending = null;
-        render();
-      }
     });
     publish.addEventListener("click", async () => {
-      pending = "publish";
-      render();
-      try {
-        const result = await request("/editor/api/home-publish", {
+      read();
+      const response = await fetch("/editor/api/home-publish", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
           draft,
           baseline,
           dirty: isHomeEditorDraftDirty(baseline, draft),
-        });
-        terminal = result.state === "committed-push-failed";
-        savedSincePublish = terminal;
-        statusMessage =
-          result.state === "published"
-            ? `Published · ${result.commit.slice(0, 7)}`
-            : `Committed · push failed · manual recovery required · ${result.error}`;
-      } catch (error) {
-        const value = error as Error & { code?: string };
-        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
-      } finally {
-        pending = null;
-        render();
-      }
-    });
-    document.addEventListener("keydown", (event) => {
-      if (isEditorSaveShortcut(event) && !save.disabled) {
-        event.preventDefault();
-        save.click();
-      }
+        }),
+      });
+      const result = await response.json();
+      status.textContent = response.ok
+        ? `Published ${result.commit}`
+        : result.error;
     });
     render();
   }
