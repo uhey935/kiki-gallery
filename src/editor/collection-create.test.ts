@@ -40,9 +40,12 @@ const sourceRoots = {
 };
 
 async function firstId(root: string) {
-  return (await fs.readdir(root))
-    .find((name) => name.endsWith(".md"))!
-    .slice(0, -3);
+  const entries = await fs.readdir(root, { withFileTypes: true });
+  const directory = entries.find((entry) => entry.isDirectory());
+  if (directory) return directory.name;
+  return entries
+    .find((entry) => entry.isFile() && entry.name.endsWith(".md"))!
+    .name.slice(0, -3);
 }
 
 async function firstNewsId(root: string) {
@@ -106,11 +109,17 @@ test("each create-capable collection first-saves its canonical unit", async (t) 
         const saved = await fixture.create(fixture.draft as never, { root });
         assert.equal(saved.contentId, fixture.draft.contentId);
         assert.deepEqual(await fs.readdir(root), [
-          fixture.name === "news" || fixture.name === "artists"
+          fixture.name === "news" ||
+          fixture.name === "artists" ||
+          fixture.name === "exhibitions"
             ? fixture.draft.contentId
             : `${fixture.draft.contentId}.md`,
         ]);
-        if (fixture.name === "news" || fixture.name === "artists")
+        if (
+          fixture.name === "news" ||
+          fixture.name === "artists" ||
+          fixture.name === "exhibitions"
+        )
           assert.deepEqual(
             (await fs.readdir(path.join(root, fixture.draft.contentId))).sort(),
             ["en.md", "index.yaml", "ja.md"],

@@ -28,7 +28,6 @@ import { loadExhibitionRepository, loadExhibitionUnit } from "./repository.ts";
 import { projectExhibitionRoute } from "./route-registry.ts";
 import { exhibitionLocalizedSchema, exhibitionSharedSchema } from "./schema.ts";
 
-const productionRoot = path.resolve("src/content/exhibitions");
 const frozenPath = path.resolve(
   "docs/architecture/exhibitions-migration-manifest-2026-08-12.json",
 );
@@ -148,9 +147,11 @@ test("route projection never falls back", () => {
 });
 
 test("converter deterministically preserves all five IDs, references, hero paths, and JA bodies", async () => {
+  const manifest = await frozen();
   for (const id of EXHIBITION_MIGRATION_INVENTORY) {
-    const source = path.join(productionRoot, `${id}.md`);
-    const bytes = await readFile(source);
+    const evidence = manifest.entries.find((entry) => entry.contentId === id)!;
+    const source = evidence.source.path;
+    const bytes = Buffer.from(evidence.source.originalBase64, "base64");
     const first = convertLegacyExhibitionMarkdown(bytes, source);
     const second = convertLegacyExhibitionMarkdown(bytes, source);
     assert.deepEqual(first, second);
@@ -170,10 +171,45 @@ test("converter deterministically preserves all five IDs, references, hero paths
 
 test("frozen manifest binds exact five sources, targets, hashes, and rollback bytes", async () => {
   const manifest = await frozen();
-  assert.deepEqual(
-    manifest,
-    await createExhibitionMigrationManifest(productionRoot),
-  );
+  const sources = await tempSources(manifest);
+  try {
+    const regenerated = await createExhibitionMigrationManifest(sources);
+    assert.deepEqual(
+      regenerated.entries.map(({ contentId, source, generated, rollback }) => ({
+        contentId,
+        source: {
+          ...source,
+          path: manifest.entries.find((entry) => entry.contentId === contentId)!
+            .source.path,
+        },
+        generated: Object.fromEntries(
+          Object.entries(generated).map(([key, value]) => [
+            key,
+            {
+              ...value,
+              path: manifest.entries.find(
+                (entry) => entry.contentId === contentId,
+              )!.generated[key as keyof typeof generated].path,
+            },
+          ]),
+        ),
+        rollback: {
+          ...rollback,
+          sourcePath: manifest.entries.find(
+            (entry) => entry.contentId === contentId,
+          )!.rollback.sourcePath,
+        },
+      })),
+      manifest.entries.map(({ contentId, source, generated, rollback }) => ({
+        contentId,
+        source,
+        generated,
+        rollback,
+      })),
+    );
+  } finally {
+    await rm(sources, { recursive: true });
+  }
   assert.equal(manifest.entries.length, 5);
   for (const entry of manifest.entries) {
     const restored = Buffer.from(entry.rollback.originalBase64, "base64");

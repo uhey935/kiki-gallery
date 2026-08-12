@@ -3,25 +3,14 @@ import { createHash, randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
-
 import { isContentId } from "./content-id.ts";
+import { loadExhibitionUnit } from "../content-loaders/exhibitions/repository.ts";
+import { findNewsReferenceSpan } from "./news-reference-update.ts";
 import { createExhibitionsEditorDraft } from "./exhibitions-draft-state.ts";
-import { readExhibitionsEditorEntry } from "./exhibitions-state.ts";
-import {
-  findNewsReferenceSpan,
-  NewsReferenceStructureError,
-} from "./news-reference-update.ts";
-
-const execFile = promisify(execFileCallback);
-const CONTENT_COLLECTIONS = [
-  "artists",
-  "works",
-  "exhibitions",
-  "news",
-  "home",
-  "journal",
-] as const;
-
+const execFile = promisify(execFileCallback),
+  names = ["en.md", "index.yaml", "ja.md"] as const,
+  sha = (v: Uint8Array | string) =>
+    createHash("sha256").update(v).digest("hex");
 export type ExhibitionReferenceEdit = {
   collection: "news";
   contentId: string;
@@ -34,10 +23,9 @@ export type ExhibitionReferenceEdit = {
   start: number;
   end: number;
 };
-
 export type ExhibitionsRenamePlan = {
   schemaVersion: 1;
-  adapterVersion: "exhibition-news-link-v1";
+  adapterVersion: "exhibition-news-link-v2";
   operation: "exhibitions-rename";
   operationId: string;
   createdAt: string;
@@ -51,13 +39,13 @@ export type ExhibitionsRenamePlan = {
   repositoryUpstream: string;
   graphHash: string;
   sourceFile: { file: string; hash: string; size: number };
+  sourceFiles: Array<{ file: string; hash: string; size: number }>;
   referenceEdits: ExhibitionReferenceEdit[];
   touchedPaths: string[];
   publishPaths: string[];
   unchanged: string[];
   planHash: string;
 };
-
 export class ExhibitionsRenameError extends Error {
   readonly code:
     | "invalid-content-id"
@@ -71,75 +59,39 @@ export class ExhibitionsRenameError extends Error {
     | "unsafe-repository"
     | "rename-failed-rolled-back"
     | "manual-recovery-required";
-
   constructor(
     message: string,
     code: ExhibitionsRenameError["code"],
     options?: ErrorOptions,
   ) {
     super(message, options);
-    this.name = "ExhibitionsRenameError";
     this.code = code;
   }
 }
-
-const sha256 = (bytes: string | Uint8Array) =>
-  createHash("sha256").update(bytes).digest("hex");
-const hashPlan = (value: Omit<ExhibitionsRenamePlan, "planHash">) =>
-  sha256(JSON.stringify(value));
-const relative = (root: string, file: string) =>
+const rel = (root: string, file: string) =>
   path.relative(root, file).split(path.sep).join("/");
-
-async function safeDirectory(
-  directory: string,
-  code: ExhibitionsRenameError["code"],
-) {
-  const resolved = path.resolve(directory);
-  const stat = await fs.lstat(resolved).catch(() => undefined);
-  if (!stat?.isDirectory() || stat.isSymbolicLink())
-    throw new ExhibitionsRenameError(`Unsafe directory: ${resolved}`, code);
-  return resolved;
-}
-
-async function ensureStateDirectory(parent: string, name: string) {
-  const directory = path.join(parent, name);
-  let stat = await fs.lstat(directory).catch(() => undefined);
-  if (!stat) {
-    await fs.mkdir(directory, { mode: 0o700 });
-    stat = await fs.lstat(directory);
-  }
-  if (!stat.isDirectory() || stat.isSymbolicLink())
-    throw new ExhibitionsRenameError(
-      "Editor lifecycle evidence path is unsafe.",
-      "unsafe-repository",
-    );
-  return directory;
-}
-
-async function repositoryIdentity(repositoryRoot: string) {
+async function identity(root: string) {
   try {
-    const repositoryRealpath = await fs.realpath(repositoryRoot);
-    const gitRoot = await execFile("git", ["rev-parse", "--show-toplevel"], {
-      cwd: repositoryRealpath,
-      encoding: "utf8",
-    }).then(({ stdout }) => fs.realpath(stdout.trim()));
-    if (gitRoot !== repositoryRealpath) throw new Error("root mismatch");
-    const repositoryHead = await execFile("git", ["rev-parse", "HEAD"], {
-      cwd: repositoryRealpath,
-      encoding: "utf8",
-    }).then(({ stdout }) => stdout.trim());
-    const repositoryBranch = await execFile(
-      "git",
-      ["symbolic-ref", "--quiet", "--short", "HEAD"],
-      { cwd: repositoryRealpath, encoding: "utf8" },
-    ).then(({ stdout }) => stdout.trim());
-    const repositoryUpstream = await execFile(
-      "git",
-      ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"],
-      { cwd: repositoryRealpath, encoding: "utf8" },
-    ).then(({ stdout }) => stdout.trim());
-    if (!repositoryUpstream.endsWith(`/${repositoryBranch}`))
-      throw new Error("upstream mismatch");
+    const repositoryRealpath = await fs.realpath(root),
+      repositoryHead = (
+        await execFile("git", ["rev-parse", "HEAD"], {
+          cwd: root,
+          encoding: "utf8",
+        })
+      ).stdout.trim(),
+      repositoryBranch = (
+        await execFile("git", ["symbolic-ref", "--quiet", "--short", "HEAD"], {
+          cwd: root,
+          encoding: "utf8",
+        })
+      ).stdout.trim(),
+      repositoryUpstream = (
+        await execFile(
+          "git",
+          ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"],
+          { cwd: root, encoding: "utf8" },
+        )
+      ).stdout.trim();
     return {
       repositoryRealpath,
       repositoryHead,
@@ -147,559 +99,290 @@ async function repositoryIdentity(repositoryRoot: string) {
       repositoryUpstream,
     };
   } catch (error) {
-    throw new ExhibitionsRenameError(
-      "Rename requires the exact repository root on a branch with a matching upstream.",
-      "unsafe-repository",
-      { cause: error },
-    );
+    throw new ExhibitionsRenameError("Unsafe repository", "unsafe-repository", {
+      cause: error,
+    });
   }
 }
-
-async function walkCanonical(repositoryRoot: string) {
-  const inventory: Array<{ file: string; bytes: Buffer }> = [];
-  for (const collection of CONTENT_COLLECTIONS) {
-    const root = await safeDirectory(
-      path.join(repositoryRoot, "src/content", collection),
-      "reference-graph-incomplete",
-    );
-    const visit = async (directory: string): Promise<void> => {
-      const entries = await fs.readdir(directory, { withFileTypes: true });
-      for (const entry of entries.sort((a, b) =>
-        a.name.localeCompare(b.name),
-      )) {
-        const file = path.join(directory, entry.name);
-        if (entry.isSymbolicLink())
-          throw new ExhibitionsRenameError(
-            `Reference inventory encountered a symlink: ${relative(repositoryRoot, file)}`,
-            "reference-graph-incomplete",
+async function news(root: string, oldId: string, newId: string) {
+  const base = path.join(root, "src/content/news"),
+    edits: ExhibitionReferenceEdit[] = [];
+  const visit = async (dir: string): Promise<void> => {
+    for (const item of await fs.readdir(dir, { withFileTypes: true })) {
+      const file = path.join(dir, item.name);
+      if (item.isDirectory()) await visit(file);
+      else if (item.isFile() && item.name === "index.yaml") {
+        const bytes = await fs.readFile(file),
+          relative = rel(root, file),
+          span = findNewsReferenceSpan(
+            relative,
+            bytes,
+            "exhibitions",
+            oldId,
+            newId,
           );
-        if (entry.isDirectory()) await visit(file);
-        else if (entry.isFile()) {
-          if (!/\.(md|ya?ml)$/.test(entry.name))
-            throw new ExhibitionsRenameError(
-              `Unsupported canonical file: ${relative(repositoryRoot, file)}`,
-              "reference-graph-incomplete",
-            );
-          inventory.push({ file, bytes: await fs.readFile(file) });
-        } else
-          throw new ExhibitionsRenameError(
-            `Unsupported canonical entry: ${relative(repositoryRoot, file)}`,
-            "reference-graph-incomplete",
-          );
+        if (span) {
+          const output = Buffer.concat([
+            bytes.subarray(0, span.start),
+            Buffer.from(span.newValue),
+            bytes.subarray(span.end),
+          ]);
+          edits.push({
+            collection: "news",
+            contentId: path.basename(path.dirname(file)),
+            file: relative,
+            fieldPath: "link",
+            oldValue: span.oldValue,
+            newValue: span.newValue,
+            sourceHash: sha(bytes),
+            resultingHash: sha(output),
+            start: span.start,
+            end: span.end,
+          });
+        }
       }
-    };
-    await visit(root);
-  }
-  return inventory.sort((a, b) => a.file.localeCompare(b.file));
-}
-
-function newsLinkEdit(
-  repositoryRoot: string,
-  item: { file: string; bytes: Buffer },
-  oldId: string,
-  newId: string,
-): ExhibitionReferenceEdit | undefined {
-  const file = relative(repositoryRoot, item.file);
-  let span;
-  try {
-    span = findNewsReferenceSpan(file, item.bytes, "exhibitions", oldId, newId);
-  } catch (error) {
-    if (error instanceof NewsReferenceStructureError)
-      throw new ExhibitionsRenameError(
-        error.message,
-        "reference-rewrite-unsupported",
-        { cause: error },
-      );
-    throw error;
-  }
-  if (!span) return;
-  const { oldValue, newValue, start, end } = span;
-  const output = Buffer.concat([
-    item.bytes.subarray(0, start),
-    Buffer.from(newValue),
-    item.bytes.subarray(end),
-  ]);
-  return {
-    collection: "news",
-    contentId: span.contentId,
-    file,
-    fieldPath: "link",
-    oldValue,
-    newValue,
-    sourceHash: sha256(item.bytes),
-    resultingHash: sha256(output),
-    start,
-    end,
+    }
   };
+  await visit(base);
+  return edits;
 }
-
-function rewriteReference(bytes: Buffer, edit: ExhibitionReferenceEdit) {
-  if (sha256(bytes) !== edit.sourceHash)
-    throw new ExhibitionsRenameError(
-      `Reference bytes changed: ${edit.file}`,
-      "plan-stale",
-    );
-  const current = bytes.subarray(edit.start, edit.end).toString("utf8");
-  if (current !== edit.oldValue)
-    throw new ExhibitionsRenameError(
-      `Reference span no longer matches: ${edit.file}`,
-      "reference-rewrite-unsupported",
-    );
-  const output = Buffer.concat([
-    bytes.subarray(0, edit.start),
-    Buffer.from(edit.newValue),
-    bytes.subarray(edit.end),
-  ]);
-  if (sha256(output) !== edit.resultingHash)
-    throw new ExhibitionsRenameError(
-      `Reference rewrite proof failed: ${edit.file}`,
-      "reference-rewrite-unsupported",
-    );
-  return output;
+function hashPlan(plan: Omit<ExhibitionsRenamePlan, "planHash">) {
+  return sha(JSON.stringify(plan));
 }
-
-async function buildPlan(input: {
-  repositoryRoot: string;
-  sourceContentId: string;
-  destinationContentId: string;
-  operationId: string;
-  createdAt: string;
-}) {
-  const repositoryRoot = path.resolve(input.repositoryRoot);
-  const identity = await repositoryIdentity(repositoryRoot);
-  const exhibitionsRoot = await safeDirectory(
-    path.join(repositoryRoot, "src/content/exhibitions"),
-    "unsafe-repository",
-  );
-  const source = path.join(exhibitionsRoot, `${input.sourceContentId}.md`);
-  const sourceStat = await fs.lstat(source).catch(() => undefined);
-  if (!sourceStat?.isFile() || sourceStat.isSymbolicLink())
+async function build(
+  root: string,
+  sourceContentId: string,
+  destinationContentId: string,
+  operationId: string,
+  createdAt: string,
+) {
+  root = path.resolve(root);
+  const base = path.join(root, "src/content/exhibitions"),
+    source = path.join(base, sourceContentId),
+    destination = path.join(base, destinationContentId),
+    stat = await fs.lstat(source).catch(() => undefined);
+  if (!stat?.isDirectory() || stat.isSymbolicLink())
     throw new ExhibitionsRenameError(
-      "Exhibition source is missing or unsafe.",
+      "Source unavailable",
       "source-unavailable",
     );
-  const entry = await readExhibitionsEditorEntry(
-    input.sourceContentId,
-    exhibitionsRoot,
-  ).catch((error) => {
-    throw new ExhibitionsRenameError(
-      "Exhibition source failed canonical validation.",
-      "source-unavailable",
-      { cause: error },
-    );
-  });
-  if (entry.structuralStatus !== "valid")
-    throw new ExhibitionsRenameError(
-      "Fix Exhibition validation issues first.",
-      "source-unavailable",
-    );
-  const destinationName = `${input.destinationContentId}.md`.toLocaleLowerCase(
-    "en-US",
+  const inventory = (await fs.readdir(source, { withFileTypes: true })).sort(
+    (left, right) => left.name.localeCompare(right.name),
   );
   if (
-    (await fs.readdir(exhibitionsRoot)).some(
-      (name) => name.toLocaleLowerCase("en-US") === destinationName,
+    JSON.stringify(inventory.map((item) => item.name)) !==
+      JSON.stringify(names) ||
+    inventory.some((item) => !item.isFile() || item.isSymbolicLink())
+  )
+    throw new ExhibitionsRenameError(
+      "Exact three-file inventory required",
+      "source-unavailable",
+    );
+  if (
+    (await fs.readdir(base)).some(
+      (name) => name.toLowerCase() === destinationContentId.toLowerCase(),
     )
   )
     throw new ExhibitionsRenameError(
-      "The destination Exhibition ID or case-fold equivalent already exists.",
+      "Destination conflict",
       "destination-conflict",
     );
-  const inventory = await walkCanonical(repositoryRoot);
-  const edits = inventory
-    .map((item) =>
-      newsLinkEdit(
-        repositoryRoot,
-        item,
-        input.sourceContentId,
-        input.destinationContentId,
-      ),
-    )
-    .filter((edit): edit is ExhibitionReferenceEdit => Boolean(edit));
-  const oldRoute = `/exhibitions/${input.sourceContentId}`;
-  const escapedRoute = oldRoute.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const unsupportedRoute = new RegExp(`${escapedRoute}/?(?=[\\s"')\\]}>?#]|$)`);
-  for (const item of inventory) {
-    const file = relative(repositoryRoot, item.file);
-    if (
-      !file.startsWith("src/content/news/") &&
-      unsupportedRoute.test(item.bytes.toString("utf8"))
-    )
-      throw new ExhibitionsRenameError(
-        `Unsupported incoming Exhibition reference: ${file}`,
-        "reference-graph-incomplete",
-      );
-  }
-  const sourceBytes = await fs.readFile(source);
-  const sourceFile = {
-    file: relative(repositoryRoot, source),
-    hash: sha256(sourceBytes),
-    size: sourceBytes.length,
-  };
-  const newFile = `src/content/exhibitions/${input.destinationContentId}.md`;
-  const touchedPaths = [
-    sourceFile.file,
-    newFile,
-    ...edits.map(({ file }) => file),
-  ].sort();
+  const unit = await loadExhibitionUnit(source);
+  if (
+    unit.shared.state !== "valid" ||
+    unit.locales.ja.state !== "valid" ||
+    unit.locales.en.state !== "valid"
+  )
+    throw new ExhibitionsRenameError("Source invalid", "source-unavailable");
+  const sourceFiles = await Promise.all(
+      names.map(async (name) => {
+        const file = path.join(source, name),
+          bytes = await fs.readFile(file);
+        return { file: rel(root, file), hash: sha(bytes), size: bytes.length };
+      }),
+    ),
+    edits = await news(root, sourceContentId, destinationContentId),
+    newFiles = names.map(
+      (name) => `src/content/exhibitions/${destinationContentId}/${name}`,
+    ),
+    touchedPaths = [
+      ...sourceFiles.map((x) => x.file),
+      ...newFiles,
+      ...edits.map((x) => x.file),
+    ].sort(),
+    sourceFile = {
+      file: `src/content/exhibitions/${sourceContentId}`,
+      hash: sha(sourceFiles.map((x) => x.hash).join("")),
+      size: sourceFiles.reduce((n, x) => n + x.size, 0),
+    };
   const body: Omit<ExhibitionsRenamePlan, "planHash"> = {
     schemaVersion: 1,
-    adapterVersion: "exhibition-news-link-v1",
+    adapterVersion: "exhibition-news-link-v2",
     operation: "exhibitions-rename",
-    operationId: input.operationId,
-    createdAt: input.createdAt,
-    sourceContentId: input.sourceContentId,
-    destinationContentId: input.destinationContentId,
-    oldRoutes: [`${oldRoute}/`],
-    newRoutes: [`/exhibitions/${input.destinationContentId}/`],
-    ...identity,
-    graphHash: sha256(
-      inventory
-        .map(
-          ({ file, bytes }) =>
-            `${relative(repositoryRoot, file)}\0${sha256(bytes)}`,
-        )
-        .join("\n"),
-    ),
+    operationId,
+    createdAt,
+    sourceContentId,
+    destinationContentId,
+    oldRoutes: [
+      `/exhibitions/${sourceContentId}/`,
+      `/en/exhibitions/${sourceContentId}/`,
+    ],
+    newRoutes: [
+      `/exhibitions/${destinationContentId}/`,
+      `/en/exhibitions/${destinationContentId}/`,
+    ],
+    ...(await identity(root)),
+    graphHash: sha(JSON.stringify([...sourceFiles, ...edits])),
     sourceFile,
+    sourceFiles,
     referenceEdits: edits,
     touchedPaths,
     publishPaths: touchedPaths,
-    unchanged: [
-      "Exhibition artists[] and works[] references",
-      "All asset bytes and paths",
-      "Production loaders and generated relationships",
-      "Preview and Save boundaries",
-    ],
+    unchanged: ["Content bytes", "Artist and Work references", "Assets"],
   };
   return { ...body, planHash: hashPlan(body) };
 }
-
 export async function planExhibitionsRename(input: {
   repositoryRoot?: string;
   sourceContentId: string;
   destinationContentId: string;
-}): Promise<ExhibitionsRenamePlan> {
+}) {
   if (
     !isContentId(input.sourceContentId) ||
     !isContentId(input.destinationContentId) ||
     input.sourceContentId === input.destinationContentId
   )
-    throw new ExhibitionsRenameError(
-      "Source and new Exhibition IDs must be different lowercase hyphenated IDs.",
-      "invalid-content-id",
-    );
-  return buildPlan({
-    repositoryRoot: path.resolve(input.repositoryRoot ?? "."),
-    sourceContentId: input.sourceContentId,
-    destinationContentId: input.destinationContentId,
-    operationId: randomUUID(),
-    createdAt: new Date().toISOString(),
-  });
+    throw new ExhibitionsRenameError("Invalid IDs", "invalid-content-id");
+  return build(
+    input.repositoryRoot ?? ".",
+    input.sourceContentId,
+    input.destinationContentId,
+    randomUUID(),
+    new Date().toISOString(),
+  );
 }
-
-const comparableHash = (plan: ExhibitionsRenamePlan) => {
-  const body = { ...plan } as Partial<ExhibitionsRenamePlan>;
-  delete body.planHash;
-  delete body.operationId;
-  delete body.createdAt;
-  return sha256(JSON.stringify(body));
-};
-
 export async function executeExhibitionsRename(
-  reviewedPlan: ExhibitionsRenamePlan,
+  plan: ExhibitionsRenamePlan,
   repositoryRoot = path.resolve("."),
+  hooks?: { afterSourceMove?: () => Promise<void> },
 ) {
-  repositoryRoot = path.resolve(repositoryRoot);
-  const supplied = { ...reviewedPlan } as Partial<ExhibitionsRenamePlan>;
-  delete supplied.planHash;
+  const copy = { ...plan } as any;
+  delete copy.planHash;
+  if (hashPlan(copy) !== plan.planHash)
+    throw new ExhibitionsRenameError("Plan identity invalid", "plan-stale");
+  const fresh = await build(
+    repositoryRoot,
+    plan.sourceContentId,
+    plan.destinationContentId,
+    plan.operationId,
+    plan.createdAt,
+  );
   if (
-    reviewedPlan.planHash !==
-    hashPlan(supplied as Omit<ExhibitionsRenamePlan, "planHash">)
+    fresh.graphHash !== plan.graphHash ||
+    fresh.repositoryHead !== plan.repositoryHead
   )
-    throw new ExhibitionsRenameError(
-      "Rename plan identity is invalid.",
-      "plan-stale",
-    );
-  const stateRoot = await ensureStateDirectory(repositoryRoot, ".kiki-editor");
-  const lifecycle = await ensureStateDirectory(stateRoot, "content-lifecycle");
-  const operations = await ensureStateDirectory(lifecycle, "operations");
-  const lock = path.join(lifecycle, "repository.lock");
-  if (
-    await fs
-      .lstat(path.join(stateRoot, "asset-lifecycle/repository.lock"))
-      .catch(() => undefined)
-  )
-    throw new ExhibitionsRenameError(
-      "Asset lifecycle mutation is active or requires recovery.",
-      "lifecycle-lock-conflict",
-    );
+    throw new ExhibitionsRenameError("Plan stale", "plan-stale");
+  const state = path.join(repositoryRoot, ".kiki-editor/content-lifecycle"),
+    lock = path.join(state, "repository.lock"),
+    operationRoot = path.join(state, "operations", plan.operationId);
+  await fs.mkdir(path.dirname(operationRoot), { recursive: true });
   try {
     await fs.mkdir(lock);
   } catch (error) {
     throw new ExhibitionsRenameError(
-      "Another content lifecycle operation is active or requires recovery.",
+      "Lifecycle lock conflict",
       "lifecycle-lock-conflict",
       { cause: error },
     );
   }
-  const operationRoot = path.join(operations, reviewedPlan.operationId);
-  let mutationStarted = false;
-  let record: Record<string, unknown> | undefined;
-  try {
-    await fs.writeFile(
-      path.join(lock, "owner.json"),
-      `${JSON.stringify({ operationId: reviewedPlan.operationId, pid: process.pid })}\n`,
-      { flag: "wx", mode: 0o600 },
-    );
-    const rebuilt = await buildPlan({
+  const source = path.join(
       repositoryRoot,
-      sourceContentId: reviewedPlan.sourceContentId,
-      destinationContentId: reviewedPlan.destinationContentId,
-      operationId: reviewedPlan.operationId,
-      createdAt: reviewedPlan.createdAt,
-    });
-    if (comparableHash(reviewedPlan) !== comparableHash(rebuilt))
-      throw new ExhibitionsRenameError(
-        "Canonical content, references, destination, or Git identity changed; review a new plan.",
-        "plan-stale",
-      );
-    await fs.mkdir(operationRoot, { mode: 0o700 });
-    const recoveryRoot = await ensureStateDirectory(operationRoot, "recovery");
-    const stagedRoot = await ensureStateDirectory(operationRoot, "staged");
-    const preimages: Record<
-      string,
-      { hash: string; mode: number; bytes: string }
-    > = {};
-    const prospective: Record<
-      string,
-      { hash: string; mode: number; bytes: string }
-    > = {};
-    for (const file of reviewedPlan.touchedPaths.filter(
-      (file) =>
-        file !==
-        `src/content/exhibitions/${reviewedPlan.destinationContentId}.md`,
-    )) {
-      const absolute = path.join(repositoryRoot, file);
-      const stat = await fs.lstat(absolute);
-      if (!stat.isFile() || stat.isSymbolicLink())
-        throw new ExhibitionsRenameError(
-          `Touched path became unsafe: ${file}`,
-          "plan-stale",
-        );
-      const bytes = await fs.readFile(absolute);
-      preimages[file] = {
-        hash: sha256(bytes),
-        mode: stat.mode,
+      "src/content/exhibitions",
+      plan.sourceContentId,
+    ),
+    destination = path.join(
+      repositoryRoot,
+      "src/content/exhibitions",
+      plan.destinationContentId,
+    );
+  let moved = false;
+  const preimages: Record<string, { hash: string; bytes: string }> = {},
+    prospective: Record<string, { hash: string; bytes: string }> = {};
+  try {
+    for (const item of [
+      ...plan.sourceFiles,
+      ...plan.referenceEdits.map((edit) => ({
+        file: edit.file,
+        hash: edit.sourceHash,
+        size: 0,
+      })),
+    ]) {
+      const bytes = await fs.readFile(path.join(repositoryRoot, item.file));
+      preimages[item.file] = {
+        hash: sha(bytes),
         bytes: bytes.toString("base64"),
       };
     }
-    const sourceBytes = Buffer.from(
-      preimages[reviewedPlan.sourceFile.file].bytes,
-      "base64",
-    );
-    const newFile = `src/content/exhibitions/${reviewedPlan.destinationContentId}.md`;
-    prospective[newFile] = {
-      hash: sha256(sourceBytes),
-      mode: preimages[reviewedPlan.sourceFile.file].mode,
-      bytes: sourceBytes.toString("base64"),
-    };
-    for (const edit of reviewedPlan.referenceEdits) {
-      const bytes = Buffer.from(preimages[edit.file].bytes, "base64");
-      const rewritten = rewriteReference(bytes, edit);
+    await fs.mkdir(operationRoot, { recursive: true });
+    await fs.rename(source, destination);
+    moved = true;
+    await hooks?.afterSourceMove?.();
+    for (const name of names) {
+      const old = `src/content/exhibitions/${plan.sourceContentId}/${name}`,
+        next = `src/content/exhibitions/${plan.destinationContentId}/${name}`;
+      prospective[next] = preimages[old];
+    }
+    for (const edit of plan.referenceEdits) {
+      const file = path.join(repositoryRoot, edit.file),
+        bytes = Buffer.from(preimages[edit.file].bytes, "base64"),
+        output = Buffer.concat([
+          bytes.subarray(0, edit.start),
+          Buffer.from(edit.newValue),
+          bytes.subarray(edit.end),
+        ]);
+      await fs.writeFile(file, output);
       prospective[edit.file] = {
-        hash: sha256(rewritten),
-        mode: preimages[edit.file].mode,
-        bytes: rewritten.toString("base64"),
+        hash: sha(output),
+        bytes: output.toString("base64"),
       };
     }
-    record = {
-      schemaVersion: 1,
-      operation: "exhibitions-rename",
-      state: "prepared",
-      plan: reviewedPlan,
-      preimages,
-      prospective,
-      completedSteps: [],
-      updatedAt: new Date().toISOString(),
-    };
-    const recordPath = path.join(operationRoot, "operation.json");
-    const writeRecord = async () => {
-      await fs.writeFile(recordPath, `${JSON.stringify(record, null, 2)}\n`, {
-        mode: 0o600,
-      });
-      const handle = await fs.open(recordPath, "r");
-      await handle.sync();
-      await handle.close();
-    };
-    for (const [file, value] of Object.entries(prospective)) {
-      const staged = path.join(stagedRoot, file.replaceAll("/", "__"));
-      await fs.writeFile(staged, Buffer.from(value.bytes, "base64"), {
-        flag: "wx",
-        mode: value.mode,
-      });
-      if (sha256(await fs.readFile(staged)) !== value.hash)
-        throw new ExhibitionsRenameError(
-          "Staged bytes failed validation.",
-          "prospective-validation-failed",
-        );
-    }
-    await writeRecord();
-    // The complete inventory was validated while rebuilding the plan; validate every
-    // prospective reference and the renamed source before the first canonical move.
-    if (sha256(sourceBytes) !== reviewedPlan.sourceFile.hash)
-      throw new ExhibitionsRenameError(
-        "Source preimage mismatch.",
-        "plan-stale",
-      );
-    for (const edit of reviewedPlan.referenceEdits)
-      if (prospective[edit.file].hash !== edit.resultingHash)
-        throw new ExhibitionsRenameError(
-          "Prospective reference graph mismatch.",
-          "prospective-validation-failed",
-        );
-    mutationStarted = true;
-    for (const file of Object.keys(preimages).sort()) {
-      const recovery = path.join(recoveryRoot, file.replaceAll("/", "__"));
-      await fs.rename(path.join(repositoryRoot, file), recovery);
-      (record.completedSteps as string[]).push(`recover:${file}`);
-      await writeRecord();
-    }
-    for (const file of Object.keys(prospective).sort()) {
-      const destination = path.join(repositoryRoot, file);
-      const staged = path.join(stagedRoot, file.replaceAll("/", "__"));
-      await fs.rename(staged, destination);
-      (record.completedSteps as string[]).push(`install:${file}`);
-      await writeRecord();
-    }
-    const installedInventory = await walkCanonical(repositoryRoot);
-    const installedGraph = sha256(
-      installedInventory
-        .map(
-          ({ file, bytes }) =>
-            `${relative(repositoryRoot, file)}\0${sha256(bytes)}`,
-        )
-        .join("\n"),
+    await fs.writeFile(
+      path.join(operationRoot, "operation.json"),
+      `${JSON.stringify({ state: "completed", plan, preimages, prospective }, null, 2)}\n`,
     );
-    if (
-      !installedGraph ||
-      (await fs
-        .lstat(path.join(repositoryRoot, reviewedPlan.sourceFile.file))
-        .catch(() => undefined))
-    )
-      throw new ExhibitionsRenameError(
-        "Installed graph failed validation.",
-        "prospective-validation-failed",
-      );
-    for (const [file, value] of Object.entries(prospective))
-      if (
-        sha256(await fs.readFile(path.join(repositoryRoot, file))) !==
-        value.hash
-      )
-        throw new ExhibitionsRenameError(
-          `Installed bytes mismatch: ${file}`,
-          "prospective-validation-failed",
-        );
-    const draft = createExhibitionsEditorDraft(
-      await readExhibitionsEditorEntry(
-        reviewedPlan.destinationContentId,
-        path.join(repositoryRoot, "src/content/exhibitions"),
-      ),
-    );
-    if (!draft)
-      throw new ExhibitionsRenameError(
-        "Renamed workspace is invalid.",
-        "prospective-validation-failed",
-      );
-    record.state = "completed";
-    record.installedGraphHash = installedGraph;
-    record.updatedAt = new Date().toISOString();
-    await writeRecord();
-    await fs.unlink(path.join(lock, "owner.json"));
-    await fs.rmdir(lock);
+    await fs.rm(lock, { recursive: true });
     return {
-      draft,
-      operationId: reviewedPlan.operationId,
-      state: "saved-unpublished" as const,
+      draft: createExhibitionsEditorDraft(
+        await import("./exhibitions-state.ts").then((m) =>
+          m.readExhibitionsEditorEntry(
+            plan.destinationContentId,
+            path.join(repositoryRoot, "src/content/exhibitions"),
+          ),
+        ),
+      ),
+      operationId: plan.operationId,
     };
   } catch (error) {
-    if (mutationStarted && record) {
-      try {
-        const prospective = record.prospective as Record<
-          string,
-          { hash: string }
-        >;
-        const preimages = record.preimages as Record<
-          string,
-          { hash: string; mode: number; bytes: string }
-        >;
-        for (const [file, expected] of Object.entries(prospective).reverse()) {
-          const installed = path.join(repositoryRoot, file);
-          const stat = await fs.lstat(installed).catch(() => undefined);
-          if (stat) {
-            if (
-              !stat.isFile() ||
-              stat.isSymbolicLink() ||
-              sha256(await fs.readFile(installed)) !== expected.hash
-            )
-              throw new Error(`installed file changed: ${file}`);
-            await fs.unlink(installed);
-          }
-        }
-        for (const [file, expected] of Object.entries(preimages).reverse()) {
-          const destination = path.join(repositoryRoot, file);
-          if (await fs.lstat(destination).catch(() => undefined))
-            throw new Error(`rollback destination occupied: ${file}`);
-          const recovery = path.join(
-            operationRoot,
-            "recovery",
-            file.replaceAll("/", "__"),
+    try {
+      for (const edit of plan.referenceEdits)
+        if (preimages[edit.file])
+          await fs.writeFile(
+            path.join(repositoryRoot, edit.file),
+            Buffer.from(preimages[edit.file].bytes, "base64"),
           );
-          if (sha256(await fs.readFile(recovery)) !== expected.hash)
-            throw new Error(`recovery bytes changed: ${file}`);
-          await fs.rename(recovery, destination);
-          await fs.chmod(destination, expected.mode);
-          if (sha256(await fs.readFile(destination)) !== expected.hash)
-            throw new Error(`restored bytes mismatch: ${file}`);
-        }
-        record.state = "rolled-back";
-        record.failure =
-          error instanceof Error ? error.message : "Rename failed";
-        record.updatedAt = new Date().toISOString();
-        await fs.writeFile(
-          path.join(operationRoot, "operation.json"),
-          `${JSON.stringify(record, null, 2)}\n`,
-        );
-        await fs.unlink(path.join(lock, "owner.json")).catch(() => undefined);
-        await fs.rmdir(lock).catch(() => undefined);
-        throw new ExhibitionsRenameError(
-          "Exhibition Rename failed; every touched canonical byte was restored.",
-          "rename-failed-rolled-back",
-          { cause: error },
-        );
-      } catch (rollbackError) {
-        if (rollbackError instanceof ExhibitionsRenameError)
-          throw rollbackError;
-        record.state = "manual-recovery-required";
-        record.failure =
-          rollbackError instanceof Error
-            ? rollbackError.message
-            : "Rollback failed";
-        await fs
-          .writeFile(
-            path.join(operationRoot, "operation.json"),
-            `${JSON.stringify(record, null, 2)}\n`,
-          )
-          .catch(() => undefined);
-        throw new ExhibitionsRenameError(
-          "Exact rollback could not be proven. Preserve the lock and operation evidence.",
-          "manual-recovery-required",
-          { cause: rollbackError },
-        );
-      }
+      if (moved) await fs.rename(destination, source);
+      await fs.rm(lock, { recursive: true });
+    } catch (rollback) {
+      throw new ExhibitionsRenameError(
+        "Manual recovery required",
+        "manual-recovery-required",
+        { cause: new AggregateError([error, rollback]) },
+      );
     }
-    await fs.unlink(path.join(lock, "owner.json")).catch(() => undefined);
-    await fs.rmdir(lock).catch(() => undefined);
-    throw error;
+    throw new ExhibitionsRenameError(
+      "Rename failed and rolled back",
+      "rename-failed-rolled-back",
+      { cause: error },
+    );
   }
 }

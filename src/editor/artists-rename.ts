@@ -312,13 +312,14 @@ function typedReferenceEdits(
   const raw = item.bytes.toString("utf8");
   const frontmatter = /^---(\r?\n)([\s\S]*?)\1---(?:\1|$)/.exec(raw);
   if (
-    !frontmatter ||
     (!file.startsWith("src/content/works/") &&
       !file.startsWith("src/content/exhibitions/"))
   )
     return [];
-  const body = frontmatter[2];
-  const bodyStart = frontmatter.index + 3 + frontmatter[1].length;
+  if (file.startsWith("src/content/exhibitions/") && !file.endsWith("/index.yaml")) return [];
+  if (file.startsWith("src/content/works/") && !frontmatter) return [];
+  const body = file.endsWith("/index.yaml") ? raw : frontmatter![2];
+  const bodyStart = file.endsWith("/index.yaml") ? 0 : frontmatter!.index + 3 + frontmatter![1].length;
   if (file.startsWith("src/content/works/")) {
     const expression =
       /^(\s*artist\s*:\s*)(["']?)([^\s#"']+)(\2)(\s*(?:#.*)?)$/gm;

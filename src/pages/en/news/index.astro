@@ -3,6 +3,7 @@ import Layout from "../../../layouts/Layout.astro";
 import { journalRouteRegistry } from "../../../content-boundaries/journal";
 import { getJournalProductionFacade } from "../../../content-boundaries/journal-production";
 import { getNewsProductionFacade } from "../../../content-boundaries/news-production";
+import { getExhibitionsProductionFacade } from "../../../content-boundaries/exhibitions-production";
 
 type NewsItem = {
   id: string;
@@ -13,14 +14,15 @@ type NewsItem = {
   summary: string;
 };
 
-const [newsContent, journalContent] = await Promise.all([
+const [newsContent, journalContent, exhibitions] = await Promise.all([
   getNewsProductionFacade(),
   getJournalProductionFacade(),
+  getExhibitionsProductionFacade(),
 ]);
 
 const newsItems: NewsItem[] = newsContent.forIndex("en").map((item) => ({
   id: item.data.contentId,
-  href: item.data.link ?? null,
+  href: exhibitions.projectNewsLink(item.data.link, "en"),
   title: item.data.title,
   date: new Date(item.data.date),
   type: item.data.news_type,
@@ -65,7 +67,7 @@ const formatDate = (date: Date) => {
 };
 
 const categoryLinks = {
-  exhibition: "/exhibitions",
+  exhibition: "/en/exhibitions/",
   artist: "/artists",
   Journal: "/en/journal",
 };
@@ -101,7 +103,11 @@ const categoryLinks = {
                       </div>
 
                       <h3 class="news-card-title">
-                        {item.href ? <a href={item.href}>{item.title}</a> : item.title}
+                        {item.href ? (
+                          <a href={item.href}>{item.title}</a>
+                        ) : (
+                          item.title
+                        )}
                       </h3>
 
                       <p class="news-excerpt">{item.summary}</p>

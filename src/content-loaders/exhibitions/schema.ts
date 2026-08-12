@@ -62,6 +62,14 @@ export const exhibitionLocalizedSchema = z
   })
   .strict();
 
+export const exhibitionAstroEntrySchema = z.intersection(
+  z.object({
+    contentId,
+    locale: z.enum(EXHIBITION_LOCALES),
+  }),
+  z.intersection(exhibitionSharedSchema, exhibitionLocalizedSchema),
+);
+
 export type ExhibitionShared = z.infer<typeof exhibitionSharedSchema>;
 export type ExhibitionLocalized = z.infer<typeof exhibitionLocalizedSchema>;
 export type ExhibitionLocale = (typeof EXHIBITION_LOCALES)[number];

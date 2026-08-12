@@ -110,39 +110,24 @@ function readDraft(
   }
   if (collection === "exhibitions") {
     const current = draft as ExhibitionsEditorDraftState;
-    const display = value("display_artists");
+    const display = value("shared.display_artists");
+    const localized = (locale: "ja" | "en") => ({ state: "editable" as const, value: {
+      title: value(`${locale}.title`), hero_alt: value(`${locale}.hero_alt`), body: value(`${locale}.body`),
+      summary: optional(value(`${locale}.summary`)), venue: optional(value(`${locale}.venue`)), opening_hours: optional(value(`${locale}.opening_hours`)), closed_days: optional(value(`${locale}.closed_days`)), attendance: optional(value(`${locale}.attendance`)), hero_caption: optional(value(`${locale}.hero_caption`)), seo_title: optional(value(`${locale}.seo_title`)), description: optional(value(`${locale}.description`)),
+    }});
     return {
       ...current,
       contentId,
-      body: value("body"),
-      data: {
-        ...current.data,
-        artists: lines(value("artists")).map((id) => ({
-          id,
-          collection: "artists" as const,
-        })),
-        works: lines(value("works")).map((id) => ({
-          id,
-          collection: "works" as const,
-        })),
-        start_date: normalizeExhibitionDateInput(value("start_date")),
-        end_date: normalizeExhibitionDateInput(value("end_date")),
+      shared: { state: "editable" as const, value: {
+        artists: lines(value("shared.artists")),
+        works: lines(value("shared.works")),
+        start_date: value("shared.start_date"), end_date: value("shared.end_date"),
         display_artists: display === "default" ? undefined : display === "true",
         hero: {
-          image: value("hero.image"),
-          orientation: value("hero.orientation") as "portrait" | "landscape",
-          position: optional(value("hero.position")) as never,
-          treatment: optional(value("hero.treatment")) as never,
-          hero_caption: optional(value("hero.hero_caption")),
+          image: value("shared.hero.image"), orientation: value("shared.hero.orientation") as "portrait" | "landscape",
+          position: optional(value("shared.hero.position")) as never, treatment: optional(value("shared.hero.treatment")) as never,
         },
-        hero_alt: value("hero_alt"),
-        title: optional(value("title")),
-        summary: optional(value("summary")),
-        venue: optional(value("venue")),
-        opening_hours: optional(value("opening_hours")),
-        closed_days: optional(value("closed_days")),
-        attendance: optional(value("attendance")),
-      },
+      }}, locales: { ja: localized("ja"), en: localized("en") },
     };
   }
   const current = draft as NewsEditorDraftState;
@@ -241,6 +226,7 @@ export function startFlatCreateUi(collection: Collection) {
     };
     renderFlatValidationPanel(form, {
       ...validation,
+      issues: validation.issues as never,
       capabilities: { ...flatCapabilities, publish: false },
     });
     const allowed = idValid && !inputError && validation.capabilities.save;
@@ -279,7 +265,9 @@ export function startFlatCreateUi(collection: Collection) {
     const response = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ draft }),
+      body: JSON.stringify(
+        collection === "exhibitions" ? { draft, locale: "ja" } : { draft },
+      ),
     });
     const result = await response.json();
     if (!response.ok)

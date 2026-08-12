@@ -25,14 +25,14 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
 ---
 
 <EditorLayout
-  title={entry.data?.title ?? entry.contentId}
+  title={entry.locales.ja.state === "valid" ? entry.locales.ja.value.title : entry.contentId}
   section="Exhibitions"
 >
   <header class="editor-page-heading">
     <p class="editor-eyebrow">Exhibitions workspace</p><h1>
-      {entry.data?.title ?? entry.contentId}
+      {entry.locales.ja.state === "valid" ? entry.locales.ja.value.title : entry.contentId}
     </h1><p>
-      <span data-workspace-content-id>{entry.contentId}</span> · Current flat Markdown
+      <span data-workspace-content-id>{entry.contentId}</span> · Three-file Content Unit
     </p>
   </header>
   <div class="editor-workspace">
@@ -113,52 +113,45 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       if (actionButton) actionButton.title = reason;
     };
     const optional = (value: string) => value.trim() || undefined;
-    const list = (value: string, collection: "artists" | "works") =>
+    const list = (value: string) =>
       value
         .split("\n")
         .map((id) => id.trim())
-        .filter(Boolean)
-        .map((id) => ({ id, collection }));
+        .filter(Boolean);
     const read = () => {
       const data = new FormData(form);
       const value = (name: string) => String(data.get(name) ?? "");
-      const display = value("display_artists");
+      const display = value("shared.display_artists");
+      const localized = (locale: "ja" | "en") => ({ state: "editable" as const, value: {
+        title: value(`${locale}.title`), hero_alt: value(`${locale}.hero_alt`), body: value(`${locale}.body`),
+        summary: optional(value(`${locale}.summary`)), venue: optional(value(`${locale}.venue`)), opening_hours: optional(value(`${locale}.opening_hours`)), closed_days: optional(value(`${locale}.closed_days`)), attendance: optional(value(`${locale}.attendance`)), hero_caption: optional(value(`${locale}.hero_caption`)), seo_title: optional(value(`${locale}.seo_title`)), description: optional(value(`${locale}.description`)),
+      }});
       draft = {
         ...draft,
-        body: value("body"),
-        data: {
-          ...draft.data,
-          artists: list(value("artists"), "artists"),
-          works: list(value("works"), "works"),
-          start_date: normalizeExhibitionDateInput(value("start_date")),
-          end_date: normalizeExhibitionDateInput(value("end_date")),
+        shared: { state: "editable", value: {
+          artists: list(value("shared.artists")),
+          works: list(value("shared.works")),
+          start_date: value("shared.start_date"),
+          end_date: value("shared.end_date"),
           display_artists:
             display === "default" ? undefined : display === "true",
-          title: optional(value("title")),
-          summary: optional(value("summary")),
-          venue: optional(value("venue")),
-          opening_hours: optional(value("opening_hours")),
-          closed_days: optional(value("closed_days")),
-          attendance: optional(value("attendance")),
-          hero_alt: value("hero_alt"),
           hero: {
-            image: value("hero.image"),
-            orientation: value("hero.orientation") as "portrait" | "landscape",
-            position: optional(value("hero.position")) as never,
-            treatment: optional(value("hero.treatment")) as never,
-            hero_caption: optional(value("hero.hero_caption")),
+            image: value("shared.hero.image"),
+            orientation: value("shared.hero.orientation") as "portrait" | "landscape",
+            position: optional(value("shared.hero.position")) as never,
+            treatment: optional(value("shared.hero.treatment")) as never,
           },
-        },
+        }}, locales: { ja: localized("ja"), en: localized("en") },
       };
     };
     const render = () => {
       const dirty = isExhibitionsEditorDraftDirty(baseline, draft);
       const validation = validateExhibitionsEditorDraft(draft);
       const capabilities = validation.capabilities;
-      renderFlatValidationPanel(form, validation);
+      renderFlatValidationPanel(form, { ...validation, issues: validation.issues as never, capabilities: { ...validation.capabilities, preview: validation.capabilities.preview.ja || validation.capabilities.preview.en } });
       const locked = pending !== null || recoveryRequired || deleteLocked;
       save.disabled = locked || !dirty || !capabilities.save;
-      preview.disabled = locked || !capabilities.preview;
+      preview.disabled = locked || !capabilities.preview.ja;
       publish.disabled = locked || dirty || !capabilities.publish;
       form
         .querySelectorAll<
@@ -171,7 +164,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         dirty,
         ...{
           canSave: capabilities.save,
-          canPreview: capabilities.preview,
+          canPreview: capabilities.preview.ja,
           canPublish: capabilities.publish,
         },
         savedSincePublish,
@@ -231,6 +224,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       try {
         const result = await request("/editor/api/exhibitions-preview/create", {
           draft,
+          locale: "ja",
         });
         window.open(result.url, "_blank", "noopener,noreferrer");
         statusMessage = "Draft preview opened";

@@ -7,16 +7,16 @@ import {
 } from "../exhibitions-preview";
 import { formatDateRangeJa } from "../../utils/date";
 import "../../styles/exhibitions.css";
-const { token, contentId } = Astro.params;
+const { token, contentId: locale } = Astro.params;
 let preview;
 let previewError;
 try {
-  if (!token || !contentId)
+  if (!token || (locale !== "ja" && locale !== "en"))
     throw new ExhibitionsPreviewError(
       "Invalid preview URL",
       "preview-not-found",
     );
-  preview = exhibitionsPreviewStore.read(token, contentId);
+  preview = exhibitionsPreviewStore.read(token, locale);
 } catch (error) {
   Astro.response.status =
     error instanceof ExhibitionsPreviewError && error.code === "preview-expired"
@@ -29,8 +29,8 @@ const rendered = preview
   : undefined;
 const date = preview
   ? formatDateRangeJa(
-      new Date(preview.data.start_date).toISOString().slice(0, 10),
-      new Date(preview.data.end_date).toISOString().slice(0, 10),
+      preview.shared.start_date,
+      preview.shared.end_date,
     )
   : "";
 ---
@@ -38,7 +38,7 @@ const date = preview
 {
   preview && rendered ? (
     <Layout
-      title={`${preview.data.title ?? preview.contentId} · Draft Preview`}
+      title={`${preview.localized.title} · Draft Preview`}
     >
       <>
         <aside class="editor-preview-banner">
@@ -48,10 +48,10 @@ const date = preview
           <header class="exhibitions-heading">
             <>
               <p class="exhibitions-heading-artist">
-                {preview.data.artists.map(({ id }) => id).join("、")}
+                {preview.shared.artists.join("、")}
               </p>
               <h1 class="exhibitions-h1-title">
-                {preview.data.title ?? preview.contentId}
+                {preview.localized.title}
               </h1>
             </>
           </header>
@@ -61,13 +61,13 @@ const date = preview
             "exhibitions-detail-image",
             {
               "exhibitions-detail-image--portrait":
-                preview.data.hero.orientation === "portrait",
+                preview.shared.hero.orientation === "portrait",
             },
           ]}
         >
-          <img src={preview.data.hero.image} alt={preview.data.hero_alt} />
-          {preview.data.hero.hero_caption && (
-            <figcaption>{preview.data.hero.hero_caption}</figcaption>
+          <img src={preview.shared.hero.image} alt={preview.localized.hero_alt} />
+          {preview.localized.hero_caption && (
+            <figcaption>{preview.localized.hero_caption}</figcaption>
           )}
         </figure>
         <section class="section exhibitions-content">
@@ -82,7 +82,7 @@ const date = preview
                 </dl>
               </section>
               <article class="exhibitions-article">
-                {preview.data.summary && <p>{preview.data.summary}</p>}
+                {preview.localized.summary && <p>{preview.localized.summary}</p>}
                 <div set:html={rendered.code} />
               </article>
             </>

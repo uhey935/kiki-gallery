@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { journalRouteRegistry } from "../../content-boundaries/journal";
 import { getJournalProductionFacade } from "../../content-boundaries/journal-production";
 import { getNewsProductionFacade } from "../../content-boundaries/news-production";
+import { getExhibitionsProductionFacade } from "../../content-boundaries/exhibitions-production";
 
 // 1. 型定義
 type NewsItem = {
@@ -15,16 +16,17 @@ type NewsItem = {
 };
 
 // 2. データ取得
-const [newsContent, journalContent] = await Promise.all([
+const [newsContent, journalContent, exhibitions] = await Promise.all([
   getNewsProductionFacade(),
   getJournalProductionFacade(),
+  getExhibitionsProductionFacade(),
 ]);
 const news = newsContent.forIndex("ja");
 
 // 3. Newsの整形
 const newsItems: NewsItem[] = news.map((item) => ({
   id: item.data.contentId,
-  href: item.data.link ?? null,
+  href: exhibitions.projectNewsLink(item.data.link, "ja"),
   title: item.data.title,
   date: new Date(item.data.date),
   type: item.data.news_type,

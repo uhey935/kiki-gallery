@@ -1,0 +1,63 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { getArtistsProductionFacade } from "../../../content-boundaries/artists-production";
+import { getExhibitionsProductionFacade } from "../../../content-boundaries/exhibitions-production";
+import {
+  getArtistDisplayName,
+  resolveExhibitionArtists,
+} from "../../../utils/exhibitionDisplay";
+import { getExhibitionStatus } from "../../../utils/exhibitionStatus";
+
+const facade = await getExhibitionsProductionFacade();
+const artists = (await getArtistsProductionFacade()).forLocale("en");
+const artistMap = new Map(artists.map((artist) => [artist.id, artist]));
+const exhibitions = facade
+  .forLocale("en")
+  .map((entry) => ({
+    entry,
+    artists: resolveExhibitionArtists(entry, artistMap),
+    status: getExhibitionStatus(entry.data.start_date, entry.data.end_date),
+  }))
+  .sort(
+    (a, b) =>
+      b.entry.data.start_date.getTime() - a.entry.data.start_date.getTime(),
+  );
+---
+
+<Layout title="Exhibitions" locale="en">
+  <section class="section exhibitions">
+    <h1 class="index-h1">Exhibitions</h1>
+    <div class="exhibitions-grid">
+      {
+        exhibitions.map(({ entry, artists }, index) => (
+          <div
+            class={`exhibitions-card ${index === 0 ? "exhibitions-card--middle" : "exhibitions-card--small"}`}
+          >
+            <a
+              href={facade.detailRoute(entry.id, "en")}
+              class="exhibitions-card__link"
+            >
+              <div class="exhibitions-card__image">
+                <img src={entry.data.hero.image} alt={entry.data.hero_alt} />
+              </div>
+              <div class="exhibitions-card__meta">
+                <div class="exhibitions-card__content">
+                  {entry.data.display_artists !== false && (
+                    <p class="exhibitions-artist">
+                      {artists.map(getArtistDisplayName).join(", ")}
+                    </p>
+                  )}
+                  <p class="exhibitions-title">{entry.data.title}</p>
+                </div>
+                <p class="exhibitions-date exhibitions-card__date">
+                  {entry.data.start_date.toLocaleDateString("en-CA")} -{" "}
+                  {entry.data.end_date.toLocaleDateString("en-CA")}
+                </p>
+              </div>
+            </a>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Layout>

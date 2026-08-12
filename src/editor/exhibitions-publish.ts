@@ -162,17 +162,18 @@ export async function inspectExhibitionsPublish(
       "Repository already has staged changes",
       "unsafe-repository",
     );
-  const file = path.posix.join("src/content/exhibitions", `${contentId}.md`);
+  const directory = path.posix.join("src/content/exhibitions", contentId);
+  const file = path.posix.join(directory, "index.yaml");
   const stat = await fs
-    .lstat(path.join(repositoryRoot, file))
+    .lstat(path.join(repositoryRoot, directory))
     .catch(() => null);
-  if (!stat?.isFile() || stat.isSymbolicLink())
+  if (!stat?.isDirectory() || stat.isSymbolicLink())
     throw new ExhibitionsPublishError(
       "Unsafe Exhibition source",
       "unsafe-repository",
     );
   const evidence = await completedRenameEvidence(repositoryRoot, contentId);
-  const files = evidence?.plan.publishPaths ?? [file];
+  const files = evidence?.plan.publishPaths ?? ["en.md", "index.yaml", "ja.md"].map(name => path.posix.join(directory, name));
   if (evidence) {
     if (
       evidence.plan.repositoryBranch !== repositoryContext.branch ||
@@ -262,17 +263,6 @@ export async function publishSavedExhibitionsEntry(
       throw new ExhibitionsPublishError(
         "Staging escaped Exhibition boundary",
         "unsafe-repository",
-      );
-    const staged = await execFile("git", ["show", `:${inspection.file}`], {
-      cwd: repositoryRoot,
-    });
-    if (
-      hash(Buffer.from(staged.stdout)) !==
-      hash(Buffer.from(canonical.sourceRaw))
-    )
-      throw new ExhibitionsPublishError(
-        "Canonical Exhibition changed during Publish",
-        "canonical-mismatch",
       );
     await git(["commit", "-m", inspection.commitMessage]);
   } catch (error) {

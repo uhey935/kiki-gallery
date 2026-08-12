@@ -7,15 +7,11 @@ import { newsEntrySchema } from "./content-loaders/news/schema";
 import { artistIdentityThreeFileLoader } from "./content-loaders/artists/astro-loader";
 import { artistIdentitySchema } from "./content-loaders/artists/schema";
 import { createWorkSchema } from "./content-schemas/work";
-import { createExhibitionSchema } from "./content-schemas/exhibition";
+import { exhibitionThreeFileLoader } from "./content-loaders/exhibitions/astro-loader";
+import { exhibitionAstroEntrySchema } from "./content-loaders/exhibitions/schema";
 import { homeSchema } from "./content-schemas/home";
 
 const workSchema = createWorkSchema(reference("artists"));
-
-const exhibitionSchema = createExhibitionSchema(
-  reference("artists"),
-  reference("works"),
-);
 
 const home = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/home" }),
@@ -32,9 +28,12 @@ const works = defineCollection({
   schema: workSchema,
 });
 
-const exhibitions = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "./src/content/exhibitions" }),
-  schema: exhibitionSchema,
+const exhibitionsThreeFile = defineCollection({
+  loader: exhibitionThreeFileLoader({
+    root: "./src/content/exhibitions",
+    artistsRoot: "./src/content/artists",
+  }),
+  schema: exhibitionAstroEntrySchema,
 });
 
 const journal = defineCollection({
@@ -51,7 +50,7 @@ export const collections = {
   home,
   artists,
   works,
-  exhibitions,
+  exhibitionsThreeFile,
   journal,
   newsThreeFile,
 };

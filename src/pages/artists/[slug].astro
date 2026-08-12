@@ -9,6 +9,7 @@ import {
   getExhibitionDisplayTitle,
   resolveExhibitionArtists,
 } from "../../utils/exhibitionDisplay";
+import { getExhibitionsProductionFacade } from "../../content-boundaries/exhibitions-production";
 
 /* =========================
    getStaticPaths
@@ -83,11 +84,8 @@ const hasWorkSections = workSections.length > 0;
 /* =========================
    exhibitions
 ========================= */
-const rawExhibitions = await getCollection("exhibitions", ({ data }) => {
-  return data.artists.some(
-    (artistReference) => artistReference.id === artist.id,
-  );
-});
+const exhibitionsFacade = await getExhibitionsProductionFacade();
+const rawExhibitions = exhibitionsFacade.forArtist(artist.id, "ja");
 const allArtists = (await getArtistsProductionFacade()).forLocale("ja");
 const artistMap = new Map(allArtists.map((item) => [item.id, item]));
 
@@ -264,7 +262,7 @@ const breadcrumbJsonLd = {
           formattedExhibitions.length > 0 ? (
             formattedExhibitions.map((exh) => (
               <article class="artists-exhibitions-card">
-                <a href={`/exhibitions/${exh.id}`}>
+                <a href={exhibitionsFacade.detailRoute(exh.id, "ja")}>
                   {/* 画像 */}
                   <div class="artists-exhibitions-card-image">
                     <img src={exh.data.hero.image} alt={exh.data.hero_alt} />

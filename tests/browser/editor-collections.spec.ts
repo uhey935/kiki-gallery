@@ -128,25 +128,25 @@ test("Exhibitions operator flow validates, previews, saves, and publishes", asyn
 
   await page.locator('input[name="contentId"]').fill(contentId);
   await page
-    .locator('textarea[name="artists"]')
+    .locator('textarea[name="shared.artists"]')
     .fill("browser-acceptance-artist");
-  await page.locator('input[name="start_date"]').fill("2026-08-09");
-  await page.locator('input[name="end_date"]').fill("2026-08-10");
-  await page.locator('input[name="title"]').fill(createTitle);
-  await page.locator('input[name="venue"]').fill("KiKi Gallery");
+  await page.locator('input[name="shared.start_date"]').fill("2026-08-09");
+  await page.locator('input[name="shared.end_date"]').fill("2026-08-10");
+  await page.locator('input[name="ja.title"]').fill(createTitle);
+  await page.locator('input[name="ja.venue"]').fill("KiKi Gallery");
   await page
-    .locator('textarea[name="body"]')
+    .locator('textarea[name="ja.body"]')
     .fill("Test-only Exhibition created by the isolated browser fixture.");
   await page
-    .locator('input[name="hero.image"]')
+    .locator('input[name="shared.hero.image"]')
     .fill("/images/exhibitions/alana-wilson-2024-04.png");
   await page
-    .locator('select[name="hero.orientation"]')
+    .locator('select[name="shared.hero.orientation"]')
     .selectOption("portrait");
   await page
-    .locator('textarea[name="hero_alt"]')
+    .locator('textarea[name="ja.hero_alt"]')
     .fill("Browser acceptance Exhibition fixture");
-  const hero = page.locator('input[name="hero.image"]');
+  const hero = page.locator('input[name="shared.hero.image"]');
   const originalHero = await hero.inputValue();
   await hero.fill("");
   await expect(page.locator("[data-create-save]")).toBeDisabled();
@@ -166,7 +166,7 @@ test("Exhibitions operator flow validates, previews, saves, and publishes", asyn
   await page.waitForURL(`**/editor/exhibitions/workspace/${contentId}/`);
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForURL(`**/editor/exhibitions/workspace/${contentId}/`);
-  const canonicalTitle = page.locator('input[name="title"]');
+  const canonicalTitle = page.locator('input[name="ja.title"]');
   await expect(canonicalTitle).toBeVisible();
   await expect(canonicalTitle).toHaveValue(createTitle);
 
@@ -186,7 +186,7 @@ test("Exhibitions operator flow validates, previews, saves, and publishes", asyn
     `Exhibition Save failed (${saveResponse.status()}): ${await saveResponse.text()}`,
   ).toBe(true);
   await expect(page.locator("[data-exhibitions-action-status]")).toContainText(
-    "Saved · publish available",
+    "Saved · unpublished changes ready to publish",
   );
   await expect(page.locator("[data-publish-exhibitions]")).toBeEnabled();
   await publish(

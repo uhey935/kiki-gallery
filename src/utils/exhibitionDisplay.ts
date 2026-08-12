@@ -1,8 +1,8 @@
-import type { CollectionEntry } from "astro:content";
 import type { ArtistProductionEntry } from "../content-boundaries/artists-production";
+import type { ExhibitionProductionEntry } from "../content-boundaries/exhibitions-production";
 
 type Artist = ArtistProductionEntry;
-type Exhibition = CollectionEntry<"exhibitions">;
+type Exhibition = ExhibitionProductionEntry;
 
 export function getArtistDisplayName(artist: Artist): string {
   return artist.data.display_name ?? artist.data.name;
@@ -27,13 +27,7 @@ export function resolveExhibitionArtists(
 
 export function getExhibitionDisplayTitle(
   exhibition: Exhibition,
-  artists: Artist[],
+  _artists: Artist[],
 ): string {
-  if (exhibition.data.title) return exhibition.data.title;
-
-  const artistNames = artists.map(getArtistDisplayName);
-
-  return artistNames.length > 1
-    ? `${artistNames.join("、")} 合同展`
-    : `${artistNames[0]} 個展`;
+  return exhibition.data.title;
 }

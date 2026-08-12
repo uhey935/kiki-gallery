@@ -1,137 +1,60 @@
-import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
-import { parse } from "yaml";
-import type { ContentIssue } from "../content-loaders/journal/contracts.ts";
-import {
-  editorExhibitionSchema,
-  type ExhibitionData,
-} from "../content-schemas/exhibition.ts";
-import type { EditorCollectionState } from "./collection-contracts.ts";
+import type { ExhibitionIssue, SourceState } from "../content-loaders/exhibitions/contracts.ts";
+import { evaluateExhibitionLocale } from "../content-loaders/exhibitions/facade.ts";
+import { loadExhibitionRepository } from "../content-loaders/exhibitions/repository.ts";
+import type { ExhibitionLocale, ExhibitionLocalized, ExhibitionShared } from "../content-loaders/exhibitions/schema.ts";
 import { isContentId } from "./content-id.ts";
 
 export type ExhibitionsEditorEntryState = {
   contentId: string;
-  file: string;
-  raw: string;
-  data?: ExhibitionData;
-  body: string;
-  issues: ContentIssue[];
+  shared: SourceState<ExhibitionShared>;
+  locales: Record<ExhibitionLocale, SourceState<ExhibitionLocalized & { body: string }>>;
+  issues: ExhibitionIssue[];
   structuralStatus: "valid" | "issues";
   issueCount: number;
+  capabilities: { save: boolean; preview: Record<ExhibitionLocale, boolean>; publish: boolean };
+  data?: { artists: Array<{ id: string; collection: "artists" }>; works?: Array<{ id: string; collection: "works" }> };
 };
 export class ExhibitionsEditorEntryNotFoundError extends Error {}
 const canonicalRoot = path.resolve("src/content/exhibitions");
-const issue = (
-  contentId: string,
-  fieldPath: string,
-  messageKey: string,
-): ContentIssue => ({
-  ruleId: "content.exhibition.structure",
-  severity: "error",
-  category: "structure",
-  collection: "exhibitions",
-  contentId,
-  fieldPath,
-  messageKey,
-  recovery: { kind: "edit-field", fieldPath },
-});
 
-function parseSource(
-  contentId: string,
-  file: string,
-  raw: string,
-): ExhibitionsEditorEntryState {
-  const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)([\s\S]*)$/.exec(raw);
-  if (!match) {
-    const issues = [
-      issue(contentId, "frontmatter", "content.exhibition.frontmatter.invalid"),
-    ];
+async function entries(root: string) {
+  const units = await loadExhibitionRepository(root);
+  const capable = () => true;
+  return units.map((unit): ExhibitionsEditorEntryState => {
+    const ja = evaluateExhibitionLocale(unit, "ja", capable).allowed;
+    const en = evaluateExhibitionLocale(unit, "en", capable).allowed;
+    const locale = (value: typeof unit.locales.ja) =>
+      value.state === "valid"
+        ? { ...value, value: { ...value.value, body: value.body ?? "" } }
+        : value;
     return {
-      contentId,
-      file,
-      raw,
-      body: "",
-      issues,
-      structuralStatus: "issues",
-      issueCount: 1,
+      contentId: unit.contentId,
+      shared: unit.shared,
+      locales: { ja: locale(unit.locales.ja), en: locale(unit.locales.en) },
+      issues: unit.issues,
+      structuralStatus: unit.issues.length ? "issues" : "valid",
+      issueCount: unit.issues.length,
+      capabilities: { save: unit.shared.state === "valid" && unit.locales.ja.state === "valid" && unit.locales.en.state === "valid", preview: { ja, en }, publish: ja },
+      ...(unit.shared.state === "valid" ? { data: { artists: unit.shared.value.artists.map(id => ({ id, collection: "artists" as const })), ...(unit.shared.value.works ? { works: unit.shared.value.works.map(id => ({ id, collection: "works" as const })) } : {}) } } : {}),
     };
-  }
-  try {
-    const result = editorExhibitionSchema.safeParse(parse(match[1]));
-    if (result.success)
-      return {
-        contentId,
-        file,
-        raw,
-        data: result.data,
-        body: match[2].trim(),
-        issues: [],
-        structuralStatus: "valid",
-        issueCount: 0,
-      };
-    const issues = result.error.issues.map((item) =>
-      issue(contentId, item.path.join("."), item.message),
-    );
-    return {
-      contentId,
-      file,
-      raw,
-      body: match[2].trim(),
-      issues,
-      structuralStatus: "issues",
-      issueCount: issues.length,
-    };
-  } catch {
-    const issues = [
-      issue(contentId, "frontmatter", "content.exhibition.frontmatter.invalid"),
-    ];
-    return {
-      contentId,
-      file,
-      raw,
-      body: match[2].trim(),
-      issues,
-      structuralStatus: "issues",
-      issueCount: 1,
-    };
-  }
+  });
 }
-async function readEntries(root: string) {
-  return Promise.all(
-    (await readdir(root))
-      .filter((name) => name.endsWith(".md"))
-      .sort()
-      .map(async (name) => {
-        const contentId = name.slice(0, -3);
-        const file = path.join(root, name);
-        return parseSource(contentId, file, await readFile(file, "utf8"));
-      }),
-  );
+
+export async function readExhibitionsEditorState(root = canonicalRoot) {
+  const values = await entries(root);
+  return { entries: values.map((entry) => ({
+    contentId: entry.contentId,
+    title: entry.locales.ja.state === "valid" ? entry.locales.ja.value.title : entry.contentId,
+    detail: entry.shared.state === "valid" ? `${entry.shared.value.start_date} · ${entry.shared.value.artists.length} artist(s)` : "Invalid Exhibition data",
+    status: entry.structuralStatus,
+    statusLabel: entry.issueCount ? `${entry.issueCount} issues` : "Ready",
+  })) };
 }
-export async function readExhibitionsEditorState(
-  root = canonicalRoot,
-): Promise<EditorCollectionState> {
-  return {
-    entries: (await readEntries(root)).map((entry) => ({
-      contentId: entry.contentId,
-      title: entry.data?.title ?? entry.contentId,
-      detail: entry.data
-        ? `${entry.data.start_date.toISOString().slice(0, 10)} · ${entry.data.artists.length} artist(s)`
-        : "Invalid Exhibition data",
-      status: entry.structuralStatus,
-      statusLabel: entry.issueCount ? `${entry.issueCount} issues` : "Ready",
-    })),
-  };
-}
-export async function readExhibitionsEditorEntry(
-  contentId: string,
-  root = canonicalRoot,
-) {
-  if (!isContentId(contentId))
-    throw new ExhibitionsEditorEntryNotFoundError(contentId);
-  const entry = (await readEntries(root)).find(
-    (candidate) => candidate.contentId === contentId,
-  );
+
+export async function readExhibitionsEditorEntry(contentId: string, root = canonicalRoot) {
+  if (!isContentId(contentId)) throw new ExhibitionsEditorEntryNotFoundError(contentId);
+  const entry = (await entries(root)).find((candidate) => candidate.contentId === contentId);
   if (!entry) throw new ExhibitionsEditorEntryNotFoundError(contentId);
   return entry;
 }

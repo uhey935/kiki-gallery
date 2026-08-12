@@ -1,23 +1,11 @@
 ---
 title: Intertwined ー 戯れるメッシュ
-
-artists:
-  - yuka-mori
-display_artists: true
-
-start_date: "2025-07-02"
-end_date: "2025-07-26"
-opening_hours: "13:00-17:00"
-closed_days: "水曜・木曜"
-
-hero:
-  image: /images/exhibitions/yuka-mori-2025-07.jpg
-  orientation: portrait
-hero_alt: 淡い青灰色の面に虹色を帯びた光が弧を描く様子
-
 venue: |
   KiKi Gallery
   神奈川県横浜市西区北幸2-10-48　むつみビル3階
+opening_hours: 13:00-17:00
+closed_days: 水曜・木曜
+hero_alt: 淡い青灰色の面に虹色を帯びた光が弧を描く様子
 ---
 
 GALLERY crossing（岐阜・美濃加茂）は2025年7月12日(土)から8月3日(土)まで、森夕香による「Intertwined ー 戯れるメッシュ」を開催いたします。本展は森夕香の当ギャラリーでの初の個展となり、最新作のペインティング作品を展示いたします。

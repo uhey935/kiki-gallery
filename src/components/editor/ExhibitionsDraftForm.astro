@@ -1,206 +1,29 @@
 ---
 import type { ExhibitionsEditorDraftState } from "../../editor/exhibitions-draft-state";
 const { draft } = Astro.props as { draft: ExhibitionsEditorDraftState };
-const { data } = draft;
-const date = (value: Date) => value.toISOString().slice(0, 10);
+const shared = draft.shared.state === "editable" ? draft.shared.value : undefined;
+const localized = (locale: "ja" | "en") => draft.locales[locale].state === "editable" ? draft.locales[locale].value : undefined;
 ---
-
 <form class="editor-draft-form" data-exhibitions-draft-form>
-  <div class="editor-field-meaning" aria-label="Field requirement legend">
-    <span><b>Required</b> needed for a valid draft</span>
-    <span><b>Optional</b> may be left blank</span>
-  </div>
-  <section class="editor-entry-section">
-    <header>
-      <div>
-        <p class="editor-eyebrow">Shared</p><h2>Schedule & references</h2>
-      </div>
-    </header>
-    <div class="editor-entry-section__content editor-field-grid">
-      <label class="editor-field-wide" data-editor-field="artists">
-        <span>
-          Artists (one Content ID per line)
-          <small class="editor-field-badge">Required</small>
-        </span>
-        <textarea name="artists"
-          >{data.artists.map(({ id }) => id).join("\n")}</textarea
-        >
-      </label>
-      <label class="editor-field-wide" data-editor-field="works">
-        <span>
-          Works (one Content ID per line)
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <textarea name="works"
-          >{data.works?.map(({ id }) => id).join("\n") ?? ""}</textarea
-        >
-      </label>
-      <label data-editor-field="start_date">
-        <span>
-          Start date <small class="editor-field-badge">Required</small>
-        </span>
-        <input name="start_date" type="date" value={date(data.start_date)} />
-      </label>
-      <label data-editor-field="end_date">
-        <span>
-          End date <small class="editor-field-badge">Required</small>
-        </span>
-        <input name="end_date" type="date" value={date(data.end_date)} />
-      </label>
-      <label data-editor-field="display_artists">
-        <span>
-          Display artists
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <select name="display_artists">
-          <option value="default" selected={data.display_artists === undefined}>
-            Default
-          </option>
-          <option value="true" selected={data.display_artists === true}>
-            Yes
-          </option>
-          <option value="false" selected={data.display_artists === false}>
-            No
-          </option>
-        </select>
-      </label>
-    </div>
+  <div class="editor-field-meaning" aria-label="Field requirement legend"><span><b>Required</b> needed for a valid draft</span><span><b>Optional</b> may be left blank</span></div>
+  <section class="editor-entry-section"><header><div><p class="editor-eyebrow">Shared</p><h2>Schedule, references & hero</h2></div></header>
+    {shared ? <div class="editor-entry-section__content editor-field-grid">
+      <label class="editor-field-wide"><span>Artists <small class="editor-field-badge">Required</small></span><textarea name="shared.artists">{shared.artists.join("\n")}</textarea></label>
+      <label class="editor-field-wide"><span>Works <small class="editor-field-badge editor-field-badge--optional">Optional</small></span><textarea name="shared.works">{shared.works?.join("\n") ?? ""}</textarea></label>
+      <label><span>Start date <small class="editor-field-badge">Required</small></span><input name="shared.start_date" type="date" value={shared.start_date} /></label>
+      <label><span>End date <small class="editor-field-badge">Required</small></span><input name="shared.end_date" type="date" value={shared.end_date} /></label>
+      <label><span>Display artists</span><select name="shared.display_artists"><option value="default" selected={shared.display_artists === undefined}>Default</option><option value="true" selected={shared.display_artists === true}>Yes</option><option value="false" selected={shared.display_artists === false}>No</option></select></label>
+      <label class="editor-field-wide"><span>Hero image <small class="editor-field-badge">Required</small></span><input name="shared.hero.image" value={shared.hero.image} /></label>
+      <label><span>Orientation <small class="editor-field-badge">Required</small></span><select name="shared.hero.orientation"><option selected={shared.hero.orientation === "portrait"}>portrait</option><option selected={shared.hero.orientation === "landscape"}>landscape</option></select></label>
+      <label><span>Position</span><input name="shared.hero.position" value={shared.hero.position ?? ""} /></label><label><span>Treatment</span><input name="shared.hero.treatment" value={shared.hero.treatment ?? ""} /></label>
+    </div> : <p>Shared source unavailable.</p>}
   </section>
-  <section class="editor-entry-section">
-    <header>
-      <div>
-        <p class="editor-eyebrow">Existing asset reference</p><h2>Hero</h2>
-      </div>
-    </header>
-    <p>
-      Asset upload and replacement are outside this milestone. Edit the
-      canonical public path only.
-    </p>
-    <div class="editor-entry-section__content editor-field-grid">
-      <label class="editor-field-wide" data-editor-field="hero.image">
-        <span>
-          Image path <small class="editor-field-badge">Required</small>
-        </span>
-        <input name="hero.image" value={data.hero.image} />
-      </label>
-      <label data-editor-field="hero.orientation">
-        <span>
-          Orientation
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <select name="hero.orientation">
-          <option selected={data.hero.orientation === "portrait"}>
-            portrait
-          </option>
-          <option selected={data.hero.orientation === "landscape"}>
-            landscape
-          </option>
-        </select>
-      </label>
-      <label data-editor-field="hero.position">
-        <span>
-          Position
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <input name="hero.position" value={data.hero.position ?? ""} />
-      </label>
-      <label data-editor-field="hero.treatment">
-        <span>
-          Treatment
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <input name="hero.treatment" value={data.hero.treatment ?? ""} />
-      </label>
-      <label data-editor-field="hero.hero_caption">
-        <span>
-          Caption
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <input name="hero.hero_caption" value={data.hero.hero_caption ?? ""} />
-      </label>
-      <label class="editor-field-wide" data-editor-field="hero_alt">
-        <span>
-          Alt text <small class="editor-field-badge">Required</small>
-        </span>
-        <textarea name="hero_alt">{data.hero_alt}</textarea>
-      </label>
-    </div>
-  </section>
-  <section class="editor-entry-section">
-    <header>
-      <div><p class="editor-eyebrow">Current locale</p><h2>Content</h2></div>
-    </header>
-    <div class="editor-entry-section__content editor-field-grid">
-      <label class="editor-field-wide" data-editor-field="title">
-        <span>Title <small class="editor-field-badge">Required</small></span>
-        <input name="title" value={data.title ?? ""} />
-      </label>
-      <label class="editor-field-wide" data-editor-field="summary">
-        <span>
-          Summary
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <textarea name="summary">{data.summary ?? ""}</textarea>
-      </label>
-      <label data-editor-field="venue">
-        <span>
-          Venue
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <input name="venue" value={data.venue ?? ""} />
-      </label>
-      <label data-editor-field="opening_hours">
-        <span>
-          Opening hours
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <input name="opening_hours" value={data.opening_hours ?? ""} />
-      </label>
-      <label data-editor-field="closed_days">
-        <span>
-          Closed days
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <input name="closed_days" value={data.closed_days ?? ""} />
-      </label>
-      <label data-editor-field="attendance">
-        <span>
-          Attendance
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <input name="attendance" value={data.attendance ?? ""} />
-      </label>
-      <label class="editor-field-wide" data-editor-field="body">
-        <span>
-          Body
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <textarea name="body">{draft.body}</textarea>
-      </label>
-    </div>
-  </section>
+  {["ja", "en"].map((locale) => { const data = localized(locale as "ja" | "en"); return <section class="editor-entry-section" data-editor-section={locale}><header><div><p class="editor-eyebrow">Localized content</p><h2>{locale.toUpperCase()}</h2></div></header>{data ? <div class="editor-entry-section__content editor-field-grid">
+    <label class="editor-field-wide"><span>Title <small class="editor-field-badge">Required</small></span><input name={`${locale}.title`} value={data.title} /></label>
+    <label class="editor-field-wide"><span>Summary</span><textarea name={`${locale}.summary`}>{data.summary ?? ""}</textarea></label>
+    {(["venue","opening_hours","closed_days","attendance","hero_caption","seo_title"] as const).map(field => <label><span>{field}</span><input name={`${locale}.${field}`} value={data[field] ?? ""} /></label>)}
+    <label class="editor-field-wide"><span>Hero alt <small class="editor-field-badge">Required</small></span><textarea name={`${locale}.hero_alt`}>{data.hero_alt}</textarea></label>
+    <label class="editor-field-wide"><span>Description</span><textarea name={`${locale}.description`}>{data.description ?? ""}</textarea></label>
+    <label class="editor-field-wide"><span>Markdown body</span><textarea name={`${locale}.body`} rows="14">{data.body}</textarea></label>
+  </div> : <p>{locale.toUpperCase()} source unavailable.</p>}</section>; })}
 </form>

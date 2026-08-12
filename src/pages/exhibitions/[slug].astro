@@ -1,5 +1,5 @@
 ---
-import { getCollection, render } from "astro:content";
+import { render } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import { formatDateRangeJa } from "../../utils/date";
 import {
@@ -9,10 +9,12 @@ import {
 } from "../../utils/exhibitionDisplay";
 import { getExhibitionStatus } from "../../utils/exhibitionStatus";
 import { getArtistsProductionFacade } from "../../content-boundaries/artists-production";
+import { getExhibitionsProductionFacade } from "../../content-boundaries/exhibitions-production";
 
 // getStaticPaths
 export async function getStaticPaths() {
-  const exhibitions = await getCollection("exhibitions");
+  const facade = await getExhibitionsProductionFacade();
+  const exhibitions = facade.forLocale("ja");
   const allArtists = (await getArtistsProductionFacade()).forLocale("ja");
   const artistMap = new Map(allArtists.map((artist) => [artist.id, artist]));
 
@@ -29,7 +31,7 @@ export async function getStaticPaths() {
 // props
 const { exh, artists } = Astro.props;
 
-const allWorks = await getCollection("works");
+const exhibitionsFacade = await getExhibitionsProductionFacade();
 const exhibitionDate = exh.data.start_date;
 const exhibitionEndDate = exh.data.end_date;
 const toDateInputValue = (date: Date) => date.toISOString().slice(0, 10);
@@ -38,31 +40,21 @@ const exhibitionEndDateValue = toDateInputValue(exhibitionEndDate);
 
 const getFamilyName = (name: string) => name.trim().split(/\s+/).pop() ?? "";
 
-const exhibitionWorks = (exh.data.works ?? [])
-  .map((workReference) => {
-    const work = allWorks.find((item) => item.id === workReference.id);
+const exhibitionWorks = (
+  await exhibitionsFacade.worksProjection(exh, "ja")
+).sort((a, b) => {
+  const artistA = artists.find((artist) => artist.id === a.data.artist.id);
 
-    if (!work) {
-      throw new Error(
-        `Exhibition "${exh.id}" references missing Work "${workReference.id}".`,
-      );
-    }
+  const artistB = artists.find((artist) => artist.id === b.data.artist.id);
 
-    return work;
-  })
-  .sort((a, b) => {
-    const artistA = artists.find((artist) => artist.id === a.data.artist.id);
+  const familyA = getFamilyName(artistA?.data.name ?? "");
 
-    const artistB = artists.find((artist) => artist.id === b.data.artist.id);
+  const familyB = getFamilyName(artistB?.data.name ?? "");
 
-    const familyA = getFamilyName(artistA?.data.name ?? "");
+  return familyA.localeCompare(familyB, "en", { sensitivity: "base" });
+});
 
-    const familyB = getFamilyName(artistB?.data.name ?? "");
-
-    return familyA.localeCompare(familyB, "en", { sensitivity: "base" });
-  });
-
-const { Content } = await render(exh);
+const { Content } = await render(exh.source);
 
 const artistNames = artists.map(getArtistDisplayName).join("、");
 const displayTitle = getExhibitionDisplayTitle(exh, artists);
@@ -71,9 +63,9 @@ const dateString = formatDateRangeJa(
   exhibitionEndDateValue,
 );
 
-const description = artistNames
-  ? `${artistNames}の展覧会｜${dateString}`
-  : displayTitle;
+const description =
+  exh.data.description ??
+  (artistNames ? `${artistNames}の展覧会｜${dateString}` : displayTitle);
 
 const status = getExhibitionStatus(exhibitionDate, exhibitionEndDate);
 ---
@@ -95,7 +87,10 @@ const status = getExhibitionStatus(exhibitionDate, exhibitionEndDate);
           : "https://schema.org/EventCompleted",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     url: Astro.site
-      ? new URL(`/exhibitions/${exh.id}`, Astro.site).toString()
+      ? new URL(
+          exhibitionsFacade.detailRoute(exh.id, "ja")!,
+          Astro.site,
+        ).toString()
       : undefined,
     location: {
       "@type": "Place",
@@ -104,7 +99,7 @@ const status = getExhibitionStatus(exhibitionDate, exhibitionEndDate);
   })}
 />
 
-<Layout title={displayTitle} description={description}>
+<Layout title={exh.data.seo_title ?? displayTitle} description={description}>
   <section class="section exhibitions-detail">
     <header class="exhibitions-heading">
       {

@@ -13,6 +13,7 @@ import { journalRouteRegistry } from "../content-boundaries/journal";
 import { getJournalProductionFacade } from "../content-boundaries/journal-production";
 import { getNewsProductionFacade } from "../content-boundaries/news-production";
 import { getArtistsProductionFacade } from "../content-boundaries/artists-production";
+import { getExhibitionsProductionFacade } from "../content-boundaries/exhibitions-production";
 
 /* =========================
    Home
@@ -28,7 +29,8 @@ if (!home) {
    Collections
 ========================= */
 
-const exhibitions = await getCollection("exhibitions");
+const exhibitionsFacade = await getExhibitionsProductionFacade();
+const exhibitions = exhibitionsFacade.forLocale("ja");
 const artists = (await getArtistsProductionFacade()).forLocale("ja");
 const journal = await getJournalProductionFacade();
 const news = (await getNewsProductionFacade()).forHome("ja");
@@ -95,11 +97,14 @@ const pastExhibitions = formattedExhibitions.filter(
   (exh) => exh.status === "past",
 );
 
+const homeExhibitionIds = new Set(
+  exhibitionsFacade.forHome("ja", 2).map((entry) => entry.id),
+);
 const homeExhibitions = [
   ...ongoingExhibitions,
   ...upcomingExhibitions,
   ...pastExhibitions,
-].slice(0, 2);
+].filter((entry) => homeExhibitionIds.has(entry.id));
 
 /* =========================
    Stories
@@ -118,7 +123,7 @@ const newsStories = news
       type: item.data.news_type,
       image: image.image,
       alt: image.alt,
-      href: item.data.link,
+      href: exhibitionsFacade.projectNewsLink(item.data.link, "ja")!,
     };
   })
   .filter((item) => item !== null);
@@ -221,7 +226,7 @@ if (!artistsSection || !aboutSection) {
               return (
                 <article class="home-exhibition__item">
                   <a
-                    href={`/exhibitions/${exhibition.id}`}
+                    href={exhibitionsFacade.detailRoute(exhibition.id, "ja")}
                     class="home-exhibition__link"
                   >
                     <div class="home-exhibition__image">

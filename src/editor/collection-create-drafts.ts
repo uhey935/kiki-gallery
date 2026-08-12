@@ -48,15 +48,11 @@ export const createNewArtistsDraft = (): ArtistsEditorDraftState => ({
 
 export const createNewExhibitionsDraft = (): ExhibitionsEditorDraftState => ({
   contentId: "",
-  data: {
-    artists: [],
-    hero: { image: "", orientation: "portrait" },
-    start_date: new Date("2000-01-01T00:00:00.000Z"),
-    end_date: new Date("2000-01-01T00:00:00.000Z"),
-    hero_alt: "",
+  shared: { state: "editable", value: { artists: [], hero: { image: "", orientation: "portrait" }, start_date: "", end_date: "" } },
+  locales: {
+    ja: { state: "editable", value: { title: "", hero_alt: "", body: "" } },
+    en: { state: "editable", value: { title: "__TODO_EN_TITLE__", hero_alt: "__TODO_EN_HERO_ALT__", body: "" } },
   },
-  body: "",
-  sourceRaw: "",
 });
 
 export const createNewNewsDraft = (): NewsEditorDraftState => ({

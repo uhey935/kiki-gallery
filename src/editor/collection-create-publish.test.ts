@@ -104,13 +104,19 @@ test("first Save transitions every flat collection to Publish with its new untra
         const sourceName = (
           await fs.readdir(sourceRoot, { withFileTypes: true })
         ).find((entry) =>
-          collection === "news" || collection === "artists"
+          collection === "news" ||
+          collection === "artists" ||
+          collection === "exhibitions"
             ? entry.isDirectory()
             : entry.isFile() && entry.name.endsWith(".md"),
         )?.name;
         assert.ok(sourceName);
         const sourceId =
-          collection === "news" || collection === "artists" ? sourceName : sourceName.slice(0, -3);
+          collection === "news" ||
+          collection === "artists" ||
+          collection === "exhibitions"
+            ? sourceName
+            : sourceName.slice(0, -3);
         const sourceDraft = makeDraft(
           (await read(sourceId, sourceRoot)) as never,
         );
@@ -129,7 +135,9 @@ test("first Save transitions every flat collection to Publish with its new untra
           root,
         });
         const expectedPaths =
-          collection === "news" || collection === "artists"
+          collection === "news" ||
+          collection === "artists" ||
+          collection === "exhibitions"
             ? ["en.md", "index.yaml", "ja.md"]
                 .map((name) => `?? ${relativeRoot}/${contentId}/${name}`)
                 .join("\n")
@@ -148,7 +156,9 @@ test("first Save transitions every flat collection to Publish with its new untra
         );
         assert.equal(result.state, "published");
         const publishedPaths =
-          collection === "news" || collection === "artists"
+          collection === "news" ||
+          collection === "artists" ||
+          collection === "exhibitions"
             ? ["en.md", "index.yaml", "ja.md"]
                 .map((name) => `${relativeRoot}/${contentId}/${name}`)
                 .join("\n")

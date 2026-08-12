@@ -1,10 +1,10 @@
-import type { CollectionEntry } from "astro:content";
 import {
   findJournalEntry,
   journalRouteRegistry,
   type JournalIndexEntry,
 } from "../content-boundaries/journal.ts";
 import type { ArtistProductionEntry } from "../content-boundaries/artists-production.ts";
+import type { ExhibitionProductionEntry } from "../content-boundaries/exhibitions-production.ts";
 
 type ImageSource = {
   image: string;
@@ -19,7 +19,7 @@ type JournalImageEntry = JournalIndexEntry & {
 };
 
 type NewsImageCollections = {
-  exhibitions: Map<string, CollectionEntry<"exhibitions">>;
+  exhibitions: Map<string, ExhibitionProductionEntry>;
   artists: Map<string, ArtistProductionEntry>;
   journal: JournalImageEntry[];
 };

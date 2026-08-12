@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { contentWriterRoute } from "./content-writer-route.ts";
 import type { ExhibitionsEditorDraftState } from "../exhibitions-draft-state.ts";
+import type { ExhibitionLocale } from "../../content-loaders/exhibitions/schema.ts";
 import {
   createExhibitionsPreviewModel,
   exhibitionsPreviewStore,
@@ -9,14 +10,14 @@ import {
 const unlockedPOST: APIRoute = async ({ request }) => {
   try {
     const input = (await request.json()) as {
-      draft?: ExhibitionsEditorDraftState;
+      draft?: ExhibitionsEditorDraftState; locale?: ExhibitionLocale;
     };
-    if (!input.draft)
+    if (!input.draft || (input.locale !== "ja" && input.locale !== "en"))
       throw new ExhibitionsPreviewError("Draft required", "invalid-request");
-    const model = createExhibitionsPreviewModel(input.draft);
+    const model = createExhibitionsPreviewModel(input.draft, input.locale);
     const token = exhibitionsPreviewStore.create(model);
     return Response.json({
-      url: `/editor/preview/exhibitions/${token}/${encodeURIComponent(model.contentId)}`,
+      url: `/editor/preview/exhibitions/${token}/${model.locale}`,
     });
   } catch (error) {
     return Response.json(

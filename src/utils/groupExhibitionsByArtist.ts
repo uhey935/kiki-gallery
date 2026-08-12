@@ -1,7 +1,7 @@
-import type { CollectionEntry } from "astro:content";
 import { getExhibitionStatus } from "./exhibitionStatus";
+import type { ExhibitionProductionEntry } from "../content-boundaries/exhibitions-production";
 
-type Exhibition = CollectionEntry<"exhibitions">;
+type Exhibition = ExhibitionProductionEntry;
 
 export type ExhibitionWithStatus = Exhibition & {
   status: "ongoing" | "upcoming" | "past";

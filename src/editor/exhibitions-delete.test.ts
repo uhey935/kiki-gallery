@@ -31,18 +31,25 @@ async function fixture() {
     path.join(os.tmpdir(), "exhibitions-delete-"),
   );
   const repository = path.join(parent, "repository");
-  const unit = path.join(repository, "src/content/exhibitions/delete-me.md");
+  const unit = path.join(repository, "src/content/exhibitions/delete-me");
+  const shared = path.join(unit, "index.yaml");
   for (const collection of ["artists", "works", "exhibitions", "news", "home"])
     await fs.mkdir(path.join(repository, "src/content", collection), {
       recursive: true,
     });
   await fs.mkdir(path.join(repository, "public/images"), { recursive: true });
+  await fs.mkdir(unit);
   await fs.writeFile(
-    unit,
-    "---\ntitle: Delete me\nartists:\n  - artist-one\nstart_date: 2026-08-09\nend_date: 2026-08-10\nhero:\n  image: /images/exhibitions/delete-me.jpg\n  orientation: landscape\nhero_alt: Delete me\n---\n\nBody\n",
+    shared,
+    "artists:\n  - artist-one\nworks: []\nstart_date: 2026-08-09\nend_date: 2026-08-10\nhero:\n  image: /images/exhibitions/delete-me.jpg\n  orientation: landscape\n",
   );
+  for (const locale of ["ja", "en"])
+    await fs.writeFile(
+      path.join(unit, `${locale}.md`),
+      "---\ntitle: Delete me\nhero_alt: Delete me\n---\n\nBody\n",
+    );
   await fs.writeFile(
-    path.join(repository, "src/content/exhibitions/unrelated.md"),
+    path.join(repository, "src/content/home/home.md"),
     "---\ntitle: unrelated\n---\n\nNo reference.\n",
   );
   await git(repository, ["init", "-b", "main"]);
@@ -52,12 +59,14 @@ async function fixture() {
   await git(repository, ["commit", "-m", "fixture"]);
   const backup = path.join(parent, "backup");
   await createBackup({ repositoryRoot: repository, destination: backup });
-  return { parent, repository, unit, backup };
+  return { parent, repository, unit, shared, backup };
 }
 
 test("Exhibitions Delete requires exact backup bytes and refuses incoming references", async () => {
   const value = await fixture();
-  await fs.appendFile(value.unit, "drift\n");
+  const ja = path.join(value.unit, "ja.md");
+  const jaBaseline = await fs.readFile(ja, "utf8");
+  await fs.writeFile(ja, jaBaseline.replace("title: Delete me", "title: Delete me drifted"));
   await assert.rejects(
     () =>
       planExhibitionsDelete({
@@ -67,10 +76,7 @@ test("Exhibitions Delete requires exact backup bytes and refuses incoming refere
       }),
     (error: Error & { code?: string }) => error.code === "backup-proof-stale",
   );
-  await fs.writeFile(
-    value.unit,
-    "---\ntitle: Delete me\nartists:\n  - artist-one\nstart_date: 2026-08-09\nend_date: 2026-08-10\nhero:\n  image: /images/exhibitions/delete-me.jpg\n  orientation: landscape\nhero_alt: Delete me\n---\n\nBody\n",
-  );
+  await fs.writeFile(ja, jaBaseline);
   await fs.writeFile(
     path.join(value.repository, "src/content/news/incoming.md"),
     "---\ntitle: Exhibition News\ndate: 2026-08-09\nnews_type: exhibition\nlink: /exhibitions/delete-me/\nshow_on_home: false\n---\n",
@@ -127,7 +133,7 @@ test("reviewed Exhibitions Delete moves the complete unit, records evidence, and
   );
   assert.equal(evidence.state, "completed");
   await fs.appendFile(
-    path.join(value.repository, "src/content/exhibitions/unrelated.md"),
+    path.join(value.repository, "src/content/home/home.md"),
     "unrelated change\n",
   );
   const published = await publishExhibitionsDelete(
@@ -144,7 +150,7 @@ test("reviewed Exhibitions Delete moves the complete unit, records evidence, and
   );
   assert.match(
     await git(value.repository, ["status", "--short"]),
-    /unrelated\.md/,
+    /home\.md/,
   );
 });
 
@@ -155,14 +161,14 @@ test("Exhibitions Delete detects drift and non-stealing lock conflicts", async (
     contentId: "delete-me",
     backupRoot: value.backup,
   });
-  await fs.appendFile(value.unit, "drift\n");
+  await fs.appendFile(value.shared, "drift: true\n");
   await assert.rejects(
     () => executeExhibitionsDelete(plan, value.repository),
     (error: Error & { code?: string }) => error.code === "plan-stale",
   );
   await fs.writeFile(
-    value.unit,
-    "---\ntitle: Delete me\nartists:\n  - artist-one\nstart_date: 2026-08-09\nend_date: 2026-08-10\nhero:\n  image: /images/exhibitions/delete-me.jpg\n  orientation: landscape\nhero_alt: Delete me\n---\n\nBody\n",
+    value.shared,
+    "artists:\n  - artist-one\nworks: []\nstart_date: 2026-08-09\nend_date: 2026-08-10\nhero:\n  image: /images/exhibitions/delete-me.jpg\n  orientation: landscape\n",
   );
   const fresh = await planExhibitionsDelete({
     repositoryRoot: value.repository,
@@ -231,7 +237,7 @@ test("uncertain rollback preserves the lifecycle lock and records manual recover
           throw new Error("injected failure");
         },
         beforeRollback: async () => {
-          await fs.writeFile(value.unit, "conflict");
+          await fs.mkdir(value.unit);
         },
       }),
     (error: Error & { code?: string }) => error.code === "rollback-failed",

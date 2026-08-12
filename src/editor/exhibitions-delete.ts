@@ -107,14 +107,14 @@ async function repositoryIdentity(repositoryRoot: string) {
 
 async function exhibitionsInventory(repositoryRoot: string, contentId: string) {
   const root = path.join(repositoryRoot, "src/content/exhibitions");
-  const file = path.resolve(root, `${contentId}.md`);
+  const file = path.resolve(root, contentId);
   if (path.dirname(file) !== root)
     throw new ExhibitionsDeleteError(
       "Unsafe Exhibitions source.",
       "source-unavailable",
     );
   const stat = await fs.lstat(file).catch(() => undefined);
-  if (!stat?.isFile() || stat.isSymbolicLink())
+  if (!stat?.isDirectory() || stat.isSymbolicLink())
     throw new ExhibitionsDeleteError(
       "Exhibitions source is unavailable.",
       "source-unavailable",
@@ -127,14 +127,9 @@ async function exhibitionsInventory(repositoryRoot: string, contentId: string) {
       "Exhibitions file must pass canonical validation before Delete.",
       "source-unavailable",
     );
-  const bytes = await fs.readFile(file);
-  return [
-    {
-      path: relative(repositoryRoot, file),
-      sha256: sha256(bytes),
-      byteSize: bytes.byteLength,
-    },
-  ];
+  const names = (await fs.readdir(file, { withFileTypes: true })).sort((a,b)=>a.name.localeCompare(b.name));
+  if (JSON.stringify(names.map(item=>item.name)) !== JSON.stringify(["en.md","index.yaml","ja.md"]) || names.some(item=>!item.isFile()||item.isSymbolicLink())) throw new ExhibitionsDeleteError("Exact three-file inventory required.","source-unavailable");
+  return Promise.all(names.map(async item => { const source=path.join(file,item.name), bytes=await fs.readFile(source); return { path: relative(repositoryRoot,source), sha256:sha256(bytes), byteSize:bytes.byteLength }; }));
 }
 
 async function assertNoIncomingReferences(
@@ -378,9 +373,9 @@ export async function executeExhibitionsDelete(
   const canonicalFile = path.join(
     repositoryRoot,
     "src/content/exhibitions",
-    `${reviewedPlan.contentId}.md`,
+    reviewedPlan.contentId,
   );
-  const recoveryFile = path.join(repositoryRoot, reviewedPlan.recoveryPaths[0]);
+  const recoveryFile = path.join(repositoryRoot,".kiki-editor/content-lifecycle/recovery",reviewedPlan.operationId,"src/content/exhibitions",reviewedPlan.contentId);
   let moved = false;
   try {
     await assertContentLifecycleLock(repositoryRoot, lock.identity);
@@ -520,9 +515,7 @@ export async function publishExhibitionsDelete(
       "state-mismatch",
     );
   if (
-    files.some(
-      (file) => file !== `src/content/exhibitions/${record.contentId}.md`,
-    )
+    files.some((file) => !["en.md","index.yaml","ja.md"].map(name=>`src/content/exhibitions/${record.contentId}/${name}`).includes(file))
   )
     throw new ExhibitionsDeleteError(
       "Delete evidence escaped the Exhibitions unit.",
@@ -546,7 +539,7 @@ export async function publishExhibitionsDelete(
     );
     if (status.some((line) => !line.startsWith("D\t")))
       throw new ExhibitionsDeleteError(
-        "Delete Publish requires one staged deletion.",
+        "Delete Publish requires staged deletions only.",
         "state-mismatch",
       );
     await git(["commit", "-m", `Delete exhibitions: ${record.contentId}`]);

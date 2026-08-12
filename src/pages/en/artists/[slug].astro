@@ -1,6 +1,7 @@
 ---
 import { getArtistsProductionFacade } from "../../../content-boundaries/artists-production";
 import Layout from "../../../layouts/Layout.astro";
+import { getExhibitionsProductionFacade } from "../../../content-boundaries/exhibitions-production";
 
 export async function getStaticPaths() {
   return (await getArtistsProductionFacade()).forLocale("en").map((artist) => ({
@@ -10,6 +11,8 @@ export async function getStaticPaths() {
 }
 
 const { artist } = Astro.props;
+const exhibitionsFacade = await getExhibitionsProductionFacade();
+const exhibitions = exhibitionsFacade.forArtist(artist.id, "en");
 ---
 
 <Layout
@@ -41,6 +44,32 @@ const { artist } = Astro.props;
               />
             </div>
             <p class="artists-bio-text">{artist.data.biography}</p>
+          </div>
+        </section>
+      )
+    }
+    {
+      exhibitions.length > 0 && (
+        <section class="section artists-exhibitions">
+          <h2 class="detail-h2-title">Exhibitions</h2>
+          <div class="artists-exhibitions-list">
+            {exhibitions.map((exhibition) => (
+              <article class="artists-exhibitions-card">
+                <a href={exhibitionsFacade.detailRoute(exhibition.id, "en")}>
+                  <div class="artists-exhibitions-card-image">
+                    <img
+                      src={exhibition.data.hero.image}
+                      alt={exhibition.data.hero_alt}
+                    />
+                  </div>
+                  <div class="artists-exhibitions-card-meta">
+                    <h3 class="artists-exhibitions-card-title">
+                      {exhibition.data.title}
+                    </h3>
+                  </div>
+                </a>
+              </article>
+            ))}
           </div>
         </section>
       )

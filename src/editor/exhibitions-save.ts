@@ -2,125 +2,33 @@ import { randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { isContentId } from "./content-id.ts";
-import {
-  createExhibitionsEditorDraft,
-  validateExhibitionsEditorDraft,
-  type ExhibitionsEditorDraftState,
-} from "./exhibitions-draft-state.ts";
-import { serializeExhibitionsEditorDraft } from "./exhibitions-serializer.ts";
+import { createExhibitionsEditorDraft, validateExhibitionsEditorDraft, type ExhibitionsEditorDraftState } from "./exhibitions-draft-state.ts";
+import { serializeExhibitionsEditorDraft, type ExhibitionsSerializedFiles } from "./exhibitions-serializer.ts";
 import { readExhibitionsEditorEntry } from "./exhibitions-state.ts";
-
+const names = ["index.yaml", "ja.md", "en.md"] as const;
 const canonicalRoot = path.resolve("src/content/exhibitions");
 export class ExhibitionsSaveError extends Error {
-  readonly code:
-    | "invalid-content-id"
-    | "invalid-draft"
-    | "canonical-mismatch"
-    | "save-failed";
-  constructor(
-    message: string,
-    code:
-      | "invalid-content-id"
-      | "invalid-draft"
-      | "canonical-mismatch"
-      | "save-failed",
-    options?: ErrorOptions,
-  ) {
-    super(message, options);
-    this.code = code;
-  }
+  readonly code: "invalid-content-id"|"invalid-draft"|"canonical-mismatch"|"exhibitions-save-rollback-failed"|"save-failed";
+  constructor(message: string, code: ExhibitionsSaveError["code"], options?: ErrorOptions) { super(message, options); this.code = code; }
 }
-export type ExhibitionsSaveFileSystem = Pick<
-  typeof fs,
-  "lstat" | "readFile" | "rename" | "rm" | "writeFile"
->;
-async function targetFor(
-  contentId: string,
-  root: string,
-  fileSystem: ExhibitionsSaveFileSystem,
-) {
-  if (!isContentId(contentId))
-    throw new ExhibitionsSaveError(
-      "Invalid Exhibition Content ID",
-      "invalid-content-id",
-    );
-  const resolvedRoot = path.resolve(root);
-  const target = path.resolve(resolvedRoot, `${contentId}.md`);
-  const [rootStat, targetStat] = await Promise.all([
-    fileSystem.lstat(resolvedRoot).catch(() => undefined),
-    fileSystem.lstat(target).catch(() => undefined),
-  ]);
-  if (
-    path.dirname(target) !== resolvedRoot ||
-    !rootStat?.isDirectory() ||
-    rootStat.isSymbolicLink() ||
-    !targetStat?.isFile() ||
-    targetStat.isSymbolicLink()
-  )
-    throw new ExhibitionsSaveError(
-      "Unsafe Exhibition source",
-      "invalid-content-id",
-    );
-  return target;
+export type ExhibitionsSaveFileSystem = Pick<typeof fs, "lstat"|"mkdir"|"readFile"|"rename"|"rm"|"writeFile">;
+export async function writeExhibitionsSerializedFiles(contentId: string, files: ExhibitionsSerializedFiles, baseline: ExhibitionsSerializedFiles, root=canonicalRoot, io: ExhibitionsSaveFileSystem=fs) {
+  if (!isContentId(contentId)) throw new ExhibitionsSaveError("Invalid Content ID", "invalid-content-id");
+  const directory=path.resolve(root, contentId); const stat=await io.lstat(directory).catch(()=>undefined);
+  if(path.dirname(directory)!==path.resolve(root)||!stat?.isDirectory()||stat.isSymbolicLink()) throw new ExhibitionsSaveError("Unsafe Exhibition unit", "invalid-content-id");
+  const token=`.exhibitions-save-${randomUUID()}`, stage=path.join(directory,`${token}-stage`), backup=path.join(directory,`${token}-backup`); const replaced:string[]=[];
+  try { await io.mkdir(stage); await io.mkdir(backup); for(const name of names){ const target=path.join(directory,name); const s=await io.lstat(target); if(!s.isFile()||s.isSymbolicLink()) throw new Error("unsafe source"); const current=await io.readFile(target,"utf8"); if(current!==baseline[name]) throw new ExhibitionsSaveError("Canonical changed", "canonical-mismatch"); await io.writeFile(path.join(stage,name),files[name],{flag:"wx"}); await io.writeFile(path.join(backup,name),current,{flag:"wx"}); }
+    for(const name of names){ await io.rename(path.join(stage,name),path.join(directory,name)); replaced.push(name); }
+  } catch(error){ const failures=[]; for(const name of replaced.reverse()) try{ await io.rename(path.join(backup,name),path.join(directory,name)); }catch(e){failures.push(e);} if(failures.length) throw new ExhibitionsSaveError("Rollback failed", "exhibitions-save-rollback-failed",{cause:new AggregateError([error,...failures])}); if(error instanceof ExhibitionsSaveError) throw error; throw new ExhibitionsSaveError("Save failed","save-failed",{cause:error}); }
+  finally { await Promise.all([io.rm(stage,{recursive:true,force:true}).catch(()=>{}),io.rm(backup,{recursive:true,force:true}).catch(()=>{})]); }
 }
-export async function saveExhibitionsEditorDraft(
-  draft: ExhibitionsEditorDraftState,
-  baseline: ExhibitionsEditorDraftState,
-  root = canonicalRoot,
-  fileSystem: ExhibitionsSaveFileSystem = fs,
-) {
-  if (!validateExhibitionsEditorDraft(draft).capabilities.save)
-    throw new ExhibitionsSaveError(
-      "Exhibition draft has blocking issues",
-      "invalid-draft",
-    );
-  if (draft.contentId !== baseline.contentId)
-    throw new ExhibitionsSaveError("Content ID mismatch", "canonical-mismatch");
-  const canonicalEntry = await readExhibitionsEditorEntry(
-    draft.contentId,
-    root,
-  );
-  const canonical = createExhibitionsEditorDraft(canonicalEntry);
-  if (!canonical || JSON.stringify(canonical) !== JSON.stringify(baseline))
-    throw new ExhibitionsSaveError(
-      "Canonical Exhibition changed after load",
-      "canonical-mismatch",
-    );
-  const target = await targetFor(draft.contentId, root, fileSystem);
-  const staged = path.join(
-    root,
-    `.exhibitions-save-${draft.contentId}-${randomUUID()}.tmp`,
-  );
-  const serialized = serializeExhibitionsEditorDraft(draft);
-  try {
-    await fileSystem.writeFile(staged, serialized, {
-      encoding: "utf8",
-      flag: "wx",
-    });
-    const stat = await fileSystem.lstat(staged);
-    if (!stat.isFile() || stat.isSymbolicLink())
-      throw new Error("Unsafe staged source");
-    if ((await fileSystem.readFile(target, "utf8")) !== canonicalEntry.raw)
-      throw new ExhibitionsSaveError(
-        "Canonical Exhibition changed during Save",
-        "canonical-mismatch",
-      );
-    await fileSystem.rename(staged, target);
-  } catch (error) {
-    if (error instanceof ExhibitionsSaveError) throw error;
-    throw new ExhibitionsSaveError("Failed to save Exhibition", "save-failed", {
-      cause: error,
-    });
-  } finally {
-    await fileSystem.rm(staged, { force: true }).catch(() => undefined);
-  }
-  const saved = createExhibitionsEditorDraft(
-    await readExhibitionsEditorEntry(draft.contentId, root),
-  );
-  if (!saved)
-    throw new ExhibitionsSaveError(
-      "Saved Exhibition is invalid",
-      "save-failed",
-    );
-  return saved;
+export async function saveExhibitionsEditorDraft(draft: ExhibitionsEditorDraftState, baseline: ExhibitionsEditorDraftState, root=canonicalRoot, io: ExhibitionsSaveFileSystem=fs){
+  if(!validateExhibitionsEditorDraft(draft).capabilities.save) throw new ExhibitionsSaveError("Invalid draft","invalid-draft");
+  if(draft.contentId!==baseline.contentId) throw new ExhibitionsSaveError("Content ID mismatch","canonical-mismatch");
+  const entry=await readExhibitionsEditorEntry(draft.contentId,root); const canonical=createExhibitionsEditorDraft(entry);
+  const canonicalFiles=serializeExhibitionsEditorDraft(canonical), baselineFiles=serializeExhibitionsEditorDraft(baseline);
+  if(names.some(name=>canonicalFiles[name]!==baselineFiles[name])) throw new ExhibitionsSaveError("Canonical changed","canonical-mismatch");
+  if(entry.shared.state!=="valid"||entry.locales.ja.state!=="valid"||entry.locales.en.state!=="valid") throw new ExhibitionsSaveError("Canonical unavailable","canonical-mismatch");
+  await writeExhibitionsSerializedFiles(draft.contentId,serializeExhibitionsEditorDraft(draft),{"index.yaml":entry.shared.raw,"ja.md":entry.locales.ja.raw,"en.md":entry.locales.en.raw},root,io);
+  return createExhibitionsEditorDraft(await readExhibitionsEditorEntry(draft.contentId,root));
 }

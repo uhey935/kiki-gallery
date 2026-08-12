@@ -206,9 +206,10 @@ async function assertNoIncomingReferences(root: string, contentId: string) {
             "incoming-reference",
           );
       } else if (canonical.startsWith("src/content/exhibitions/")) {
+        if (path.basename(file) !== "index.yaml") continue;
         const item = await readExhibitionsEditorEntry(
-          path.basename(file, ".md"),
-          path.dirname(file),
+          path.basename(path.dirname(file)),
+          path.dirname(path.dirname(file)),
         );
         if (!item.data || item.structuralStatus !== "valid")
           throw new Error("invalid Exhibition source");

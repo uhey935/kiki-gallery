@@ -2,13 +2,8 @@ import path from "node:path";
 
 import { type ArtistsEditorDraftState } from "./artists-draft-state.ts";
 import { createArtistsThreeFileEntry, type ArtistsCreateFileSystem } from "./artists-create.ts";
-import {
-  createExhibitionsEditorDraft,
-  type ExhibitionsEditorDraftState,
-  validateExhibitionsEditorDraft,
-} from "./exhibitions-draft-state.ts";
-import { serializeExhibitionsEditorDraft } from "./exhibitions-serializer.ts";
-import { readExhibitionsEditorEntry } from "./exhibitions-state.ts";
+import { type ExhibitionsEditorDraftState } from "./exhibitions-draft-state.ts";
+import { createExhibitionsThreeFileEntry, type ExhibitionsCreateFileSystem } from "./exhibitions-create.ts";
 import {
   createFlatEditorEntry,
   type FlatCreateFileSystem,
@@ -29,6 +24,7 @@ import { readWorksEditorEntry } from "./works-state.ts";
 type FlatCreateOptions = { root?: string; fileSystem?: FlatCreateFileSystem };
 type NewsCreateOptions = { root?: string; fileSystem?: NewsCreateFileSystem };
 type ArtistsCreateOptions = { root?: string; fileSystem?: ArtistsCreateFileSystem };
+type ExhibitionsCreateOptions = { root?: string; fileSystem?: ExhibitionsCreateFileSystem };
 
 export const createWorksEditorEntry = (
   draft: WorksEditorDraftState,
@@ -54,20 +50,9 @@ export const createArtistsEditorEntry = (
 
 export const createExhibitionsEditorEntry = (
   draft: ExhibitionsEditorDraftState,
-  options: FlatCreateOptions = {},
+  options: ExhibitionsCreateOptions = {},
 ) =>
-  createFlatEditorEntry({
-    collectionId: "exhibitions",
-    collectionLabel: "Exhibition",
-    draft,
-    root: options.root ?? path.resolve("src/content/exhibitions"),
-    validate: (value) =>
-      validateExhibitionsEditorDraft(value).capabilities.save,
-    serialize: serializeExhibitionsEditorDraft,
-    reread: async (id, root) =>
-      createExhibitionsEditorDraft(await readExhibitionsEditorEntry(id, root)),
-    fileSystem: options.fileSystem,
-  });
+  createExhibitionsThreeFileEntry(draft, options.root ?? path.resolve("src/content/exhibitions"), options.fileSystem);
 
 export const createNewsEditorEntry = (
   draft: NewsEditorDraftState,

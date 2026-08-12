@@ -118,10 +118,20 @@ test("Artists Delete requires exact backup bytes and refuses incoming references
     (error: Error & { code?: string }) => error.code === "incoming-reference",
   );
   await fs.unlink(work);
-  await fs.writeFile(
-    path.join(value.repository, "src/content/exhibitions/incoming.md"),
-    "---\nartists:\n  - delete-me\nhero:\n  image: /images/exhibitions/incoming.jpg\n  orientation: landscape\nstart_date: 2026-08-09\nend_date: 2026-08-10\nhero_alt: Incoming\n---\n",
+  const exhibition = path.join(
+    value.repository,
+    "src/content/exhibitions/incoming",
   );
+  await fs.mkdir(exhibition);
+  await fs.writeFile(
+    path.join(exhibition, "index.yaml"),
+    "artists:\n  - delete-me\nworks: []\nhero:\n  image: /images/exhibitions/incoming.jpg\n  orientation: landscape\nstart_date: 2026-08-09\nend_date: 2026-08-10\n",
+  );
+  for (const locale of ["ja", "en"])
+    await fs.writeFile(
+      path.join(exhibition, `${locale}.md`),
+      "---\ntitle: Incoming\nhero_alt: Incoming\n---\n",
+    );
   await assert.rejects(
     () =>
       planArtistsDelete({

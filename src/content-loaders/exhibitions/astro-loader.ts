@@ -5,6 +5,8 @@ import {
   type ArtistCapabilityResolver,
 } from "./facade.ts";
 import { loadExhibitionRepository } from "./repository.ts";
+import { loadArtistRepository } from "../artists/repository.ts";
+import { createArtistsPrototypeFacade } from "../artists/facade.ts";
 
 export async function synchronizeExhibitionPrototypeStore(
   context: LoaderContext,
@@ -78,6 +80,53 @@ export function exhibitionPrototypeThreeFileLoader(options: {
             ),
           40,
         );
+      };
+      context.watcher.on("add", schedule);
+      context.watcher.on("change", schedule);
+      context.watcher.on("unlink", schedule);
+      context.watcher.on("addDir", schedule);
+      context.watcher.on("unlinkDir", schedule);
+    },
+  };
+}
+
+export function exhibitionThreeFileLoader(options: {
+  root: string;
+  artistsRoot: string;
+  name?: string;
+}): Loader {
+  const root = path.resolve(options.root);
+  const artistsRoot = path.resolve(options.artistsRoot);
+  return {
+    name: options.name ?? "exhibition-three-file-loader",
+    async load(context) {
+      const artists = createArtistsPrototypeFacade(
+        await loadArtistRepository(artistsRoot),
+      );
+      const artistCapable: ArtistCapabilityResolver = (contentId, locale) =>
+        Boolean(artists.find(contentId, locale));
+      await synchronizeExhibitionPrototypeStore(context, root, artistCapable);
+      if (!context.watcher) return;
+      context.watcher.add([root, artistsRoot]);
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const schedule = (changedPath: string) => {
+        if (
+          !changedPath.startsWith(root) &&
+          !changedPath.startsWith(artistsRoot)
+        )
+          return;
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(async () => {
+          const currentArtists = createArtistsPrototypeFacade(
+            await loadArtistRepository(artistsRoot),
+          );
+          await synchronizeExhibitionPrototypeStore(
+            context,
+            root,
+            (contentId, locale) =>
+              Boolean(currentArtists.find(contentId, locale)),
+          );
+        }, 40);
       };
       context.watcher.on("add", schedule);
       context.watcher.on("change", schedule);

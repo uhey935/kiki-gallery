@@ -305,7 +305,8 @@ function referenceEdits(
   )
     return [];
   if (file.startsWith("src/content/artists/") && !file.endsWith("/index.yaml")) return [];
-  const parsed = file.startsWith("src/content/artists/")
+  if (file.startsWith("src/content/exhibitions/") && !file.endsWith("/index.yaml")) return [];
+  const parsed = file.endsWith("/index.yaml")
     ? { raw: item.bytes.toString("utf8"), body: item.bytes.toString("utf8"), bodyStart: 0 }
     : frontmatter(item, root);
   const { raw, body, bodyStart } = parsed;

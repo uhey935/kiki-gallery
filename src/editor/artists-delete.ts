@@ -180,9 +180,10 @@ async function assertNoIncomingReferences(
             if (item.data.artist.id === contentId)
               referenced("Incoming Work.artist reference blocks Delete");
           } else if (canonicalPath.startsWith("src/content/exhibitions/")) {
+            if (entry.name !== "index.yaml") continue;
             const item = await readExhibitionsEditorEntry(
-              path.basename(file, ".md"),
-              path.dirname(file),
+              path.basename(path.dirname(file)),
+              path.dirname(path.dirname(file)),
             );
             if (item.structuralStatus !== "valid" || !item.data)
               throw new Error("invalid Exhibition reference source");
