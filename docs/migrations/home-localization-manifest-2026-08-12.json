@@ -1,7 +1,7 @@
 {
   "migrationVersion": 1,
   "collection": "home",
-  "mode": "blocked-dry-run",
+  "mode": "approved-migration",
   "identity": { "contentId": "home", "singleton": true },
   "source": {
     "path": "src/content/home/home.md",
@@ -12,31 +12,47 @@
   "targetPlan": {
     "directory": "src/content/home/home",
     "exactInventory": ["index.yaml", "ja.md", "en.md"],
-    "finalTargetEvidence": "pending-human-input",
+    "finalTargetEvidence": "frozen-temporary-copy",
     "files": [
       {
         "path": "src/content/home/home/index.yaml",
-        "sha256": null,
-        "byteLength": null
+        "content": "sections:\n  artists:\n    destination: artists\n    image:\n      src: /images/home/artists-square.jpg\n  about:\n    destination: about\n    image:\n      src: /images/home/about-landscape.jpg\n",
+        "sha256": "ea57a4248ecde472a4f261a8a61b05c442140542d0c2c0779bae79320530a053",
+        "byteLength": 187
       },
       {
         "path": "src/content/home/home/ja.md",
-        "sha256": null,
-        "byteLength": null
+        "content": "---\n# __TODO_HOME_JA_ABOUT_INTRO__\nabout_intro: KiKi Galleryは、現代美術を中心に紹介するアートギャラリーです。\n---\n",
+        "sha256": "d558706020d958bd5422c3d9205ebdd7550d9331dbe5ad19ba06b2df763efd03",
+        "byteLength": 140
       },
       {
         "path": "src/content/home/home/en.md",
-        "sha256": null,
-        "byteLength": null
+        "content": "---\nabout_intro: __TODO_HOME_EN_ABOUT_INTRO__\n---\n",
+        "sha256": "40ec8db5cfd0563fa7436022299bc797fb33257c45c0f52353d41973452bd449",
+        "byteLength": 50
       }
     ]
   },
   "prerequisites": {
     "jaAboutIntroHumanApproved": false,
     "enAboutIntroHumanApproved": false,
-    "realMigrationAllowed": false
+    "realMigrationAllowed": true,
+    "productionCutoverAllowed": false
   },
-  "unresolvedHumanInput": ["ja.about_intro", "en.about_intro"],
+  "localizedCopy": {
+    "jaAboutIntro": {
+      "status": "temporary",
+      "approved": false,
+      "value": "KiKi Galleryは、現代美術を中心に紹介するアートギャラリーです。",
+      "marker": "__TODO_HOME_JA_ABOUT_INTRO__"
+    },
+    "enAboutIntro": {
+      "status": "placeholder",
+      "approved": false,
+      "value": "__TODO_HOME_EN_ABOUT_INTRO__"
+    }
+  },
   "assets": [
     {
       "canonicalUrl": "/images/home/artists-square.jpg",

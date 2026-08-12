@@ -3,6 +3,11 @@ import { lstat, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseDocument } from "yaml";
+import { convertLegacyHomeMarkdown } from "./migration-converter.ts";
+import {
+  HOME_JA_ABOUT_INTRO_TEMPORARY_COPY,
+  HOME_JA_ABOUT_INTRO_TEMPORARY_MARKER,
+} from "./schema.ts";
 
 export const homeMigrationSha256 = (value: Uint8Array | string) =>
   createHash("sha256").update(value).digest("hex");
@@ -19,7 +24,7 @@ const assets = [
 export type HomeMigrationManifest = {
   migrationVersion: 1;
   collection: "home";
-  mode: "blocked-dry-run";
+  mode: "approved-migration";
   identity: { contentId: "home"; singleton: true };
   source: {
     path: string;
@@ -30,15 +35,33 @@ export type HomeMigrationManifest = {
   targetPlan: {
     directory: string;
     exactInventory: ["index.yaml", "ja.md", "en.md"];
-    finalTargetEvidence: "pending-human-input";
-    files: Array<{ path: string; sha256: null; byteLength: null }>;
+    finalTargetEvidence: "frozen-temporary-copy";
+    files: Array<{
+      path: string;
+      content: string;
+      sha256: string;
+      byteLength: number;
+    }>;
   };
   prerequisites: {
     jaAboutIntroHumanApproved: false;
     enAboutIntroHumanApproved: false;
-    realMigrationAllowed: false;
+    realMigrationAllowed: true;
+    productionCutoverAllowed: false;
   };
-  unresolvedHumanInput: ["ja.about_intro", "en.about_intro"];
+  localizedCopy: {
+    jaAboutIntro: {
+      status: "temporary";
+      approved: false;
+      value: typeof HOME_JA_ABOUT_INTRO_TEMPORARY_COPY;
+      marker: typeof HOME_JA_ABOUT_INTRO_TEMPORARY_MARKER;
+    };
+    enAboutIntro: {
+      status: "placeholder";
+      approved: false;
+      value: "__TODO_HOME_EN_ABOUT_INTRO__";
+    };
+  };
   assets: Array<{
     canonicalUrl: string;
     path: string;
@@ -101,10 +124,19 @@ export async function createHomeMigrationManifest(
   const targetDirectory = "src/content/home/home";
   const originalBase64 = source.toString("base64");
   const sha256 = homeMigrationSha256(source);
+  const converted = convertLegacyHomeMarkdown(source, sourcePath, {
+    jaAboutIntro: HOME_JA_ABOUT_INTRO_TEMPORARY_COPY,
+    jaTemporary: true,
+  });
+  const convertedFiles = {
+    "index.yaml": converted.shared,
+    "ja.md": converted.ja,
+    "en.md": converted.en,
+  };
   return {
     migrationVersion: 1,
     collection: "home",
-    mode: "blocked-dry-run",
+    mode: "approved-migration",
     identity: { contentId: "home", singleton: true },
     source: {
       path: sourcePath,
@@ -115,19 +147,33 @@ export async function createHomeMigrationManifest(
     targetPlan: {
       directory: targetDirectory,
       exactInventory: ["index.yaml", "ja.md", "en.md"],
-      finalTargetEvidence: "pending-human-input",
-      files: ["index.yaml", "ja.md", "en.md"].map((name) => ({
+      finalTargetEvidence: "frozen-temporary-copy",
+      files: (["index.yaml", "ja.md", "en.md"] as const).map((name) => ({
         path: `${targetDirectory}/${name}`,
-        sha256: null,
-        byteLength: null,
+        content: convertedFiles[name],
+        sha256: homeMigrationSha256(convertedFiles[name]),
+        byteLength: Buffer.byteLength(convertedFiles[name]),
       })),
     },
     prerequisites: {
       jaAboutIntroHumanApproved: false,
       enAboutIntroHumanApproved: false,
-      realMigrationAllowed: false,
+      realMigrationAllowed: true,
+      productionCutoverAllowed: false,
     },
-    unresolvedHumanInput: ["ja.about_intro", "en.about_intro"],
+    localizedCopy: {
+      jaAboutIntro: {
+        status: "temporary",
+        approved: false,
+        value: HOME_JA_ABOUT_INTRO_TEMPORARY_COPY,
+        marker: HOME_JA_ABOUT_INTRO_TEMPORARY_MARKER,
+      },
+      enAboutIntro: {
+        status: "placeholder",
+        approved: false,
+        value: "__TODO_HOME_EN_ABOUT_INTRO__",
+      },
+    },
     assets: assetEvidence,
     rollback: { sourcePath, originalBase64, byteLength: source.length, sha256 },
   };

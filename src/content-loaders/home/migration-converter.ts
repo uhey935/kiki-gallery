@@ -3,6 +3,7 @@ import { parseDocument, stringify } from "yaml";
 import { homeSchema } from "../../content-schemas/home.ts";
 import {
   HOME_EN_ABOUT_INTRO_PLACEHOLDER,
+  HOME_JA_ABOUT_INTRO_TEMPORARY_MARKER,
   homeLocalizedSchema,
   homeSharedSchema,
 } from "./schema.ts";
@@ -12,6 +13,7 @@ const legacyFields = new Set(["home_hero", "sections", "title", "description"]);
 
 export type HomeMigrationInput = {
   jaAboutIntro: string;
+  jaTemporary?: boolean;
   enAboutIntro?: string;
 };
 
@@ -20,6 +22,7 @@ export type ConvertedHomeFiles = {
   ja: string;
   en: string;
   enPlaceholder: boolean;
+  jaTemporary: boolean;
   mapping: Array<{
     sourceField: string | null;
     destination: "index.yaml" | "ja.md" | "en.md";
@@ -30,6 +33,8 @@ export type ConvertedHomeFiles = {
 
 const markdown = (frontmatter: object) =>
   `---\n${stringify(frontmatter).trimEnd()}\n---\n`;
+const temporaryJaMarkdown = (frontmatter: object) =>
+  `---\n# ${HOME_JA_ABOUT_INTRO_TEMPORARY_MARKER}\n${stringify(frontmatter).trimEnd()}\n---\n`;
 
 export function convertLegacyHomeMarkdown(
   bytes: Buffer,
@@ -93,9 +98,10 @@ export function convertLegacyHomeMarkdown(
   });
   return {
     shared: stringify(shared),
-    ja: markdown(ja),
+    ja: input.jaTemporary ? temporaryJaMarkdown(ja) : markdown(ja),
     en: markdown(en),
     enPlaceholder,
+    jaTemporary: input.jaTemporary === true,
     mapping: [
       {
         sourceField: "sections[artists/about]",
@@ -113,7 +119,7 @@ export function convertLegacyHomeMarkdown(
         sourceField: null,
         destination: "ja.md",
         targetField: "about_intro",
-        strategy: "human-input",
+        strategy: input.jaTemporary ? "reserved-placeholder" : "human-input",
       },
       {
         sourceField: "title",

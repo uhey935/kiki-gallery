@@ -257,15 +257,17 @@ No asset mutation is permitted. The migration must validate the source shape,
 reject unexpected `home_hero.layout`, require a clean recognized topology, and
 install all targets atomically.
 
-Tooling and fixture-only reserved placeholders may be built before editorial
-copy exists. Real canonical migration is blocked until the required
-human-approved JA `about_intro` exists. It cannot treat partial output as
-canonical.
+Canonical migration may use the temporary JA copy
+`KiKi Galleryは、現代美術を中心に紹介するアートギャラリーです。` together
+with the machine-detectable source comment
+`__TODO_HOME_JA_ABOUT_INTRO__`. The marker is content-quality state, never
+rendered copy: it does not block migration, but it blocks JA Production
+capability and must be visible as temporary status in future Editor Preview.
 
-EN tooling/fixtures may reserve an explicit placeholder only for required
+EN tooling and migrated source may reserve an explicit placeholder only for required
 `about_intro`. Optional SEO fields should remain absent unless a test needs to
-distinguish absence. Final JA migration permits no placeholder; EN capability
-and cutover permit none. No AI translation or generated copy is accepted.
+distinguish absence. JA and EN Production capability permit no temporary or
+placeholder marker. No AI translation or generated copy is accepted.
 
 ## 13. Dependencies and release gates
 
@@ -277,7 +279,8 @@ before Home EN cutover.
 Capability-aware Header projection is a global prerequisite for publicly
 linkable EN Home, but it is not owned by Home. Human content gates are:
 
-- JA: current, human-approved Home `about_intro` before real migration.
+- JA: human-approved Home `about_intro` replacing the temporary marked copy
+  before Production cutover.
 - EN: human-approved Home `about_intro`, and all EN dependencies capable,
   before `/en/` publication.
 
@@ -295,11 +298,10 @@ These do not expand the present implementation contract.
 
 ## 15. Implementation verdict
 
-The architecture is **implementation-ready**. This verdict authorizes later,
-separately reviewed tooling and implementation work; it does not claim that the
-target is migrated, live in Production, or available in the localized Editor.
-Real migration and EN cutover remain subject to the explicit human content and
-route dependency gates above.
+The architecture is **implementation-ready**. A three-file migration may be
+completed with mechanically marked temporary JA and placeholder EN copy. This
+does not make either locale Production-capable and does not claim Production or
+Editor cutover.
 
 ## 16. Migration foundation record
 
@@ -310,7 +312,7 @@ the Production loader, routes, or Editor.
 
 The frozen structural evidence is
 [`home-localization-manifest-2026-08-12.json`](../migrations/home-localization-manifest-2026-08-12.json).
-It binds the current source and asset bytes plus rollback evidence, while
-honestly recording final target hashes as pending human input. Its
-`realMigrationAllowed` value remains `false`; this foundation record does not
-change the target-only status of this architecture.
+It binds the source and asset bytes plus rollback evidence, freezes the
+temporary JA and placeholder EN target hashes, and records both approval states
+as false. Its `realMigrationAllowed` value is true while
+`productionCutoverAllowed` remains false.

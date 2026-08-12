@@ -56,7 +56,9 @@ export async function executeHomeMigrationFixture(
     path.join(path.dirname(source), ".home-migration-stage-"),
   );
   const stagedUnit = path.join(staging, "home");
+  const stagedSource = path.join(staging, "home.md");
   let installed = false;
+  let sourceMoved = false;
   try {
     await mkdir(stagedUnit);
     for (const name of ["index.yaml", "ja.md", "en.md"] as const)
@@ -68,9 +70,11 @@ export async function executeHomeMigrationFixture(
       staged.shared.state !== "valid" ||
       staged.locales.ja.state !== "valid" ||
       staged.locales.en.state !== "valid" ||
-      staged.issues.length > 0
+      staged.issues.some(({ category }) => category !== "content-quality")
     )
       throw new Error("Generated Home unit failed validation");
+    await rename(source, stagedSource);
+    sourceMoved = true;
     await rename(stagedUnit, target);
     installed = true;
     await hook?.();
@@ -79,12 +83,13 @@ export async function executeHomeMigrationFixture(
       reread.shared.state !== "valid" ||
       reread.locales.ja.state !== "valid" ||
       reread.locales.en.state !== "valid" ||
-      reread.issues.length > 0
+      reread.issues.some(({ category }) => category !== "content-quality")
     )
       throw new Error("Installed Home unit failed validation");
-    return { created: target, legacySourceRetained: source };
+    return { created: target, legacySourceRemoved: source };
   } catch (error) {
     if (installed) await rm(target, { recursive: true, force: true });
+    if (sourceMoved) await rename(stagedSource, source);
     throw error;
   } finally {
     await rm(staging, { recursive: true, force: true });

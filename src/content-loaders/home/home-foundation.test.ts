@@ -28,7 +28,10 @@ import {
 } from "./schema.ts";
 
 const projectRoot = path.resolve(import.meta.dirname, "../../..");
-const legacyFile = path.join(projectRoot, "src/content/home/home.md");
+const frozenManifestFile = path.join(
+  projectRoot,
+  "docs/migrations/home-localization-manifest-2026-08-12.json",
+);
 const sha256 = (value: Uint8Array | string) =>
   createHash("sha256").update(value).digest("hex");
 const shared = {
@@ -44,6 +47,12 @@ const shared = {
   },
 } as const;
 const localized = (intro: string) => `---\nabout_intro: ${intro}\n---\n`;
+async function legacyBytes() {
+  const manifest = JSON.parse(await readFile(frozenManifestFile, "utf8")) as {
+    source: { originalBase64: string };
+  };
+  return Buffer.from(manifest.source.originalBase64, "base64");
+}
 
 async function fixtureUnit() {
   const root = await mkdtemp(path.join(os.tmpdir(), "home-foundation-"));
@@ -148,7 +157,7 @@ test("placeholder blocks only its locale and capability never falls back", async
 });
 
 test("converter is deterministic, maps exact images, and requires JA human input", async () => {
-  const source = await readFile(legacyFile);
+  const source = await legacyBytes();
   assert.throws(
     () => convertLegacyHomeMarkdown(source, "home.md", { jaAboutIntro: "" }),
     /Human-approved JA/,
@@ -179,11 +188,20 @@ test("converter is deterministic, maps exact images, and requires JA human input
   );
 });
 
-test("frozen plan binds source rollback and immutable WebP asset evidence", async () => {
-  const manifest = await createHomeMigrationManifest(projectRoot);
-  assert.equal(manifest.mode, "blocked-dry-run");
-  assert.equal(manifest.prerequisites.realMigrationAllowed, false);
-  assert.equal(manifest.targetPlan.finalTargetEvidence, "pending-human-input");
+test("frozen plan binds temporary copy, rollback, and immutable assets", async () => {
+  const manifest = JSON.parse(
+    await readFile(frozenManifestFile, "utf8"),
+  ) as Awaited<ReturnType<typeof createHomeMigrationManifest>>;
+  assert.equal(manifest.mode, "approved-migration");
+  assert.equal(manifest.prerequisites.realMigrationAllowed, true);
+  assert.equal(manifest.prerequisites.productionCutoverAllowed, false);
+  assert.equal(
+    manifest.targetPlan.finalTargetEvidence,
+    "frozen-temporary-copy",
+  );
+  assert.equal(manifest.localizedCopy.jaAboutIntro.status, "temporary");
+  assert.equal(manifest.localizedCopy.jaAboutIntro.approved, false);
+  assert.equal(manifest.localizedCopy.enAboutIntro.status, "placeholder");
   assert.equal(verifyHomeRollbackEvidence(manifest), true);
   const decoded = Buffer.from(manifest.source.originalBase64, "base64");
   assert.equal(decoded.byteLength, manifest.source.byteLength);
@@ -199,7 +217,7 @@ test("fixture executor installs exact unit, rejects drift, and rolls back", asyn
   const root = await mkdtemp(path.join(os.tmpdir(), "home-executor-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const source = path.join(root, "home.md");
-  const bytes = await readFile(legacyFile);
+  const bytes = await legacyBytes();
   await writeFile(source, bytes);
   const converted = convertLegacyHomeMarkdown(bytes, source, {
     jaAboutIntro: "Human JA fixture",
@@ -235,7 +253,7 @@ test("fixture executor installs exact unit, rejects drift, and rolls back", asyn
     "index.yaml",
     "ja.md",
   ]);
-  assert.deepEqual(await readFile(source), bytes);
+  await assert.rejects(readFile(source), /ENOENT/);
   await rm(path.join(root, "home"), { recursive: true });
   await writeFile(source, `${bytes.toString()}drift`);
   await assert.rejects(executeHomeMigrationFixture(plan), /source drift/);
@@ -250,6 +268,7 @@ test("fixture executor installs exact unit, rejects drift, and rolls back", asyn
     readFile(path.join(root, "home", "index.yaml")),
     /ENOENT/,
   );
+  assert.deepEqual(await readFile(source), bytes);
 });
 
 async function readdirNames(directory: string) {

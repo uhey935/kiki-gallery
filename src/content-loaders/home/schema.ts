@@ -4,6 +4,10 @@ export const HOME_LOCALES = ["ja", "en"] as const;
 export const HOME_DESTINATIONS = ["artists", "about"] as const;
 export const HOME_EN_ABOUT_INTRO_PLACEHOLDER =
   "__TODO_HOME_EN_ABOUT_INTRO__" as const;
+export const HOME_JA_ABOUT_INTRO_TEMPORARY_MARKER =
+  "__TODO_HOME_JA_ABOUT_INTRO__" as const;
+export const HOME_JA_ABOUT_INTRO_TEMPORARY_COPY =
+  "KiKi Galleryは、現代美術を中心に紹介するアートギャラリーです。" as const;
 
 const nonEmpty = z.string().trim().min(1);
 const absoluteAssetPath = nonEmpty.startsWith("/");
