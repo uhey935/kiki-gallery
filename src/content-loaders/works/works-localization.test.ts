@@ -11,9 +11,9 @@ import {
 } from "./migration-converter.ts";
 import { executeWorkMigration } from "./migration-executor.ts";
 import {
-  createWorkMigrationManifest,
   restoreLegacyWorkBytes,
   serializeWorkMigrationManifest,
+  type WorkMigrationManifest,
   worksSha256,
 } from "./migration-manifest.ts";
 import {
@@ -28,7 +28,14 @@ import {
   workSharedSchema,
 } from "./schema.ts";
 
-const root = path.resolve("src/content/works");
+const manifestPath = path.resolve(
+  "docs/migrations/works-localization-manifest-2026-08-12.json",
+);
+async function frozenManifest() {
+  return JSON.parse(
+    await fs.readFile(manifestPath, "utf8"),
+  ) as WorkMigrationManifest;
+}
 test("schemas enforce ownership, count, alt, src, year and inquiry", () => {
   const shared = workSharedSchema.parse({
     artist: "artist",
@@ -78,8 +85,9 @@ test("image slots reorder atomically and replacement preserves alts", () => {
   assert.throws(() => reorderImageSlots(slots, [0]));
 });
 test("converter preserves canonical seven and applies exact placeholders", async () => {
-  for (const name of await fs.readdir(root)) {
-    const bytes = await fs.readFile(path.join(root, name));
+  for (const entry of (await frozenManifest()).entries) {
+    const name = `${entry.contentId}.md`;
+    const bytes = Buffer.from(entry.source.originalBase64, "base64");
     const converted = convertLegacyWorkMarkdown(bytes, name);
     assert.match(converted.en, new RegExp(WORK_PLACEHOLDERS.title));
     assert.doesNotMatch(converted.en, /seo_title|description/);
@@ -97,13 +105,8 @@ test("converter preserves canonical seven and applies exact placeholders", async
   }
 });
 test("manifest freezes bytes, targets, rollback and asset evidence deterministically", async () => {
-  const a = await createWorkMigrationManifest(root),
-    b = await createWorkMigrationManifest(root);
+  const a = await frozenManifest();
   assert.equal(a.count, 7);
-  assert.equal(
-    serializeWorkMigrationManifest(a),
-    serializeWorkMigrationManifest(b),
-  );
   assert.equal(restoreLegacyWorkBytes(a).size, 7);
   assert.ok(
     a.assetInvariance.before.every(
@@ -113,23 +116,44 @@ test("manifest freezes bytes, targets, rollback and asset evidence deterministic
         asset.references.length > 0,
     ),
   );
-  assert.equal(worksSha256(serializeWorkMigrationManifest(a)).length, 64);
-});
-test("executor dry-run accepts only frozen evidence and performs no migration", async () => {
-  const manifest = await createWorkMigrationManifest(root);
-  const before = (await fs.readdir(root)).sort();
-  const result = await executeWorkMigration(manifest, { dryRun: true });
-  assert.equal(result.mode, "dry-run");
-  assert.deepEqual((await fs.readdir(root)).sort(), before);
-  const changed = structuredClone(manifest);
-  changed.entries[0].source.sha256 = "0".repeat(64);
-  await assert.rejects(
-    executeWorkMigration(changed, { dryRun: true }),
-    /frozen manifest/,
+  assert.equal(
+    worksSha256(serializeWorkMigrationManifest(a)),
+    "5eddbe7015aa14c5bc6741cf84a5c14ea4d93cc75cebf9a6812c691daca10498",
   );
 });
+test("executor dry-run accepts only frozen evidence and performs no migration", async () => {
+  const manifest = await frozenManifest();
+  const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "works-dry-run-"));
+  try {
+    for (const entry of manifest.entries)
+      await fs.writeFile(
+        path.join(tmp, `${entry.contentId}.md`),
+        Buffer.from(entry.source.originalBase64, "base64"),
+      );
+    const before = (await fs.readdir(tmp)).sort();
+    const result = await executeWorkMigration(manifest, {
+      dryRun: true,
+      rootOverride: tmp,
+      projectRoot: process.cwd(),
+    });
+    assert.equal(result.mode, "dry-run");
+    assert.deepEqual((await fs.readdir(tmp)).sort(), before);
+    const changed = structuredClone(manifest);
+    changed.entries[0].source.sha256 = "0".repeat(64);
+    await assert.rejects(
+      executeWorkMigration(changed, {
+        dryRun: true,
+        rootOverride: tmp,
+        projectRoot: process.cwd(),
+      }),
+      /frozen manifest/,
+    );
+  } finally {
+    await fs.rm(tmp, { recursive: true, force: true });
+  }
+});
 test("repository exact unit, IDs, independent capability, artist boundary and routes", async () => {
-  const manifest = await createWorkMigrationManifest(root);
+  const manifest = await frozenManifest();
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "works-unit-"));
   try {
     const e = manifest.entries[0];

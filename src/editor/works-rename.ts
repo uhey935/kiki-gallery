@@ -62,7 +62,7 @@ export type WorksRenamePlan = {
   repositoryBranch: string;
   repositoryUpstream: string;
   graphHash: string;
-  sourceFile: { file: string; hash: string; size: number };
+  sourceFiles: Array<{ file: string; hash: string; size: number }>;
   referenceEdits: WorksReferenceEdit[];
   touchedPaths: string[];
   publishPaths: string[];
@@ -388,8 +388,7 @@ function rewrite(bytes: Buffer, edits: WorksReferenceEdit[]) {
 async function validateGraph(root: string, oldId: string, newId: string) {
   const works = new Set(
     (await fs.readdir(path.join(root, "src/content/works")))
-      .filter((x) => x.endsWith(".md"))
-      .map((x) => path.basename(x, ".md")),
+      .filter((x) => !x.endsWith(".md")),
   );
   works.delete(oldId);
   works.add(newId);
@@ -401,7 +400,7 @@ async function validateGraph(root: string, oldId: string, newId: string) {
         path.join(root, "src/content/artists"),
       );
       if (
-        entry.structuralStatus !== "valid" ||
+        !entry.data ||
         entry.data?.works_layout?.some((s) =>
           s.works.some((w) => !works.has(w.id === oldId ? newId : w.id)),
         )
@@ -414,14 +413,14 @@ async function validateGraph(root: string, oldId: string, newId: string) {
   for (const name of await fs.readdir(
     path.join(root, "src/content/exhibitions"),
   ))
-    if (name.endsWith(".md")) {
-      const id = path.basename(name, ".md");
+    if ((await fs.lstat(path.join(root, "src/content/exhibitions", name))).isDirectory()) {
+      const id = name;
       const entry = await readExhibitionsEditorEntry(
         id,
         path.join(root, "src/content/exhibitions"),
       );
       if (
-        entry.structuralStatus !== "valid" ||
+        !entry.data ||
         entry.data?.works?.some(
           (w) => !works.has(w.id === oldId ? newId : w.id),
         )
@@ -432,13 +431,13 @@ async function validateGraph(root: string, oldId: string, newId: string) {
         );
     }
   for (const name of await fs.readdir(path.join(root, "src/content/news")))
-    if (name.endsWith(".md")) {
-      const id = path.basename(name, ".md");
+    if ((await fs.lstat(path.join(root, "src/content/news", name))).isDirectory()) {
+      const id = name;
       const entry = await readNewsEditorEntry(
         id,
         path.join(root, "src/content/news"),
       );
-      if (entry.structuralStatus !== "valid")
+      if (!entry.data)
         throw new WorksRenameError(
           `Invalid News blocks the prospective graph: ${id}`,
           "reference-graph-incomplete",
@@ -468,9 +467,9 @@ async function buildPlan(input: {
     path.join(root, "src/content/works"),
     "unsafe-repository",
   );
-  const source = path.join(worksRoot, `${input.sourceContentId}.md`);
+  const source = path.join(worksRoot, input.sourceContentId);
   const sourceStat = await fs.lstat(source).catch(() => undefined);
-  if (!sourceStat?.isFile() || sourceStat.isSymbolicLink())
+  if (!sourceStat?.isDirectory() || sourceStat.isSymbolicLink())
     throw new WorksRenameError(
       "Work source is missing or unsafe.",
       "source-unavailable",
@@ -481,9 +480,13 @@ async function buildPlan(input: {
       "Fix Work validation issues first.",
       "source-unavailable",
     );
-  const destinationName = `${input.destinationContentId}.md`.toLocaleLowerCase(
-    "en-US",
-  );
+  const sourceNames = await fs.readdir(source, { withFileTypes: true });
+  if (
+    sourceNames.length !== 3 ||
+    sourceNames.some((item) => item.isSymbolicLink() || !item.isFile() || !["index.yaml", "ja.md", "en.md"].includes(item.name))
+  )
+    throw new WorksRenameError("Work source inventory is unsafe.", "source-unavailable");
+  const destinationName = input.destinationContentId.toLocaleLowerCase("en-US");
   if (
     (await fs.readdir(worksRoot)).some(
       (name) => name.toLocaleLowerCase("en-US") === destinationName,
@@ -569,16 +572,18 @@ async function buildPlan(input: {
     ),
   }));
   const lifecycleEvidenceHash = await lifecycleHash(root);
-  const sourceBytes = await fs.readFile(source);
-  const sourceFile = {
-    file: rel(root, source),
-    hash: sha256(sourceBytes),
-    size: sourceBytes.length,
-  };
-  const newFile = `src/content/works/${input.destinationContentId}.md`;
+  const sourceFiles = await Promise.all(
+    ["index.yaml", "ja.md", "en.md"].map(async (name) => {
+      const file = path.join(source, name), bytes = await fs.readFile(file);
+      return { file: rel(root, file), hash: sha256(bytes), size: bytes.length };
+    }),
+  );
+  const newFiles = ["index.yaml", "ja.md", "en.md"].map(
+    (name) => `src/content/works/${input.destinationContentId}/${name}`,
+  );
   const touchedPaths = [
-    sourceFile.file,
-    newFile,
+    ...sourceFiles.map(({ file }) => file),
+    ...newFiles,
     ...new Set(edits.map((e) => e.file)),
   ].sort();
   const body: Omit<WorksRenamePlan, "planHash"> = {
@@ -597,7 +602,7 @@ async function buildPlan(input: {
         .map(({ file, bytes }) => `${rel(root, file)}\0${sha256(bytes)}`)
         .join("\n"),
     ),
-    sourceFile,
+    sourceFiles,
     referenceEdits: edits,
     touchedPaths,
     publishPaths: touchedPaths,
@@ -727,9 +732,8 @@ export async function executeWorksRename(
       string,
       { hash: string; mode: number; bytes: string }
     > = {};
-    for (const file of reviewed.touchedPaths.filter(
-      (f) => f !== `src/content/works/${reviewed.destinationContentId}.md`,
-    )) {
+    const newPrefix = `src/content/works/${reviewed.destinationContentId}/`;
+    for (const file of reviewed.touchedPaths.filter((f) => !f.startsWith(newPrefix))) {
       const absolute = path.join(repositoryRoot, file);
       const stat = await fs.lstat(absolute);
       const bytes = await fs.readFile(absolute);
@@ -744,16 +748,14 @@ export async function executeWorksRename(
         bytes: bytes.toString("base64"),
       };
     }
-    const sourceBytes = Buffer.from(
-      preimages[reviewed.sourceFile.file].bytes,
-      "base64",
-    );
-    const newFile = `src/content/works/${reviewed.destinationContentId}.md`;
-    prospective[newFile] = {
-      hash: sha256(sourceBytes),
-      mode: preimages[reviewed.sourceFile.file].mode,
-      bytes: sourceBytes.toString("base64"),
-    };
+    for (const sourceFile of reviewed.sourceFiles) {
+      const sourceBytes = Buffer.from(preimages[sourceFile.file].bytes, "base64");
+      const newFile = `${newPrefix}${path.posix.basename(sourceFile.file)}`;
+      prospective[newFile] = {
+        hash: sha256(sourceBytes), mode: preimages[sourceFile.file].mode,
+        bytes: sourceBytes.toString("base64"),
+      };
+    }
     for (const file of new Set(reviewed.referenceEdits.map((e) => e.file))) {
       const bytes = Buffer.from(preimages[file].bytes, "base64");
       const output = rewrite(
@@ -803,6 +805,8 @@ export async function executeWorksRename(
       record.completedSteps.push(`recover:${file}`);
       await writeRecord();
     }
+    await fs.rm(path.join(repositoryRoot, `src/content/works/${reviewed.sourceContentId}`), { recursive: true });
+    await fs.mkdir(path.join(repositoryRoot, `src/content/works/${reviewed.destinationContentId}`));
     for (const file of Object.keys(prospective).sort()) {
       await fs.rename(
         path.join(staged, file.replaceAll("/", "__")),
@@ -897,6 +901,8 @@ export async function executeWorksRename(
             await fs.rm(target);
           }
         }
+        await fs.rm(path.join(repositoryRoot, `src/content/works/${reviewed.destinationContentId}`), { recursive: true, force: true });
+        await fs.mkdir(path.join(repositoryRoot, `src/content/works/${reviewed.sourceContentId}`), { recursive: true });
         for (const [file, expected] of Object.entries(
           record.preimages as Record<
             string,

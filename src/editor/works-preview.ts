@@ -35,6 +35,7 @@ export class WorksPreviewError extends Error {
 export function createWorksPreviewModel(
   draft: WorksEditorDraftState,
   assetDraft?: WorksAssetDraftState,
+  locale: "ja" | "en" = "ja",
 ): WorksPreviewModel {
   if (!validateWorksEditorDraft(draft).capabilities.preview) {
     throw new WorksPreviewError(
@@ -49,8 +50,28 @@ export function createWorksPreviewModel(
     );
   }
   const data = structuredClone(draft.data);
+  if (locale === "en") {
+    const localized = draft.localized?.en;
+    if (
+      !localized ||
+      /__TODO_WORK_[A-Z0-9_]*__/.test(JSON.stringify(localized))
+    )
+      throw new WorksPreviewError(
+        "Works EN preview has unresolved placeholders",
+        "preview-blocked",
+      );
+    data.title = localized.title;
+    data.images = data.images.map((image, index) => ({
+      ...image,
+      alt: localized.images[index].alt,
+    }));
+    data.material = localized.material;
+    data.size = localized.size;
+    data.seo_title = localized.seo_title;
+    data.description = localized.description;
+  }
   if (assetDraft) {
-    data.images = assetDraft.images.map((image) => ({
+    data.images = assetDraft.images.map((image, index) => ({
       src:
         image.kind === "existing"
           ? image.src
@@ -59,7 +80,10 @@ export function createWorksPreviewModel(
               assetDraft.contentId,
               assetDraft.workspaceId,
             ),
-      alt: image.alt,
+      alt:
+        locale === "ja"
+          ? image.alt
+          : (draft.localized?.en.images[index]?.alt ?? ""),
     }));
     if (!validateWorksEditorDraft({ ...draft, data }).capabilities.preview) {
       throw new WorksPreviewError(
@@ -71,7 +95,7 @@ export function createWorksPreviewModel(
   return {
     contentId: draft.contentId,
     data,
-    body: draft.body,
+    body: locale === "en" ? (draft.localized?.en.body ?? "") : draft.body,
   };
 }
 

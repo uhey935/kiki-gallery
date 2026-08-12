@@ -128,14 +128,14 @@ async function repositoryIdentity(root: string) {
 
 async function workInventory(root: string, contentId: string) {
   const directory = path.join(root, "src/content/works");
-  const file = path.resolve(directory, `${contentId}.md`);
-  const stat = await fs.lstat(file).catch(() => undefined);
+  const unit = path.resolve(directory, contentId);
+  const stat = await fs.lstat(unit).catch(() => undefined);
   const entry = await readWorksEditorEntry(contentId, directory).catch(
     () => undefined,
   );
   if (
-    path.dirname(file) !== directory ||
-    !stat?.isFile() ||
+    path.dirname(unit) !== directory ||
+    !stat?.isDirectory() ||
     stat.isSymbolicLink() ||
     !entry?.data ||
     entry.structuralStatus !== "valid" ||
@@ -145,14 +145,16 @@ async function workInventory(root: string, contentId: string) {
       "Works source is unavailable or invalid.",
       "source-unavailable",
     );
-  const bytes = await fs.readFile(file);
+  const names = await fs.readdir(unit, { withFileTypes: true });
+  if (names.length !== 3 || names.some((item) => item.isSymbolicLink() || !item.isFile() || !["index.yaml", "ja.md", "en.md"].includes(item.name)))
+    throw new WorksDeleteError("Works unit inventory is unsafe.", "source-unavailable");
+  const preimages = await Promise.all(["index.yaml", "ja.md", "en.md"].map(async (name) => {
+    const file = path.join(unit, name), bytes = await fs.readFile(file);
+    return { path: rel(root, file), sha256: sha256(bytes), byteSize: bytes.byteLength };
+  }));
   return {
     entry,
-    preimage: {
-      path: rel(root, file),
-      sha256: sha256(bytes),
-      byteSize: bytes.byteLength,
-    },
+    preimages,
   };
 }
 
@@ -264,7 +266,7 @@ async function assertNoIncomingReferences(root: string, contentId: string) {
     const escaped = contentId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     if (
       new RegExp(`(?:^|[\\s\"'(:])/works/${escaped}`, "m").test(text) &&
-      canonical !== `src/content/works/${contentId}.md`
+      !canonical.startsWith(`src/content/works/${contentId}/`)
     )
       throw new WorksDeleteError(
         `Unresolved Work reference blocks Delete: ${canonical}`,
@@ -412,7 +414,7 @@ async function buildPlan(input: {
   backupRoot: string;
   operationId: string;
 }) {
-  const { entry, preimage } = await workInventory(
+  const { entry, preimages } = await workInventory(
     input.repositoryRoot,
     input.contentId,
   );
@@ -420,7 +422,7 @@ async function buildPlan(input: {
   try {
     backupProof = await provePreDeleteBackup({
       backupRoot: input.backupRoot,
-      sourcePreimages: [preimage],
+      sourcePreimages: preimages,
       policyCommit: POLICY_COMMIT,
     });
   } catch (error) {
@@ -437,13 +439,13 @@ async function buildPlan(input: {
     input.contentId,
     entry.data!.images.map((image) => image.src),
   );
-  const recoveryPaths = [
+  const recoveryPaths = preimages.map((preimage) =>
     path.posix.join(
       ".kiki-editor/content-lifecycle/recovery",
       input.operationId,
       preimage.path,
     ),
-  ];
+  );
   const body: Omit<WorksDeletePlan, "planHash"> = {
     schemaVersion: 1,
     adapterVersion: ADAPTER_VERSION,
@@ -454,7 +456,7 @@ async function buildPlan(input: {
     ...identity,
     backupRoot: input.backupRoot,
     backupProof,
-    preimages: [preimage],
+    preimages,
     recoveryPaths,
     incomingReferences: [],
     outgoingArtist: entry.data!.artist.id,
@@ -562,9 +564,9 @@ export async function executeWorksDelete(
     );
   }
   let record = recordFor(reviewed, "prepared");
-  const canonical = path.join(repositoryRoot, reviewed.preimages[0].path);
-  const recovery = path.join(repositoryRoot, reviewed.recoveryPaths[0]);
-  let moved = false;
+  const canonical = reviewed.preimages.map((item) => path.join(repositoryRoot, item.path));
+  const recovery = reviewed.recoveryPaths.map((item) => path.join(repositoryRoot, item));
+  let moved = 0;
   try {
     await assertContentLifecycleLock(repositoryRoot, locks.content.identity);
     await assertWorksAssetRepositoryLock(repositoryRoot, locks.asset.identity);
@@ -597,18 +599,19 @@ export async function executeWorksDelete(
         "Canonical content, references, assets, lifecycle evidence, backup, or Git identity drifted; review again.",
         "plan-stale",
       );
-    if (await fs.lstat(recovery).catch(() => undefined))
-      throw new WorksDeleteError(
-        "Recovery destination already exists.",
-        "state-mismatch",
-      );
-    await fs.mkdir(path.dirname(recovery), { recursive: true, mode: 0o700 });
+    for (const file of recovery)
+      if (await fs.lstat(file).catch(() => undefined))
+        throw new WorksDeleteError("Recovery destination already exists.", "state-mismatch");
+    await fs.mkdir(path.dirname(recovery[0]), { recursive: true, mode: 0o700 });
     await persistContentRecoveryRecord(repositoryRoot, record);
-    await fs.rename(canonical, recovery);
-    moved = true;
+    for (let index = 0; index < canonical.length; index++) {
+      await fs.rename(canonical[index], recovery[index]);
+      moved++;
+    }
+    await fs.rm(path.dirname(canonical[0]), { recursive: true });
     await testHooks?.afterMove?.();
-    if (await fs.lstat(canonical).catch(() => undefined))
-      throw new Error("canonical Work remained");
+    if (await fs.lstat(path.dirname(canonical[0])).catch(() => undefined))
+      throw new Error("canonical Work unit remained");
     const postAssetHash = await treeSnapshot(
       repositoryRoot,
       "public/images/works",
@@ -641,15 +644,17 @@ export async function executeWorksDelete(
     try {
       await testHooks?.beforeRollback?.();
       if (moved) {
-        if (await fs.lstat(canonical).catch(() => undefined))
+        if (await fs.lstat(path.dirname(canonical[0])).catch(() => undefined))
           throw new Error("canonical destination occupied");
-        await fs.rename(recovery, canonical);
+        await fs.mkdir(path.dirname(canonical[0]));
+        for (let index = 0; index < moved; index++)
+          await fs.rename(recovery[index], canonical[index]);
         const restored = await workInventory(
           repositoryRoot,
           reviewed.contentId,
         );
         if (
-          JSON.stringify([restored.preimage]) !==
+          JSON.stringify(restored.preimages) !==
           JSON.stringify(reviewed.preimages)
         )
           throw new Error("restored Work bytes mismatch");
@@ -735,11 +740,14 @@ export async function publishWorksDelete(
     );
   const files = plannedDeletePublishPaths(record);
   if (
-    files.length !== 1 ||
-    files[0] !== `src/content/works/${record.contentId}.md`
+    JSON.stringify(files.sort()) !== JSON.stringify([
+      `src/content/works/${record.contentId}/en.md`,
+      `src/content/works/${record.contentId}/index.yaml`,
+      `src/content/works/${record.contentId}/ja.md`,
+    ])
   )
     throw new WorksDeleteError(
-      "Delete evidence escaped the single Works Markdown unit.",
+      "Delete evidence escaped the three-file Works unit.",
       "state-mismatch",
     );
   const git = (args: string[]) =>
@@ -760,16 +768,14 @@ export async function publishWorksDelete(
       "state-mismatch",
     );
   try {
-    await git(["add", "-A", "--", files[0]]);
+    await git(["add", "-A", "--", ...files]);
     const staged = (await git(["diff", "--cached", "--name-only"]))
       .split("\n")
       .filter(Boolean);
     if (
-      staged.length !== 1 ||
-      staged[0] !== files[0] ||
-      !(
-        await git(["diff", "--cached", "--name-status", "--", files[0]])
-      ).startsWith("D\t")
+      JSON.stringify(staged.sort()) !== JSON.stringify(files.sort()) ||
+      (await git(["diff", "--cached", "--name-status", "--", ...files]))
+        .split("\n").some((line) => !line.startsWith("D\t"))
     )
       throw new WorksDeleteError(
         "Staged paths do not exactly match completed Delete evidence.",

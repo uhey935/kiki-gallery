@@ -290,7 +290,9 @@ function spanEdit(
   const start = Buffer.byteLength(raw.slice(0, startCharacter));
   return {
     collection,
-    contentId: path.basename(item.file, ".md"),
+    contentId: item.file.endsWith("/index.yaml")
+      ? path.basename(path.dirname(item.file))
+      : path.basename(item.file, ".md"),
     file: relative(repositoryRoot, item.file),
     fieldPath,
     oldValue,
@@ -317,7 +319,7 @@ function typedReferenceEdits(
   )
     return [];
   if (file.startsWith("src/content/exhibitions/") && !file.endsWith("/index.yaml")) return [];
-  if (file.startsWith("src/content/works/") && !frontmatter) return [];
+  if (file.startsWith("src/content/works/") && !file.endsWith("/index.yaml")) return [];
   const body = file.endsWith("/index.yaml") ? raw : frontmatter![2];
   const bodyStart = file.endsWith("/index.yaml") ? 0 : frontmatter!.index + 3 + frontmatter![1].length;
   if (file.startsWith("src/content/works/")) {

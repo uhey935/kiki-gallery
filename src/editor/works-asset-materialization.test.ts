@@ -10,6 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { promises as fs } from "node:fs";
 
 import {
   addExistingWorksAsset,
@@ -33,23 +34,13 @@ import {
   WorksSaveError,
 } from "./works-save.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
+import { writeThreeFileWorkFixture } from "./test-three-file-work-fixture.ts";
+import { createWorksAssetPublishManifest } from "./works-asset-publish-manifest.ts";
 
 const png = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
   "base64",
 );
-const source = `---
-title: Test Work
-artist: test-artist
-images:
-  - src: /images/works/existing.png
-    alt: Existing
-year: 2026
-inquiry:
-  type: inquiry
----
-Body
-`;
 
 async function saveFixture(now: () => number = Date.now, ttlMs = 10_000) {
   const fixtureRoot = await mkdtemp(path.join(tmpdir(), "works-asset-save-"));
@@ -57,7 +48,7 @@ async function saveFixture(now: () => number = Date.now, ttlMs = 10_000) {
   const assetRoot = path.join(fixtureRoot, "assets");
   const storeParent = path.join(fixtureRoot, "store");
   await Promise.all([mkdir(worksRoot), mkdir(assetRoot), mkdir(storeParent)]);
-  await writeFile(path.join(worksRoot, "test-work.md"), source);
+  await writeThreeFileWorkFixture(worksRoot);
   await writeFile(path.join(assetRoot, "existing.png"), png);
   const store = await TemporaryWorksAssetStore.create({
     parentDirectory: storeParent,
@@ -124,7 +115,8 @@ test("Save materializes one temporary asset, canonicalizes Markdown, and release
   ]);
   assert.equal(result.assetDraft.images[1].kind, "existing");
   assert.match(
-    await readFile(path.join(fixture.worksRoot, "test-work.md"), "utf8"),
+    (await readWorksEditorEntry("test-work", fixture.worksRoot)).rawFiles
+      .shared,
     /test-work-detail\.png/,
   );
   await assert.rejects(
@@ -136,6 +128,343 @@ test("Save materializes one temporary asset, canonicalizes Markdown, and release
   ]);
   assert.equal(assets.images[1].kind, "temporary");
 });
+
+test("Publish evidence failure keeps canonical Save and its temporary token recoverable", async () => {
+  const fixture = await saveFixture();
+  const pending = await register(fixture.store, "test-work-evidence.png");
+  const assets = addTemporaryWorksAsset(
+    createWorksAssetDraftState(
+      "test-work",
+      "workspace-1",
+      fixture.baseline.data.images,
+    ),
+    { token: pending.token, alt: "Evidence image" },
+  );
+
+  await assert.rejects(
+    saveWorksEditorDraftWithAssets(
+      structuredClone(fixture.baseline),
+      fixture.baseline,
+      {
+        assetDraft: assets,
+        store: fixture.store,
+        assetRoot: fixture.assetRoot,
+        createPublishManifest: () => {
+          throw new Error("injected Publish evidence failure");
+        },
+      },
+      fixture.worksRoot,
+    ),
+    (error: unknown) =>
+      error instanceof WorksSaveError &&
+      error.code === "publish-evidence-invalid",
+  );
+
+  assert.match(
+    (await readWorksEditorEntry("test-work", fixture.worksRoot)).rawFiles.shared,
+    /test-work-evidence\.png/,
+  );
+  assert.deepEqual(
+    (await fixture.store.read(pending.token, "test-work", "workspace-1")).bytes,
+    png,
+  );
+  const saved = createWorksEditorDraft(
+    await readWorksEditorEntry("test-work", fixture.worksRoot),
+  )!;
+  const retriedEvidence = createWorksAssetPublishManifest(
+    saved.contentId,
+    saved.sourceRaw,
+    [
+      {
+        token: pending.token,
+        src: pending.proposedUrl,
+        sha256: pending.sha256,
+        byteSize: pending.byteSize,
+        format: pending.format,
+        width: pending.width,
+        height: pending.height,
+      },
+    ],
+  );
+  assert.equal(retriedEvidence.assets[0].sha256, pending.sha256);
+});
+
+for (const operation of ["Add", "Replace"] as const)
+  test(`${operation} promotion failure preserves content, assets, and token`, async () => {
+    const fixture = await saveFixture();
+    const pending = await register(
+      fixture.store,
+      `test-work-${operation.toLowerCase()}-failure.png`,
+    );
+    const initial = createWorksAssetDraftState(
+      "test-work",
+      "workspace-1",
+      fixture.baseline.data.images,
+    );
+    const assets =
+      operation === "Add"
+        ? addTemporaryWorksAsset(initial, {
+            token: pending.token,
+            alt: "Added",
+          })
+        : replaceExistingWorksAsset(initial, 0, { token: pending.token });
+    const assetFileSystem = {
+      lstat: fs.lstat.bind(fs),
+      realpath: fs.realpath.bind(fs),
+      open: fs.open.bind(fs),
+      rm: fs.rm.bind(fs),
+      readFile: fs.readFile.bind(fs),
+      link: async () => {
+        throw new Error("injected promotion failure");
+      },
+    };
+    await assert.rejects(
+      saveWorksEditorDraftWithAssets(
+        structuredClone(fixture.baseline),
+        fixture.baseline,
+        {
+          assetDraft: assets,
+          store: fixture.store,
+          assetRoot: fixture.assetRoot,
+          assetFileSystem,
+        },
+        fixture.worksRoot,
+      ),
+      (error: unknown) =>
+        error instanceof WorksSaveError && error.code === "asset-save-failed",
+    );
+    assert.deepEqual(
+      (await readWorksEditorEntry("test-work", fixture.worksRoot)).rawFiles,
+      fixture.baseline.sourceFiles,
+    );
+    assert.deepEqual(await readFile(path.join(fixture.assetRoot, "existing.png")), png);
+    assert.deepEqual(
+      (await fixture.store.read(pending.token, "test-work", "workspace-1")).bytes,
+      png,
+    );
+    assert.deepEqual((await readdir(fixture.assetRoot)).sort(), ["existing.png"]);
+    assert.equal(
+      (await readdir(fixture.worksRoot)).some((name) =>
+        name.startsWith(".works-save-recovery-"),
+      ),
+      false,
+    );
+  });
+
+for (const boundary of ["reread", "parse"] as const)
+  test(`post-install ${boundary} failure restores content/assets and retains token`, async () => {
+    const fixture = await saveFixture();
+    const pending = await register(
+      fixture.store,
+      `test-work-${boundary}-failure.png`,
+    );
+    const assets = addTemporaryWorksAsset(
+      createWorksAssetDraftState(
+        "test-work",
+        "workspace-1",
+        fixture.baseline.data.images,
+      ),
+      { token: pending.token, alt: "Boundary" },
+    );
+    await assert.rejects(
+      saveWorksEditorDraftWithAssets(
+        structuredClone(fixture.baseline),
+        fixture.baseline,
+        {
+          assetDraft: assets,
+          store: fixture.store,
+          assetRoot: fixture.assetRoot,
+          ...(boundary === "reread"
+            ? {
+                rereadSavedEntry: async () => {
+                  throw new Error("injected reread failure");
+                },
+              }
+            : {
+                validateReread: () => {
+                  throw new Error("injected repository validation failure");
+                },
+              }),
+        },
+        fixture.worksRoot,
+      ),
+      (error: unknown) =>
+        error instanceof WorksSaveError && error.code === "asset-save-failed",
+    );
+    assert.deepEqual(
+      (await readWorksEditorEntry("test-work", fixture.worksRoot)).rawFiles,
+      fixture.baseline.sourceFiles,
+    );
+    assert.deepEqual((await readdir(fixture.assetRoot)).sort(), ["existing.png"]);
+    await fixture.store.read(pending.token, "test-work", "workspace-1");
+  });
+
+test("asset rollback failure persists complete durable recovery evidence", async () => {
+  const fixture = await saveFixture();
+  const filename = "test-work-rollback-evidence.png";
+  const pending = await register(fixture.store, filename);
+  const assets = addTemporaryWorksAsset(
+    createWorksAssetDraftState(
+      "test-work",
+      "workspace-1",
+      fixture.baseline.data.images,
+    ),
+    { token: pending.token, alt: "Recovery" },
+  );
+  const assetFileSystem = {
+    lstat: fs.lstat.bind(fs),
+    realpath: fs.realpath.bind(fs),
+    open: fs.open.bind(fs),
+    link: fs.link.bind(fs),
+    readFile: fs.readFile.bind(fs),
+    rm: async (target: Parameters<typeof fs.rm>[0], options?: Parameters<typeof fs.rm>[1]) => {
+      if (String(target).endsWith(filename))
+        throw new Error("injected asset rollback failure");
+      return fs.rm(target, options);
+    },
+  };
+  const contentFileSystem = {
+    lstat: fs.lstat.bind(fs),
+    readFile: fs.readFile.bind(fs),
+    writeFile: fs.writeFile.bind(fs),
+    rm: fs.rm.bind(fs),
+    rename: async () => {
+      throw new Error("injected content install failure");
+    },
+  };
+  await assert.rejects(
+    saveWorksEditorDraftWithAssets(
+      structuredClone(fixture.baseline),
+      fixture.baseline,
+      {
+        assetDraft: assets,
+        store: fixture.store,
+        assetRoot: fixture.assetRoot,
+        assetFileSystem,
+      },
+      fixture.worksRoot,
+      contentFileSystem,
+    ),
+    (error: unknown) =>
+      error instanceof WorksSaveError &&
+      error.code === "asset-save-rollback-failed",
+  );
+  const evidence = JSON.parse(
+    await readFile(
+      path.join(fixture.worksRoot, ".works-save-recovery-test-work-asset.json"),
+      "utf8",
+    ),
+  );
+  assert.equal(evidence.contentId, "test-work");
+  assert.equal(evidence.status, "manual-recovery-required");
+  assert.equal(evidence.failureCode, "asset-rollback-failed");
+  assert.equal(evidence.contentRollbackSucceeded, true);
+  assert.equal(evidence.tempTokenState[0].state, "retained");
+  assert.equal(evidence.promotedAssets[0].src, `/images/works/${filename}`);
+  assert.equal(evidence.promotedAssets[0].expectedGeneration, pending.sha256);
+  assert.equal(evidence.promotedAssets[0].observedSha256, pending.sha256);
+  assert.equal(evidence.promotedAssets[0].observedByteSize, png.byteLength);
+});
+
+test("combined content and asset rollback failures preserve both recovery records", async () => {
+  const fixture = await saveFixture();
+  const filename = "test-work-combined-recovery.png";
+  const pending = await register(fixture.store, filename);
+  const assets = addTemporaryWorksAsset(
+    createWorksAssetDraftState(
+      "test-work",
+      "workspace-1",
+      fixture.baseline.data.images,
+    ),
+    { token: pending.token, alt: "Combined" },
+  );
+  const assetFileSystem = {
+    lstat: fs.lstat.bind(fs), realpath: fs.realpath.bind(fs),
+    open: fs.open.bind(fs), link: fs.link.bind(fs), readFile: fs.readFile.bind(fs),
+    rm: async (target: Parameters<typeof fs.rm>[0], options?: Parameters<typeof fs.rm>[1]) => {
+      if (String(target).endsWith(filename)) throw new Error("asset rollback fail");
+      return fs.rm(target, options);
+    },
+  };
+  let installs = 0;
+  const contentFileSystem = {
+    lstat: fs.lstat.bind(fs), readFile: fs.readFile.bind(fs),
+    writeFile: fs.writeFile.bind(fs), rm: fs.rm.bind(fs),
+    rename: async (from: Parameters<typeof fs.rename>[0], to: Parameters<typeof fs.rename>[1]) => {
+      const source = String(from);
+      if (source.includes(".works-save-") && ++installs === 2)
+        throw new Error("content install fail");
+      if (source.includes(".works-rollback-"))
+        throw new Error("content rollback fail");
+      return fs.rename(from, to);
+    },
+  };
+  await assert.rejects(
+    saveWorksEditorDraftWithAssets(
+      structuredClone(fixture.baseline), fixture.baseline,
+      { assetDraft: assets, store: fixture.store, assetRoot: fixture.assetRoot, assetFileSystem },
+      fixture.worksRoot, contentFileSystem,
+    ),
+    (error: unknown) => error instanceof WorksSaveError && error.code === "asset-save-rollback-failed",
+  );
+  const contentEvidence = JSON.parse(await readFile(
+    path.join(fixture.worksRoot, ".works-save-recovery-test-work.json"), "utf8",
+  ));
+  const assetEvidence = JSON.parse(await readFile(
+    path.join(fixture.worksRoot, ".works-save-recovery-test-work-asset.json"), "utf8",
+  ));
+  assert.equal(contentEvidence.failureCode, "content-rollback-failed");
+  assert.equal(assetEvidence.failureCode, "asset-rollback-failed");
+  assert.equal(assetEvidence.contentRollbackSucceeded, false);
+});
+
+for (const [install, label] of [[1, "index"], [2, "ja"], [3, "en"]] as const)
+  test(`${label} install failure restores three files/assets and retains token`, async () => {
+    const fixture = await saveFixture();
+    const filename = `test-work-${label}-install.png`;
+    const pending = await register(fixture.store, filename);
+    const assets = addTemporaryWorksAsset(
+      createWorksAssetDraftState(
+        "test-work",
+        "workspace-1",
+        fixture.baseline.data.images,
+      ),
+      { token: pending.token, alt: label },
+    );
+    let installs = 0;
+    const contentFileSystem = {
+      lstat: fs.lstat.bind(fs),
+      readFile: fs.readFile.bind(fs),
+      writeFile: fs.writeFile.bind(fs),
+      rm: fs.rm.bind(fs),
+      rename: async (from: Parameters<typeof fs.rename>[0], to: Parameters<typeof fs.rename>[1]) => {
+        if (String(from).includes(".works-save-") && ++installs === install)
+          throw new Error(`injected ${label} install failure`);
+        return fs.rename(from, to);
+      },
+    };
+    await assert.rejects(
+      saveWorksEditorDraftWithAssets(
+        structuredClone(fixture.baseline),
+        fixture.baseline,
+        {
+          assetDraft: assets,
+          store: fixture.store,
+          assetRoot: fixture.assetRoot,
+        },
+        fixture.worksRoot,
+        contentFileSystem,
+      ),
+      (error: unknown) =>
+        error instanceof WorksSaveError && error.code === "save-failed",
+    );
+    assert.deepEqual(
+      (await readWorksEditorEntry("test-work", fixture.worksRoot)).rawFiles,
+      fixture.baseline.sourceFiles,
+    );
+    assert.deepEqual((await readdir(fixture.assetRoot)).sort(), ["existing.png"]);
+    await fixture.store.read(pending.token, "test-work", "workspace-1");
+  });
 
 test("Replace materializes a new asset, substitutes one reference, and retains the old canonical asset", async () => {
   const fixture = await saveFixture();
@@ -233,9 +562,9 @@ test("filename collision never overwrites an existing canonical asset and retain
     await readFile(path.join(fixture.assetRoot, "test-work-new.png")),
     original,
   );
-  assert.equal(
-    await readFile(path.join(fixture.worksRoot, "test-work.md"), "utf8"),
-    source,
+  assert.deepEqual(
+    (await readWorksEditorEntry("test-work", fixture.worksRoot)).rawFiles,
+    fixture.baseline.sourceFiles,
   );
   await fixture.store.read(pending.token, "test-work", "workspace-1");
 });
@@ -389,9 +718,9 @@ test("existing references are rechecked immediately before asset promotion", asy
     (error: unknown) =>
       error instanceof WorksSaveError && error.code === "asset-save-failed",
   );
-  assert.equal(
-    await readFile(path.join(fixture.worksRoot, "test-work.md"), "utf8"),
-    source,
+  assert.deepEqual(
+    (await readWorksEditorEntry("test-work", fixture.worksRoot)).rawFiles,
+    fixture.baseline.sourceFiles,
   );
   assert.deepEqual((await readdir(fixture.assetRoot)).sort(), []);
   await fixture.store.read(pending.token, "test-work", "workspace-1");
@@ -431,9 +760,9 @@ test("Markdown replacement failure rolls back only newly promoted assets and ret
     ),
     WorksSaveError,
   );
-  assert.equal(
-    await readFile(path.join(fixture.worksRoot, "test-work.md"), "utf8"),
-    source,
+  assert.deepEqual(
+    (await readWorksEditorEntry("test-work", fixture.worksRoot)).rawFiles,
+    fixture.baseline.sourceFiles,
   );
   assert.deepEqual((await readdir(fixture.assetRoot)).sort(), ["existing.png"]);
   await fixture.store.read(pending.token, "test-work", "workspace-1");
@@ -475,9 +804,9 @@ test("partial multi-asset promotion failure cleans every transaction-owned targe
     ),
     WorksSaveError,
   );
-  assert.equal(
-    await readFile(path.join(fixture.worksRoot, "test-work.md"), "utf8"),
-    source,
+  assert.deepEqual(
+    (await readWorksEditorEntry("test-work", fixture.worksRoot)).rawFiles,
+    fixture.baseline.sourceFiles,
   );
   assert.deepEqual((await readdir(fixture.assetRoot)).sort(), ["existing.png"]);
   await fixture.store.read(one.token, "test-work", "workspace-1");

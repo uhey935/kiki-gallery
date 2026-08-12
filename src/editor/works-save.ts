@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
@@ -8,7 +8,10 @@ import {
   validateWorksEditorDraft,
   type WorksEditorDraftState,
 } from "./works-draft-state.ts";
-import { serializeWorksEditorDraft } from "./works-serializer.ts";
+import {
+  serializeWorksEditorUnit,
+  type SerializedWorksUnit,
+} from "./works-serializer.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
 import type { WorksAssetDraftState } from "./works-asset-draft.ts";
 import {
@@ -26,6 +29,25 @@ import {
 } from "./works-asset-publish-manifest.ts";
 
 const canonicalWorksRoot = path.resolve("src/content/works");
+const contentHash = (value: string) =>
+  createHash("sha256").update(value).digest("hex");
+async function persistWorksSaveRecovery(
+  root: string,
+  contentId: string,
+  evidence: Record<string, unknown>,
+  evidenceKind?: "asset",
+) {
+  const file = path.join(
+    root,
+    `.works-save-recovery-${contentId}${evidenceKind ? `-${evidenceKind}` : ""}.json`,
+  );
+  await fs.writeFile(
+    file,
+    `${JSON.stringify({ version: 1, collection: "works", contentId, status: "manual-recovery-required", ...evidence }, null, 2)}\n`,
+    { flag: "wx" },
+  );
+  return file;
+}
 
 export class WorksSaveError extends Error {
   readonly code:
@@ -37,6 +59,7 @@ export class WorksSaveError extends Error {
     | "asset-temp-not-found"
     | "asset-temp-expired"
     | "asset-temp-unsafe"
+    | "publish-evidence-invalid"
     | "save-failed";
 
   constructor(
@@ -50,6 +73,7 @@ export class WorksSaveError extends Error {
       | "asset-temp-not-found"
       | "asset-temp-expired"
       | "asset-temp-unsafe"
+      | "publish-evidence-invalid"
       | "save-failed",
     options?: ErrorOptions,
   ) {
@@ -90,6 +114,135 @@ async function resolveTarget(
       "invalid-content-id",
     );
   return target;
+}
+
+async function resolveUnit(
+  contentId: string,
+  root: string,
+  fileSystem: WorksSaveFileSystem,
+) {
+  if (!isContentId(contentId))
+    throw new WorksSaveError(
+      `Invalid Works Content ID: ${contentId}`,
+      "invalid-content-id",
+    );
+  const directory = path.join(path.resolve(root), contentId);
+  const stat = await fileSystem.lstat(directory).catch(() => undefined);
+  if (!stat?.isDirectory() || stat.isSymbolicLink())
+    throw new WorksSaveError(
+      `Unsafe Works unit: ${contentId}`,
+      "invalid-content-id",
+    );
+  const paths = {
+    shared: path.join(directory, "index.yaml"),
+    ja: path.join(directory, "ja.md"),
+    en: path.join(directory, "en.md"),
+  };
+  for (const file of Object.values(paths)) {
+    const item = await fileSystem.lstat(file).catch(() => undefined);
+    if (!item?.isFile() || item.isSymbolicLink())
+      throw new WorksSaveError(
+        `Unsafe Works unit: ${contentId}`,
+        "invalid-content-id",
+      );
+  }
+  return paths;
+}
+
+export async function writeWorksSerializedUnit(
+  contentId: string,
+  serialized: SerializedWorksUnit,
+  baseline: SerializedWorksUnit,
+  root = canonicalWorksRoot,
+  fileSystem: WorksSaveFileSystem = fs,
+) {
+  const paths = await resolveUnit(contentId, root, fileSystem);
+  for (const key of ["shared", "ja", "en"] as const)
+    if ((await fileSystem.readFile(paths[key], "utf8")) !== baseline[key])
+      throw new WorksSaveError(
+        `Canonical Works ${key} changed`,
+        "canonical-mismatch",
+      );
+  const staged = {} as Record<keyof SerializedWorksUnit, string>;
+  const installed: (keyof SerializedWorksUnit)[] = [];
+  try {
+    for (const key of ["shared", "ja", "en"] as const) {
+      staged[key] = `${paths[key]}.works-save-${randomUUID()}.tmp`;
+      await fileSystem.writeFile(staged[key], serialized[key], {
+        encoding: "utf8",
+        flag: "wx",
+      });
+    }
+    for (const key of ["shared", "ja", "en"] as const) {
+      await fileSystem.rename(staged[key], paths[key]);
+      installed.push(key);
+    }
+    for (const key of ["shared", "ja", "en"] as const)
+      if ((await fileSystem.readFile(paths[key], "utf8")) !== serialized[key])
+        throw new Error(`Works ${key} reread mismatch`);
+  } catch (error) {
+    const rollbackErrors = [];
+    for (const key of [...installed].reverse())
+      try {
+        const restore = `${paths[key]}.works-rollback-${randomUUID()}.tmp`;
+        await fileSystem.writeFile(restore, baseline[key], {
+          encoding: "utf8",
+          flag: "wx",
+        });
+        await fileSystem.rename(restore, paths[key]);
+      } catch (e) {
+        rollbackErrors.push(e);
+      }
+    if (rollbackErrors.length) {
+      const observed = Object.fromEntries(
+        await Promise.all(
+          (["shared", "ja", "en"] as const).map(async (key) => {
+            try {
+              const value = await fileSystem.readFile(paths[key], "utf8");
+              return [
+                paths[key],
+                {
+                  sha256: contentHash(value),
+                  byteLength: Buffer.byteLength(value),
+                },
+              ];
+            } catch (readError) {
+              return [paths[key], { readError: String(readError) }];
+            }
+          }),
+        ),
+      );
+      const evidencePath = await persistWorksSaveRecovery(root, contentId, {
+        failureCode: "content-rollback-failed",
+        affectedPaths: Object.values(paths),
+        installed,
+        baseline: Object.fromEntries(
+          (["shared", "ja", "en"] as const).map((key) => [
+            paths[key],
+            {
+              sha256: contentHash(baseline[key]),
+              byteLength: Buffer.byteLength(baseline[key]),
+            },
+          ]),
+        ),
+        observed,
+        rollbackErrors: rollbackErrors.map(String),
+      });
+      throw new WorksSaveError(
+        `Works three-file rollback failed; recovery evidence: ${evidencePath}`,
+        "asset-save-rollback-failed",
+        { cause: error },
+      );
+    }
+    if (error instanceof WorksSaveError) throw error;
+    throw new WorksSaveError("Works three-file Save failed", "save-failed", {
+      cause: error,
+    });
+  } finally {
+    for (const file of Object.values(staged))
+      if (file)
+        await fileSystem.rm(file, { force: true }).catch(() => undefined);
+  }
 }
 
 export async function writeWorksSerializedFile(
@@ -158,10 +311,12 @@ export async function saveWorksEditorDraft(
       "Canonical Works file changed after the Editor baseline was loaded",
       "canonical-mismatch",
     );
-  await writeWorksSerializedFile(
+  if (!canonicalEntry.rawFiles || !draft.sourceFiles)
+    throw new WorksSaveError("Three-file baseline required", "invalid-draft");
+  await writeWorksSerializedUnit(
     draft.contentId,
-    serializeWorksEditorDraft(draft),
-    canonicalEntry.raw,
+    serializeWorksEditorUnit(draft),
+    canonicalEntry.rawFiles,
     root,
     fileSystem,
   );
@@ -178,6 +333,9 @@ export type WorksAssetSaveOptions = {
   store: TemporaryWorksAssetStore;
   assetRoot?: string;
   assetFileSystem?: WorksAssetMaterializationFileSystem;
+  createPublishManifest?: typeof createWorksAssetPublishManifest;
+  rereadSavedEntry?: typeof readWorksEditorEntry;
+  validateReread?: (draft: WorksEditorDraftState) => void;
 };
 
 export type WorksAssetSaveResult = {
@@ -268,8 +426,38 @@ export async function saveWorksEditorDraftWithAssets(
       );
     return { src: image.src, alt: image.alt };
   });
+  if (!finalDraft.localized || !canonicalEntry.rawFiles)
+    throw new WorksSaveError(
+      "Three-file localized baseline required",
+      "invalid-draft",
+    );
+  const enAltBySource = new Map(
+    baseline.data.images.map((image, index) => [
+      image.src,
+      baseline.localized?.en.images[index]?.alt,
+    ]),
+  );
+  finalDraft.localized.ja.images = finalDraft.data.images.map((image) => ({
+    alt: image.alt,
+  }));
+  finalDraft.localized.en.images = normalizedAssetDraft.images.map(
+    (image, index) => {
+      const originalDraftImage = assetDraft.images[index];
+      const originalSrc =
+        originalDraftImage.kind === "temporary" && originalDraftImage.replaced
+          ? originalDraftImage.replaced.src
+          : image.kind === "existing"
+            ? image.src
+            : undefined;
+      return {
+        alt:
+          (originalSrc && enAltBySource.get(originalSrc)) ||
+          `__TODO_WORK_IMAGE_ALT_${index + 1}__`,
+      };
+    },
+  );
 
-  const serialized = serializeWorksEditorDraft(finalDraft);
+  const serializedUnit = serializeWorksEditorUnit(finalDraft);
   let markdownCommitted = false;
   let saved: WorksEditorDraftState;
   try {
@@ -279,30 +467,37 @@ export async function saveWorksEditorDraftWithAssets(
         "invalid-draft",
       );
     await transaction.promote();
-    await writeWorksSerializedFile(
+    await writeWorksSerializedUnit(
       draft.contentId,
-      serialized,
-      canonicalEntry.raw,
+      serializedUnit,
+      canonicalEntry.rawFiles,
       root,
       fileSystem,
     );
     markdownCommitted = true;
     const reread = createWorksEditorDraft(
-      await readWorksEditorEntry(draft.contentId, root),
+      await (options.rereadSavedEntry ?? readWorksEditorEntry)(
+        draft.contentId,
+        root,
+      ),
     );
-    if (!reread || reread.sourceRaw !== serialized)
+    if (
+      !reread ||
+      JSON.stringify(reread.sourceFiles) !== JSON.stringify(serializedUnit)
+    )
       throw new WorksSaveError(
         "Saved Works source failed canonical verification",
         "asset-save-failed",
       );
+    options.validateReread?.(reread);
     saved = reread;
   } catch (error) {
     if (markdownCommitted) {
       try {
-        await writeWorksSerializedFile(
+        await writeWorksSerializedUnit(
           draft.contentId,
-          canonicalEntry.raw,
-          serialized,
+          canonicalEntry.rawFiles,
+          serializedUnit,
           root,
           fileSystem,
         );
@@ -314,15 +509,86 @@ export async function saveWorksEditorDraftWithAssets(
         );
       }
     }
-    await transaction.rollback();
+    try {
+      await transaction.rollback();
+    } catch (rollbackError) {
+      const assetRoot = path.resolve(
+        options.assetRoot ?? "public/images/works",
+      );
+      const promotedAssets = await Promise.all(
+        transaction.assets.map(async (asset) => {
+          const target = path.join(assetRoot, path.basename(asset.src));
+          try {
+            const bytes = await fs.readFile(target);
+            return {
+              ...asset,
+              path: target,
+              expectedGeneration: asset.sha256,
+              observedSha256: createHash("sha256").update(bytes).digest("hex"),
+              observedByteSize: bytes.byteLength,
+            };
+          } catch (readError) {
+            return { ...asset, path: target, readError: String(readError) };
+          }
+        }),
+      );
+      const tempTokenState = await Promise.all(
+        tokens.map(async (token) => {
+          try {
+            await options.store.read(
+              token,
+              draft.contentId,
+              assetDraft.workspaceId,
+            );
+            return { token, state: "retained" };
+          } catch (readError) {
+            return { token, state: "unavailable", readError: String(readError) };
+          }
+        }),
+      );
+      const evidencePath = await persistWorksSaveRecovery(
+        root,
+        draft.contentId,
+        {
+          failureCode: "asset-rollback-failed",
+          contentRollbackSucceeded: !(
+            error instanceof WorksSaveError &&
+            error.code === "asset-save-rollback-failed"
+          ),
+          promotedAssets,
+          tempTokenState,
+          rollbackError: String(rollbackError),
+        },
+        "asset",
+      );
+      throw new WorksSaveError(
+        `Works asset rollback failed; recovery evidence: ${evidencePath}`,
+        "asset-save-rollback-failed",
+        { cause: rollbackError },
+      );
+    }
     if (error instanceof WorksSaveError) throw error;
     throw new WorksSaveError("Works asset Save failed", "asset-save-failed", {
       cause:
         error instanceof WorksAssetMaterializationError ? error : undefined,
     });
   }
-  // Cleanup occurs only after the canonical unit has been reread successfully.
-  // A cleanup failure must not undo a now-visible Markdown reference.
+  // Publish evidence must exist before the temporary source is finalized.
+  // If evidence generation fails, canonical Save remains authoritative and the
+  // still-readable token permits an operator to retry evidence generation.
+  let publishManifest: WorksAssetPublishManifest;
+  try {
+    publishManifest = (
+      options.createPublishManifest ?? createWorksAssetPublishManifest
+    )(saved.contentId, saved.sourceRaw, transaction.assets);
+  } catch (error) {
+    throw new WorksSaveError(
+      "Works Save succeeded but Publish evidence generation failed",
+      "publish-evidence-invalid",
+      { cause: error },
+    );
+  }
+  // Cleanup occurs only after canonical reread and Publish evidence generation.
   await Promise.allSettled(
     tokens.map((token) =>
       options.store.release(token, draft.contentId, assetDraft.workspaceId),
@@ -331,10 +597,6 @@ export async function saveWorksEditorDraftWithAssets(
   return {
     draft: saved,
     assetDraft: normalizedAssetDraft,
-    publishManifest: createWorksAssetPublishManifest(
-      saved.contentId,
-      saved.sourceRaw,
-      transaction.assets,
-    ),
+    publishManifest,
   };
 }

@@ -104,6 +104,7 @@ test("first Save transitions every flat collection to Publish with its new untra
         const sourceName = (
           await fs.readdir(sourceRoot, { withFileTypes: true })
         ).find((entry) =>
+          collection === "works" ||
           collection === "news" ||
           collection === "artists" ||
           collection === "exhibitions"
@@ -112,6 +113,7 @@ test("first Save transitions every flat collection to Publish with its new untra
         )?.name;
         assert.ok(sourceName);
         const sourceId =
+          collection === "works" ||
           collection === "news" ||
           collection === "artists" ||
           collection === "exhibitions"
@@ -135,6 +137,7 @@ test("first Save transitions every flat collection to Publish with its new untra
           root,
         });
         const expectedPaths =
+          collection === "works" ||
           collection === "news" ||
           collection === "artists" ||
           collection === "exhibitions"
@@ -156,6 +159,7 @@ test("first Save transitions every flat collection to Publish with its new untra
         );
         assert.equal(result.state, "published");
         const publishedPaths =
+          collection === "works" ||
           collection === "news" ||
           collection === "artists" ||
           collection === "exhibitions"

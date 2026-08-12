@@ -2,7 +2,7 @@ import type { CollectionEntry } from "astro:content";
 import type { ArtistProductionEntry } from "../content-boundaries/artists-production";
 
 type ArtistEntry = ArtistProductionEntry;
-type WorkEntry = CollectionEntry<"works">;
+type WorkEntry = CollectionEntry<"worksLocalized">;
 
 /**
  * Validates relationships that require access to both Artist and Work
@@ -27,7 +27,7 @@ export function validateArtistWorkReferences(
           );
         }
 
-        const workArtistId = work.data.artist.id;
+        const workArtistId = work.data.artist;
 
         if (workArtistId !== artist.id) {
           throw new Error(

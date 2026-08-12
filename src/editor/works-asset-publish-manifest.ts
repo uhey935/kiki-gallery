@@ -12,6 +12,7 @@ export type WorksAssetPublishManifestEntry = Omit<
 export type WorksAssetPublishManifest = {
   contentId: string;
   baselineSha256: string;
+  contentPaths: [string, string, string];
   assets: WorksAssetPublishManifestEntry[];
 };
 
@@ -33,6 +34,11 @@ export function createWorksAssetPublishManifest(
   return {
     contentId,
     baselineSha256: sha256(sourceRaw),
+    contentPaths: [
+      `src/content/works/${contentId}/index.yaml`,
+      `src/content/works/${contentId}/ja.md`,
+      `src/content/works/${contentId}/en.md`,
+    ],
     assets: assets.map(({ src, sha256, byteSize, format, width, height }) => ({
       src,
       sha256,

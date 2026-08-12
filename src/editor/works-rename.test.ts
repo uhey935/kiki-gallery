@@ -63,8 +63,8 @@ test("reviewed Works Rename moves byte-identical content, rewrites typed referen
   await withRepository(async (repository) => {
     const oldId = "reiko-kinoshita-01";
     const newId = "reiko-kinoshita-renamed";
-    const source = path.join(repository, `src/content/works/${oldId}.md`);
-    const sourceBytes = await fs.readFile(source);
+    const source = path.join(repository, `src/content/works/${oldId}`);
+    const sourceBytes = await inventory(source);
     const assetRoot = path.join(repository, "public/images/works");
     const assetBefore = await inventory(assetRoot);
     const plan = await planWorksRename({
@@ -83,7 +83,7 @@ test("reviewed Works Rename moves byte-identical content, rewrites typed referen
     assert.equal(result.draft.contentId, newId);
     assert.equal(await fs.lstat(source).catch(() => undefined), undefined);
     assert.deepEqual(
-      await fs.readFile(path.join(repository, `src/content/works/${newId}.md`)),
+      await inventory(path.join(repository, `src/content/works/${newId}`)),
       sourceBytes,
     );
     assert.deepEqual(await inventory(assetRoot), assetBefore);
@@ -111,7 +111,7 @@ test("reviewed Works Rename moves byte-identical content, rewrites typed referen
       "--name-only",
       "HEAD",
     );
-    assert.match(changed, new RegExp(`src/content/works/${newId}\\.md`));
+    assert.match(changed, new RegExp(`src/content/works/${newId}/index\\.yaml`));
     assert.doesNotMatch(changed, /public\/images|\.kiki-editor/);
   });
 });
@@ -159,19 +159,20 @@ test("Works Rename detects canonical drift and rolls content/reference bytes bac
   await withRepository(async (repository) => {
     const oldId = "reiko-kinoshita-01";
     const newId = "rollback-work";
-    const source = path.join(repository, `src/content/works/${oldId}.md`);
+    const source = path.join(repository, `src/content/works/${oldId}`);
     const plan = await planWorksRename({
       repositoryRoot: repository,
       sourceContentId: oldId,
       destinationContentId: newId,
     });
-    const original = await fs.readFile(source);
-    await fs.appendFile(source, "\n");
+    const shared = path.join(source, "index.yaml");
+    const original = await fs.readFile(shared);
+    await fs.appendFile(shared, "\n");
     await assert.rejects(
       executeWorksRename(plan, repository),
       (e) => e instanceof WorksRenameError && e.code === "plan-stale",
     );
-    await fs.writeFile(source, original);
+    await fs.writeFile(shared, original);
     const fresh = await planWorksRename({
       repositoryRoot: repository,
       sourceContentId: oldId,
@@ -197,10 +198,10 @@ test("Works Rename detects canonical drift and rolls content/reference bytes bac
     } finally {
       (fs as any).rename = originalRename;
     }
-    assert.deepEqual(await fs.readFile(source), original);
+    assert.deepEqual(await fs.readFile(shared), original);
     assert.equal(
       await fs
-        .lstat(path.join(repository, `src/content/works/${newId}.md`))
+        .lstat(path.join(repository, `src/content/works/${newId}`))
         .catch(() => undefined),
       undefined,
     );

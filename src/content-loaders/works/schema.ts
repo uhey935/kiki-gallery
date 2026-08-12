@@ -48,6 +48,23 @@ export const workLocalizedSchema = z
 export type WorkShared = z.infer<typeof workSharedSchema>;
 export type WorkLocalized = z.infer<typeof workLocalizedSchema>;
 
+export const workAstroEntrySchema = z
+  .object({
+    contentId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    locale: z.enum(WORK_LOCALES),
+    artist: workSharedSchema.shape.artist,
+    images: z.array(z.object({ src: publicUrl, alt: text }).strict()).min(1),
+    year: workSharedSchema.shape.year,
+    orientation: workSharedSchema.shape.orientation,
+    inquiry: workSharedSchema.shape.inquiry,
+    title: workLocalizedSchema.shape.title,
+    material: workLocalizedSchema.shape.material,
+    size: workLocalizedSchema.shape.size,
+    seo_title: workLocalizedSchema.shape.seo_title,
+    description: workLocalizedSchema.shape.description,
+  })
+  .strict();
+
 export function validateImageAlignment(
   shared: WorkShared,
   localized: WorkLocalized,

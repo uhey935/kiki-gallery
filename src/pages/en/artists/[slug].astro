@@ -2,6 +2,7 @@
 import { getArtistsProductionFacade } from "../../../content-boundaries/artists-production";
 import Layout from "../../../layouts/Layout.astro";
 import { getExhibitionsProductionFacade } from "../../../content-boundaries/exhibitions-production";
+import { getWorksProductionFacade } from "../../../content-boundaries/works-production";
 
 export async function getStaticPaths() {
   return (await getArtistsProductionFacade()).forLocale("en").map((artist) => ({
@@ -13,6 +14,17 @@ export async function getStaticPaths() {
 const { artist } = Astro.props;
 const exhibitionsFacade = await getExhibitionsProductionFacade();
 const exhibitions = exhibitionsFacade.forArtist(artist.id, "en");
+const worksFacade = await getWorksProductionFacade();
+const workById = new Map(
+  worksFacade.forLocale("en").map((work) => [work.contentId, work]),
+);
+const workSections = (artist.data.works_layout ?? []).flatMap((section) => {
+  const works = section.works.flatMap((reference) => {
+    const work = workById.get(reference.id);
+    return work && work.data.artist === artist.id ? [work] : [];
+  });
+  return works.length ? [{ layout: section.layout, works }] : [];
+});
 ---
 
 <Layout
@@ -31,6 +43,31 @@ const exhibitions = exhibitionsFacade.forArtist(artist.id, "en");
         <p class="artists-bio-short">{artist.data.short_bio}</p>
       </div>
     </section>
+    {
+      workSections.length > 0 && (
+        <section class="section artists-works">
+          <h2 class="detail-h2-title">Works</h2>
+          {workSections.map((section) => (
+            <div
+              class={`artists-works-section artists-works-section--${section.layout}`}
+            >
+              {section.works.map((work) => (
+                <figure class="artists-works-section__item">
+                  <a href={worksFacade.detailRoute(work.contentId, "en")}>
+                    <img
+                      class="artists-works-image"
+                      src={work.data.images[0].src}
+                      alt={work.data.images[0].alt}
+                    />
+                    <figcaption>{work.data.title}</figcaption>
+                  </a>
+                </figure>
+              ))}
+            </div>
+          ))}
+        </section>
+      )
+    }
     {
       artist.data.biography && (
         <section class="section artists-bio">

@@ -6,6 +6,10 @@ import {
 } from "../content-loaders/exhibitions/route-registry.ts";
 import { getExhibitionStatus } from "../utils/exhibitionStatus.ts";
 import { getArtistsProductionFacade } from "./artists-production.ts";
+import {
+  getWorksProductionFacade,
+  type WorkProductionEntry,
+} from "./works-production.ts";
 
 type SourceEntry = Awaited<
   ReturnType<typeof getCollection<"exhibitionsThreeFile">>
@@ -158,41 +162,38 @@ export function createExhibitionsProductionFacade(
       entry: ExhibitionProductionEntry,
       locale: ExhibitionLocale,
     ) => {
-      if (locale === "en") return [];
-      const works = await getCollection("works");
-      const byId = new Map(works.map((work) => [work.id, work]));
-      return (entry.data.works ?? []).map((reference) => {
-        const work = byId.get(reference.id);
-        if (!work)
-          throw new Error(
-            `Exhibition "${entry.contentId}" references missing Work "${reference.id}".`,
-          );
-        if (
-          !entry.data.artists.some(
-            (artist) => artist.id === work.data.artist.id,
+      const works = await getWorksProductionFacade();
+      const byId = new Map(
+        works.forLocale(locale).map((work) => [work.contentId, work]),
+      );
+      return (entry.data.works ?? []).flatMap(
+        (reference): WorkProductionEntry[] => {
+          const work = byId.get(reference.id);
+          if (!work) return [];
+          if (
+            !entry.data.artists.some((artist) => artist.id === work.data.artist)
           )
-        )
-          throw new Error(
-            `Exhibition "${entry.contentId}" Work "${reference.id}" belongs to an Artist outside artists[].`,
-          );
-        return work;
-      });
+            throw new Error(
+              `Exhibition "${entry.contentId}" Work "${reference.id}" belongs to an Artist outside artists[].`,
+            );
+          return [work];
+        },
+      );
     },
   };
 }
 
 export async function getExhibitionsProductionFacade() {
-  const [sources, artists, works] = await Promise.all([
+  const [sources, artists] = await Promise.all([
     getCollection("exhibitionsThreeFile"),
     getArtistsProductionFacade(),
-    getCollection("works"),
   ]);
   const artistIds = new Set(
     (["ja", "en"] as const).flatMap((locale) =>
       artists.forLocale(locale).map((artist) => `${locale}:${artist.id}`),
     ),
   );
-  const worksById = new Map(works.map((work) => [work.id, work]));
+  const worksFacade = await getWorksProductionFacade();
   const entries = sources.map(adapt);
   for (const entry of entries) {
     for (const artist of entry.data.artists)
@@ -201,14 +202,9 @@ export async function getExhibitionsProductionFacade() {
           `Exhibition "${entry.contentId}" has a non-capable ${entry.locale} Artist "${artist.id}".`,
         );
     for (const workReference of entry.data.works ?? []) {
-      const work = worksById.get(workReference.id);
-      if (!work)
-        throw new Error(
-          `Exhibition "${entry.contentId}" references missing Work "${workReference.id}".`,
-        );
-      if (
-        !entry.data.artists.some((artist) => artist.id === work.data.artist.id)
-      )
+      const work = worksFacade.find(workReference.id, entry.locale);
+      if (!work) continue;
+      if (!entry.data.artists.some((artist) => artist.id === work.data.artist))
         throw new Error(
           `Exhibition "${entry.contentId}" Work "${workReference.id}" belongs to an Artist outside artists[].`,
         );

@@ -17,20 +17,9 @@ import {
   sha256,
   type WorksAssetPublishManifest,
 } from "./works-asset-publish-manifest.ts";
+import { writeThreeFileWorkFixture } from "./test-three-file-work-fixture.ts";
 
 const execFile = promisify(execFileCallback);
-const source = `---
-title: Test Work
-artist: test-artist
-images:
-  - src: /images/test.jpg
-    alt: Test image
-year: 2026
-inquiry:
-  type: inquiry
----
-Body
-`;
 
 async function git(root: string, ...args: string[]) {
   const { stdout } = await execFile("git", args, {
@@ -53,10 +42,7 @@ async function withRepository(
     await fs.mkdir(path.join(repository, "public/images/works"), {
       recursive: true,
     });
-    await fs.writeFile(
-      path.join(repository, "src/content/works/test-work.md"),
-      source,
-    );
+    await writeThreeFileWorkFixture(path.join(repository, "src/content/works"));
     await fs.writeFile(path.join(repository, "unrelated.txt"), "initial\n");
     await git(repository, "init", "-b", "main");
     await git(repository, "config", "user.name", "Editor Test");
@@ -79,6 +65,11 @@ function manifest(
   return {
     contentId: draft.contentId,
     baselineSha256: sha256(draft.sourceRaw),
+    contentPaths: [
+      `src/content/works/${draft.contentId}/index.yaml`,
+      `src/content/works/${draft.contentId}/ja.md`,
+      `src/content/works/${draft.contentId}/en.md`,
+    ],
     assets: assets.map(({ name, bytes }) => ({
       src: `/images/works/${name}`,
       sha256: sha256(bytes),
@@ -104,12 +95,18 @@ async function savedDraft(repository: string) {
 
 test("publish stages, commits, and pushes only one canonical Works file", async () => {
   await withRepository(async (repository, remote) => {
-    const target = path.join(repository, "src/content/works/test-work.md");
-    await fs.writeFile(target, source.replace("Test Work", "Published Work"));
+    const target = path.join(repository, "src/content/works/test-work/ja.md");
+    await fs.writeFile(
+      target,
+      (await fs.readFile(target, "utf8")).replace(
+        "Test Work",
+        "Published Work",
+      ),
+    );
     await fs.writeFile(path.join(repository, "unrelated.txt"), "uncommitted\n");
     const draft = await savedDraft(repository);
     const inspection = await inspectWorksPublish("test-work", repository);
-    assert.equal(inspection.file, "src/content/works/test-work.md");
+    assert.equal(inspection.file, "src/content/works/test-work/index.yaml");
     assert.match(inspection.diff, /Published Work/);
 
     const result = await publishSavedWorksEntry(
@@ -122,7 +119,7 @@ test("publish stages, commits, and pushes only one canonical Works file", async 
     assert.equal(result.state, "published");
     assert.equal(
       await git(repository, "show", "--format=", "--name-only", "HEAD"),
-      "src/content/works/test-work.md",
+      "src/content/works/test-work/ja.md",
     );
     assert.equal(await git(repository, "status", "--short"), "M unrelated.txt");
     assert.equal(
@@ -139,8 +136,13 @@ test("publish stages, commits, and pushes only one canonical Works file", async 
 test("publish separates committed push failure from commit failure", async () => {
   await withRepository(async (repository, remote) => {
     await fs.writeFile(
-      path.join(repository, "src/content/works/test-work.md"),
-      source.replace("Test Work", "Push Failure"),
+      path.join(repository, "src/content/works/test-work/ja.md"),
+      (
+        await fs.readFile(
+          path.join(repository, "src/content/works/test-work/ja.md"),
+          "utf8",
+        )
+      ).replace("Test Work", "Push Failure"),
     );
     const draft = await savedDraft(repository);
     await fs.rm(remote, { recursive: true, force: true });
@@ -180,8 +182,10 @@ test("publish rejects dirty, blocked, stale baseline, and pre-staged state", asy
         error instanceof WorksPublishError && error.code === "publish-blocked",
     );
     await fs.writeFile(
-      path.join(worksRoot, "test-work.md"),
-      source.replace("Test Work", "External"),
+      path.join(worksRoot, "test-work/ja.md"),
+      (
+        await fs.readFile(path.join(worksRoot, "test-work/ja.md"), "utf8")
+      ).replace("Test Work", "External"),
     );
     await assert.rejects(
       publishSavedWorksEntry(draft, draft, false, repository, worksRoot),
@@ -202,7 +206,7 @@ test("publish rejects dirty, blocked, stale baseline, and pre-staged state", asy
 
 test("publish inspection rejects detached HEAD, missing upstream, and mismatch", async () => {
   await withRepository(async (repository) => {
-    const target = path.join(repository, "src/content/works/test-work.md");
+    const target = path.join(repository, "src/content/works/test-work/ja.md");
     await fs.appendFile(target, "\nchange\n");
     await git(repository, "checkout", "--detach");
     await assert.rejects(
@@ -230,12 +234,15 @@ test("publish inspection rejects detached HEAD, missing upstream, and mismatch",
 test("publish stages exactly the Markdown and saved asset manifest", async () => {
   await withRepository(async (repository) => {
     const worksRoot = path.join(repository, "src/content/works");
-    const target = path.join(worksRoot, "test-work.md");
+    const target = path.join(worksRoot, "test-work/ja.md");
     const first = Buffer.from("first asset");
     const second = Buffer.from("second asset");
     await fs.writeFile(
       target,
-      source.replace("Test Work", "Published with assets"),
+      (await fs.readFile(target, "utf8")).replace(
+        "Test Work",
+        "Published with assets",
+      ),
     );
     await fs.writeFile(
       path.join(repository, "public/images/works/first.png"),
@@ -269,7 +276,7 @@ test("publish stages exactly the Markdown and saved asset manifest", async () =>
       [
         "public/images/works/first.png",
         "public/images/works/second.png",
-        "src/content/works/test-work.md",
+        "src/content/works/test-work/ja.md",
       ],
     );
     assert.match(await git(repository, "status", "--short"), /unrelated.png/);
@@ -280,8 +287,10 @@ test("asset publish rejects stale bytes, missing files, and unsafe files", async
   await withRepository(async (repository) => {
     const worksRoot = path.join(repository, "src/content/works");
     await fs.writeFile(
-      path.join(worksRoot, "test-work.md"),
-      source.replace("Test Work", "Asset checks"),
+      path.join(worksRoot, "test-work/ja.md"),
+      (
+        await fs.readFile(path.join(worksRoot, "test-work/ja.md"), "utf8")
+      ).replace("Test Work", "Asset checks"),
     );
     const draft = await savedDraft(repository);
     const bytes = Buffer.from("expected");

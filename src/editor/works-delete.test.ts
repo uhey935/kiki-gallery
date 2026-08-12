@@ -29,7 +29,11 @@ const git = (root: string, args: string[]) =>
   execFile("git", args, { cwd: root, encoding: "utf8" }).then(({ stdout }) =>
     stdout.trim(),
   );
-const source = `---\ntitle: Delete Me\nartist: fixture-artist\nimages:\n  - src: /images/works/delete-me.png\n    alt: Delete me\nsize: 1 x 1\nmaterial: Pixel\ninquiry:\n  type: none\n---\n\nBody\n`;
+const source = {
+  shared: "artist: fixture-artist\nimages:\n  - src: /images/works/delete-me.png\ninquiry:\n  type: none\n",
+  ja: "---\ntitle: Delete Me\nimages:\n  - alt: Delete me\nsize: 1 x 1\nmaterial: Pixel\n---\nBody\n",
+  en: "---\ntitle: Delete Me EN\nimages:\n  - alt: Delete me EN\nsize: 1 x 1\nmaterial: Pixel\n---\nBody EN\n",
+};
 
 async function fixture() {
   const parent = await fs.mkdtemp(path.join(os.tmpdir(), "works-delete-"));
@@ -48,9 +52,12 @@ async function fixture() {
   await fs.mkdir(path.join(repository, "public/images/works"), {
     recursive: true,
   });
-  const unit = path.join(repository, "src/content/works/delete-me.md");
+  const unit = path.join(repository, "src/content/works/delete-me");
   const asset = path.join(repository, "public/images/works/delete-me.png");
-  await fs.writeFile(unit, source);
+  await fs.mkdir(unit);
+  await fs.writeFile(path.join(unit, "index.yaml"), source.shared);
+  await fs.writeFile(path.join(unit, "ja.md"), source.ja);
+  await fs.writeFile(path.join(unit, "en.md"), source.en);
   await fs.writeFile(asset, png);
   const artist = path.join(repository, "src/content/artists/fixture-artist");
   await fs.mkdir(artist);
@@ -69,7 +76,7 @@ async function fixture() {
 
 test("Works Delete gates backup, incoming references, pending state, and asset lock", async () => {
   const value = await fixture();
-  await fs.appendFile(value.unit, "drift");
+  await fs.appendFile(path.join(value.unit, "index.yaml"), "# drift\n");
   await assert.rejects(
     planWorksDelete({
       repositoryRoot: value.repository,
@@ -78,7 +85,7 @@ test("Works Delete gates backup, incoming references, pending state, and asset l
     }),
     (e) => e instanceof WorksDeleteError && e.code === "backup-proof-stale",
   );
-  await fs.writeFile(value.unit, source);
+  await fs.writeFile(path.join(value.unit, "index.yaml"), source.shared);
   await assert.rejects(
     planWorksDelete({
       repositoryRoot: value.repository,
@@ -138,7 +145,7 @@ test("Works Delete gates backup, incoming references, pending state, and asset l
     (e) => e instanceof WorksDeleteError && e.code === "lock-conflict",
   );
   await releaseWorksAssetRepositoryLock(value.repository, lock.identity);
-  await fs.appendFile(value.unit, "drift\n");
+  await fs.appendFile(path.join(value.unit, "index.yaml"), "# drift\n");
   await assert.rejects(
     executeWorksDelete(plan, value.repository),
     (e) => e instanceof WorksDeleteError && e.code === "plan-stale",
@@ -147,7 +154,7 @@ test("Works Delete gates backup, incoming references, pending state, and asset l
 
 test("Works Delete moves only Markdown, preserves assets/evidence, rolls back, and publishes one path", async () => {
   const rollback = await fixture();
-  const original = await fs.readFile(rollback.unit);
+  const original = await Promise.all(["index.yaml", "ja.md", "en.md"].map((name) => fs.readFile(path.join(rollback.unit, name))));
   const assetHash = hash(await fs.readFile(rollback.asset));
   const rollbackPlan = await planWorksDelete({
     repositoryRoot: rollback.repository,
@@ -162,7 +169,7 @@ test("Works Delete moves only Markdown, preserves assets/evidence, rolls back, a
     }),
     (e) => e instanceof WorksDeleteError && e.code === "delete-failed",
   );
-  assert.deepEqual(await fs.readFile(rollback.unit), original);
+  assert.deepEqual(await Promise.all(["index.yaml", "ja.md", "en.md"].map((name) => fs.readFile(path.join(rollback.unit, name)))), original);
   assert.equal(hash(await fs.readFile(rollback.asset)), assetHash);
   const value = await fixture();
   const plan = await planWorksDelete({
@@ -181,10 +188,10 @@ test("Works Delete moves only Markdown, preserves assets/evidence, rolls back, a
     plan.operationId,
     value.repository,
   );
-  assert.deepEqual(published.files, ["src/content/works/delete-me.md"]);
+  assert.deepEqual(published.files.sort(), ["src/content/works/delete-me/en.md", "src/content/works/delete-me/index.yaml", "src/content/works/delete-me/ja.md"]);
   assert.equal(
     await git(value.repository, ["show", "--name-only", "--format=", "HEAD"]),
-    "src/content/works/delete-me.md",
+    "src/content/works/delete-me/en.md\nsrc/content/works/delete-me/index.yaml\nsrc/content/works/delete-me/ja.md",
   );
   assert.equal(await fs.readFile(value.asset).then(hash), assetHash);
 });
@@ -235,7 +242,8 @@ test("Works Delete fails closed for symlink and records manual recovery on occup
         throw new Error("injected");
       },
       beforeRollback: async () => {
-        await fs.writeFile(value.unit, "conflict");
+        await fs.mkdir(value.unit);
+        await fs.writeFile(path.join(value.unit, "conflict"), "occupied");
       },
     }),
     (e) => e instanceof WorksDeleteError && e.code === "rollback-failed",

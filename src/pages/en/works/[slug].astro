@@ -1,0 +1,94 @@
+---
+import "../../../styles/works.css";
+import WorkLayout from "../../../layouts/WorkLayout.astro";
+import { render } from "astro:content";
+import { getWorksProductionFacade } from "../../../content-boundaries/works-production";
+
+export async function getStaticPaths() {
+  return (await getWorksProductionFacade()).forLocale("en").map((work) => ({
+    params: { slug: work.contentId },
+    props: { work, artist: work.artist },
+  }));
+}
+const { work, artist } = Astro.props;
+const { Content } = await render(work);
+const hasStatement = (work.body ?? "").trim().length > 0;
+const inquiry = work.data.inquiry;
+---
+
+<WorkLayout
+  title={work.data.seo_title ?? work.data.title}
+  description={work.data.description ?? `${work.data.title} | KiKi Gallery`}
+>
+  <main class="works-detail">
+    {
+      work.data.images.map((image) => (
+        <section class="works-detail-section">
+          <figure class="works-detail-image">
+            <img src={image.src} alt={image.alt} />
+          </figure>
+        </section>
+      ))
+    }
+    <section class="works-detail-section">
+      <div class="works-detail-meta">
+        <h1 class="works-detail-title">{work.data.title}</h1>
+        <p class="works-detail-artist">
+          <a href={`/en/artists/${artist.id}/`}>{artist.data.name}</a>
+        </p>
+        <dl class="works-detail-information">
+          {
+            work.data.material && (
+              <>
+                <>
+                  <dt>Material</dt>
+                  <dd>{work.data.material}</dd>
+                </>
+              </>
+            )
+          }
+          {
+            work.data.size && (
+              <>
+                <>
+                  <dt>Size</dt>
+                  <dd>{work.data.size}</dd>
+                </>
+              </>
+            )
+          }
+          {
+            work.data.year && (
+              <>
+                <>
+                  <dt>Year</dt>
+                  <dd>{work.data.year}</dd>
+                </>
+              </>
+            )
+          }
+        </dl>
+        {
+          hasStatement && (
+            <div class="works-detail-statement">
+              <Content />
+            </div>
+          )
+        }
+        {
+          inquiry.type !== "none" && (
+            <p class="works-detail-inquiry">
+              {"url" in inquiry ? (
+                <a href={inquiry.url}>
+                  {inquiry.type === "shop" ? "Shop" : "Inquire"}
+                </a>
+              ) : (
+                "Inquire"
+              )}
+            </p>
+          )
+        }
+      </div>
+    </section>
+  </main>
+</WorkLayout>

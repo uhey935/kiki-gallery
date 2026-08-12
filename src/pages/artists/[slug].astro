@@ -1,10 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection } from "astro:content";
 import type { ArtistProductionEntry } from "../../content-boundaries/artists-production";
 import { getArtistsProductionFacade } from "../../content-boundaries/artists-production";
 import { formatDateRangeJa } from "../../utils/date";
-import { validateArtistWorkReferences } from "../../utils/validateArtistWorkReferences";
+import { getWorksProductionFacade } from "../../content-boundaries/works-production";
 import {
   getExhibitionDisplayTitle,
   resolveExhibitionArtists,
@@ -16,9 +15,7 @@ import { getExhibitionsProductionFacade } from "../../content-boundaries/exhibit
 ========================= */
 export async function getStaticPaths() {
   const artists = (await getArtistsProductionFacade()).forLocale("ja");
-  const works = await getCollection("works");
-
-  validateArtistWorkReferences(artists, works);
+  await getWorksProductionFacade();
 
   return artists.map((artist) => ({
     params: { slug: artist.id },
@@ -45,9 +42,9 @@ const description = artist.data.short_bio
 /* =========================
    works
 ========================= */
-const allWorks = await getCollection("works");
+const allWorks = (await getWorksProductionFacade()).forLocale("ja");
 
-const workById = new Map(allWorks.map((work) => [work.id, work]));
+const workById = new Map(allWorks.map((work) => [work.contentId, work]));
 const displayedWorkIds = new Set<string>();
 
 const workSections = (artist.data.works_layout ?? []).map((section) => ({
@@ -62,9 +59,9 @@ const workSections = (artist.data.works_layout ?? []).map((section) => ({
       );
     }
 
-    if (work.data.artist.id !== artist.id) {
+    if (work.data.artist !== artist.id) {
       throw new Error(
-        `Artist "${artist.id}" references work "${workId}" owned by "${work.data.artist.id}".`,
+        `Artist "${artist.id}" references work "${workId}" owned by "${work.data.artist}".`,
       );
     }
 
@@ -195,7 +192,10 @@ const breadcrumbJsonLd = {
             >
               {section.works.map((work) => (
                 <figure class="artists-works-section__item">
-                  <a href={`/works/${work.id}`} class="artists-works-link">
+                  <a
+                    href={`/works/${work.contentId}`}
+                    class="artists-works-link"
+                  >
                     <img
                       class="artists-works-image"
                       src={work.data.images[0].src}

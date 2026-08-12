@@ -43,9 +43,9 @@ const getFamilyName = (name: string) => name.trim().split(/\s+/).pop() ?? "";
 const exhibitionWorks = (
   await exhibitionsFacade.worksProjection(exh, "ja")
 ).sort((a, b) => {
-  const artistA = artists.find((artist) => artist.id === a.data.artist.id);
+  const artistA = artists.find((artist) => artist.id === a.data.artist);
 
-  const artistB = artists.find((artist) => artist.id === b.data.artist.id);
+  const artistB = artists.find((artist) => artist.id === b.data.artist);
 
   const familyA = getFamilyName(artistA?.data.name ?? "");
 
@@ -213,12 +213,12 @@ const status = getExhibitionStatus(exhibitionDate, exhibitionEndDate);
           <div class="exhibitions-works-list">
             {exhibitionWorks.map((work) => {
               const workArtist = artists.find(
-                (artist) => artist.id === work.data.artist.id,
+                (artist) => artist.id === work.data.artist,
               );
 
               if (!workArtist) {
                 throw new Error(
-                  `Exhibition "${exh.id}" work "${work.id}" references Artist "${work.data.artist.id}" outside the Exhibition artist list.`,
+                  `Exhibition "${exh.id}" work "${work.contentId}" references Artist "${work.data.artist}" outside the Exhibition artist list.`,
                 );
               }
 
@@ -232,7 +232,7 @@ const status = getExhibitionStatus(exhibitionDate, exhibitionEndDate);
                   <figcaption class="exhibitions-work-caption">
                     {artists.length > 1 && (
                       <p class="exhibitions-work-artist">
-                        <a href={`/artists/${work.data.artist.id}`}>
+                        <a href={`/artists/${work.data.artist}`}>
                           {getArtistDisplayName(workArtist)}
                         </a>
                       </p>

@@ -18,7 +18,6 @@ import { readExhibitionsEditorEntry } from "./exhibitions-state.ts";
 import {
   createFlatEditorEntry,
   FlatCreateError,
-  type FlatCreateFileSystem,
 } from "./flat-create.ts";
 import { createNewsEditorDraft } from "./news-draft-state.ts";
 import {
@@ -28,6 +27,11 @@ import {
 } from "./news-create.ts";
 import { readNewsEditorEntry } from "./news-state.ts";
 import { createWorksEditorDraft } from "./works-draft-state.ts";
+import {
+  createWorksThreeFileEntry,
+  WorksCreateError,
+  type WorksCreateFileSystem,
+} from "./works-create.ts";
 import { readWorksEditorEntry } from "./works-state.ts";
 import { materializeLegacyArtistsFixture } from "./test-flat-artists-fixture.ts";
 import { createRouteErrorCode } from "./routes/flat-create-route.ts";
@@ -108,22 +112,20 @@ test("each create-capable collection first-saves its canonical unit", async (t) 
       try {
         const saved = await fixture.create(fixture.draft as never, { root });
         assert.equal(saved.contentId, fixture.draft.contentId);
-        assert.deepEqual(await fs.readdir(root), [
-          fixture.name === "news" ||
-          fixture.name === "artists" ||
-          fixture.name === "exhibitions"
-            ? fixture.draft.contentId
-            : `${fixture.draft.contentId}.md`,
-        ]);
-        if (
-          fixture.name === "news" ||
-          fixture.name === "artists" ||
-          fixture.name === "exhibitions"
-        )
-          assert.deepEqual(
-            (await fs.readdir(path.join(root, fixture.draft.contentId))).sort(),
-            ["en.md", "index.yaml", "ja.md"],
+        assert.deepEqual(await fs.readdir(root), [fixture.draft.contentId]);
+        assert.deepEqual(
+          (await fs.readdir(path.join(root, fixture.draft.contentId))).sort(),
+          ["en.md", "index.yaml", "ja.md"],
+        );
+        if (fixture.name === "works") {
+          const en = await fs.readFile(
+            path.join(root, fixture.draft.contentId, "en.md"),
+            "utf8",
           );
+          assert.match(en, /__TODO_WORK_TITLE__/);
+          assert.match(en, /__TODO_WORK_IMAGE_ALT_1__/);
+          assert.doesNotMatch(en, /Mandylion - time/);
+        }
       } finally {
         await fs.rm(root, { recursive: true, force: true });
       }
@@ -171,7 +173,7 @@ test("a flat staged-write failure leaves no partial canonical entry", async () =
   const root = await fs.mkdtemp(
     path.join(os.tmpdir(), "works-create-failure-"),
   );
-  const failing: FlatCreateFileSystem = {
+  const failing: WorksCreateFileSystem = {
     ...fs,
     async writeFile() {
       throw new Error("injected write failure");
@@ -181,12 +183,58 @@ test("a flat staged-write failure leaves no partial canonical entry", async () =
     await assert.rejects(
       fixture.create(fixture.draft as never, { root, fileSystem: failing }),
       (error: unknown) =>
-        error instanceof FlatCreateError && error.code === "create-failed",
+        error instanceof WorksCreateError && error.code === "create-failed",
     );
     assert.deepEqual(await fs.readdir(root), []);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }
+});
+
+test("Works Create rollback failure persists durable manual recovery evidence", async () => {
+  const fixture = (await fixtures())[0];
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "works-create-recovery-"));
+  const destination = path.join(root, fixture.draft.contentId);
+  const io: WorksCreateFileSystem = {
+    ...fs,
+    async rm(target, options) {
+      if (path.resolve(String(target)) === path.resolve(destination))
+        throw new Error("injected rollback removal failure");
+      return fs.rm(target, options);
+    },
+  };
+  await assert.rejects(
+    createWorksThreeFileEntry(fixture.draft, root, io, {
+      reread: async () => {
+        throw new Error("injected post-install reread failure");
+      },
+    }),
+    (error: unknown) =>
+      error instanceof WorksCreateError &&
+      error.code === "works-create-rollback-failed" &&
+      /recovery evidence/.test(error.message),
+  );
+  const evidence = JSON.parse(
+    await fs.readFile(
+      path.join(root, `.works-create-recovery-${fixture.draft.contentId}.json`),
+      "utf8",
+    ),
+  );
+  assert.equal(evidence.contentId, fixture.draft.contentId);
+  assert.equal(evidence.failureCode, "works-create-rollback-failed");
+  assert.equal(evidence.expectedTargetState, "absent");
+  assert.equal(evidence.observedCurrentPaths.length, 3);
+  assert.ok(evidence.observedCurrentPaths.every((item: { state: string }) => item.state === "present"));
+  assert.deepEqual(evidence.promotedAssets, []);
+  assert.deepEqual(evidence.tempTokenState, []);
+  assert.equal(evidence.rollbackState, "failed");
+  assert.equal(evidence.manualRecoveryRequired, true);
+  await assert.rejects(
+    createWorksThreeFileEntry(fixture.draft, root),
+    (error: unknown) =>
+      error instanceof WorksCreateError && error.code === "content-id-collision",
+  );
+  await fs.rm(root, { recursive: true, force: true });
 });
 
 test("a News staged-write failure leaves no partial canonical unit", async () => {

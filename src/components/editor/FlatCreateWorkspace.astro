@@ -16,8 +16,8 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     <p class="editor-eyebrow">{label} create</p>
     <h1>New {label} entry</h1>
     <p>
-      Draft Preview is temporary. First Save creates one canonical Markdown
-      file, then opens the existing workspace. Publish remains separate.
+      Draft Preview is temporary. First Save creates the canonical content
+      unit, then opens its workspace. Publish remains separate.
     </p>
   </header>
   <div class="editor-workspace" data-flat-create={collection}>

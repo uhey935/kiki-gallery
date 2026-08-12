@@ -171,9 +171,10 @@ async function assertNoIncomingReferences(
         };
         try {
           if (canonicalPath.startsWith("src/content/works/")) {
+            if (entry.name !== "index.yaml") continue;
             const item = await readWorksEditorEntry(
-              path.basename(file, ".md"),
-              path.dirname(file),
+              path.basename(path.dirname(file)),
+              path.dirname(path.dirname(file)),
             );
             if (item.structuralStatus !== "valid" || !item.data)
               throw new Error("invalid Work reference source");

@@ -103,11 +103,11 @@ test("Artists Delete requires exact backup bytes and refuses incoming references
     (error: Error & { code?: string }) => error.code === "parser-uncertainty",
   );
   await fs.rm(incomingNews, { recursive: true });
-  const work = path.join(value.repository, "src/content/works/incoming.md");
-  await fs.writeFile(
-    work,
-    "---\nartist: delete-me\nimages:\n  - src: /images/works/incoming.jpg\n    alt: Incoming\ninquiry:\n  type: none\ntitle: Incoming\n---\n",
-  );
+  const work = path.join(value.repository, "src/content/works/incoming");
+  await fs.mkdir(work);
+  await fs.writeFile(path.join(work, "index.yaml"), "artist: delete-me\nimages:\n  - src: /images/works/incoming.jpg\ninquiry:\n  type: none\n");
+  await fs.writeFile(path.join(work, "ja.md"), "---\ntitle: Incoming\nimages:\n  - alt: Incoming\n---\n");
+  await fs.writeFile(path.join(work, "en.md"), "---\ntitle: Incoming EN\nimages:\n  - alt: Incoming EN\n---\n");
   await assert.rejects(
     () =>
       planArtistsDelete({
@@ -117,7 +117,7 @@ test("Artists Delete requires exact backup bytes and refuses incoming references
       }),
     (error: Error & { code?: string }) => error.code === "incoming-reference",
   );
-  await fs.unlink(work);
+  await fs.rm(work, { recursive: true });
   const exhibition = path.join(
     value.repository,
     "src/content/exhibitions/incoming",

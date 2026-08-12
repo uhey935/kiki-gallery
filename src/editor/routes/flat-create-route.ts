@@ -8,6 +8,7 @@ import {
 } from "../collection-create.ts";
 import { ArtistsCreateError } from "../artists-create.ts";
 import { FlatCreateError } from "../flat-create.ts";
+import { WorksCreateError } from "../works-create.ts";
 import { contentWriterRoute } from "./content-writer-route.ts";
 
 const create = {
@@ -18,7 +19,9 @@ const create = {
 };
 
 export function createRouteErrorCode(error: unknown) {
-  return error instanceof FlatCreateError || error instanceof ArtistsCreateError
+  return error instanceof FlatCreateError ||
+    error instanceof ArtistsCreateError ||
+    error instanceof WorksCreateError
     ? error.code
     : "create-failed";
 }
@@ -59,7 +62,8 @@ export function flatCreateRoute(collection: keyof typeof create): APIRoute {
           status:
             error instanceof SyntaxError ||
             error instanceof FlatCreateError ||
-            error instanceof ArtistsCreateError
+            error instanceof ArtistsCreateError ||
+            error instanceof WorksCreateError
               ? 400
               : 500,
         },

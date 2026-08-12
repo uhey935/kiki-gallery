@@ -76,7 +76,7 @@ async function renamePublishPaths(
       planHash?: string;
       destinationContentId?: string;
       publishPaths?: string[];
-      sourceFile?: { file?: string; hash?: string };
+      sourceFiles?: Array<{ file: string; hash: string }>;
       referenceEdits?: Array<{ file: string; resultingHash: string }>;
     };
   };
@@ -128,8 +128,13 @@ function createGit(repositoryRoot: string): Git {
   };
 }
 
-function pathFor(contentId: string): string {
-  return path.posix.join("src/content/works", `${contentId}.md`);
+function pathsFor(contentId: string) {
+  const root = path.posix.join("src/content/works", contentId);
+  return [
+    path.posix.join(root, "index.yaml"),
+    path.posix.join(root, "ja.md"),
+    path.posix.join(root, "en.md"),
+  ];
 }
 
 function repositoryPathForAsset(asset: WorksAssetPublishManifestEntry) {
@@ -149,6 +154,8 @@ async function verifyManifestAssets(
     typeof manifest !== "object" ||
     !Array.isArray(manifest.assets) ||
     manifest.contentId !== contentId ||
+    JSON.stringify(manifest.contentPaths) !==
+      JSON.stringify(pathsFor(contentId)) ||
     typeof manifest.baselineSha256 !== "string" ||
     manifest.assets.some(
       (asset) =>
@@ -265,15 +272,18 @@ export async function inspectWorksPublish(
       "Publish refused because the repository already has staged changes",
       "unsafe-repository",
     );
-  const file = pathFor(contentId);
-  const stat = await fs
-    .lstat(path.join(repositoryRoot, file))
-    .catch(() => null);
-  if (!stat?.isFile() || stat.isSymbolicLink())
-    throw new WorksPublishError(
-      `Publish source is not a regular file: ${file}`,
-      "unsafe-repository",
-    );
+  const contentFiles = pathsFor(contentId);
+  for (const file of contentFiles) {
+    const stat = await fs
+      .lstat(path.join(repositoryRoot, file))
+      .catch(() => null);
+    if (!stat?.isFile() || stat.isSymbolicLink())
+      throw new WorksPublishError(
+        `Publish source is not a regular file: ${file}`,
+        "unsafe-repository",
+      );
+  }
+  const file = contentFiles[0];
   const assetFiles = manifest
     ? (await verifyManifestAssets(manifest, contentId, repositoryRoot)).map(
         ({ file }) => file,
@@ -284,7 +294,9 @@ export async function inspectWorksPublish(
     contentId,
     renameEvidence,
   );
-  const allowed = renamePlan ? renamePlan.publishPaths! : [file, ...assetFiles];
+  const allowed = renamePlan
+    ? renamePlan.publishPaths!
+    : [...contentFiles, ...assetFiles];
   if (renamePlan && assetFiles.length)
     throw new WorksPublishError(
       "Rename Publish cannot replay an asset manifest",
@@ -302,7 +314,7 @@ export async function inspectWorksPublish(
   return {
     ...context,
     file,
-    diff: await git(["diff", "--", file]),
+    diff: await git(["diff", "--", ...contentFiles]),
     commitMessage: worksPublishCommitMessage(contentId),
     files,
   };
@@ -356,7 +368,6 @@ export async function publishSavedWorksEntry(
     manifest,
     renameEvidence,
   );
-  const expected = canonical.sourceRaw;
   try {
     await git(["add", "--", ...inspection.files]);
     const staged = (
@@ -372,15 +383,20 @@ export async function publishSavedWorksEntry(
         `Staged files escaped the Works publish boundary: expected ${inspection.files.sort().join(", ")}; received ${staged.sort().join(", ")}`,
         "unsafe-repository",
       );
-    if (inspection.files.includes(inspection.file)) {
+    if (!canonical.sourceFiles)
+      throw new WorksPublishError("Three-file Works baseline is unavailable", "canonical-mismatch");
+    for (const [key, file] of ([
+      ["shared", `src/content/works/${draft.contentId}/index.yaml`],
+      ["ja", `src/content/works/${draft.contentId}/ja.md`],
+      ["en", `src/content/works/${draft.contentId}/en.md`],
+    ] as const)) {
+      if (!inspection.files.includes(file)) continue;
       const { stdout: stagedContent } = await execFile(
-        "git",
-        ["show", `:${inspection.file}`],
-        { cwd: repositoryRoot, encoding: "utf8" },
+        "git", ["show", `:${file}`], { cwd: repositoryRoot, encoding: "utf8" },
       );
-      if (stagedContent !== expected)
+      if (stagedContent !== canonical.sourceFiles[key])
         throw new WorksPublishError(
-          "Canonical Works file changed while Publish was staging it",
+          "Canonical Works unit changed while Publish was staging it",
           "canonical-mismatch",
         );
     }
@@ -390,29 +406,19 @@ export async function publishSavedWorksEntry(
       renameEvidence,
     );
     if (renamePlan) {
-      const oldStatus = await git([
-        "diff",
-        "--cached",
-        "--name-status",
-        "--no-renames",
-        "--",
-        renamePlan.sourceFile!.file!,
-      ]);
-      if (!oldStatus.startsWith("D\t"))
-        throw new WorksPublishError(
-          "Old Work deletion is not staged",
-          "canonical-mismatch",
+      for (const source of renamePlan.sourceFiles ?? []) {
+        const oldStatus = await git([
+          "diff", "--cached", "--name-status", "--no-renames", "--", source.file,
+        ]);
+        if (!oldStatus.startsWith("D\t"))
+          throw new WorksPublishError("Old Work deletion is not staged", "canonical-mismatch");
+        const destination = `src/content/works/${draft.contentId}/${path.posix.basename(source.file)}`;
+        const { stdout: renamedBytes } = await execFile(
+          "git", ["show", `:${destination}`], { cwd: repositoryRoot, encoding: "buffer" },
         );
-      const { stdout: renamedBytes } = await execFile(
-        "git",
-        ["show", `:${inspection.file}`],
-        { cwd: repositoryRoot, encoding: "buffer" },
-      );
-      if (sha256(renamedBytes) !== renamePlan.sourceFile!.hash)
-        throw new WorksPublishError(
-          "Renamed Work bytes do not match the old Work identity",
-          "canonical-mismatch",
-        );
+        if (sha256(renamedBytes) !== source.hash)
+          throw new WorksPublishError("Renamed Work bytes do not match the old Work identity", "canonical-mismatch");
+      }
       for (const edit of renamePlan.referenceEdits ?? []) {
         const { stdout: stagedBytes } = await execFile(
           "git",

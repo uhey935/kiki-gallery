@@ -202,28 +202,21 @@ export function admitWorksAssetUpload(
   };
 }
 
-function parseReferences(
+function parseSharedReferences(
   contentId: string,
   raw: string,
 ): { urls: string[]; references: WorksAssetReference[] } {
-  const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(raw);
-  if (!match) throw new Error("Invalid frontmatter");
-  const data = parse(match[1]) as { images?: unknown };
+  const data = parse(raw) as { images?: unknown };
   if (!Array.isArray(data?.images)) throw new Error("Invalid images");
   const urls = data.images.map((image) => {
-    if (
-      !image ||
-      typeof image !== "object" ||
-      typeof (image as { src?: unknown }).src !== "string"
-    )
+    if (!image || typeof image !== "object" || typeof (image as { src?: unknown }).src !== "string")
       throw new Error("Invalid image src");
     return (image as { src: string }).src;
   });
-  const references = urls.map((_, imageIndex) => ({
-    contentId,
-    imageIndex,
-  }));
-  return { urls, references };
+  return {
+    urls,
+    references: urls.map((_, imageIndex) => ({ contentId, imageIndex })),
+  };
 }
 
 export async function readWorksAssetInventory(
@@ -242,22 +235,29 @@ export async function readWorksAssetInventory(
 
   const graph = new Map<string, WorksAssetReference[]>();
   let referenceGraphComplete = true;
-  const workNames = (await fs.readdir(worksRoot))
-    .filter((name) => name.endsWith(".md"))
-    .sort();
+  const workNames = (await fs.readdir(worksRoot)).sort();
   for (const name of workNames) {
-    const file = path.join(worksRoot, name);
-    const stat = await fs.lstat(file);
-    if (!stat.isFile() || stat.isSymbolicLink()) {
+    const directory = path.join(worksRoot, name);
+    const stat = await fs.lstat(directory);
+    if (!stat.isDirectory() || stat.isSymbolicLink()) {
       referenceGraphComplete = false;
       audit.push({ name, code: "asset-reference-invalid" });
       continue;
     }
+    const file = path.join(directory, "index.yaml");
     try {
-      const parsed = parseReferences(
-        name.slice(0, -3),
-        await fs.readFile(file, "utf8"),
-      );
+      const inventory = await fs.readdir(directory, { withFileTypes: true });
+      if (
+        inventory.length !== 3 ||
+        inventory.some(
+          (entry) =>
+            entry.isSymbolicLink() ||
+            !entry.isFile() ||
+            !["index.yaml", "ja.md", "en.md"].includes(entry.name),
+        )
+      )
+        throw new Error("Invalid Works unit inventory");
+      const parsed = parseSharedReferences(name, await fs.readFile(file, "utf8"));
       parsed.urls.forEach((url, index) => {
         if (
           !url.startsWith(WORKS_ASSET_POLICY.publicPrefix) ||

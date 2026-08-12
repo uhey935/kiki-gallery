@@ -1,12 +1,18 @@
 import { editorWorkSchema, type WorkData } from "../content-schemas/work.ts";
 import type { ContentIssue } from "../content-loaders/journal/contracts.ts";
 import type { WorksEditorEntryState } from "./works-state.ts";
+import type { WorkLocalized } from "../content-loaders/works/schema.ts";
 
 export type WorksEditorDraftState = {
   contentId: string;
   data: WorkData;
   body: string;
   sourceRaw: string;
+  sourceFiles?: { shared: string; ja: string; en: string };
+  localized?: {
+    ja: WorkLocalized & { body: string };
+    en: WorkLocalized & { body: string };
+  };
 };
 
 export type WorksEditorDraftValidation = {
@@ -23,6 +29,8 @@ export function createWorksEditorDraft(
         data: structuredClone(entry.data),
         body: entry.body,
         sourceRaw: entry.raw,
+        sourceFiles: structuredClone(entry.rawFiles),
+        localized: structuredClone(entry.localized!),
       }
     : undefined;
 }

@@ -3,30 +3,19 @@ import "../../styles/works.css";
 
 import WorkLayout from "../../layouts/WorkLayout.astro";
 
-import { getCollection, render } from "astro:content";
-import { getArtistsProductionFacade } from "../../content-boundaries/artists-production";
+import { render } from "astro:content";
+import { getWorksProductionFacade } from "../../content-boundaries/works-production";
 
 export async function getStaticPaths() {
-  const works = await getCollection("works");
-  const artists = (await getArtistsProductionFacade()).forLocale("ja");
-
+  const works = (await getWorksProductionFacade()).forLocale("ja");
   return works.map((work) => {
-    const artistId = work.data.artist.id;
-    const artist = artists.find((candidate) => candidate.id === artistId);
-
-    if (!artist) {
-      throw new Error(
-        `Work "${work.id}" references missing artist "${artistId}".`,
-      );
-    }
-
     return {
       params: {
-        slug: work.id,
+        slug: work.contentId,
       },
       props: {
         work,
-        artist,
+        artist: work.artist,
       },
     };
   });
@@ -42,7 +31,7 @@ const hasStatement = (work.body ?? "").trim().length > 0;
 const workTitle = work.data.title;
 const description = `${workTitle} | KiKi Gallery`;
 
-const artistHref = `/artists/${artist.id}`;
+const artistHref = `/artists/${artist.id}/`;
 
 const inquiry = work.data.inquiry;
 const showInquiry = inquiry.type !== "none";

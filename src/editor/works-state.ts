@@ -1,10 +1,10 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import path from "node:path";
 
-import { parse } from "yaml";
-
 import type { ContentIssue } from "../content-loaders/journal/contracts.ts";
-import { editorWorkSchema, type WorkData } from "../content-schemas/work.ts";
+import type { WorkData } from "../content-schemas/work.ts";
+import { loadWorkUnit } from "../content-loaders/works/repository.ts";
+import type { WorkLocalized } from "../content-loaders/works/schema.ts";
 import type { EditorCollectionState } from "./collection-contracts.ts";
 import { isContentId } from "./content-id.ts";
 
@@ -12,7 +12,12 @@ export type WorksEditorEntryState = {
   contentId: string;
   file: string;
   raw: string;
+  rawFiles: { shared: string; ja: string; en: string };
   data?: WorkData;
+  localized?: {
+    ja: WorkLocalized & { body: string };
+    en: WorkLocalized & { body: string };
+  };
   body: string;
   issues: ContentIssue[];
   structuralStatus: "valid" | "issues";
@@ -45,77 +50,78 @@ function issue(
   };
 }
 
-function parseSource(
-  contentId: string,
-  file: string,
-  raw: string,
-): WorksEditorEntryState {
-  const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)([\s\S]*)$/.exec(raw);
-  if (!match) {
-    const issues = [
-      issue(contentId, "frontmatter", "content.work.frontmatter.invalid"),
-    ];
-    return {
-      contentId,
-      file,
-      raw,
-      body: "",
-      issues,
-      structuralStatus: "issues",
-      issueCount: issues.length,
-    };
-  }
-  try {
-    const parsed = editorWorkSchema.safeParse(parse(match[1]));
-    if (!parsed.success) {
-      const issues = parsed.error.issues.map((item) =>
-        issue(contentId, item.path.join("."), item.message),
-      );
-      return {
-        contentId,
-        file,
-        raw,
-        body: match[2].trim(),
-        issues,
-        structuralStatus: "issues",
-        issueCount: issues.length,
-      };
-    }
-    return {
-      contentId,
-      file,
-      raw,
-      data: parsed.data,
-      body: match[2].trim(),
-      issues: [],
-      structuralStatus: "valid",
-      issueCount: 0,
-    };
-  } catch {
-    const issues = [
-      issue(contentId, "frontmatter", "content.work.frontmatter.invalid"),
-    ];
-    return {
-      contentId,
-      file,
-      raw,
-      body: match[2].trim(),
-      issues,
-      structuralStatus: "issues",
-      issueCount: issues.length,
-    };
-  }
-}
-
 async function readEntries(root: string): Promise<WorksEditorEntryState[]> {
-  const names = (await readdir(root))
-    .filter((name) => name.endsWith(".md"))
+  const names = (await readdir(root, { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
     .sort();
   return Promise.all(
     names.map(async (name) => {
-      const contentId = name.slice(0, -3);
-      const file = path.join(root, name);
-      return parseSource(contentId, file, await readFile(file, "utf8"));
+      const directory = path.join(root, name);
+      const unit = await loadWorkUnit(directory);
+      const structuralStatus = unit.issues.some((item) => item.locale !== "en")
+        ? "issues"
+        : "valid";
+      const issues = unit.issues.map((item) =>
+        issue(
+          name,
+          item.locale ? `${item.locale}.${item.ruleId}` : item.ruleId,
+          item.message,
+        ),
+      );
+      const rawFiles = {
+        shared: unit.shared.state === "valid" ? unit.shared.raw : "",
+        ja: unit.locales.ja.state === "valid" ? unit.locales.ja.raw : "",
+        en: unit.locales.en.state === "valid" ? unit.locales.en.raw : "",
+      };
+      if (
+        unit.shared.state !== "valid" ||
+        unit.locales.ja.state !== "valid" ||
+        unit.locales.en.state !== "valid"
+      )
+        return {
+          contentId: name,
+          file: directory,
+          raw: JSON.stringify(rawFiles),
+          rawFiles,
+          body: "",
+          issues,
+          structuralStatus: "issues" as const,
+          issueCount: issues.length,
+        };
+      const shared = unit.shared.value,
+        ja = unit.locales.ja.value,
+        en = unit.locales.en.value;
+      const data: WorkData = {
+        artist: { id: shared.artist, collection: "artists" },
+        images: shared.images.map((image, index) => ({
+          src: image.src,
+          alt: ja.images[index].alt,
+        })),
+        title: ja.title,
+        inquiry: shared.inquiry,
+        ...(shared.year ? { year: shared.year } : {}),
+        ...(shared.orientation ? { orientation: shared.orientation } : {}),
+        ...(ja.material ? { material: ja.material } : {}),
+        ...(ja.size ? { size: ja.size } : {}),
+        ...(ja.seo_title ? { seo_title: ja.seo_title } : {}),
+        ...(ja.description ? { description: ja.description } : {}),
+      };
+      return {
+        contentId: name,
+        file: directory,
+        raw: JSON.stringify(rawFiles),
+        rawFiles,
+        data,
+        localized: {
+          ja: { ...ja, body: unit.locales.ja.body ?? "" },
+          en: { ...en, body: unit.locales.en.body ?? "" },
+        },
+        body: unit.locales.ja.body ?? "",
+        issues,
+        structuralStatus,
+        issueCount: issues.length,
+      };
     }),
   );
 }

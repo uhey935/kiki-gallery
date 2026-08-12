@@ -17,12 +17,16 @@ const png = Buffer.from(
 );
 const hash = (bytes: Uint8Array) =>
   createHash("sha256").update(bytes).digest("hex");
-const work = (sources: string[]) =>
-  `---\ntitle: Fixture\nartist: fixture\nimages:\n${sources
-    .map((src) => `  - src: ${src}\n    alt: Fixture`)
-    .join(
-      "\n",
-    )}\nsize: fixture\nmaterial: fixture\ninquiry:\n  type: none\n---\n`;
+async function work(root: string, id: string, sources: string[]) {
+  const directory = path.join(root, id);
+  await mkdir(directory);
+  await writeFile(
+    path.join(directory, "index.yaml"),
+    `artist: fixture\nimages:\n${sources.map((src) => `  - src: ${src}`).join("\n")}\ninquiry:\n  type: none\n`,
+  );
+  await writeFile(path.join(directory, "ja.md"), "---\ntitle: Fixture\nimages:\n  - alt: Fixture\n---\n");
+  await writeFile(path.join(directory, "en.md"), "---\ntitle: Fixture EN\nimages:\n  - alt: Fixture EN\n---\n");
+}
 
 async function fixture() {
   const root = await mkdtemp(path.join(tmpdir(), "works-assets-"));
@@ -38,14 +42,8 @@ test("inventory reports regular, mismatched, shared, and orphan assets without m
   await writeFile(path.join(assets, "artist-one.png"), png);
   await writeFile(path.join(assets, "artist-mismatch.jpg"), png);
   await writeFile(path.join(assets, "artist-orphan.png"), png);
-  await writeFile(
-    path.join(works, "first.md"),
-    work(["/images/works/artist-one.png", "/images/works/artist-mismatch.jpg"]),
-  );
-  await writeFile(
-    path.join(works, "second.md"),
-    work(["/images/works/artist-one.png"]),
-  );
+  await work(works, "first", ["/images/works/artist-one.png", "/images/works/artist-mismatch.jpg"]);
+  await work(works, "second", ["/images/works/artist-one.png"]);
 
   const result = await readWorksAssetInventory(assets, works);
   assert.equal(result.audit.length, 0);
@@ -78,7 +76,10 @@ test("inventory isolates symlinks and makes orphan state unknown when references
     path.join(assets, "safe-file.png"),
     path.join(assets, "linked-file.png"),
   );
-  await writeFile(path.join(works, "broken.md"), "not frontmatter");
+  await mkdir(path.join(works, "broken"));
+  await writeFile(path.join(works, "broken", "index.yaml"), "not: works");
+  await writeFile(path.join(works, "broken", "ja.md"), "broken");
+  await writeFile(path.join(works, "broken", "en.md"), "broken");
   const result = await readWorksAssetInventory(assets, works);
   assert.deepEqual(result.audit.map(({ code }) => code).sort(), [
     "asset-reference-invalid",
@@ -90,10 +91,7 @@ test("inventory isolates symlinks and makes orphan state unknown when references
 test("inventory reports referenced URLs whose canonical files are missing", async () => {
   const { assets, works } = await fixture();
   await writeFile(path.join(assets, "unreferenced.png"), png);
-  await writeFile(
-    path.join(works, "broken-reference.md"),
-    work(["/images/works/missing.png"]),
-  );
+  await work(works, "broken-reference", ["/images/works/missing.png"]);
   const result = await readWorksAssetInventory(assets, works);
   assert.equal(result.referenceGraphComplete, false);
   assert.deepEqual(result.audit, [

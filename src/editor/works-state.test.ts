@@ -13,10 +13,10 @@ import {
   readWorksEditorState,
   WorksEditorEntryNotFoundError,
 } from "./works-state.ts";
-import { serializeWorksEditorDraft } from "./works-serializer.ts";
+import { serializeWorksEditorUnit } from "./works-serializer.ts";
 import {
   saveWorksEditorDraft,
-  writeWorksSerializedFile,
+  writeWorksSerializedUnit,
   WorksSaveError,
 } from "./works-save.ts";
 import {
@@ -28,10 +28,13 @@ import {
 import {
   addTemporaryWorksAsset,
   createWorksAssetDraftState,
+  removeTemporaryWorksAssetFromDraft,
+  replaceExistingWorksAsset,
   reorderWorksAssetDraftImage,
   updateWorksAssetDraftAlt,
 } from "./works-asset-draft.ts";
 import { readFile, mkdir, symlink } from "node:fs/promises";
+import { writeThreeFileWorkFixture } from "./test-three-file-work-fixture.ts";
 
 const validSource = `---
 title: Test Work
@@ -50,16 +53,20 @@ Localized body
 
 async function fixture(source = validSource) {
   const root = await mkdtemp(path.join(tmpdir(), "works-editor-"));
-  await writeFile(path.join(root, "test-work.md"), source);
+  if (source === validSource) await writeThreeFileWorkFixture(root);
+  else {
+    await writeThreeFileWorkFixture(root);
+    await writeFile(path.join(root, "test-work/ja.md"), source);
+  }
   return root;
 }
 
-test("reads flat Markdown directly into a Works entry and list state", async () => {
+test("reads a three-file Works unit into an entry and list state", async () => {
   const root = await fixture();
   const entry = await readWorksEditorEntry("test-work", root);
   assert.equal(entry.data?.artist.id, "test-artist");
-  assert.equal(entry.data?.images[0].src, "/images/test.jpg");
-  assert.equal(entry.body, "Localized body");
+  assert.equal(entry.data?.images[0].src, "/images/works/existing.png");
+  assert.equal(entry.body, "Body\n");
   assert.deepEqual(
     (await readWorksEditorState(root)).entries.map(
       ({ contentId }) => contentId,
@@ -73,7 +80,7 @@ test("creates an immutable Works-specific Draft", async () => {
   const draft = createWorksEditorDraft(entry);
   assert.ok(draft);
   draft.data.images[0].src = "/images/changed.jpg";
-  assert.equal(entry.data?.images[0].src, "/images/test.jpg");
+  assert.equal(entry.data?.images[0].src, "/images/works/existing.png");
 });
 
 test("validates Drafts with canonical Work rules", async () => {
@@ -139,9 +146,9 @@ test("Works preview resolves mixed existing and temporary Asset Draft images in 
       ),
       alt: "Pending image",
     },
-    { src: "/images/test.jpg", alt: "Existing image" },
+    { src: "/images/works/existing.png", alt: "Existing image" },
   ]);
-  assert.equal(draft.data.images[0].alt, "Test image");
+  assert.equal(draft.data.images[0].alt, "Existing");
 });
 
 test("Works preview follows capability gating", async () => {
@@ -157,6 +164,62 @@ test("Works preview follows capability gating", async () => {
     (error: unknown) =>
       error instanceof WorksPreviewError && error.code === "preview-blocked",
   );
+});
+
+test("EN preview projects Shared plus EN without JA fallback", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "works-preview-en-"));
+  await writeThreeFileWorkFixture(root, { enPlaceholder: false });
+  const draft = createWorksEditorDraft(
+    await readWorksEditorEntry("test-work", root),
+  )!;
+  const before = structuredClone(draft.sourceFiles);
+  const preview = createWorksPreviewModel(draft, undefined, "en");
+  assert.equal(preview.data.title, "Test Work EN");
+  assert.equal(preview.data.artist.id, "test-artist");
+  assert.deepEqual(preview.data.images, [
+    { src: "/images/works/existing.png", alt: "Existing EN" },
+  ]);
+  assert.equal(preview.body, "English body\n");
+  assert.notEqual(preview.data.title, draft.data.title);
+  assert.deepEqual(
+    (await readWorksEditorEntry("test-work", root)).rawFiles,
+    before,
+  );
+});
+
+test("replacement Preview preserves locale alts and Cancel restores the source", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "works-preview-replace-"));
+  await writeThreeFileWorkFixture(root, { enPlaceholder: false });
+  const draft = createWorksEditorDraft(
+    await readWorksEditorEntry("test-work", root),
+  )!;
+  const token = "b".repeat(64);
+  const initial = createWorksAssetDraftState(
+    draft.contentId,
+    "workspace-1",
+    draft.data.images,
+  );
+  const replacement = replaceExistingWorksAsset(initial, 0, { token });
+  assert.deepEqual(createWorksPreviewModel(draft, replacement, "ja").data.images, [
+    {
+      src: temporaryWorksAssetPreviewUrl(token, "test-work", "workspace-1"),
+      alt: "Existing",
+    },
+  ]);
+  assert.deepEqual(createWorksPreviewModel(draft, replacement, "en").data.images, [
+    {
+      src: temporaryWorksAssetPreviewUrl(token, "test-work", "workspace-1"),
+      alt: "Existing EN",
+    },
+  ]);
+  const cancelled = removeTemporaryWorksAssetFromDraft(replacement, token);
+  assert.deepEqual(cancelled, initial);
+  assert.deepEqual(createWorksPreviewModel(draft, cancelled, "ja").data.images, [
+    { src: "/images/works/existing.png", alt: "Existing" },
+  ]);
+  assert.deepEqual(createWorksPreviewModel(draft, cancelled, "en").data.images, [
+    { src: "/images/works/existing.png", alt: "Existing EN" },
+  ]);
 });
 
 test("Works preview store rejects unsafe, mismatched, expired, and isolated state", async () => {
@@ -188,7 +251,7 @@ test("all canonical Works sources round-trip byte-for-byte", async () => {
     const entry = await readWorksEditorEntry(contentId, root);
     const draft = createWorksEditorDraft(entry);
     assert.ok(draft);
-    assert.equal(serializeWorksEditorDraft(draft), entry.raw, contentId);
+    assert.deepEqual(serializeWorksEditorUnit(draft), entry.rawFiles, contentId);
   }
 });
 
@@ -202,10 +265,7 @@ test("edit, serialize, save, and canonical reread reset the baseline", async () 
   draft.data.title = "Changed Work";
   const saved = await saveWorksEditorDraft(draft, baseline, root);
   assert.equal(saved.data.title, "Changed Work");
-  assert.equal(
-    saved.sourceRaw,
-    await readFile(path.join(root, "test-work.md"), "utf8"),
-  );
+  assert.equal(saved.sourceFiles?.ja, await readFile(path.join(root, "test-work/ja.md"), "utf8"));
 });
 
 test("save rejects stale baselines and unsafe targets without overwriting", async () => {
@@ -216,51 +276,47 @@ test("save rejects stale baselines and unsafe targets without overwriting", asyn
   assert.ok(baseline);
   const draft = structuredClone(baseline);
   draft.data.title = "Changed Work";
-  await writeFile(
-    path.join(root, "test-work.md"),
-    validSource.replace("Test Work", "External"),
-  );
+  await writeFile(path.join(root, "test-work/ja.md"), baseline.sourceFiles!.ja.replace("Test Work", "External"));
   await assert.rejects(
     () => saveWorksEditorDraft(draft, baseline, root),
     (error: unknown) =>
       error instanceof WorksSaveError && error.code === "canonical-mismatch",
   );
-  const externalRaw = await readFile(path.join(root, "test-work.md"), "utf8");
+  const externalRaw = await readFile(path.join(root, "test-work/ja.md"), "utf8");
   await assert.rejects(
-    () =>
-      writeWorksSerializedFile("test-work", "replacement", validSource, root),
+    () => writeWorksSerializedUnit("test-work", serializeWorksEditorUnit(draft), baseline.sourceFiles!, root),
     (error: unknown) =>
       error instanceof WorksSaveError && error.code === "canonical-mismatch",
   );
   assert.equal(
-    await readFile(path.join(root, "test-work.md"), "utf8"),
+    await readFile(path.join(root, "test-work/ja.md"), "utf8"),
     externalRaw,
   );
   await assert.rejects(
-    () => writeWorksSerializedFile("../test-work", "x", "x", root),
+    () => writeWorksSerializedUnit("../test-work", baseline.sourceFiles!, baseline.sourceFiles!, root),
     WorksSaveError,
   );
 
   const symlinkRoot = await mkdtemp(path.join(tmpdir(), "works-symlink-"));
   await symlink(
-    path.join(root, "test-work.md"),
-    path.join(symlinkRoot, "test-work.md"),
+    path.join(root, "test-work"),
+    path.join(symlinkRoot, "test-work"),
   );
   await assert.rejects(
-    () => writeWorksSerializedFile("test-work", "x", "x", symlinkRoot),
+    () => writeWorksSerializedUnit("test-work", baseline.sourceFiles!, baseline.sourceFiles!, symlinkRoot),
     WorksSaveError,
   );
   const directoryRoot = await mkdtemp(path.join(tmpdir(), "works-directory-"));
-  await mkdir(path.join(directoryRoot, "test-work.md"));
+  await mkdir(path.join(directoryRoot, "test-work"));
   await assert.rejects(
-    () => writeWorksSerializedFile("test-work", "x", "x", directoryRoot),
+    () => writeWorksSerializedUnit("test-work", baseline.sourceFiles!, baseline.sourceFiles!, directoryRoot),
     WorksSaveError,
   );
 });
 
 test("write failure leaves the original Works source intact", async () => {
   const root = await fixture();
-  const target = path.join(root, "test-work.md");
+  const baseline = createWorksEditorDraft(await readWorksEditorEntry("test-work", root))!;
   const fileSystem = {
     lstat: (await import("node:fs/promises")).lstat,
     readFile,
@@ -272,17 +328,11 @@ test("write failure leaves the original Works source intact", async () => {
   };
   await assert.rejects(
     () =>
-      writeWorksSerializedFile(
-        "test-work",
-        "changed",
-        validSource,
-        root,
-        fileSystem,
-      ),
+      writeWorksSerializedUnit("test-work", { ...baseline.sourceFiles!, ja: baseline.sourceFiles!.ja.replace("Test Work", "Changed") }, baseline.sourceFiles!, root, fileSystem),
     (error: unknown) =>
       error instanceof WorksSaveError && error.code === "save-failed",
   );
-  assert.equal(await readFile(target, "utf8"), validSource);
+  assert.deepEqual((await readWorksEditorEntry("test-work", root)).rawFiles, baseline.sourceFiles);
 });
 
 test("reports schema issues and rejects unsafe or unknown IDs", async () => {

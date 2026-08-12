@@ -96,13 +96,21 @@ export async function stageWorksAssetMaterializations(
   const created = new Set<string>();
   let promoted = false;
   const rollback = async () => {
+    const failures: unknown[] = [];
     for (const item of staged) {
-      await fileSystem.rm(item.file, { force: true }).catch(() => undefined);
+      await fileSystem.rm(item.file, { force: true }).catch((error) =>
+        failures.push(error),
+      );
       if (created.has(item.target))
-        await fileSystem
-          .rm(item.target, { force: true })
-          .catch(() => undefined);
+        await fileSystem.rm(item.target, { force: true }).catch((error) =>
+          failures.push(error),
+        );
     }
+    if (failures.length)
+      throw new WorksAssetMaterializationError(
+        `Failed to roll back ${failures.length} Works asset path(s)`,
+        { cause: failures[0] },
+      );
     created.clear();
   };
 
@@ -228,7 +236,14 @@ export async function stageWorksAssetMaterializations(
         for (const item of staged)
           await fileSystem.rm(item.file, { force: true });
       } catch (error) {
-        await rollback();
+        try {
+          await rollback();
+        } catch (rollbackError) {
+          throw new WorksAssetMaterializationError(
+            "Works asset promotion and rollback failed",
+            { cause: rollbackError },
+          );
+        }
         throw new WorksAssetMaterializationError(
           "Failed to promote Works assets without overwrite",
           { cause: error },
