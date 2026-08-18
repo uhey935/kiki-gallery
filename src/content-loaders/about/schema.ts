@@ -169,6 +169,26 @@ export const aboutLocalizedFrontmatterSchema = z
       });
   });
 
+export const aboutAstroEntrySchema = aboutSharedSchema
+  .omit({ images: true })
+  .safeExtend({
+    contentId: z.literal("about"),
+    locale: z.enum(ABOUT_LOCALES),
+    content_status: z.enum(["placeholder", "review", "approved"]),
+    address: nonEmpty,
+    images: z
+      .object({
+        hero: z.object({ src: publicAsset }).strict(),
+        gallery: z
+          .array(z.object({ src: publicAsset, alt: nonEmpty }).strict())
+          .length(ABOUT_GALLERY_COUNT),
+      })
+      .strict(),
+    seo_title: nonEmpty.optional(),
+    description: nonEmpty.optional(),
+  })
+  .strict();
+
 export type AboutHours = z.infer<typeof aboutHoursSchema>;
 export type AboutShared = z.infer<typeof aboutSharedSchema>;
 export type AboutLocalizedFrontmatter = z.infer<

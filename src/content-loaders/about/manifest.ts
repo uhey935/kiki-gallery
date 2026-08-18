@@ -3,7 +3,10 @@ import { lstat, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { extractAboutSource, type AboutSourceMapping } from "./extraction.ts";
-import { planAboutMigration } from "./converter.ts";
+import {
+  ABOUT_PROVISIONAL_JA_REVIEW,
+  planAboutMigration,
+} from "./converter.ts";
 import { ABOUT_ASSET_URLS } from "./schema.ts";
 
 export const aboutSha256 = (value: Uint8Array | string) =>
@@ -25,7 +28,7 @@ export type AboutAssetEvidence = {
 export type AboutMigrationManifest = {
   migrationVersion: 1;
   collection: "about";
-  mode: "provisional-tooling-evidence";
+  mode: "provisional-review-migration";
   identity: { contentId: "about"; singleton: true };
   source: {
     path: "src/pages/about.astro";
@@ -38,11 +41,19 @@ export type AboutMigrationManifest = {
     byteLength: number;
     sha256: string;
   };
+  cutoverRenderer: {
+    pagePath: "src/pages/about.astro";
+    pageByteLength: number;
+    pageSha256: string;
+    cssPath: "src/styles/about.css";
+    cssByteLength: number;
+    cssSha256: string;
+  };
   mapping: AboutSourceMapping[];
   targetPlan: {
     directory: "src/content/about/about";
     exactInventory: ["index.yaml", "ja.md", "en.md"];
-    evidenceStatus: "provisional-placeholder-plan";
+    evidenceStatus: "provisional-review-target";
     finalHumanApprovedHashes: null;
     files: Array<{
       path: string;
@@ -66,16 +77,20 @@ export type AboutMigrationManifest = {
     enAltsApproved: false;
   };
   authorization: {
-    realMigrationAllowed: false;
-    productionCutoverAllowed: false;
+    provisionalMigrationAllowed: true;
+    provisionalMigrationExecuted: true;
+    reviewDevelopmentCutoverAllowed: true;
+    formalProductionCutoverAllowed: false;
     assetMutationAllowed: false;
   };
+  formalCapability: { ja: false; en: false };
   rollback: {
     sourcePath: "src/pages/about.astro";
     originalBase64: string;
     byteLength: number;
     sha256: string;
-    currentRouteImplementationPreserved: true;
+    legacySourcePreimagePreserved: true;
+    currentRouteRendererReplaced: true;
   };
 };
 
@@ -130,8 +145,37 @@ export async function createAboutMigrationManifest(
   await regular(cssFile);
   const source = await readFile(sourceFile);
   const css = await readFile(cssFile);
-  const extraction = extractAboutSource(source, css);
-  const plan = planAboutMigration();
+  const frozenPath = path.join(
+    root,
+    "docs/migrations/about-localization-manifest-2026-08-18.json",
+  );
+  let legacySource = source;
+  let mapping: AboutSourceMapping[];
+  let presentationEvidence: AboutMigrationManifest["presentationEvidence"];
+  try {
+    mapping = extractAboutSource(source, css).mappings;
+    presentationEvidence = {
+      path: cssPath,
+      byteLength: css.byteLength,
+      sha256: aboutSha256(css),
+    };
+  } catch (error) {
+    const frozen = JSON.parse(
+      await readFile(frozenPath, "utf8"),
+    ) as AboutMigrationManifest;
+    legacySource = Buffer.from(frozen.rollback.originalBase64, "base64");
+    if (
+      legacySource.byteLength !== frozen.rollback.byteLength ||
+      aboutSha256(legacySource) !== frozen.rollback.sha256 ||
+      frozen.source.path !== sourcePath
+    )
+      throw new Error("Invalid frozen About legacy source evidence", {
+        cause: error,
+      });
+    mapping = frozen.mapping;
+    presentationEvidence = frozen.presentationEvidence;
+  }
+  const plan = planAboutMigration({ jaReview: ABOUT_PROVISIONAL_JA_REVIEW });
   const targetDirectory = "src/content/about/about" as const;
   const assets: AboutAssetEvidence[] = [];
   for (const canonicalUrl of ABOUT_ASSET_URLS) {
@@ -154,29 +198,33 @@ export async function createAboutMigrationManifest(
   }
   if (new Set(assets.map(({ sha256 }) => sha256)).size !== assets.length)
     throw new Error("About assets contain duplicate bytes");
-  const originalBase64 = source.toString("base64");
-  const sha256 = aboutSha256(source);
+  const originalBase64 = legacySource.toString("base64");
+  const sha256 = aboutSha256(legacySource);
   return {
     migrationVersion: 1,
     collection: "about",
-    mode: "provisional-tooling-evidence",
+    mode: "provisional-review-migration",
     identity: { contentId: "about", singleton: true },
     source: {
       path: sourcePath,
-      byteLength: source.byteLength,
+      byteLength: legacySource.byteLength,
       sha256,
       originalBase64,
     },
-    presentationEvidence: {
-      path: cssPath,
-      byteLength: css.byteLength,
-      sha256: aboutSha256(css),
+    presentationEvidence,
+    cutoverRenderer: {
+      pagePath: sourcePath,
+      pageByteLength: source.byteLength,
+      pageSha256: aboutSha256(source),
+      cssPath,
+      cssByteLength: css.byteLength,
+      cssSha256: aboutSha256(css),
     },
-    mapping: extraction.mappings,
+    mapping,
     targetPlan: {
       directory: targetDirectory,
       exactInventory: ["index.yaml", "ja.md", "en.md"],
-      evidenceStatus: "provisional-placeholder-plan",
+      evidenceStatus: "provisional-review-target",
       finalHumanApprovedHashes: null,
       files: (["index.yaml", "ja.md", "en.md"] as const).map((name) => ({
         path: `${targetDirectory}/${name}`,
@@ -200,16 +248,20 @@ export async function createAboutMigrationManifest(
       enAltsApproved: false,
     },
     authorization: {
-      realMigrationAllowed: false,
-      productionCutoverAllowed: false,
+      provisionalMigrationAllowed: true,
+      provisionalMigrationExecuted: true,
+      reviewDevelopmentCutoverAllowed: true,
+      formalProductionCutoverAllowed: false,
       assetMutationAllowed: false,
     },
+    formalCapability: { ja: false, en: false },
     rollback: {
       sourcePath,
       originalBase64,
-      byteLength: source.byteLength,
+      byteLength: legacySource.byteLength,
       sha256,
-      currentRouteImplementationPreserved: true,
+      legacySourcePreimagePreserved: true,
+      currentRouteRendererReplaced: true,
     },
   };
 }

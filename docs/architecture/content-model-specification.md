@@ -10,7 +10,7 @@ Last Updated: 2026-08-18
 
 本仕様は KiKi Gallery の Schema、Editor、Astro、および将来の CMS 実装における正式な Content Model の基準である。対象は Artist、Work、Exhibition、Journal、News、Home、About とする。
 
-Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Collection ごとに承認・実装し、現在は Journal、Works、Artists、Exhibitions、Homeでcanonicalである。Aboutの同形式singletonはimplementation-ready targetであり、まだcurrent canonical runtimeではない。Home EditorもShared／JA／ENのthree-file lifecycleを実装済みであり、NewsはCollection固有の現行modelを維持する。
+Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Collection ごとに承認・実装し、現在は Journal、Works、Artists、Exhibitions、Home、Aboutでcanonicalである。AboutはJA review／EN placeholder／Shared hours pendingのprovisional runtimeであり、formal locale capabilityはまだ持たない。Home EditorもShared／JA／ENのthree-file lifecycleを実装済みであり、NewsはCollection固有の現行modelを維持する。
 
 ```text
 Collection
@@ -476,13 +476,14 @@ Shared／JA／EN Load、Preview、Save、Publishは実装済みである。
 
 ---
 
-## 10. About — implementation-ready target
+## 10. About — provisional current runtime
 
-AboutはContent ID `about`のsingletonであり、target topologyは
+AboutはContent ID `about`のsingletonであり、canonical topologyは
 `src/content/about/about/{index.yaml,ja.md,en.md}`である。Missing、extra、
 symlink、non-regular、mixed legacy canonical stateをfail-closedにし、Create、
-Rename、Deleteを持たない。現行Productionは引き続きhard-coded
-`src/pages/about.astro`を使用するため、本節はcurrent runtime authorityではない。
+Rename、Deleteを持たない。ProductionはJA `review` sourceを明示的development
+projectionとして`/about/`へ描画し、`src/pages/about.astro`はpresentationのみを
+所有する。ENは`placeholder`のため`/en/about/`を生成しない。
 
 `index.yaml`はdecorative hero source、順序付き4件のgallery source、承認状態を
 含むstructured weekly hours、optional `email` / `map_url` /

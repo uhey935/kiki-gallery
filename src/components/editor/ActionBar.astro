@@ -1,6 +1,7 @@
 ---
 interface Props {
-  mode?: "journal" | "works" | "exhibitions" | "artists" | "news" | "home";
+  mode?:
+    "journal" | "works" | "exhibitions" | "artists" | "news" | "home" | "about";
   dirty?: boolean;
   loaded?: boolean;
   preview?: { ja: boolean; en: boolean } | boolean;
@@ -23,8 +24,8 @@ const localizedCollection =
     ? "news"
     : mode === "artists"
       ? "artists"
-      : mode === "home"
-        ? "home"
+      : mode === "home" || mode === "about"
+        ? mode
         : "journal";
 const localizedPreviewAttributes = (locale: "ja" | "en") => ({
   ["data-preview-" + localizedCollection]: locale,
@@ -37,8 +38,8 @@ const localizedPublishAttributes = {
 };
 const flatPreview = typeof preview === "boolean" ? preview : false;
 const flatCollection =
-  mode === "home"
-    ? "home"
+  mode === "home" || mode === "about"
+    ? mode
     : mode === "news"
       ? "news"
       : mode === "artists"
@@ -59,7 +60,8 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
     mode !== "journal" &&
     mode !== "news" &&
     mode !== "artists" &&
-    mode !== "home" ? (
+    mode !== "home" &&
+    mode !== "about" ? (
       <>
         <span
           data-action-status
@@ -113,7 +115,10 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
       <>
         <span
           data-action-status
-          {...(mode === "news" || mode === "artists" || mode === "home"
+          {...(mode === "news" ||
+          mode === "artists" ||
+          mode === "home" ||
+          mode === "about"
             ? flatStatusAttributes
             : {})}
           role="status"

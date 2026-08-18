@@ -12,13 +12,18 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { parse } from "yaml";
-import { planAboutMigration, type AboutMigrationInput } from "./converter.ts";
+import {
+  ABOUT_PROVISIONAL_JA_REVIEW,
+  planAboutMigration,
+  type AboutMigrationInput,
+} from "./converter.ts";
 import {
   executeAboutMigrationFixture,
   type AboutFixtureExecutionPlan,
 } from "./executor.ts";
 import { extractAboutSource } from "./extraction.ts";
 import { createAboutFacade, evaluateAboutLocale } from "./facade.ts";
+import { presentAboutHours } from "./hours-presenter.ts";
 import {
   createAboutMigrationManifest,
   serializeAboutMigrationManifest,
@@ -326,8 +331,16 @@ test("Invalid EN body blocks EN without fallback or suppressing capable JA", asy
 });
 
 test("Extraction binds source spans and never promotes stale facts or placeholders", async () => {
-  const astro = await readFile("src/pages/about.astro");
-  const css = await readFile("src/styles/about.css");
+  const frozen = JSON.parse(
+    await readFile(
+      "docs/migrations/about-localization-manifest-2026-08-18.json",
+      "utf8",
+    ),
+  );
+  const astro = Buffer.from(frozen.rollback.originalBase64, "base64");
+  const css = Buffer.from(
+    '.about-hero-image { background-image: url("/images/about/about-hero.jpg"); }\n',
+  );
   const extracted = extractAboutSource(astro, css);
   for (const item of extracted.mappings)
     assert.equal(
@@ -358,6 +371,12 @@ test("Converter blocks without approvals and is deterministic with explicit synt
   assert.equal(blocked.status, "blocked");
   assert.equal(blocked.provisional, true);
   assert.match(blocked.files["ja.md"], /__TODO_ABOUT_JA_STATEMENT__/);
+  const provisional = planAboutMigration({
+    jaReview: ABOUT_PROVISIONAL_JA_REVIEW,
+  });
+  assert.equal(provisional.status, "blocked");
+  assert.match(provisional.files["ja.md"], /content_status: review/);
+  assert.match(provisional.files["en.md"], /content_status: placeholder/);
   const first = planAboutMigration(approvedInput);
   const second = planAboutMigration(structuredClone(approvedInput));
   assert.equal(first.status, "ready");
@@ -369,7 +388,7 @@ test("Converter blocks without approvals and is deterministic with explicit synt
         ...approvedInput,
         en: { ...locale("EN"), statement: "__TODO_ABOUT_EN_STATEMENT__" },
       }),
-    /approved statement is invalid/,
+    /provided statement is invalid/,
   );
 });
 
@@ -385,10 +404,46 @@ test("Manifest generator matches frozen evidence, assets, mappings, and human ga
   assert(
     generated.assets.every(({ decodedFormat }) => decodedFormat === "jpeg"),
   );
-  assert.equal(generated.authorization.realMigrationAllowed, false);
+  assert.equal(generated.authorization.provisionalMigrationExecuted, true);
+  assert.equal(generated.authorization.formalProductionCutoverAllowed, false);
+  assert.deepEqual(generated.formalCapability, { ja: false, en: false });
   assert(Object.values(generated.humanGates).every((value) => value === false));
   assert.equal(generated.targetPlan.finalHumanApprovedHashes, null);
+  for (const evidence of generated.targetPlan.files)
+    assert.equal(evidence.content, await readFile(evidence.path, "utf8"));
   assert(verifyAboutRollbackEvidence(generated));
+});
+
+test("Canonical provisional unit is JA review, EN placeholder, hours pending, and formally incapable", async () => {
+  const unit = await loadAboutUnit("src/content/about/about");
+  assert.equal(unit.shared.state, "valid");
+  assert.equal(unit.locales.ja.state, "valid");
+  assert.equal(unit.locales.en.state, "valid");
+  if (
+    unit.shared.state !== "valid" ||
+    unit.locales.ja.state !== "valid" ||
+    unit.locales.en.state !== "valid"
+  )
+    assert.fail("canonical provisional unit must be structurally valid");
+  assert.equal(unit.shared.value.hours.status, "pending");
+  assert.equal(unit.locales.ja.value.content_status, "review");
+  assert.equal(unit.locales.en.value.content_status, "placeholder");
+  assert.equal(presentAboutHours(unit.shared.value.hours, "ja"), undefined);
+  const facade = createAboutFacade(unit, assets);
+  assert.equal(facade.capability("ja").previewable, true);
+  assert.equal(facade.capability("ja").formal, false);
+  assert.equal(facade.capability("en").previewable, false);
+  assert.equal(facade.capability("en").formal, false);
+  const ja = facade.source("ja");
+  assert(ja);
+  assert.deepEqual(
+    ja.data.images.gallery.map(({ src }) => src),
+    ABOUT_ASSET_URLS.slice(1),
+  );
+  assert.deepEqual(
+    ja.data.images.gallery.map(({ alt }) => alt),
+    ABOUT_PROVISIONAL_JA_REVIEW.alts,
+  );
 });
 
 function executionPlan(

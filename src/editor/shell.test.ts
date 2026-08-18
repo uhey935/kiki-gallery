@@ -6,7 +6,7 @@ import { editorCollections, editorRoutes } from "./shell.ts";
 test("the shell exposes the registered Editor collections", () => {
   assert.deepEqual(
     editorCollections.map(({ id }) => id),
-    ["home", "artists", "exhibitions", "journal", "news", "works"],
+    ["about", "home", "artists", "exhibitions", "journal", "news", "works"],
   );
 });
 

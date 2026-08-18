@@ -42,15 +42,22 @@ export function createAboutFacade(
   return {
     issues: unit.issues,
     source: (locale: AboutLocale) => {
-      if (
-        unit.shared.state !== "valid" ||
-        unit.locales[locale].state !== "valid"
-      )
-        return;
+      const localized = unit.locales[locale];
+      if (unit.shared.state !== "valid" || localized.state !== "valid") return;
       return {
         contentId: "about" as const,
         locale,
-        data: { ...unit.shared.value, ...unit.locales[locale].value },
+        data: {
+          ...unit.shared.value,
+          ...localized.value,
+          images: {
+            hero: unit.shared.value.images.hero,
+            gallery: unit.shared.value.images.gallery.map((image, index) => ({
+              ...image,
+              alt: localized.value.images.gallery[index].alt,
+            })),
+          },
+        },
       };
     },
     capability: (locale: AboutLocale, routeProjects = true) =>

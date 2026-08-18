@@ -1,0 +1,188 @@
+---
+import type { AboutEditorDraftState } from "../../editor/about-draft-state.ts";
+const { draft } = Astro.props as { draft: AboutEditorDraftState };
+if (
+  draft.shared.state !== "editable" ||
+  draft.locales.ja.state !== "editable" ||
+  draft.locales.en.state !== "editable"
+)
+  throw new Error("About draft sources unavailable");
+const shared = draft.shared.value;
+---
+
+<form class="editor-draft-form" data-about-draft-form>
+  <section class="editor-entry-section">
+    <header><h2>Shared</h2></header><div
+      class="editor-entry-section__content editor-field-grid"
+    >
+      <label
+        ><span>Hero source</span><input
+          name="hero_src"
+          value={shared.images.hero.src}
+        /></label
+      >
+      {
+        shared.images.gallery.map((image, index) => (
+          <label>
+            <>
+              <span>Gallery {index + 1} source</span>
+              <input name={`gallery_${index}_src`} value={image.src} />
+            </>
+          </label>
+        ))
+      }
+      <label
+        ><span>Hours status</span><select name="hours_status"
+          ><option value="pending" selected={shared.hours.status === "pending"}
+            >pending</option
+          ><option
+            value="approved"
+            selected={shared.hours.status === "approved"}>approved</option
+          ></select
+        ></label
+      >
+      <fieldset
+        data-approved-hours
+        hidden={shared.hours.status !== "approved"}
+        class="editor-field-wide"
+      >
+        <legend>Approved hours · Asia/Tokyo</legend>
+        <label
+          ><span>Open days (mon,tue…)</span><input
+            name="open_days"
+            value={shared.hours.status === "approved"
+              ? shared.hours.open_days.join(",")
+              : ""}
+          /></label
+        >
+        <label
+          ><span>Opens</span><input
+            name="opens"
+            type="time"
+            value={shared.hours.status === "approved" ? shared.hours.opens : ""}
+          /></label
+        >
+        <label
+          ><span>Closes</span><input
+            name="closes"
+            type="time"
+            value={shared.hours.status === "approved"
+              ? shared.hours.closes
+              : ""}
+          /></label
+        >
+        <label
+          ><span>Closed days</span><input
+            name="closed_days"
+            value={shared.hours.status === "approved"
+              ? shared.hours.closed_days.join(",")
+              : ""}
+          /></label
+        >
+      </fieldset>
+      <label
+        ><span>Email · Optional</span><input
+          name="email"
+          value={shared.contact?.email ?? ""}
+        /></label
+      >
+      <label
+        ><span>Map URL · Optional</span><input
+          name="map_url"
+          value={shared.contact?.map_url ?? ""}
+        /></label
+      >
+      <label
+        ><span>Instagram URL · Optional</span><input
+          name="instagram_url"
+          value={shared.contact?.instagram_url ?? ""}
+        /></label
+      >
+    </div>
+  </section>
+  {
+    (["ja", "en"] as const).map((locale) => {
+      const source = draft.locales[locale];
+      if (source.state !== "editable") return null;
+      const value = source.value;
+      return (
+        <section class="editor-entry-section" data-locale={locale}>
+          <>
+            <header>
+              <>
+                <p class="editor-eyebrow">{locale.toUpperCase()}</p>
+                <h2>{locale === "ja" ? "Japanese" : "English"}</h2>
+              </>
+            </header>
+            <div class="editor-entry-section__content editor-field-grid">
+              <label>
+                <>
+                  <span>Content status</span>
+                  <select name={`${locale}_content_status`}>
+                    <>
+                      <option selected={value.content_status === "placeholder"}>
+                        placeholder
+                      </option>
+                      <option selected={value.content_status === "review"}>
+                        review
+                      </option>
+                      <option selected={value.content_status === "approved"}>
+                        approved
+                      </option>
+                    </>
+                  </select>
+                </>
+              </label>
+              <label class="editor-field-wide">
+                <>
+                  <span>Address</span>
+                  <textarea
+                    name={`${locale}_address`}
+                    set:text={value.address}
+                  />
+                </>
+              </label>
+              {value.images.gallery.map((image, index) => (
+                <label>
+                  <span>Gallery {index + 1} alt</span>
+                  <input
+                    name={`${locale}_gallery_${index}_alt`}
+                    value={image.alt}
+                  />
+                </label>
+              ))}
+              <label>
+                <>
+                  <span>SEO title · Optional</span>
+                  <input
+                    name={`${locale}_seo_title`}
+                    value={value.seo_title ?? ""}
+                  />
+                </>
+              </label>
+              <label>
+                <>
+                  <span>Description · Optional</span>
+                  <textarea
+                    name={`${locale}_description`}
+                    set:text={value.description ?? ""}
+                  />
+                </>
+              </label>
+              <label class="editor-field-wide">
+                <>
+                  <span>Statement · Markdown</span>
+                  <textarea
+                    rows="10"
+                    name={`${locale}_body`}
+                    set:text={value.body}
+                  />
+                </>
+              </label>
+            </div>
+          </>
+        </section>
+      );
+    })
+  }
+</form>

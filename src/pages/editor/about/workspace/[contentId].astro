@@ -1,0 +1,223 @@
+---
+import ActionBar from "../../../../components/editor/ActionBar.astro";
+import AboutDraftForm from "../../../../components/editor/AboutDraftForm.astro";
+import { createAboutEditorDraft } from "../../../../editor/about-draft-state.ts";
+import { readAboutEditorEntry } from "../../../../editor/about-state.ts";
+import EditorLayout from "../../../../layouts/EditorLayout.astro";
+export async function getStaticPaths() {
+  return [
+    {
+      params: { contentId: "about" },
+      props: { entry: await readAboutEditorEntry() },
+    },
+  ];
+}
+const { entry } = Astro.props;
+const draft = createAboutEditorDraft(entry);
+const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
+---
+
+<EditorLayout title="About" section="About"
+  ><header class="editor-page-heading">
+    <p class="editor-eyebrow">About workspace</p><h1>About</h1><p>
+      Singleton · Shared + JA + EN · exact three-file Save/Publish
+    </p>
+  </header><div class="editor-workspace">
+    <main class="editor-panel editor-canvas">
+      <AboutDraftForm draft={draft} />
+    </main><aside class="editor-panel">
+      <h2>Capability</h2><dl data-about-capabilities>
+        <dt>Shared hours</dt><dd data-about-hours>
+          {
+            draft.shared.state === "editable"
+              ? draft.shared.value.hours.status
+              : "unavailable"
+          }
+        </dd><dt>JA status</dt><dd data-about-ja-status>
+          {
+            draft.locales.ja.state === "editable"
+              ? draft.locales.ja.value.content_status
+              : "unavailable"
+          }
+        </dd><dt>JA Preview</dt><dd data-about-ja-preview>
+          {entry.capabilities.preview.ja ? "Available" : "Blocked"}
+        </dd><dt>JA formal</dt><dd data-about-ja-formal>
+          {entry.capabilities.formal.ja ? "Capable" : "Blocked"}
+        </dd><dt>EN status</dt><dd data-about-en-status>
+          {
+            draft.locales.en.state === "editable"
+              ? draft.locales.en.value.content_status
+              : "unavailable"
+          }
+        </dd><dt>EN Preview</dt><dd data-about-en-preview>
+          {entry.capabilities.preview.en ? "Available" : "Blocked"}
+        </dd><dt>EN formal</dt><dd data-about-en-formal>
+          {entry.capabilities.formal.en ? "Capable" : "Blocked"}
+        </dd>
+      </dl><p>About has no Create, Rename, or Delete lifecycle.</p>
+    </aside>
+  </div><ActionBar
+    mode="about"
+    loaded={true}
+    preview={entry.capabilities.preview}
+    save={true}
+    publish={true}
+  /></EditorLayout
+>
+<script
+  type="application/json"
+  is:inline
+  id="about-editor-draft"
+  set:html={serialized}
+/>
+<script>
+  import {
+    aboutDirtyScopes,
+    isAboutEditorDraftDirty,
+    validateAboutEditorDraft,
+    type AboutEditorDraftState,
+  } from "../../../../editor/about-draft-state.ts";
+  const raw = document.querySelector<HTMLScriptElement>(
+      "#about-editor-draft",
+    )?.textContent,
+    form = document.querySelector<HTMLFormElement>("[data-about-draft-form]"),
+    save = document.querySelector<HTMLButtonElement>("[data-save-about]"),
+    publish = document.querySelector<HTMLButtonElement>("[data-publish-about]"),
+    previewJa = document.querySelector<HTMLButtonElement>(
+      '[data-preview-about="ja"]',
+    ),
+    previewEn = document.querySelector<HTMLButtonElement>(
+      '[data-preview-about="en"]',
+    ),
+    status = document.querySelector<HTMLElement>("[data-about-action-status]");
+  if (raw && form && save && publish && previewJa && previewEn && status) {
+    let baseline = JSON.parse(raw) as AboutEditorDraftState,
+      draft = structuredClone(baseline);
+    const optional = (v: FormDataEntryValue | null) =>
+      String(v ?? "").trim() || undefined;
+    const days = (v: FormDataEntryValue | null) =>
+      String(v ?? "")
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean) as any;
+    const read = () => {
+      const data = new FormData(form);
+      if (draft.shared.state === "editable") {
+        const contact = {
+          email: optional(data.get("email")),
+          map_url: optional(data.get("map_url")),
+          instagram_url: optional(data.get("instagram_url")),
+        };
+        draft.shared.value = {
+          images: {
+            hero: { src: String(data.get("hero_src")) },
+            gallery: [0, 1, 2, 3].map((i) => ({
+              src: String(data.get(`gallery_${i}_src`)),
+            })),
+          },
+          hours:
+            String(data.get("hours_status")) === "approved"
+              ? {
+                  status: "approved",
+                  timezone: "Asia/Tokyo",
+                  open_days: days(data.get("open_days")),
+                  opens: String(data.get("opens")),
+                  closes: String(data.get("closes")),
+                  closed_days: days(data.get("closed_days")),
+                }
+              : { status: "pending" },
+          ...(Object.values(contact).some(Boolean) ? { contact } : {}),
+        } as any;
+      }
+      for (const locale of ["ja", "en"] as const)
+        if (draft.locales[locale].state === "editable")
+          draft.locales[locale].value = {
+            content_status: String(data.get(`${locale}_content_status`)) as any,
+            address: String(data.get(`${locale}_address`)),
+            images: {
+              gallery: [0, 1, 2, 3].map((i) => ({
+                alt: String(data.get(`${locale}_gallery_${i}_alt`)),
+              })),
+            },
+            ...(optional(data.get(`${locale}_seo_title`))
+              ? { seo_title: optional(data.get(`${locale}_seo_title`)) }
+              : {}),
+            ...(optional(data.get(`${locale}_description`))
+              ? { description: optional(data.get(`${locale}_description`)) }
+              : {}),
+            body: String(data.get(`${locale}_body`)),
+          };
+    };
+    const render = () => {
+      read();
+      const v = validateAboutEditorDraft(draft),
+        dirty = isAboutEditorDraftDirty(baseline, draft),
+        scopes = aboutDirtyScopes(baseline, draft);
+      save.disabled = !dirty || !v.capabilities.save;
+      publish.disabled = dirty || !v.capabilities.publish;
+      previewJa.disabled = !v.capabilities.preview.ja;
+      previewEn.disabled = !v.capabilities.preview.en;
+      status.textContent = dirty
+        ? `Unsaved: ${Object.entries(scopes)
+            .filter(([, v]) => v)
+            .map(([k]) => k.toUpperCase())
+            .join(", ")}`
+        : "Saved · ready";
+      const approved = form.querySelector<HTMLElement>("[data-approved-hours]");
+      if (approved)
+        approved.hidden =
+          String(new FormData(form).get("hours_status")) !== "approved";
+    };
+    form.addEventListener("input", render);
+    form.addEventListener("change", render);
+    const preview = async (locale: "ja" | "en") => {
+      read();
+      const response = await fetch("/editor/api/about-preview/create", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ draft, locale }),
+        }),
+        result = await response.json();
+      if (!response.ok) {
+        status.textContent = result.error;
+        return;
+      }
+      window.open(result.url, "_blank", "noopener");
+    };
+    previewJa.addEventListener("click", () => void preview("ja"));
+    previewEn.addEventListener("click", () => void preview("en"));
+    save.addEventListener("click", async () => {
+      read();
+      const response = await fetch("/editor/api/about", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ draft, baseline }),
+        }),
+        result = await response.json();
+      if (!response.ok) {
+        status.textContent = result.error;
+        return;
+      }
+      baseline = result.draft;
+      draft = structuredClone(baseline);
+      render();
+    });
+    publish.addEventListener("click", async () => {
+      read();
+      const response = await fetch("/editor/api/about-publish", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            draft,
+            baseline,
+            dirty: isAboutEditorDraftDirty(baseline, draft),
+          }),
+        }),
+        result = await response.json();
+      status.textContent = response.ok
+        ? `Published ${result.commit}`
+        : result.error;
+    });
+    render();
+  }
+</script>

@@ -5,15 +5,23 @@ import { readExhibitionsEditorState } from "./exhibitions-state.ts";
 import { readArtistsEditorState } from "./artists-state.ts";
 import { readNewsEditorState } from "./news-state.ts";
 import { readHomeEditorState } from "./home-state.ts";
+import { readAboutEditorState } from "./about-state.ts";
 
 export type EditorCollectionAdapter = {
-  id: "journal" | "works" | "exhibitions" | "artists" | "news" | "home";
+  id:
+    "journal" | "works" | "exhibitions" | "artists" | "news" | "home" | "about";
   label: string;
   description: string;
   readState: () => Promise<EditorCollectionState>;
 };
 
 export const editorCollectionRegistry = {
+  about: {
+    id: "about",
+    label: "About",
+    description: "Localized singleton · Shared, JA, and EN drafts",
+    readState: readAboutEditorState,
+  },
   home: {
     id: "home",
     label: "Home",

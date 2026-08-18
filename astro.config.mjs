@@ -11,6 +11,26 @@ export default defineConfig({
         "astro:config:setup": ({ command, injectRoute }) => {
           if (command !== "dev") return;
           injectRoute({
+            pattern: "/editor/api/about",
+            entrypoint: "./src/editor/routes/about-save.ts",
+            prerender: false,
+          });
+          injectRoute({
+            pattern: "/editor/api/about-preview/create",
+            entrypoint: "./src/editor/routes/about-preview-create.ts",
+            prerender: false,
+          });
+          injectRoute({
+            pattern: "/editor/api/about-publish",
+            entrypoint: "./src/editor/routes/about-publish.ts",
+            prerender: false,
+          });
+          injectRoute({
+            pattern: "/editor/preview/about/[token]/[contentId]",
+            entrypoint: "./src/editor/routes/about-preview.astro",
+            prerender: false,
+          });
+          injectRoute({
             pattern: "/editor/api/home",
             entrypoint: "./src/editor/routes/home-save.ts",
             prerender: false,

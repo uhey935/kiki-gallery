@@ -1,0 +1,93 @@
+---
+import { createMarkdownProcessor } from "@astrojs/markdown-remark";
+import Layout from "../../layouts/Layout.astro";
+import { aboutPreviewStore, AboutPreviewError } from "../about-preview.ts";
+const { token, contentId } = Astro.params;
+let preview;
+let previewError;
+try {
+  if (!token || !contentId)
+    throw new AboutPreviewError("Invalid preview URL", "preview-not-found");
+  preview = aboutPreviewStore.read(token, contentId);
+} catch (error) {
+  Astro.response.status =
+    error instanceof AboutPreviewError && error.code === "preview-expired"
+      ? 410
+      : 404;
+  previewError = error instanceof Error ? error.message : "Preview unavailable";
+}
+const statement = preview
+  ? await (await createMarkdownProcessor()).render(preview.body)
+  : undefined;
+---
+
+{
+  preview ? (
+    <Layout
+      title={`${preview.seoTitle ?? "About"} · Draft Preview`}
+      description={preview.description}
+    >
+      <main
+        class="about"
+        data-content-status={preview.contentStatus}
+        data-about-preview={preview.locale}
+      >
+        <>
+          <p class="editor-preview-notice">
+            Draft preview · {preview.contentStatus} · not formal Production
+            approval
+          </p>
+          <h1 class="visually-hidden">About</h1>
+          <section class="about-hero" aria-hidden="true">
+            <img src={preview.hero.src} alt="" />
+          </section>
+          <section class="about-information">
+            <p>{preview.address}</p>
+            {preview.hours ? (
+              <>
+                <p>
+                  <strong>{preview.hours.label}</strong> {preview.hours.value}
+                </p>
+                <p>
+                  <strong>{preview.hours.closedLabel}</strong>{" "}
+                  {preview.hours.closedValue}
+                </p>
+              </>
+            ) : (
+              <p data-hours-pending>Hours are pending and are not published.</p>
+            )}
+            {preview.contact?.email && (
+              <a href={`mailto:${preview.contact.email}`}>
+                {preview.contact.email}
+              </a>
+            )}
+            {preview.contact?.map_url && (
+              <a href={preview.contact.map_url}>Map</a>
+            )}
+            {preview.contact?.instagram_url && (
+              <a href={preview.contact.instagram_url}>Instagram</a>
+            )}
+          </section>
+          <section class="about-statement">
+            <>
+              <h2>About</h2>
+              <div set:html={statement?.code} />
+            </>
+          </section>
+          <section class="about-gallery">
+            {preview.gallery.map((image) => (
+              <img src={image.src} alt={image.alt} />
+            ))}
+          </section>
+        </>
+      </main>
+    </Layout>
+  ) : (
+    <main>
+      <>
+        <h1>Draft preview unavailable</h1>
+        <p>{previewError}</p>
+      </>
+    </main>
+  )
+}

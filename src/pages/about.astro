@@ -1,78 +1,112 @@
 ---
+import { render } from "astro:content";
+import { getAboutProductionFacade } from "../content-boundaries/about-production";
+import { presentAboutHours } from "../content-loaders/about/hours-presenter";
 import Layout from "../layouts/Layout.astro";
+
+const about = (await getAboutProductionFacade()).developmentJa();
+const { Content } = await render(about);
+const hours = presentAboutHours(about.data.hours, "ja");
+const contact = about.data.contact;
 ---
 
-<Layout title="About" description="About KiKi Gallery">
-  <main class="about">
+<Layout
+  title={about.data.seo_title ?? "About"}
+  description={about.data.description}
+>
+  <main class="about" data-content-status={about.data.content_status}>
     <h1 class="visually-hidden">About</h1>
 
     <div class="about-intro">
       <section class="about-hero" aria-hidden="true">
-        <div class="about-hero-image"></div>
+        <div
+          class="about-hero-image"
+          style={`--about-hero-image: url("${about.data.images.hero.src}")`}
+        >
+        </div>
       </section>
       <section class="about-information">
         <ul class="about-information-list">
           <li class="about-information-item about-information-address">
-            <a href="..." target="_blank" rel="noopener noreferrer">
-              〒220-0004<br />
-              神奈川県横浜市西区北幸2-10-48 むつみビル3階
-            </a>
+            {
+              contact?.map_url ? (
+                <a
+                  href={contact.map_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {about.data.address}
+                </a>
+              ) : (
+                <span>{about.data.address}</span>
+              )
+            }
           </li>
 
-          <li class="about-information-item">
-            <span class="about-information-label">Hours</span>
-            <span>Wed–Sat 12:00–18:00</span>
-          </li>
+          {
+            hours && (
+              <>
+                <li class="about-information-item">
+                  <span class="about-information-label">{hours.label}</span>
+                  <span>{hours.value}</span>
+                </li>
+                <li class="about-information-item">
+                  <span class="about-information-label">
+                    {hours.closedLabel}
+                  </span>
+                  <span>{hours.closedValue}</span>
+                </li>
+              </>
+            )
+          }
 
-          <li class="about-information-item about-information-email">
-            <span class="about-information-label">Email</span>
-            <a href="mailto:info@kiki-gallery.com"> info@kiki-gallery.com </a>
-          </li>
+          {
+            contact?.email && (
+              <li class="about-information-item about-information-email">
+                <span class="about-information-label">Email</span>
+                <a href={`mailto:${contact.email}`}>{contact.email}</a>
+              </li>
+            )
+          }
 
-          <li class="about-information-item">
-            <a
-              href="..."
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-            >
-              <svg
-                class="about-information-ig"
-                viewBox="0 0 19 19"
-                aria-hidden="true"
-              >
-                <path
-                  d="M13.76-.007H5.24A5.258 5.258 0 0 0-.01 5.24v8.52a5.258 5.258 0 0 0 5.25 5.247h8.52a5.258 5.258 0 0 0 5.25-5.247V5.24a5.258 5.258 0 0 0-5.25-5.247zM17 14a2.683 2.683 0 0 1-3 3H5a2.683 2.683 0 0 1-3-3V5a2.683 2.683 0 0 1 3-3h9a2.683 2.683 0 0 1 3 3v9zM9.5 4.6a4.9 4.9 0 1 0 4.9 4.9 4.906 4.906 0 0 0-4.9-4.9zm0 8.111a3.212 3.212 0 1 1 3.21-3.212 3.215 3.215 0 0 1-3.21 3.213zm5.1-9.542a1.233 1.233 0 1 0 .88.362 1.245 1.245 0 0 0-.88-.361z"
-                  fill="currentColor"></path>
-              </svg>
-            </a>
-          </li>
+          {
+            contact?.instagram_url && (
+              <li class="about-information-item">
+                <a
+                  href={contact.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                >
+                  <svg
+                    class="about-information-ig"
+                    viewBox="0 0 19 19"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M13.76-.007H5.24A5.258 5.258 0 0 0-.01 5.24v8.52a5.258 5.258 0 0 0 5.25 5.247h8.52a5.258 5.258 0 0 0 5.25-5.247V5.24a5.258 5.258 0 0 0-5.25-5.247zM17 14a2.683 2.683 0 0 1-3 3H5a2.683 2.683 0 0 1 3-3h9a2.683 2.683 0 0 1 3 3v9zM9.5 4.6a4.9 4.9 0 1 0 4.9 4.9 4.906 4.906 0 0 0-4.9-4.9zm0 8.111a3.212 3.212 0 1 1 3.21-3.212 3.215 3.215 0 0 1-3.21 3.213zm5.1-9.542a1.233 1.233 0 1 0 .88.362 1.245 1.245 0 0 0-.88-.361z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </a>
+              </li>
+            )
+          }
         </ul>
       </section>
     </div>
 
     <section class="about-statement">
       <h2 class="about-statement-heading">About</h2>
-
-      <div class="about-statement-body">
-        <p>
-          GALLERY
-          crossingは2017年岐阜県美濃加茂市にオープンしたアートギャラリーです。ギャラリーの位置する旧中山道・太田宿は、江戸時代には宿場町として栄え、並行して流れる木曽川と共に、人と物のクロスポイントとなる場所でした。「crossing」という名前には、川を渡り、街道を行き交ったかつての旅人たちのイメージと、外からの風と土地の土が交わることで生まれる新たな風土・文化への期待が込められています。
-        </p>
-        <p>
-          ギャラリーでは、現代アート・工芸の領域を超えて普遍的な問いかけへのアプローチを実践する現代作家にフォーカスし、今をうつすもの、これからに必要と考える作家作品を紹介しています。ディレクターの黒元実紗は「CIRCULATION、WIND&SOIL、HUMANITY、CULTIVATE、VOYAGE」をギャラリーを構成する5つのコンセプトとし、近年は特に東洋的美意識へつながる不可視領域や気配への感覚、自然と人との関係性に視点を持つ作家に着目しています。個の持つルーツ、歴史や文化を背景に、時間や空間を超えた本質への眼差しと普遍的な問いかけを持つ作品を通じて思考することは、個を拡張し、多様化する世界へのおおらかな理解へとつながるでしょう。
-        </p>
-      </div>
+      <div class="about-statement-body"><Content /></div>
     </section>
 
     <section class="about-gallery">
-      <img src="/images/about/about-01.jpg" alt="Gallery interior" />
-
-      <img src="/images/about/about-02.jpg" alt="Exhibition view" />
-
-      <img src="/images/about/about-03.jpg" alt="Gallery space" />
-
-      <img src="/images/about/about-04.jpg" alt="Artwork installation" />
+      {
+        about.data.images.gallery.map((image, index) => (
+          <img src={image.src} alt={about.data.images.gallery[index].alt} />
+        ))
+      }
     </section>
   </main>
 </Layout>
@@ -82,17 +116,12 @@ import Layout from "../layouts/Layout.astro";
 
   if (heroImage) {
     const speed = 0.12;
-
     let ticking = false;
-
     const updateParallax = () => {
       const rect = heroImage.parentElement!.getBoundingClientRect();
-
       heroImage.style.transform = `translateY(${rect.top * speed}px)`;
-
       ticking = false;
     };
-
     window.addEventListener(
       "scroll",
       () => {
@@ -103,7 +132,6 @@ import Layout from "../layouts/Layout.astro";
       },
       { passive: true },
     );
-
     updateParallax();
   }
 </script>

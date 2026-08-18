@@ -1,7 +1,7 @@
 {
   "migrationVersion": 1,
   "collection": "about",
-  "mode": "provisional-tooling-evidence",
+  "mode": "provisional-review-migration",
   "identity": {
     "contentId": "about",
     "singleton": true
@@ -16,6 +16,14 @@
     "path": "src/styles/about.css",
     "byteLength": 3385,
     "sha256": "8e7f11bc68e6133854efbe2d6c3ae3bc2f5bf9da72975d60f8943fe37c561427"
+  },
+  "cutoverRenderer": {
+    "pagePath": "src/pages/about.astro",
+    "pageByteLength": 4446,
+    "pageSha256": "a516623a7e01c823d0f5e3dd2755e3cdfdb9640cde296c7322222c10ac0e685f",
+    "cssPath": "src/styles/about.css",
+    "cssByteLength": 3373,
+    "cssSha256": "64ab10f72672d68528268646bb7e930d50ccbe452851a4e5adec0993494c2065"
   },
   "mapping": [
     {
@@ -260,7 +268,7 @@
       "ja.md",
       "en.md"
     ],
-    "evidenceStatus": "provisional-placeholder-plan",
+    "evidenceStatus": "provisional-review-target",
     "finalHumanApprovedHashes": null,
     "files": [
       {
@@ -272,16 +280,16 @@
       },
       {
         "path": "src/content/about/about/ja.md",
-        "content": "---\ncontent_status: placeholder\naddress: __TODO_ABOUT_JA_ADDRESS__\nimages:\n  gallery:\n    - alt: __TODO_ABOUT_JA_ALT_1__\n    - alt: __TODO_ABOUT_JA_ALT_2__\n    - alt: __TODO_ABOUT_JA_ALT_3__\n    - alt: __TODO_ABOUT_JA_ALT_4__\n---\n\n__TODO_ABOUT_JA_STATEMENT__\n",
-        "byteLength": 259,
-        "sha256": "5d34f8a8af39e80388bc27f66cc83afab9cd3693e7655b6260f7fd14651c65b7",
+        "content": "---\ncontent_status: review\naddress: 〒220-0004 神奈川県横浜市西区北幸2-10-48 むつみビル3階\nimages:\n  gallery:\n    - alt: ギャラリー内観（確認中）\n    - alt: 展示風景（確認中）\n    - alt: ギャラリー空間（確認中）\n    - alt: 作品展示風景（確認中）\n---\n\nKiKi Galleryは、現代美術を中心に紹介するギャラリーです。\n",
+        "byteLength": 392,
+        "sha256": "df7ad5671900c26a1142f17a44b86205d176ee9aa6a75faecc1d9da38c00fe34",
         "provisional": true
       },
       {
         "path": "src/content/about/about/en.md",
-        "content": "---\ncontent_status: placeholder\naddress: __TODO_ABOUT_EN_ADDRESS__\nimages:\n  gallery:\n    - alt: __TODO_ABOUT_EN_ALT_1__\n    - alt: __TODO_ABOUT_EN_ALT_2__\n    - alt: __TODO_ABOUT_EN_ALT_3__\n    - alt: __TODO_ABOUT_EN_ALT_4__\n---\n\n__TODO_ABOUT_EN_STATEMENT__\n",
-        "byteLength": 259,
-        "sha256": "cd0620587b21b30989214c3ad9cb392309e49dcc1525f42e9ee99bf6bab8a8ef",
+        "content": "---\ncontent_status: placeholder\naddress: __TODO_ABOUT_EN_ADDRESS__\nimages:\n  gallery:\n    - alt: __TODO_ABOUT_EN_ALT_1__\n    - alt: __TODO_ABOUT_EN_ALT_2__\n    - alt: __TODO_ABOUT_EN_ALT_3__\n    - alt: __TODO_ABOUT_EN_ALT_4__\n---\n\n<!-- __TODO_ABOUT_EN_STATEMENT__ -->\n",
+        "byteLength": 268,
+        "sha256": "733ab4e8ecaf46b7e32c8da41f17d6732a090415d0920842d243774f818b1657",
         "provisional": true
       }
     ]
@@ -361,15 +369,22 @@
     "enAltsApproved": false
   },
   "authorization": {
-    "realMigrationAllowed": false,
-    "productionCutoverAllowed": false,
+    "provisionalMigrationAllowed": true,
+    "provisionalMigrationExecuted": true,
+    "reviewDevelopmentCutoverAllowed": true,
+    "formalProductionCutoverAllowed": false,
     "assetMutationAllowed": false
+  },
+  "formalCapability": {
+    "ja": false,
+    "en": false
   },
   "rollback": {
     "sourcePath": "src/pages/about.astro",
     "originalBase64": "LS0tCmltcG9ydCBMYXlvdXQgZnJvbSAiLi4vbGF5b3V0cy9MYXlvdXQuYXN0cm8iOwotLS0KCjxMYXlvdXQgdGl0bGU9IkFib3V0IiBkZXNjcmlwdGlvbj0iQWJvdXQgS2lLaSBHYWxsZXJ5Ij4KICA8bWFpbiBjbGFzcz0iYWJvdXQiPgogICAgPGgxIGNsYXNzPSJ2aXN1YWxseS1oaWRkZW4iPkFib3V0PC9oMT4KCiAgICA8ZGl2IGNsYXNzPSJhYm91dC1pbnRybyI+CiAgICAgIDxzZWN0aW9uIGNsYXNzPSJhYm91dC1oZXJvIiBhcmlhLWhpZGRlbj0idHJ1ZSI+CiAgICAgICAgPGRpdiBjbGFzcz0iYWJvdXQtaGVyby1pbWFnZSI+PC9kaXY+CiAgICAgIDwvc2VjdGlvbj4KICAgICAgPHNlY3Rpb24gY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uIj4KICAgICAgICA8dWwgY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWxpc3QiPgogICAgICAgICAgPGxpIGNsYXNzPSJhYm91dC1pbmZvcm1hdGlvbi1pdGVtIGFib3V0LWluZm9ybWF0aW9uLWFkZHJlc3MiPgogICAgICAgICAgICA8YSBocmVmPSIuLi4iIHRhcmdldD0iX2JsYW5rIiByZWw9Im5vb3BlbmVyIG5vcmVmZXJyZXIiPgogICAgICAgICAgICAgIOOAkjIyMC0wMDA0PGJyIC8+CiAgICAgICAgICAgICAg56We5aWI5bed55yM5qiq5rWc5biC6KW/5Yy65YyX5bm4Mi0xMC00OCDjgoDjgaTjgb/jg5Pjg6sz6ZqOCiAgICAgICAgICAgIDwvYT4KICAgICAgICAgIDwvbGk+CgogICAgICAgICAgPGxpIGNsYXNzPSJhYm91dC1pbmZvcm1hdGlvbi1pdGVtIj4KICAgICAgICAgICAgPHNwYW4gY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWxhYmVsIj5Ib3Vyczwvc3Bhbj4KICAgICAgICAgICAgPHNwYW4+V2Vk4oCTU2F0IDEyOjAw4oCTMTg6MDA8L3NwYW4+CiAgICAgICAgICA8L2xpPgoKICAgICAgICAgIDxsaSBjbGFzcz0iYWJvdXQtaW5mb3JtYXRpb24taXRlbSBhYm91dC1pbmZvcm1hdGlvbi1lbWFpbCI+CiAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJhYm91dC1pbmZvcm1hdGlvbi1sYWJlbCI+RW1haWw8L3NwYW4+CiAgICAgICAgICAgIDxhIGhyZWY9Im1haWx0bzppbmZvQGtpa2ktZ2FsbGVyeS5jb20iPiBpbmZvQGtpa2ktZ2FsbGVyeS5jb20gPC9hPgogICAgICAgICAgPC9saT4KCiAgICAgICAgICA8bGkgY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWl0ZW0iPgogICAgICAgICAgICA8YQogICAgICAgICAgICAgIGhyZWY9Ii4uLiIKICAgICAgICAgICAgICB0YXJnZXQ9Il9ibGFuayIKICAgICAgICAgICAgICByZWw9Im5vb3BlbmVyIG5vcmVmZXJyZXIiCiAgICAgICAgICAgICAgYXJpYS1sYWJlbD0iSW5zdGFncmFtIgogICAgICAgICAgICA+CiAgICAgICAgICAgICAgPHN2ZwogICAgICAgICAgICAgICAgY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWlnIgogICAgICAgICAgICAgICAgdmlld0JveD0iMCAwIDE5IDE5IgogICAgICAgICAgICAgICAgYXJpYS1oaWRkZW49InRydWUiCiAgICAgICAgICAgICAgPgogICAgICAgICAgICAgICAgPHBhdGgKICAgICAgICAgICAgICAgICAgZD0iTTEzLjc2LS4wMDdINS4yNEE1LjI1OCA1LjI1OCAwIDAgMC0uMDEgNS4yNHY4LjUyYTUuMjU4IDUuMjU4IDAgMCAwIDUuMjUgNS4yNDdoOC41MmE1LjI1OCA1LjI1OCAwIDAgMCA1LjI1LTUuMjQ3VjUuMjRhNS4yNTggNS4yNTggMCAwIDAtNS4yNS01LjI0N3pNMTcgMTRhMi42ODMgMi42ODMgMCAwIDEtMyAzSDVhMi42ODMgMi42ODMgMCAwIDEtMy0zVjVhMi42ODMgMi42ODMgMCAwIDEgMy0zaDlhMi42ODMgMi42ODMgMCAwIDEgMyAzdjl6TTkuNSA0LjZhNC45IDQuOSAwIDEgMCA0LjkgNC45IDQuOTA2IDQuOTA2IDAgMCAwLTQuOS00Ljl6bTAgOC4xMTFhMy4yMTIgMy4yMTIgMCAxIDEgMy4yMS0zLjIxMiAzLjIxNSAzLjIxNSAwIDAgMS0zLjIxIDMuMjEzem01LjEtOS41NDJhMS4yMzMgMS4yMzMgMCAxIDAgLjg4LjM2MiAxLjI0NSAxLjI0NSAwIDAgMC0uODgtLjM2MXoiCiAgICAgICAgICAgICAgICAgIGZpbGw9ImN1cnJlbnRDb2xvciI+PC9wYXRoPgogICAgICAgICAgICAgIDwvc3ZnPgogICAgICAgICAgICA8L2E+CiAgICAgICAgICA8L2xpPgogICAgICAgIDwvdWw+CiAgICAgIDwvc2VjdGlvbj4KICAgIDwvZGl2PgoKICAgIDxzZWN0aW9uIGNsYXNzPSJhYm91dC1zdGF0ZW1lbnQiPgogICAgICA8aDIgY2xhc3M9ImFib3V0LXN0YXRlbWVudC1oZWFkaW5nIj5BYm91dDwvaDI+CgogICAgICA8ZGl2IGNsYXNzPSJhYm91dC1zdGF0ZW1lbnQtYm9keSI+CiAgICAgICAgPHA+CiAgICAgICAgICBHQUxMRVJZCiAgICAgICAgICBjcm9zc2luZ+OBrzIwMTflubTlspDpmJznnIznvo7mv4PliqDojILluILjgavjgqrjg7zjg5fjg7PjgZfjgZ/jgqLjg7zjg4jjgq7jg6Pjg6njg6rjg7zjgafjgZnjgILjgq7jg6Pjg6njg6rjg7zjga7kvY3nva7jgZnjgovml6fkuK3lsbHpgZPjg7vlpKrnlLDlrr/jga/jgIHmsZ/miLjmmYLku6Pjgavjga/lrr/loLTnlLrjgajjgZfjgabmoITjgYjjgIHkuKbooYzjgZfjgabmtYHjgozjgovmnKjmm73lt53jgajlhbHjgavjgIHkurrjgajnianjga7jgq/jg63jgrnjg53jgqTjg7Pjg4jjgajjgarjgovloLTmiYDjgafjgZfjgZ/jgILjgIxjcm9zc2luZ+OAjeOBqOOBhOOBhuWQjeWJjeOBq+OBr+OAgeW3neOCkua4oeOCiuOAgeihl+mBk+OCkuihjOOBjeS6pOOBo+OBn+OBi+OBpOOBpuOBruaXheS6uuOBn+OBoeOBruOCpOODoeODvOOCuOOBqOOAgeWkluOBi+OCieOBrumiqOOBqOWcn+WcsOOBruWcn+OBjOS6pOOCj+OCi+OBk+OBqOOBp+eUn+OBvuOCjOOCi+aWsOOBn+OBqumiqOWcn+ODu+aWh+WMluOBuOOBruacn+W+heOBjOi+vOOCgeOCieOCjOOBpuOBhOOBvuOBmeOAggogICAgICAgIDwvcD4KICAgICAgICA8cD4KICAgICAgICAgIOOCruODo+ODqeODquODvOOBp+OBr+OAgeePvuS7o+OCouODvOODiOODu+W3peiKuOOBrumgmOWfn+OCkui2heOBiOOBpuaZrumBjeeahOOBquWVj+OBhOOBi+OBkeOBuOOBruOCouODl+ODreODvOODgeOCkuWun+i3teOBmeOCi+ePvuS7o+S9nOWutuOBq+ODleOCqeODvOOCq+OCueOBl+OAgeS7iuOCkuOBhuOBpOOBmeOCguOBruOAgeOBk+OCjOOBi+OCieOBq+W/heimgeOBqOiAg+OBiOOCi+S9nOWutuS9nOWTgeOCkue0ueS7i+OBl+OBpuOBhOOBvuOBmeOAguODh+OCo+ODrOOCr+OCv+ODvOOBrum7kuWFg+Wun+e0l+OBr+OAjENJUkNVTEFUSU9O44CBV0lORCZTT0lM44CBSFVNQU5JVFnjgIFDVUxUSVZBVEXjgIFWT1lBR0XjgI3jgpLjgq7jg6Pjg6njg6rjg7zjgpLmp4vmiJDjgZnjgos144Gk44Gu44Kz44Oz44K744OX44OI44Go44GX44CB6L+R5bm044Gv54m544Gr5p2x5rSL55qE576O5oSP6K2Y44G444Gk44Gq44GM44KL5LiN5Y+v6KaW6aCY5Z+f44KE5rCX6YWN44G444Gu5oSf6Kaa44CB6Ieq54S244Go5Lq644Go44Gu6Zai5L+C5oCn44Gr6KaW54K544KS5oyB44Gk5L2c5a6244Gr552A55uu44GX44Gm44GE44G+44GZ44CC5YCL44Gu5oyB44Gk44Or44O844OE44CB5q205Y+y44KE5paH5YyW44KS6IOM5pmv44Gr44CB5pmC6ZaT44KE56m66ZaT44KS6LaF44GI44Gf5pys6LOq44G444Gu55y85beu44GX44Go5pmu6YGN55qE44Gq5ZWP44GE44GL44GR44KS5oyB44Gk5L2c5ZOB44KS6YCa44GY44Gm5oCd6ICD44GZ44KL44GT44Go44Gv44CB5YCL44KS5ouh5by144GX44CB5aSa5qeY5YyW44GZ44KL5LiW55WM44G444Gu44GK44GK44KJ44GL44Gq55CG6Kej44G444Go44Gk44Gq44GM44KL44Gn44GX44KH44GG44CCCiAgICAgICAgPC9wPgogICAgICA8L2Rpdj4KICAgIDwvc2VjdGlvbj4KCiAgICA8c2VjdGlvbiBjbGFzcz0iYWJvdXQtZ2FsbGVyeSI+CiAgICAgIDxpbWcgc3JjPSIvaW1hZ2VzL2Fib3V0L2Fib3V0LTAxLmpwZyIgYWx0PSJHYWxsZXJ5IGludGVyaW9yIiAvPgoKICAgICAgPGltZyBzcmM9Ii9pbWFnZXMvYWJvdXQvYWJvdXQtMDIuanBnIiBhbHQ9IkV4aGliaXRpb24gdmlldyIgLz4KCiAgICAgIDxpbWcgc3JjPSIvaW1hZ2VzL2Fib3V0L2Fib3V0LTAzLmpwZyIgYWx0PSJHYWxsZXJ5IHNwYWNlIiAvPgoKICAgICAgPGltZyBzcmM9Ii9pbWFnZXMvYWJvdXQvYWJvdXQtMDQuanBnIiBhbHQ9IkFydHdvcmsgaW5zdGFsbGF0aW9uIiAvPgogICAgPC9zZWN0aW9uPgogIDwvbWFpbj4KPC9MYXlvdXQ+Cgo8c2NyaXB0PgogIGNvbnN0IGhlcm9JbWFnZSA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3I8SFRNTEVsZW1lbnQ+KCIuYWJvdXQtaGVyby1pbWFnZSIpOwoKICBpZiAoaGVyb0ltYWdlKSB7CiAgICBjb25zdCBzcGVlZCA9IDAuMTI7CgogICAgbGV0IHRpY2tpbmcgPSBmYWxzZTsKCiAgICBjb25zdCB1cGRhdGVQYXJhbGxheCA9ICgpID0+IHsKICAgICAgY29uc3QgcmVjdCA9IGhlcm9JbWFnZS5wYXJlbnRFbGVtZW50IS5nZXRCb3VuZGluZ0NsaWVudFJlY3QoKTsKCiAgICAgIGhlcm9JbWFnZS5zdHlsZS50cmFuc2Zvcm0gPSBgdHJhbnNsYXRlWSgke3JlY3QudG9wICogc3BlZWR9cHgpYDsKCiAgICAgIHRpY2tpbmcgPSBmYWxzZTsKICAgIH07CgogICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoCiAgICAgICJzY3JvbGwiLAogICAgICAoKSA9PiB7CiAgICAgICAgaWYgKCF0aWNraW5nKSB7CiAgICAgICAgICByZXF1ZXN0QW5pbWF0aW9uRnJhbWUodXBkYXRlUGFyYWxsYXgpOwogICAgICAgICAgdGlja2luZyA9IHRydWU7CiAgICAgICAgfQogICAgICB9LAogICAgICB7IHBhc3NpdmU6IHRydWUgfSwKICAgICk7CgogICAgdXBkYXRlUGFyYWxsYXgoKTsKICB9Cjwvc2NyaXB0Pgo=",
     "byteLength": 4718,
     "sha256": "752a155e9fd22b11c38991298267bc2e35f9fefc500d47000c6613395c0bc9c8",
-    "currentRouteImplementationPreserved": true
+    "legacySourcePreimagePreserved": true,
+    "currentRouteRendererReplaced": true
   }
 }

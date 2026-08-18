@@ -1,6 +1,15 @@
 # About Localization Architecture
 
-Status: Implementation-ready target; not current runtime authority  
+> Runtime status (2026-08-18): the provisional exact three-file unit is live at
+> `/about/` as a JA review-only development projection. Shared hours remain
+> pending, EN remains placeholder, and `/en/about/` is intentionally absent.
+> The singleton Editor now supports Load, locale-isolated Preview, atomic
+> exact-three-file Save, and exact-path Git Publish. This is not final closure:
+> formal publication still requires approved Shared hours/facts, approved JA
+> and EN content/alts, Header locale projection, and formal route activation.
+
+Status: Provisional canonical/runtime cutover implemented; formal locale capability pending
+
 Date: 2026-08-18
 
 Foundation status: implemented. Strict schemas, exact singleton repository,
@@ -10,16 +19,23 @@ under `src/content-loaders/about/`. They are intentionally not registered in
 Production or Editor. The evidence file is
 `docs/migrations/about-localization-manifest-2026-08-18.json`.
 
+Provisional cutover status: implemented. The exact canonical unit now exists at
+`src/content/about/about/{index.yaml,ja.md,en.md}`. JA is explicitly `review`,
+EN is `placeholder`, and Shared hours are `pending`; formal JA and EN
+capability are both false. `/about/` uses the documented JA development
+projection, while `/en/about/` remains absent. This is current runtime authority
+for the provisional state, not approval of its editorial or factual values.
+
 ## 1. Scope and authority
 
-This document defines the approved target for localizing the About singleton.
-It does not describe the current Production runtime. Production still reads
-hard-coded content from `src/pages/about.astro`, publishes `/about/`, and does
-not publish `/en/about/`.
+This document defines the implemented structural target and current provisional
+runtime for the About singleton. `src/pages/about.astro` is now presentation
+only and reads canonical content through the About Production facade. It
+publishes the JA review projection at `/about/`; `/en/about/` is absent.
 
-This phase authorizes architecture documentation only. It does not authorize
-Production code/content changes, asset changes, migration execution, Editor
-implementation, Header implementation, staging, committing, or pushing.
+The completed provisional migration did not authorize asset changes, formal
+locale publication, Editor implementation, Header implementation, staging,
+committing, or pushing.
 
 The legacy `GALLERY crossing` statement is historical source evidence. It is
 not canonical target copy and must not be migrated as the current KiKi Gallery
@@ -258,8 +274,13 @@ The route registry owns projection from canonical identity and locale:
 | `about + ja`    | `/about/`     |
 | `about + en`    | `/en/about/`  |
 
-A non-capable locale has no static path. The registry exposes capability and a
+A formally non-capable locale has no formal static path. The registry exposes capability and a
 normalized trailing-slash URL; consumers do not construct paths themselves.
+
+The sole temporary exception is the explicit JA development projection:
+structurally valid `review` JA content may continue to generate `/about/` while
+clearly remaining formally incapable. Placeholder content is never projected,
+and there is no equivalent EN development route.
 
 Target Production pipeline:
 

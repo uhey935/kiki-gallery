@@ -1,0 +1,10 @@
+images:
+  hero:
+    src: /images/about/about-hero.jpg
+  gallery:
+    - src: /images/about/about-01.jpg
+    - src: /images/about/about-02.jpg
+    - src: /images/about/about-03.jpg
+    - src: /images/about/about-04.jpg
+hours:
+  status: pending

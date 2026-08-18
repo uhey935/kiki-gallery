@@ -11,6 +11,16 @@ import { exhibitionThreeFileLoader } from "./content-loaders/exhibitions/astro-l
 import { exhibitionAstroEntrySchema } from "./content-loaders/exhibitions/schema";
 import { homeThreeFileLoader } from "./content-loaders/home/astro-loader";
 import { homeAstroEntrySchema } from "./content-loaders/home/schema";
+import { aboutThreeFileLoader } from "./content-loaders/about/astro-loader";
+import { aboutAstroEntrySchema } from "./content-loaders/about/schema";
+
+const aboutThreeFile = defineCollection({
+  loader: aboutThreeFileLoader({
+    root: "./src/content/about",
+    publicRoot: "./public",
+  }),
+  schema: aboutAstroEntrySchema,
+});
 
 const homeThreeFile = defineCollection({
   loader: homeThreeFileLoader({ root: "./src/content/home" }),
@@ -46,6 +56,7 @@ const newsThreeFile = defineCollection({
 });
 
 export const collections = {
+  aboutThreeFile,
   homeThreeFile,
   artists,
   worksLocalized,
