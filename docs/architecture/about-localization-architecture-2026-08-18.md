@@ -3,6 +3,13 @@
 Status: Implementation-ready target; not current runtime authority  
 Date: 2026-08-18
 
+Foundation status: implemented. Strict schemas, exact singleton repository,
+pure capability/facade and route primitives, semantic extraction, deterministic
+converter/planner, frozen provisional manifest, and fixture-only executor live
+under `src/content-loaders/about/`. They are intentionally not registered in
+Production or Editor. The evidence file is
+`docs/migrations/about-localization-manifest-2026-08-18.json`.
+
 ## 1. Scope and authority
 
 This document defines the approved target for localizing the About singleton.
@@ -155,6 +162,13 @@ Localized fields are:
   produces a formal route.
 - `approved` is human-approved locale content and may contribute to formal
   capability.
+
+The implemented reserved tooling markers are
+`__TODO_ABOUT_{JA|EN}_{STATEMENT|ADDRESS}__` and
+`__TODO_ABOUT_{JA|EN}_ALT_{1|2|3|4}__`. The provisional manifest stores these
+markers only in planned target evidence, sets every human gate false, and sets
+`realMigrationAllowed: false`. It does not create the canonical target
+directory.
 
 Address is locale-owned display text. This milestone does not add a structured
 LocalBusiness address or treat one locale as a source for the other. Map URL,
@@ -361,6 +375,13 @@ facts, unexpected source/target inventory, unsafe paths, target collisions,
 asset drift, or post-install validation failure. A dry run produces evidence
 without mutation. Migration execution and Production cutover require separate
 authorization.
+
+The implemented executor entry point is fixture-only. It verifies and preserves
+the Astro source rather than removing it, supports dry-run, collision/drift and
+generated-evidence checks, staged exact-three-file validation, post-install
+reread, rollback, and durable manual-recovery evidence. Calling it with a plan
+that is not explicitly marked `fixtureOnly: true` is rejected. Canonical
+migration execution remains unimplemented and unauthorized.
 
 The architecture audit observed these source identities on 2026-08-18. They
 are design evidence only; migration tooling must recalculate and freeze the

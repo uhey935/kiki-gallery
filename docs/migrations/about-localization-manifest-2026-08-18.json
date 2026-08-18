@@ -1,0 +1,375 @@
+{
+  "migrationVersion": 1,
+  "collection": "about",
+  "mode": "provisional-tooling-evidence",
+  "identity": {
+    "contentId": "about",
+    "singleton": true
+  },
+  "source": {
+    "path": "src/pages/about.astro",
+    "byteLength": 4718,
+    "sha256": "752a155e9fd22b11c38991298267bc2e35f9fefc500d47000c6613395c0bc9c8",
+    "originalBase64": "LS0tCmltcG9ydCBMYXlvdXQgZnJvbSAiLi4vbGF5b3V0cy9MYXlvdXQuYXN0cm8iOwotLS0KCjxMYXlvdXQgdGl0bGU9IkFib3V0IiBkZXNjcmlwdGlvbj0iQWJvdXQgS2lLaSBHYWxsZXJ5Ij4KICA8bWFpbiBjbGFzcz0iYWJvdXQiPgogICAgPGgxIGNsYXNzPSJ2aXN1YWxseS1oaWRkZW4iPkFib3V0PC9oMT4KCiAgICA8ZGl2IGNsYXNzPSJhYm91dC1pbnRybyI+CiAgICAgIDxzZWN0aW9uIGNsYXNzPSJhYm91dC1oZXJvIiBhcmlhLWhpZGRlbj0idHJ1ZSI+CiAgICAgICAgPGRpdiBjbGFzcz0iYWJvdXQtaGVyby1pbWFnZSI+PC9kaXY+CiAgICAgIDwvc2VjdGlvbj4KICAgICAgPHNlY3Rpb24gY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uIj4KICAgICAgICA8dWwgY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWxpc3QiPgogICAgICAgICAgPGxpIGNsYXNzPSJhYm91dC1pbmZvcm1hdGlvbi1pdGVtIGFib3V0LWluZm9ybWF0aW9uLWFkZHJlc3MiPgogICAgICAgICAgICA8YSBocmVmPSIuLi4iIHRhcmdldD0iX2JsYW5rIiByZWw9Im5vb3BlbmVyIG5vcmVmZXJyZXIiPgogICAgICAgICAgICAgIOOAkjIyMC0wMDA0PGJyIC8+CiAgICAgICAgICAgICAg56We5aWI5bed55yM5qiq5rWc5biC6KW/5Yy65YyX5bm4Mi0xMC00OCDjgoDjgaTjgb/jg5Pjg6sz6ZqOCiAgICAgICAgICAgIDwvYT4KICAgICAgICAgIDwvbGk+CgogICAgICAgICAgPGxpIGNsYXNzPSJhYm91dC1pbmZvcm1hdGlvbi1pdGVtIj4KICAgICAgICAgICAgPHNwYW4gY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWxhYmVsIj5Ib3Vyczwvc3Bhbj4KICAgICAgICAgICAgPHNwYW4+V2Vk4oCTU2F0IDEyOjAw4oCTMTg6MDA8L3NwYW4+CiAgICAgICAgICA8L2xpPgoKICAgICAgICAgIDxsaSBjbGFzcz0iYWJvdXQtaW5mb3JtYXRpb24taXRlbSBhYm91dC1pbmZvcm1hdGlvbi1lbWFpbCI+CiAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJhYm91dC1pbmZvcm1hdGlvbi1sYWJlbCI+RW1haWw8L3NwYW4+CiAgICAgICAgICAgIDxhIGhyZWY9Im1haWx0bzppbmZvQGtpa2ktZ2FsbGVyeS5jb20iPiBpbmZvQGtpa2ktZ2FsbGVyeS5jb20gPC9hPgogICAgICAgICAgPC9saT4KCiAgICAgICAgICA8bGkgY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWl0ZW0iPgogICAgICAgICAgICA8YQogICAgICAgICAgICAgIGhyZWY9Ii4uLiIKICAgICAgICAgICAgICB0YXJnZXQ9Il9ibGFuayIKICAgICAgICAgICAgICByZWw9Im5vb3BlbmVyIG5vcmVmZXJyZXIiCiAgICAgICAgICAgICAgYXJpYS1sYWJlbD0iSW5zdGFncmFtIgogICAgICAgICAgICA+CiAgICAgICAgICAgICAgPHN2ZwogICAgICAgICAgICAgICAgY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWlnIgogICAgICAgICAgICAgICAgdmlld0JveD0iMCAwIDE5IDE5IgogICAgICAgICAgICAgICAgYXJpYS1oaWRkZW49InRydWUiCiAgICAgICAgICAgICAgPgogICAgICAgICAgICAgICAgPHBhdGgKICAgICAgICAgICAgICAgICAgZD0iTTEzLjc2LS4wMDdINS4yNEE1LjI1OCA1LjI1OCAwIDAgMC0uMDEgNS4yNHY4LjUyYTUuMjU4IDUuMjU4IDAgMCAwIDUuMjUgNS4yNDdoOC41MmE1LjI1OCA1LjI1OCAwIDAgMCA1LjI1LTUuMjQ3VjUuMjRhNS4yNTggNS4yNTggMCAwIDAtNS4yNS01LjI0N3pNMTcgMTRhMi42ODMgMi42ODMgMCAwIDEtMyAzSDVhMi42ODMgMi42ODMgMCAwIDEtMy0zVjVhMi42ODMgMi42ODMgMCAwIDEgMy0zaDlhMi42ODMgMi42ODMgMCAwIDEgMyAzdjl6TTkuNSA0LjZhNC45IDQuOSAwIDEgMCA0LjkgNC45IDQuOTA2IDQuOTA2IDAgMCAwLTQuOS00Ljl6bTAgOC4xMTFhMy4yMTIgMy4yMTIgMCAxIDEgMy4yMS0zLjIxMiAzLjIxNSAzLjIxNSAwIDAgMS0zLjIxIDMuMjEzem01LjEtOS41NDJhMS4yMzMgMS4yMzMgMCAxIDAgLjg4LjM2MiAxLjI0NSAxLjI0NSAwIDAgMC0uODgtLjM2MXoiCiAgICAgICAgICAgICAgICAgIGZpbGw9ImN1cnJlbnRDb2xvciI+PC9wYXRoPgogICAgICAgICAgICAgIDwvc3ZnPgogICAgICAgICAgICA8L2E+CiAgICAgICAgICA8L2xpPgogICAgICAgIDwvdWw+CiAgICAgIDwvc2VjdGlvbj4KICAgIDwvZGl2PgoKICAgIDxzZWN0aW9uIGNsYXNzPSJhYm91dC1zdGF0ZW1lbnQiPgogICAgICA8aDIgY2xhc3M9ImFib3V0LXN0YXRlbWVudC1oZWFkaW5nIj5BYm91dDwvaDI+CgogICAgICA8ZGl2IGNsYXNzPSJhYm91dC1zdGF0ZW1lbnQtYm9keSI+CiAgICAgICAgPHA+CiAgICAgICAgICBHQUxMRVJZCiAgICAgICAgICBjcm9zc2luZ+OBrzIwMTflubTlspDpmJznnIznvo7mv4PliqDojILluILjgavjgqrjg7zjg5fjg7PjgZfjgZ/jgqLjg7zjg4jjgq7jg6Pjg6njg6rjg7zjgafjgZnjgILjgq7jg6Pjg6njg6rjg7zjga7kvY3nva7jgZnjgovml6fkuK3lsbHpgZPjg7vlpKrnlLDlrr/jga/jgIHmsZ/miLjmmYLku6Pjgavjga/lrr/loLTnlLrjgajjgZfjgabmoITjgYjjgIHkuKbooYzjgZfjgabmtYHjgozjgovmnKjmm73lt53jgajlhbHjgavjgIHkurrjgajnianjga7jgq/jg63jgrnjg53jgqTjg7Pjg4jjgajjgarjgovloLTmiYDjgafjgZfjgZ/jgILjgIxjcm9zc2luZ+OAjeOBqOOBhOOBhuWQjeWJjeOBq+OBr+OAgeW3neOCkua4oeOCiuOAgeihl+mBk+OCkuihjOOBjeS6pOOBo+OBn+OBi+OBpOOBpuOBruaXheS6uuOBn+OBoeOBruOCpOODoeODvOOCuOOBqOOAgeWkluOBi+OCieOBrumiqOOBqOWcn+WcsOOBruWcn+OBjOS6pOOCj+OCi+OBk+OBqOOBp+eUn+OBvuOCjOOCi+aWsOOBn+OBqumiqOWcn+ODu+aWh+WMluOBuOOBruacn+W+heOBjOi+vOOCgeOCieOCjOOBpuOBhOOBvuOBmeOAggogICAgICAgIDwvcD4KICAgICAgICA8cD4KICAgICAgICAgIOOCruODo+ODqeODquODvOOBp+OBr+OAgeePvuS7o+OCouODvOODiOODu+W3peiKuOOBrumgmOWfn+OCkui2heOBiOOBpuaZrumBjeeahOOBquWVj+OBhOOBi+OBkeOBuOOBruOCouODl+ODreODvOODgeOCkuWun+i3teOBmeOCi+ePvuS7o+S9nOWutuOBq+ODleOCqeODvOOCq+OCueOBl+OAgeS7iuOCkuOBhuOBpOOBmeOCguOBruOAgeOBk+OCjOOBi+OCieOBq+W/heimgeOBqOiAg+OBiOOCi+S9nOWutuS9nOWTgeOCkue0ueS7i+OBl+OBpuOBhOOBvuOBmeOAguODh+OCo+ODrOOCr+OCv+ODvOOBrum7kuWFg+Wun+e0l+OBr+OAjENJUkNVTEFUSU9O44CBV0lORCZTT0lM44CBSFVNQU5JVFnjgIFDVUxUSVZBVEXjgIFWT1lBR0XjgI3jgpLjgq7jg6Pjg6njg6rjg7zjgpLmp4vmiJDjgZnjgos144Gk44Gu44Kz44Oz44K744OX44OI44Go44GX44CB6L+R5bm044Gv54m544Gr5p2x5rSL55qE576O5oSP6K2Y44G444Gk44Gq44GM44KL5LiN5Y+v6KaW6aCY5Z+f44KE5rCX6YWN44G444Gu5oSf6Kaa44CB6Ieq54S244Go5Lq644Go44Gu6Zai5L+C5oCn44Gr6KaW54K544KS5oyB44Gk5L2c5a6244Gr552A55uu44GX44Gm44GE44G+44GZ44CC5YCL44Gu5oyB44Gk44Or44O844OE44CB5q205Y+y44KE5paH5YyW44KS6IOM5pmv44Gr44CB5pmC6ZaT44KE56m66ZaT44KS6LaF44GI44Gf5pys6LOq44G444Gu55y85beu44GX44Go5pmu6YGN55qE44Gq5ZWP44GE44GL44GR44KS5oyB44Gk5L2c5ZOB44KS6YCa44GY44Gm5oCd6ICD44GZ44KL44GT44Go44Gv44CB5YCL44KS5ouh5by144GX44CB5aSa5qeY5YyW44GZ44KL5LiW55WM44G444Gu44GK44GK44KJ44GL44Gq55CG6Kej44G444Go44Gk44Gq44GM44KL44Gn44GX44KH44GG44CCCiAgICAgICAgPC9wPgogICAgICA8L2Rpdj4KICAgIDwvc2VjdGlvbj4KCiAgICA8c2VjdGlvbiBjbGFzcz0iYWJvdXQtZ2FsbGVyeSI+CiAgICAgIDxpbWcgc3JjPSIvaW1hZ2VzL2Fib3V0L2Fib3V0LTAxLmpwZyIgYWx0PSJHYWxsZXJ5IGludGVyaW9yIiAvPgoKICAgICAgPGltZyBzcmM9Ii9pbWFnZXMvYWJvdXQvYWJvdXQtMDIuanBnIiBhbHQ9IkV4aGliaXRpb24gdmlldyIgLz4KCiAgICAgIDxpbWcgc3JjPSIvaW1hZ2VzL2Fib3V0L2Fib3V0LTAzLmpwZyIgYWx0PSJHYWxsZXJ5IHNwYWNlIiAvPgoKICAgICAgPGltZyBzcmM9Ii9pbWFnZXMvYWJvdXQvYWJvdXQtMDQuanBnIiBhbHQ9IkFydHdvcmsgaW5zdGFsbGF0aW9uIiAvPgogICAgPC9zZWN0aW9uPgogIDwvbWFpbj4KPC9MYXlvdXQ+Cgo8c2NyaXB0PgogIGNvbnN0IGhlcm9JbWFnZSA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3I8SFRNTEVsZW1lbnQ+KCIuYWJvdXQtaGVyby1pbWFnZSIpOwoKICBpZiAoaGVyb0ltYWdlKSB7CiAgICBjb25zdCBzcGVlZCA9IDAuMTI7CgogICAgbGV0IHRpY2tpbmcgPSBmYWxzZTsKCiAgICBjb25zdCB1cGRhdGVQYXJhbGxheCA9ICgpID0+IHsKICAgICAgY29uc3QgcmVjdCA9IGhlcm9JbWFnZS5wYXJlbnRFbGVtZW50IS5nZXRCb3VuZGluZ0NsaWVudFJlY3QoKTsKCiAgICAgIGhlcm9JbWFnZS5zdHlsZS50cmFuc2Zvcm0gPSBgdHJhbnNsYXRlWSgke3JlY3QudG9wICogc3BlZWR9cHgpYDsKCiAgICAgIHRpY2tpbmcgPSBmYWxzZTsKICAgIH07CgogICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoCiAgICAgICJzY3JvbGwiLAogICAgICAoKSA9PiB7CiAgICAgICAgaWYgKCF0aWNraW5nKSB7CiAgICAgICAgICByZXF1ZXN0QW5pbWF0aW9uRnJhbWUodXBkYXRlUGFyYWxsYXgpOwogICAgICAgICAgdGlja2luZyA9IHRydWU7CiAgICAgICAgfQogICAgICB9LAogICAgICB7IHBhc3NpdmU6IHRydWUgfSwKICAgICk7CgogICAgdXBkYXRlUGFyYWxsYXgoKTsKICB9Cjwvc2NyaXB0Pgo="
+  },
+  "presentationEvidence": {
+    "path": "src/styles/about.css",
+    "byteLength": 3385,
+    "sha256": "8e7f11bc68e6133854efbe2d6c3ae3bc2f5bf9da72975d60f8943fe37c561427"
+  },
+  "mapping": [
+    {
+      "field": "statement",
+      "source": "about.astro",
+      "span": {
+        "start": 2177,
+        "end": 3734,
+        "raw": "<div class=\"about-statement-body\">\n        <p>\n          GALLERY\n          crossingは2017年岐阜県美濃加茂市にオープンしたアートギャラリーです。ギャラリーの位置する旧中山道・太田宿は、江戸時代には宿場町として栄え、並行して流れる木曽川と共に、人と物のクロスポイントとなる場所でした。「crossing」という名前には、川を渡り、街道を行き交ったかつての旅人たちのイメージと、外からの風と土地の土が交わることで生まれる新たな風土・文化への期待が込められています。\n        </p>\n        <p>\n          ギャラリーでは、現代アート・工芸の領域を超えて普遍的な問いかけへのアプローチを実践する現代作家にフォーカスし、今をうつすもの、これからに必要と考える作家作品を紹介しています。ディレクターの黒元実紗は「CIRCULATION、WIND&SOIL、HUMANITY、CULTIVATE、VOYAGE」をギャラリーを構成する5つのコンセプトとし、近年は特に東洋的美意識へつながる不可視領域や気配への感覚、自然と人との関係性に視点を持つ作家に着目しています。個の持つルーツ、歴史や文化を背景に、時間や空間を超えた本質への眼差しと普遍的な問いかけを持つ作品を通じて思考することは、個を拡張し、多様化する世界へのおおらかな理解へとつながるでしょう。\n        </p>\n      </div>"
+      },
+      "value": "\n        <p>\n          GALLERY\n          crossingは2017年岐阜県美濃加茂市にオープンしたアートギャラリーです。ギャラリーの位置する旧中山道・太田宿は、江戸時代には宿場町として栄え、並行して流れる木曽川と共に、人と物のクロスポイントとなる場所でした。「crossing」という名前には、川を渡り、街道を行き交ったかつての旅人たちのイメージと、外からの風と土地の土が交わることで生まれる新たな風土・文化への期待が込められています。\n        </p>\n        <p>\n          ギャラリーでは、現代アート・工芸の領域を超えて普遍的な問いかけへのアプローチを実践する現代作家にフォーカスし、今をうつすもの、これからに必要と考える作家作品を紹介しています。ディレクターの黒元実紗は「CIRCULATION、WIND&SOIL、HUMANITY、CULTIVATE、VOYAGE」をギャラリーを構成する5つのコンセプトとし、近年は特に東洋的美意識へつながる不可視領域や気配への感覚、自然と人との関係性に視点を持つ作家に着目しています。個の持つルーツ、歴史や文化を背景に、時間や空間を超えた本質への眼差しと普遍的な問いかけを持つ作品を通じて思考することは、個を拡張し、多様化する世界へのおおらかな理解へとつながるでしょう。\n        </p>\n      ",
+      "classification": "human-required",
+      "targetOwnership": "ja",
+      "approvalStatus": "required-unapproved"
+    },
+    {
+      "field": "address",
+      "source": "about.astro",
+      "span": {
+        "start": 565,
+        "end": 657,
+        "raw": "〒220-0004<br />\n              神奈川県横浜市西区北幸2-10-48 むつみビル3階"
+      },
+      "value": "神奈川県横浜市西区北幸2-10-48 むつみビル3階",
+      "classification": "human-required",
+      "targetOwnership": "ja",
+      "approvalStatus": "required-unapproved"
+    },
+    {
+      "field": "hours",
+      "source": "about.astro",
+      "span": {
+        "start": 813,
+        "end": 849,
+        "raw": "<span>Wed–Sat 12:00–18:00</span>"
+      },
+      "value": "Wed–Sat 12:00–18:00",
+      "classification": "human-required",
+      "targetOwnership": "shared",
+      "approvalStatus": "required-unapproved"
+    },
+    {
+      "field": "contact.email",
+      "source": "about.astro",
+      "span": {
+        "start": 1021,
+        "end": 1050,
+        "raw": "mailto:info@kiki-gallery.com\""
+      },
+      "value": "info@kiki-gallery.com",
+      "classification": "human-required",
+      "targetOwnership": "shared",
+      "approvalStatus": "required-unapproved"
+    },
+    {
+      "field": "contact.map_url",
+      "source": "about.astro",
+      "span": {
+        "start": 420,
+        "end": 507,
+        "raw": "<li class=\"about-information-item about-information-address\">\n            <a href=\"...\""
+      },
+      "value": "...",
+      "classification": "obsolete-drop",
+      "targetOwnership": "none",
+      "approvalStatus": "not-required"
+    },
+    {
+      "field": "contact.instagram_url",
+      "source": "about.astro",
+      "span": {
+        "start": 1106,
+        "end": 1288,
+        "raw": "<li class=\"about-information-item\">\n            <a\n              href=\"...\"\n              target=\"_blank\"\n              rel=\"noopener noreferrer\"\n              aria-label=\"Instagram\""
+      },
+      "value": "...",
+      "classification": "obsolete-drop",
+      "targetOwnership": "none",
+      "approvalStatus": "not-required"
+    },
+    {
+      "field": "images.hero.src",
+      "source": "about.css",
+      "span": {
+        "start": 361,
+        "end": 414,
+        "raw": "background-image: url(\"/images/about/about-hero.jpg\")"
+      },
+      "value": "/images/about/about-hero.jpg",
+      "classification": "verbatim",
+      "targetOwnership": "shared",
+      "approvalStatus": "not-required"
+    },
+    {
+      "field": "images.gallery[0].src",
+      "source": "about.astro",
+      "span": {
+        "start": 3793,
+        "end": 3856,
+        "raw": "<img src=\"/images/about/about-01.jpg\" alt=\"Gallery interior\" />"
+      },
+      "value": "/images/about/about-01.jpg",
+      "classification": "verbatim",
+      "targetOwnership": "shared",
+      "approvalStatus": "not-required"
+    },
+    {
+      "field": "images.gallery[0].alt",
+      "source": "about.astro",
+      "span": {
+        "start": 3793,
+        "end": 3856,
+        "raw": "<img src=\"/images/about/about-01.jpg\" alt=\"Gallery interior\" />"
+      },
+      "value": "Gallery interior",
+      "classification": "human-required",
+      "targetOwnership": "localized",
+      "approvalStatus": "required-unapproved"
+    },
+    {
+      "field": "images.gallery[1].src",
+      "source": "about.astro",
+      "span": {
+        "start": 3864,
+        "end": 3926,
+        "raw": "<img src=\"/images/about/about-02.jpg\" alt=\"Exhibition view\" />"
+      },
+      "value": "/images/about/about-02.jpg",
+      "classification": "verbatim",
+      "targetOwnership": "shared",
+      "approvalStatus": "not-required"
+    },
+    {
+      "field": "images.gallery[1].alt",
+      "source": "about.astro",
+      "span": {
+        "start": 3864,
+        "end": 3926,
+        "raw": "<img src=\"/images/about/about-02.jpg\" alt=\"Exhibition view\" />"
+      },
+      "value": "Exhibition view",
+      "classification": "human-required",
+      "targetOwnership": "localized",
+      "approvalStatus": "required-unapproved"
+    },
+    {
+      "field": "images.gallery[2].src",
+      "source": "about.astro",
+      "span": {
+        "start": 3934,
+        "end": 3994,
+        "raw": "<img src=\"/images/about/about-03.jpg\" alt=\"Gallery space\" />"
+      },
+      "value": "/images/about/about-03.jpg",
+      "classification": "verbatim",
+      "targetOwnership": "shared",
+      "approvalStatus": "not-required"
+    },
+    {
+      "field": "images.gallery[2].alt",
+      "source": "about.astro",
+      "span": {
+        "start": 3934,
+        "end": 3994,
+        "raw": "<img src=\"/images/about/about-03.jpg\" alt=\"Gallery space\" />"
+      },
+      "value": "Gallery space",
+      "classification": "human-required",
+      "targetOwnership": "localized",
+      "approvalStatus": "required-unapproved"
+    },
+    {
+      "field": "images.gallery[3].src",
+      "source": "about.astro",
+      "span": {
+        "start": 4002,
+        "end": 4069,
+        "raw": "<img src=\"/images/about/about-04.jpg\" alt=\"Artwork installation\" />"
+      },
+      "value": "/images/about/about-04.jpg",
+      "classification": "verbatim",
+      "targetOwnership": "shared",
+      "approvalStatus": "not-required"
+    },
+    {
+      "field": "images.gallery[3].alt",
+      "source": "about.astro",
+      "span": {
+        "start": 4002,
+        "end": 4069,
+        "raw": "<img src=\"/images/about/about-04.jpg\" alt=\"Artwork installation\" />"
+      },
+      "value": "Artwork installation",
+      "classification": "human-required",
+      "targetOwnership": "localized",
+      "approvalStatus": "required-unapproved"
+    },
+    {
+      "field": "seo_title",
+      "source": "about.astro",
+      "span": {
+        "start": 55,
+        "end": 110,
+        "raw": "<Layout title=\"About\" description=\"About KiKi Gallery\">"
+      },
+      "value": "About",
+      "classification": "human-required",
+      "targetOwnership": "localized",
+      "approvalStatus": "required-unapproved"
+    },
+    {
+      "field": "description",
+      "source": "about.astro",
+      "span": {
+        "start": 55,
+        "end": 110,
+        "raw": "<Layout title=\"About\" description=\"About KiKi Gallery\">"
+      },
+      "value": "About KiKi Gallery",
+      "classification": "human-required",
+      "targetOwnership": "localized",
+      "approvalStatus": "required-unapproved"
+    },
+    {
+      "field": "presentation.parallax",
+      "source": "about.astro",
+      "span": {
+        "start": 4106,
+        "end": 4717,
+        "raw": "<script>\n  const heroImage = document.querySelector<HTMLElement>(\".about-hero-image\");\n\n  if (heroImage) {\n    const speed = 0.12;\n\n    let ticking = false;\n\n    const updateParallax = () => {\n      const rect = heroImage.parentElement!.getBoundingClientRect();\n\n      heroImage.style.transform = `translateY(${rect.top * speed}px)`;\n\n      ticking = false;\n    };\n\n    window.addEventListener(\n      \"scroll\",\n      () => {\n        if (!ticking) {\n          requestAnimationFrame(updateParallax);\n          ticking = true;\n        }\n      },\n      { passive: true },\n    );\n\n    updateParallax();\n  }\n</script>"
+      },
+      "value": "\n  const heroImage = document.querySelector<HTMLElement>(\".about-hero-image\");\n\n  if (heroImage) {\n    const speed = 0.12;\n\n    let ticking = false;\n\n    const updateParallax = () => {\n      const rect = heroImage.parentElement!.getBoundingClientRect();\n\n      heroImage.style.transform = `translateY(${rect.top * speed}px)`;\n\n      ticking = false;\n    };\n\n    window.addEventListener(\n      \"scroll\",\n      () => {\n        if (!ticking) {\n          requestAnimationFrame(updateParallax);\n          ticking = true;\n        }\n      },\n      { passive: true },\n    );\n\n    updateParallax();\n  }\n",
+      "classification": "presentation-only",
+      "targetOwnership": "renderer",
+      "approvalStatus": "not-required"
+    }
+  ],
+  "targetPlan": {
+    "directory": "src/content/about/about",
+    "exactInventory": [
+      "index.yaml",
+      "ja.md",
+      "en.md"
+    ],
+    "evidenceStatus": "provisional-placeholder-plan",
+    "finalHumanApprovedHashes": null,
+    "files": [
+      {
+        "path": "src/content/about/about/index.yaml",
+        "content": "images:\n  hero:\n    src: /images/about/about-hero.jpg\n  gallery:\n    - src: /images/about/about-01.jpg\n    - src: /images/about/about-02.jpg\n    - src: /images/about/about-03.jpg\n    - src: /images/about/about-04.jpg\nhours:\n  status: pending\n",
+        "byteLength": 242,
+        "sha256": "b95d402fa81113412b5e2bd86ce285bb0865788b2eb2090c4c510c286881bb90",
+        "provisional": true
+      },
+      {
+        "path": "src/content/about/about/ja.md",
+        "content": "---\ncontent_status: placeholder\naddress: __TODO_ABOUT_JA_ADDRESS__\nimages:\n  gallery:\n    - alt: __TODO_ABOUT_JA_ALT_1__\n    - alt: __TODO_ABOUT_JA_ALT_2__\n    - alt: __TODO_ABOUT_JA_ALT_3__\n    - alt: __TODO_ABOUT_JA_ALT_4__\n---\n\n__TODO_ABOUT_JA_STATEMENT__\n",
+        "byteLength": 259,
+        "sha256": "5d34f8a8af39e80388bc27f66cc83afab9cd3693e7655b6260f7fd14651c65b7",
+        "provisional": true
+      },
+      {
+        "path": "src/content/about/about/en.md",
+        "content": "---\ncontent_status: placeholder\naddress: __TODO_ABOUT_EN_ADDRESS__\nimages:\n  gallery:\n    - alt: __TODO_ABOUT_EN_ALT_1__\n    - alt: __TODO_ABOUT_EN_ALT_2__\n    - alt: __TODO_ABOUT_EN_ALT_3__\n    - alt: __TODO_ABOUT_EN_ALT_4__\n---\n\n__TODO_ABOUT_EN_STATEMENT__\n",
+        "byteLength": 259,
+        "sha256": "cd0620587b21b30989214c3ad9cb392309e49dcc1525f42e9ee99bf6bab8a8ef",
+        "provisional": true
+      }
+    ]
+  },
+  "assets": [
+    {
+      "canonicalUrl": "/images/about/about-hero.jpg",
+      "path": "public/images/about/about-hero.jpg",
+      "byteLength": 1970340,
+      "sha256": "b314db5991203b2ee96d9d54bdbf18f55a35d7373ce371292b83d59b6408a081",
+      "decodedFormat": "jpeg",
+      "height": 2440,
+      "width": 1627,
+      "regularFile": true,
+      "symlink": false,
+      "mutated": false
+    },
+    {
+      "canonicalUrl": "/images/about/about-01.jpg",
+      "path": "public/images/about/about-01.jpg",
+      "byteLength": 379888,
+      "sha256": "689b96be9ade5ccab0ce8d5e868f4cb540dda7fec0361417f49448cdd8bdb857",
+      "decodedFormat": "jpeg",
+      "height": 1500,
+      "width": 1199,
+      "regularFile": true,
+      "symlink": false,
+      "mutated": false
+    },
+    {
+      "canonicalUrl": "/images/about/about-02.jpg",
+      "path": "public/images/about/about-02.jpg",
+      "byteLength": 2672081,
+      "sha256": "1c8ef9d08e5b8fcad7cfd00aadd842c5917f3a7f01b91fd07d2afde42b1b68fd",
+      "decodedFormat": "jpeg",
+      "height": 3000,
+      "width": 2000,
+      "regularFile": true,
+      "symlink": false,
+      "mutated": false
+    },
+    {
+      "canonicalUrl": "/images/about/about-03.jpg",
+      "path": "public/images/about/about-03.jpg",
+      "byteLength": 774365,
+      "sha256": "ea24701ad05b79a257308678c4b008a3e2bac4932cbd87ded39af4b97381207b",
+      "decodedFormat": "jpeg",
+      "height": 3000,
+      "width": 2400,
+      "regularFile": true,
+      "symlink": false,
+      "mutated": false
+    },
+    {
+      "canonicalUrl": "/images/about/about-04.jpg",
+      "path": "public/images/about/about-04.jpg",
+      "byteLength": 1364808,
+      "sha256": "b431325885306f5532b6a6a7c0a45d224ba7c7ddb6f617a0e19ac858c52969b1",
+      "decodedFormat": "jpeg",
+      "height": 2400,
+      "width": 3000,
+      "regularFile": true,
+      "symlink": false,
+      "mutated": false
+    }
+  ],
+  "humanGates": {
+    "hoursApproved": false,
+    "emailApproved": false,
+    "mapUrlApproved": false,
+    "instagramUrlApproved": false,
+    "jaStatementApproved": false,
+    "enStatementApproved": false,
+    "jaAddressApproved": false,
+    "enAddressApproved": false,
+    "jaAltsApproved": false,
+    "enAltsApproved": false
+  },
+  "authorization": {
+    "realMigrationAllowed": false,
+    "productionCutoverAllowed": false,
+    "assetMutationAllowed": false
+  },
+  "rollback": {
+    "sourcePath": "src/pages/about.astro",
+    "originalBase64": "LS0tCmltcG9ydCBMYXlvdXQgZnJvbSAiLi4vbGF5b3V0cy9MYXlvdXQuYXN0cm8iOwotLS0KCjxMYXlvdXQgdGl0bGU9IkFib3V0IiBkZXNjcmlwdGlvbj0iQWJvdXQgS2lLaSBHYWxsZXJ5Ij4KICA8bWFpbiBjbGFzcz0iYWJvdXQiPgogICAgPGgxIGNsYXNzPSJ2aXN1YWxseS1oaWRkZW4iPkFib3V0PC9oMT4KCiAgICA8ZGl2IGNsYXNzPSJhYm91dC1pbnRybyI+CiAgICAgIDxzZWN0aW9uIGNsYXNzPSJhYm91dC1oZXJvIiBhcmlhLWhpZGRlbj0idHJ1ZSI+CiAgICAgICAgPGRpdiBjbGFzcz0iYWJvdXQtaGVyby1pbWFnZSI+PC9kaXY+CiAgICAgIDwvc2VjdGlvbj4KICAgICAgPHNlY3Rpb24gY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uIj4KICAgICAgICA8dWwgY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWxpc3QiPgogICAgICAgICAgPGxpIGNsYXNzPSJhYm91dC1pbmZvcm1hdGlvbi1pdGVtIGFib3V0LWluZm9ybWF0aW9uLWFkZHJlc3MiPgogICAgICAgICAgICA8YSBocmVmPSIuLi4iIHRhcmdldD0iX2JsYW5rIiByZWw9Im5vb3BlbmVyIG5vcmVmZXJyZXIiPgogICAgICAgICAgICAgIOOAkjIyMC0wMDA0PGJyIC8+CiAgICAgICAgICAgICAg56We5aWI5bed55yM5qiq5rWc5biC6KW/5Yy65YyX5bm4Mi0xMC00OCDjgoDjgaTjgb/jg5Pjg6sz6ZqOCiAgICAgICAgICAgIDwvYT4KICAgICAgICAgIDwvbGk+CgogICAgICAgICAgPGxpIGNsYXNzPSJhYm91dC1pbmZvcm1hdGlvbi1pdGVtIj4KICAgICAgICAgICAgPHNwYW4gY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWxhYmVsIj5Ib3Vyczwvc3Bhbj4KICAgICAgICAgICAgPHNwYW4+V2Vk4oCTU2F0IDEyOjAw4oCTMTg6MDA8L3NwYW4+CiAgICAgICAgICA8L2xpPgoKICAgICAgICAgIDxsaSBjbGFzcz0iYWJvdXQtaW5mb3JtYXRpb24taXRlbSBhYm91dC1pbmZvcm1hdGlvbi1lbWFpbCI+CiAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJhYm91dC1pbmZvcm1hdGlvbi1sYWJlbCI+RW1haWw8L3NwYW4+CiAgICAgICAgICAgIDxhIGhyZWY9Im1haWx0bzppbmZvQGtpa2ktZ2FsbGVyeS5jb20iPiBpbmZvQGtpa2ktZ2FsbGVyeS5jb20gPC9hPgogICAgICAgICAgPC9saT4KCiAgICAgICAgICA8bGkgY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWl0ZW0iPgogICAgICAgICAgICA8YQogICAgICAgICAgICAgIGhyZWY9Ii4uLiIKICAgICAgICAgICAgICB0YXJnZXQ9Il9ibGFuayIKICAgICAgICAgICAgICByZWw9Im5vb3BlbmVyIG5vcmVmZXJyZXIiCiAgICAgICAgICAgICAgYXJpYS1sYWJlbD0iSW5zdGFncmFtIgogICAgICAgICAgICA+CiAgICAgICAgICAgICAgPHN2ZwogICAgICAgICAgICAgICAgY2xhc3M9ImFib3V0LWluZm9ybWF0aW9uLWlnIgogICAgICAgICAgICAgICAgdmlld0JveD0iMCAwIDE5IDE5IgogICAgICAgICAgICAgICAgYXJpYS1oaWRkZW49InRydWUiCiAgICAgICAgICAgICAgPgogICAgICAgICAgICAgICAgPHBhdGgKICAgICAgICAgICAgICAgICAgZD0iTTEzLjc2LS4wMDdINS4yNEE1LjI1OCA1LjI1OCAwIDAgMC0uMDEgNS4yNHY4LjUyYTUuMjU4IDUuMjU4IDAgMCAwIDUuMjUgNS4yNDdoOC41MmE1LjI1OCA1LjI1OCAwIDAgMCA1LjI1LTUuMjQ3VjUuMjRhNS4yNTggNS4yNTggMCAwIDAtNS4yNS01LjI0N3pNMTcgMTRhMi42ODMgMi42ODMgMCAwIDEtMyAzSDVhMi42ODMgMi42ODMgMCAwIDEtMy0zVjVhMi42ODMgMi42ODMgMCAwIDEgMy0zaDlhMi42ODMgMi42ODMgMCAwIDEgMyAzdjl6TTkuNSA0LjZhNC45IDQuOSAwIDEgMCA0LjkgNC45IDQuOTA2IDQuOTA2IDAgMCAwLTQuOS00Ljl6bTAgOC4xMTFhMy4yMTIgMy4yMTIgMCAxIDEgMy4yMS0zLjIxMiAzLjIxNSAzLjIxNSAwIDAgMS0zLjIxIDMuMjEzem01LjEtOS41NDJhMS4yMzMgMS4yMzMgMCAxIDAgLjg4LjM2MiAxLjI0NSAxLjI0NSAwIDAgMC0uODgtLjM2MXoiCiAgICAgICAgICAgICAgICAgIGZpbGw9ImN1cnJlbnRDb2xvciI+PC9wYXRoPgogICAgICAgICAgICAgIDwvc3ZnPgogICAgICAgICAgICA8L2E+CiAgICAgICAgICA8L2xpPgogICAgICAgIDwvdWw+CiAgICAgIDwvc2VjdGlvbj4KICAgIDwvZGl2PgoKICAgIDxzZWN0aW9uIGNsYXNzPSJhYm91dC1zdGF0ZW1lbnQiPgogICAgICA8aDIgY2xhc3M9ImFib3V0LXN0YXRlbWVudC1oZWFkaW5nIj5BYm91dDwvaDI+CgogICAgICA8ZGl2IGNsYXNzPSJhYm91dC1zdGF0ZW1lbnQtYm9keSI+CiAgICAgICAgPHA+CiAgICAgICAgICBHQUxMRVJZCiAgICAgICAgICBjcm9zc2luZ+OBrzIwMTflubTlspDpmJznnIznvo7mv4PliqDojILluILjgavjgqrjg7zjg5fjg7PjgZfjgZ/jgqLjg7zjg4jjgq7jg6Pjg6njg6rjg7zjgafjgZnjgILjgq7jg6Pjg6njg6rjg7zjga7kvY3nva7jgZnjgovml6fkuK3lsbHpgZPjg7vlpKrnlLDlrr/jga/jgIHmsZ/miLjmmYLku6Pjgavjga/lrr/loLTnlLrjgajjgZfjgabmoITjgYjjgIHkuKbooYzjgZfjgabmtYHjgozjgovmnKjmm73lt53jgajlhbHjgavjgIHkurrjgajnianjga7jgq/jg63jgrnjg53jgqTjg7Pjg4jjgajjgarjgovloLTmiYDjgafjgZfjgZ/jgILjgIxjcm9zc2luZ+OAjeOBqOOBhOOBhuWQjeWJjeOBq+OBr+OAgeW3neOCkua4oeOCiuOAgeihl+mBk+OCkuihjOOBjeS6pOOBo+OBn+OBi+OBpOOBpuOBruaXheS6uuOBn+OBoeOBruOCpOODoeODvOOCuOOBqOOAgeWkluOBi+OCieOBrumiqOOBqOWcn+WcsOOBruWcn+OBjOS6pOOCj+OCi+OBk+OBqOOBp+eUn+OBvuOCjOOCi+aWsOOBn+OBqumiqOWcn+ODu+aWh+WMluOBuOOBruacn+W+heOBjOi+vOOCgeOCieOCjOOBpuOBhOOBvuOBmeOAggogICAgICAgIDwvcD4KICAgICAgICA8cD4KICAgICAgICAgIOOCruODo+ODqeODquODvOOBp+OBr+OAgeePvuS7o+OCouODvOODiOODu+W3peiKuOOBrumgmOWfn+OCkui2heOBiOOBpuaZrumBjeeahOOBquWVj+OBhOOBi+OBkeOBuOOBruOCouODl+ODreODvOODgeOCkuWun+i3teOBmeOCi+ePvuS7o+S9nOWutuOBq+ODleOCqeODvOOCq+OCueOBl+OAgeS7iuOCkuOBhuOBpOOBmeOCguOBruOAgeOBk+OCjOOBi+OCieOBq+W/heimgeOBqOiAg+OBiOOCi+S9nOWutuS9nOWTgeOCkue0ueS7i+OBl+OBpuOBhOOBvuOBmeOAguODh+OCo+ODrOOCr+OCv+ODvOOBrum7kuWFg+Wun+e0l+OBr+OAjENJUkNVTEFUSU9O44CBV0lORCZTT0lM44CBSFVNQU5JVFnjgIFDVUxUSVZBVEXjgIFWT1lBR0XjgI3jgpLjgq7jg6Pjg6njg6rjg7zjgpLmp4vmiJDjgZnjgos144Gk44Gu44Kz44Oz44K744OX44OI44Go44GX44CB6L+R5bm044Gv54m544Gr5p2x5rSL55qE576O5oSP6K2Y44G444Gk44Gq44GM44KL5LiN5Y+v6KaW6aCY5Z+f44KE5rCX6YWN44G444Gu5oSf6Kaa44CB6Ieq54S244Go5Lq644Go44Gu6Zai5L+C5oCn44Gr6KaW54K544KS5oyB44Gk5L2c5a6244Gr552A55uu44GX44Gm44GE44G+44GZ44CC5YCL44Gu5oyB44Gk44Or44O844OE44CB5q205Y+y44KE5paH5YyW44KS6IOM5pmv44Gr44CB5pmC6ZaT44KE56m66ZaT44KS6LaF44GI44Gf5pys6LOq44G444Gu55y85beu44GX44Go5pmu6YGN55qE44Gq5ZWP44GE44GL44GR44KS5oyB44Gk5L2c5ZOB44KS6YCa44GY44Gm5oCd6ICD44GZ44KL44GT44Go44Gv44CB5YCL44KS5ouh5by144GX44CB5aSa5qeY5YyW44GZ44KL5LiW55WM44G444Gu44GK44GK44KJ44GL44Gq55CG6Kej44G444Go44Gk44Gq44GM44KL44Gn44GX44KH44GG44CCCiAgICAgICAgPC9wPgogICAgICA8L2Rpdj4KICAgIDwvc2VjdGlvbj4KCiAgICA8c2VjdGlvbiBjbGFzcz0iYWJvdXQtZ2FsbGVyeSI+CiAgICAgIDxpbWcgc3JjPSIvaW1hZ2VzL2Fib3V0L2Fib3V0LTAxLmpwZyIgYWx0PSJHYWxsZXJ5IGludGVyaW9yIiAvPgoKICAgICAgPGltZyBzcmM9Ii9pbWFnZXMvYWJvdXQvYWJvdXQtMDIuanBnIiBhbHQ9IkV4aGliaXRpb24gdmlldyIgLz4KCiAgICAgIDxpbWcgc3JjPSIvaW1hZ2VzL2Fib3V0L2Fib3V0LTAzLmpwZyIgYWx0PSJHYWxsZXJ5IHNwYWNlIiAvPgoKICAgICAgPGltZyBzcmM9Ii9pbWFnZXMvYWJvdXQvYWJvdXQtMDQuanBnIiBhbHQ9IkFydHdvcmsgaW5zdGFsbGF0aW9uIiAvPgogICAgPC9zZWN0aW9uPgogIDwvbWFpbj4KPC9MYXlvdXQ+Cgo8c2NyaXB0PgogIGNvbnN0IGhlcm9JbWFnZSA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3I8SFRNTEVsZW1lbnQ+KCIuYWJvdXQtaGVyby1pbWFnZSIpOwoKICBpZiAoaGVyb0ltYWdlKSB7CiAgICBjb25zdCBzcGVlZCA9IDAuMTI7CgogICAgbGV0IHRpY2tpbmcgPSBmYWxzZTsKCiAgICBjb25zdCB1cGRhdGVQYXJhbGxheCA9ICgpID0+IHsKICAgICAgY29uc3QgcmVjdCA9IGhlcm9JbWFnZS5wYXJlbnRFbGVtZW50IS5nZXRCb3VuZGluZ0NsaWVudFJlY3QoKTsKCiAgICAgIGhlcm9JbWFnZS5zdHlsZS50cmFuc2Zvcm0gPSBgdHJhbnNsYXRlWSgke3JlY3QudG9wICogc3BlZWR9cHgpYDsKCiAgICAgIHRpY2tpbmcgPSBmYWxzZTsKICAgIH07CgogICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoCiAgICAgICJzY3JvbGwiLAogICAgICAoKSA9PiB7CiAgICAgICAgaWYgKCF0aWNraW5nKSB7CiAgICAgICAgICByZXF1ZXN0QW5pbWF0aW9uRnJhbWUodXBkYXRlUGFyYWxsYXgpOwogICAgICAgICAgdGlja2luZyA9IHRydWU7CiAgICAgICAgfQogICAgICB9LAogICAgICB7IHBhc3NpdmU6IHRydWUgfSwKICAgICk7CgogICAgdXBkYXRlUGFyYWxsYXgoKTsKICB9Cjwvc2NyaXB0Pgo=",
+    "byteLength": 4718,
+    "sha256": "752a155e9fd22b11c38991298267bc2e35f9fefc500d47000c6613395c0bc9c8",
+    "currentRouteImplementationPreserved": true
+  }
+}

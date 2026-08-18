@@ -51,6 +51,10 @@ singleton, structured-hours approval boundary, localized Markdown/address/alts,
 capability-gated routes, Editor lifecycle, and semantic migration evidence. It
 is not current runtime authority: About remains hard-coded at `/about/`, and
 `/en/about/` remains absent until implementation and human content gates pass.
+Its schema/repository/capability, semantic extraction, provisional frozen
+manifest, and isolated fixture executor foundation are implemented, but remain
+disconnected from Production and Editor. The manifest explicitly forbids real
+migration and Production cutover.
 
 | Document                                                       | Purpose                                                                                                                                                                                     |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -106,12 +110,13 @@ is not current runtime authority: About remains hard-coded at `/about/`, and
 
 **about-localization-architecture-2026-08-18.md**
 
-Defines the approved but not yet implemented About target: exact three-file
+Defines the approved, not-yet-cut-over About target: exact three-file
 singleton ownership, structured Shared hours, localized Markdown/address/image
 alts, no-fallback locale capability, route and Home/Header dependencies,
 singleton Editor operations, frozen assets, and semantic extraction evidence
-from the current Astro source. Human-approved facts and copy gate migration and
-locale cutover, not architecture approval.
+from the current Astro source. The pure foundation and provisional manifest are
+implemented without Production/Editor registration. Human-approved facts and
+copy gate real migration and locale cutover, not architecture approval.
 
 ### Home Localization Architecture — Current
 
