@@ -37,6 +37,15 @@ filesystem -> Editor read state -> Draft -> Draft validation
 
 Production pages do not read the Journal collection directly. Journal Index, Detail, Home Stories, and News integration all use `getJournalProductionFacade()`. Journal route creation and known Journal route parsing use `journalRouteRegistry`; public identity is `contentId` plus locale, never Astro `entry.id`.
 
+The registry canonically formats detail URLs with a trailing slash:
+`/journal/{contentId}/` and the reserved future string
+`/en/journal/{contentId}/`. Parsing accepts either trailing-slash form. URL
+formatting is not route availability: the separate public route-family
+authority records that only the JA Journal index and detail page modules exist.
+`/en/journal/` and every EN Journal detail are currently unavailable, even if
+localized content later becomes renderable. EN Journal publication requires a
+separate phase that adds those page modules and changes that static authority.
+
 The Editor imports the repository, canonical schemas, Issue contracts, and shared Capability evaluator directly. It does not import the Production facade, production read-model service, Astro collection adapter, or production consumers. Production modules do not import Editor modules. This dependency direction keeps editing and mutation outside the Production read boundary.
 
 ## Local Editor v1

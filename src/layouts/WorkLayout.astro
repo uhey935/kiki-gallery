@@ -1,15 +1,21 @@
 ---
 import "../styles/base.css";
 
+interface Props {
+  title?: string;
+  description?: string;
+  locale: "ja" | "en";
+}
+
 const {
   title = "KiKi Gallery",
   description = "KiKi Gallery",
+  locale,
 } = Astro.props;
-
 ---
 
 <!doctype html>
-<html lang="ja">
+<html lang={locale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content={description} />

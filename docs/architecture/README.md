@@ -6,6 +6,12 @@ These documents define the project's architectural principles, design decisions,
 
 The documentation is intended to evolve alongside the project while preserving a consistent architectural philosophy.
 
+For public locale navigation, read
+[Locale Route Projection — Current Architecture](./locale-route-projection-current.md).
+It is the current authority for logical public route identities, static
+route-family existence, target-locale capability composition, canonical URLs,
+no-fallback counterpart projection, and Header behavior.
+
 ---
 
 ## Reading Order
@@ -58,6 +64,7 @@ and development cutover while explicitly forbidding formal locale cutover.
 | Document                                                       | Purpose                                                                                                                                                               |
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Artists Architecture — Current**                             | Current authority for the three-file topology, locale policy, Production facade, Editor lifecycle, references, and immutable migration evidence.                      |
+| **Locale Route Projection — Current**                          | Current authority for public route identity, module existence, capability-aware counterpart projection, canonical URLs, and Header navigation.                        |
 | **Works Localization Architecture — Current**                  | Current implemented authority for Works three-file localization, capability, Production/Editor lifecycle, asset safety, migration, recovery, and browser acceptance.  |
 | **Home Localization Architecture — Current**                   | Current implemented Home three-file Production and Editor authority; JA temporary-copy bridge and placeholder-blocked EN route absent.                                |
 | **About Localization Architecture — Provisional Current**      | Current structural/provisional runtime authority for the About three-file singleton and JA review projection; formal JA/EN capability and Editor remain pending.      |
@@ -116,6 +123,15 @@ singleton Editor operations, frozen assets, and semantic extraction evidence
 from the legacy Astro source. Production now consumes the JA review projection;
 Editor remains unregistered. Human-approved facts and copy gate formal JA/EN
 capability and EN route publication.
+
+Public locale routing separates two authorities. The pure
+`src/content-boundaries/public-route-families.ts` table records whether a JA or
+EN Astro page family is implemented; collection and singleton facades continue
+to own content/formal capability. A public counterpart will require both where
+the surface is capability-gated. Currently EN Home, Journal, About, and Privacy
+page families are absent. Work detail page families exist for both locales and
+their standalone `WorkLayout` emits the correct locale metadata, but that layout
+intentionally does not introduce the site Header.
 
 ### Home Localization Architecture — Current
 

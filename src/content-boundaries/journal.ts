@@ -18,10 +18,7 @@ export type JournalIndexEntry = JournalReadModelEntry;
 export type JournalIndexIssue = JournalReadModelIssue;
 
 export type JournalSurface =
-  | "index"
-  | "detail"
-  | "home-stories"
-  | "news-integration";
+  "index" | "detail" | "home-stories" | "news-integration";
 
 export type { JournalReadModel };
 
@@ -52,8 +49,8 @@ export const journalRouteRegistry = {
     }
 
     return reference.locale === "ja"
-      ? `/journal/${reference.contentId}`
-      : `/en/journal/${reference.contentId}`;
+      ? `/journal/${reference.contentId}/`
+      : `/en/journal/${reference.contentId}/`;
   },
 
   parse(pathname: string): JournalContentReference | undefined {

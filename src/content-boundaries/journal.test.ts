@@ -347,7 +347,7 @@ test("Journal Route Registry uses Content ID and locale, not Entry ID", () => {
     locale: "ja" as const,
   };
 
-  assert.equal(journalRouteRegistry.build(reference), "/journal/public-entry");
+  assert.equal(journalRouteRegistry.build(reference), "/journal/public-entry/");
   assert.deepEqual(journalRouteRegistry.params(reference), {
     slug: "public-entry",
   });

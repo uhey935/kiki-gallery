@@ -458,7 +458,10 @@ Architecture is ready now. Subsequent gates are distinct:
 5. EN Home additionally requires `/en/about/` availability and every existing
    Home EN capability prerequisite.
 6. Header locale-switch exposure requires the separate site-wide
-   capability-aware projection implementation.
+   capability-aware projection implementation. That projection is now
+   implemented: current JA review `/about/` is a valid JA target, while
+   `/en/about/` remains unavailable until both its page family and formal EN
+   capability exist.
 
 Unresolved real copy, address, hours, contact links, and alts block migration or
 locale cutover as stated; they do not block approval of this architecture.

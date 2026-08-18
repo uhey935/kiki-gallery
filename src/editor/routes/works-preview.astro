@@ -39,6 +39,7 @@ const inquiryHref = inquiry && "url" in inquiry ? inquiry.url : undefined;
       description={
         preview.data.description ?? `${preview.data.title} | KiKi Gallery`
       }
+      locale={preview.locale}
     >
       <aside class="editor-preview-banner">
         Works draft preview · not saved

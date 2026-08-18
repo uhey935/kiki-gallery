@@ -1,33 +1,84 @@
 ---
+import {
+  localeFromPathname,
+  parsePublicRouteIdentity,
+  projectLocaleRoute,
+} from "../content-boundaries/locale-routes";
+
 const currentPath = Astro.url.pathname;
-const isHome = currentPath === "/";
-const isEnglish = currentPath.startsWith("/en");
+const currentLocale = localeFromPathname(currentPath);
+const targetLocale = currentLocale === "ja" ? "en" : "ja";
+const currentIdentity = parsePublicRouteIdentity(currentPath);
+const isHome = currentIdentity?.surface === "home";
+const localeCounterpart = await projectLocaleRoute({
+  pathname: currentPath,
+  targetLocale,
+});
+
+const [
+  homeRoute,
+  artistsRoute,
+  exhibitionsRoute,
+  journalRoute,
+  newsRoute,
+  aboutRoute,
+] = await Promise.all(
+  ["/", "/artists/", "/exhibitions/", "/journal/", "/news/", "/about/"].map(
+    (pathname) => projectLocaleRoute({ pathname, targetLocale: currentLocale }),
+  ),
+);
+
+const href = (decision: typeof homeRoute) =>
+  decision.kind === "available" ? decision.href : undefined;
+const samePath = (candidate: string | undefined) =>
+  candidate?.replace(/\/$/, "") === currentPath.replace(/\/$/, "");
+const logoHref = href(homeRoute) ?? "/";
 ---
 
 <header class:list={["site-header", isHome && "site-header--home"]}>
-  <a href="/" class="site-header__logo" aria-label="KiKi Gallery home">
+  <a href={logoHref} class="site-header__logo" aria-label="KiKi Gallery home">
     KiKi
   </a>
 
   <div class="site-header__controls">
-    <div class="site-header__language">
-      <a
-        href="/en/"
-        class="site-header__language-link"
-        aria-current={isEnglish ? "page" : undefined}
-      >
-        EN
-      </a>
-
-      <span class="site-header__language-separator">/</span>
-
-      <a
-        href="/"
-        class="site-header__language-link"
-        aria-current={!isEnglish ? "page" : undefined}
-      >
-        JA
-      </a>
+    <div class="site-header__language" aria-label="Language">
+      {
+        currentLocale === "en" ? (
+          <>
+            <span class="site-header__language-link" aria-current="true">
+              EN
+            </span>
+            {localeCounterpart.kind === "available" && (
+              <>
+                <span class="site-header__language-separator">/</span>
+                <a
+                  href={localeCounterpart.href}
+                  class="site-header__language-link"
+                >
+                  JA
+                </a>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            {localeCounterpart.kind === "available" && (
+              <>
+                <a
+                  href={localeCounterpart.href}
+                  class="site-header__language-link"
+                >
+                  EN
+                </a>
+                <span class="site-header__language-separator">/</span>
+              </>
+            )}
+            <span class="site-header__language-link" aria-current="true">
+              JA
+            </span>
+          </>
+        )
+      }
     </div>
 
     <button
@@ -60,66 +111,90 @@ const isEnglish = currentPath.startsWith("/en");
 
             <nav class="site-header__nav" aria-label="Global navigation">
               <ul class="site-header__nav-list">
-                <li class="site-header__nav-item">
-                  <a
-                    href="/artists"
-                    class="site-header__nav-link"
-                    data-menu-link
-                    aria-current={currentPath === "/artists"
-                      ? "page"
-                      : undefined}
-                  >
-                    Artists
-                  </a>
-                </li>
+                {
+                  href(artistsRoute) && (
+                    <li class="site-header__nav-item">
+                      <a
+                        href={href(artistsRoute)}
+                        class="site-header__nav-link"
+                        data-menu-link
+                        aria-current={
+                          samePath(href(artistsRoute)) ? "page" : undefined
+                        }
+                      >
+                        Artists
+                      </a>
+                    </li>
+                  )
+                }
 
-                <li class="site-header__nav-item">
-                  <a
-                    href="/exhibitions"
-                    class="site-header__nav-link"
-                    data-menu-link
-                    aria-current={currentPath === "/exhibitions"
-                      ? "page"
-                      : undefined}
-                  >
-                    Exhibitions
-                  </a>
-                </li>
+                {
+                  href(exhibitionsRoute) && (
+                    <li class="site-header__nav-item">
+                      <a
+                        href={href(exhibitionsRoute)}
+                        class="site-header__nav-link"
+                        data-menu-link
+                        aria-current={
+                          samePath(href(exhibitionsRoute)) ? "page" : undefined
+                        }
+                      >
+                        Exhibitions
+                      </a>
+                    </li>
+                  )
+                }
 
-                <li class="site-header__nav-item">
-                  <a
-                    href="/journal"
-                    class="site-header__nav-link"
-                    data-menu-link
-                    aria-current={currentPath === "/journal"
-                      ? "page"
-                      : undefined}
-                  >
-                    Journal
-                  </a>
-                </li>
+                {
+                  href(journalRoute) && (
+                    <li class="site-header__nav-item">
+                      <a
+                        href={href(journalRoute)}
+                        class="site-header__nav-link"
+                        data-menu-link
+                        aria-current={
+                          samePath(href(journalRoute)) ? "page" : undefined
+                        }
+                      >
+                        Journal
+                      </a>
+                    </li>
+                  )
+                }
 
-                <li class="site-header__nav-item">
-                  <a
-                    href="/news"
-                    class="site-header__nav-link"
-                    data-menu-link
-                    aria-current={currentPath === "/news" ? "page" : undefined}
-                  >
-                    News
-                  </a>
-                </li>
+                {
+                  href(newsRoute) && (
+                    <li class="site-header__nav-item">
+                      <a
+                        href={href(newsRoute)}
+                        class="site-header__nav-link"
+                        data-menu-link
+                        aria-current={
+                          samePath(href(newsRoute)) ? "page" : undefined
+                        }
+                      >
+                        News
+                      </a>
+                    </li>
+                  )
+                }
 
-                <li class="site-header__nav-item">
-                  <a
-                    href="/about"
-                    class="site-header__nav-link"
-                    data-menu-link
-                    aria-current={currentPath === "/about" ? "page" : undefined}
-                  >
-                    About
-                  </a>
-                </li>
+                {
+                  href(aboutRoute) && (
+                    <li class="site-header__nav-item">
+                      <a
+                        href={href(aboutRoute)}
+                        class="site-header__nav-link"
+                        data-menu-link
+                        aria-current={
+                          samePath(href(aboutRoute)) ? "page" : undefined
+                        }
+                      >
+                        About
+                      </a>
+                    </li>
+                  )
+                }
 
                 <li class="site-header__nav-item">
                   <a

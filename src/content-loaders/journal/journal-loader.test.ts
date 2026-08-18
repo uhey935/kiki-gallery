@@ -222,8 +222,8 @@ test("Route Registry normalizes generated routes and accepts either trailing-sla
     locale: "ja",
   } as const;
   const en = { ...ja, locale: "en" } as const;
-  assert.equal(journalRouteRegistry.build(ja), "/journal/valid-public");
-  assert.equal(journalRouteRegistry.build(en), "/en/journal/valid-public");
+  assert.equal(journalRouteRegistry.build(ja), "/journal/valid-public/");
+  assert.equal(journalRouteRegistry.build(en), "/en/journal/valid-public/");
   assert.deepEqual(journalRouteRegistry.parse("/en/journal/valid-public/"), en);
   assert.deepEqual(journalRouteRegistry.parse("/journal/valid-public"), ja);
   assert.equal(journalRouteRegistry.parse("/news/valid-public/"), undefined);

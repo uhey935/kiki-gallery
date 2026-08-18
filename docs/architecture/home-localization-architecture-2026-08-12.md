@@ -282,7 +282,9 @@ because `/en/about/` is required. It should be completed as a separate phase
 before Home EN cutover.
 
 Capability-aware Header projection is a global prerequisite for publicly
-linkable EN Home, but it is not owned by Home. Human content gates are:
+linkable EN Home, but it is not owned by Home. That shared projection is now
+implemented and correctly returns unavailable while the EN Home page family is
+absent. It does not publish `/en/` or change Home capability. Human content gates are:
 
 - JA: human-approved Home `about_intro` replacing the temporary marked copy
   before Production cutover.

@@ -30,6 +30,7 @@ const workSections = (artist.data.works_layout ?? []).flatMap((section) => {
 <Layout
   title={artist.data.seo_title ?? artist.data.name}
   description={artist.data.description ?? artist.data.short_bio}
+  locale="en"
 >
   <article>
     <section class="section artists-intro">

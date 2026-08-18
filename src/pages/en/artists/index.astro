@@ -6,7 +6,7 @@ import Layout from "../../../layouts/Layout.astro";
 const artists = (await getArtistsProductionFacade()).forLocale("en");
 ---
 
-<Layout title="Artists">
+<Layout title="Artists" locale="en">
   <section class="section artists">
     <h1 class="index-h1">Artists</h1>
     <div class="artists-grid">

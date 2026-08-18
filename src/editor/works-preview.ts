@@ -12,6 +12,7 @@ import {
 
 export type WorksPreviewModel = {
   contentId: string;
+  locale: "ja" | "en";
   data: WorkData;
   body: string;
 };
@@ -94,6 +95,7 @@ export function createWorksPreviewModel(
   }
   return {
     contentId: draft.contentId,
+    locale,
     data,
     body: locale === "en" ? (draft.localized?.en.body ?? "") : draft.body,
   };
