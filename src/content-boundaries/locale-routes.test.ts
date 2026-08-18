@@ -116,10 +116,25 @@ test("direct identity projection cannot leak internal localized IDs", async () =
   );
 });
 
-test("unimplemented EN families remain unavailable despite content capability", async () => {
+test("capability-gated EN singleton implementations project only when capable", async () => {
   for (const identity of [
     { surface: "home" },
     { surface: "about" },
+  ] as PublicRouteIdentity[]) {
+    assert.equal((await project(identity, "en")).kind, "available");
+    assert.deepEqual(
+      await projectPublicRouteIdentity(identity, "en", {
+        ...capabilities,
+        home: async () => false,
+        about: async () => false,
+      }),
+      { kind: "unavailable" },
+    );
+  }
+});
+
+test("unimplemented EN families remain unavailable despite content capability", async () => {
+  for (const identity of [
     { surface: "privacy" },
     { surface: "journal-index" },
     { surface: "journal-detail", contentId: "capable-entry" },

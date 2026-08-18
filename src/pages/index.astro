@@ -22,7 +22,8 @@ import {
    Home
 ========================= */
 
-const home = (await getHomeProductionFacade()).developmentJa();
+const homeFacade = await getHomeProductionFacade();
+const home = homeFacade.formal("ja") ?? homeFacade.developmentJa();
 
 /* =========================
    Collections

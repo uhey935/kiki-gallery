@@ -4,7 +4,8 @@ import { getAboutProductionFacade } from "../content-boundaries/about-production
 import { presentAboutHours } from "../content-loaders/about/hours-presenter";
 import Layout from "../layouts/Layout.astro";
 
-const about = (await getAboutProductionFacade()).developmentJa();
+const aboutFacade = await getAboutProductionFacade();
+const about = aboutFacade.formal("ja") ?? aboutFacade.developmentJa();
 const { Content } = await render(about);
 const hours = presentAboutHours(about.data.hours, "ja");
 const contact = about.data.contact;

@@ -1,0 +1,112 @@
+---
+import { render, type CollectionEntry } from "astro:content";
+import { getAboutProductionFacade } from "../../content-boundaries/about-production.ts";
+import {
+  getHomeProductionFacade,
+  projectHomeDestination,
+} from "../../content-boundaries/home-production.ts";
+import { presentAboutHours } from "../../content-loaders/about/hours-presenter.ts";
+import Layout from "../../layouts/Layout.astro";
+
+type Props =
+  | { kind: "home"; entry: CollectionEntry<"homeThreeFile"> }
+  | { kind: "about"; entry: CollectionEntry<"aboutThreeFile"> };
+
+export async function getStaticPaths() {
+  const about = (await getAboutProductionFacade()).formal("en");
+  const home = (await getHomeProductionFacade()).formal("en");
+  return [
+    ...(home
+      ? [
+          {
+            params: { singleton: undefined },
+            props: { kind: "home" as const, entry: home },
+          },
+        ]
+      : []),
+    ...(about
+      ? [
+          {
+            params: { singleton: "about" },
+            props: { kind: "about" as const, entry: about },
+          },
+        ]
+      : []),
+  ];
+}
+
+const props = Astro.props as Props;
+const home = props.kind === "home" ? props.entry : undefined;
+const about = props.kind === "about" ? props.entry : undefined;
+const rendered = about ? await render(about) : undefined;
+const AboutContent = rendered?.Content;
+const hours = about ? presentAboutHours(about.data.hours, "en") : undefined;
+---
+
+{
+  home ? (
+    <Layout
+      locale="en"
+      flush={true}
+      title={home.data.seo_title}
+      description={home.data.description}
+    >
+      <main class="home">
+        <section class="home-hero">
+          <h1>KiKi Gallery</h1>
+        </section>
+        <section class="home-sections">
+          <div class="home-sections__inner">
+            <div class="home-sections__artists">
+              <h2>Artists</h2>
+              <a href={projectHomeDestination("artists", "en")}>
+                <img src={home.data.sections.artists.image.src} alt="" />
+              </a>
+            </div>
+            <div class="home-sections__about">
+              <a href={projectHomeDestination("about", "en")}>
+                <img src={home.data.sections.about.image.src} alt="" />
+                <h2>About</h2>
+                <p>{home.data.about_intro}</p>
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+    </Layout>
+  ) : about && AboutContent ? (
+    <Layout
+      locale="en"
+      title={about.data.seo_title ?? "About"}
+      description={about.data.description}
+    >
+      <main class="about" data-content-status={about.data.content_status}>
+        <h1>About</h1>
+        <section class="about-hero" aria-hidden="true">
+          <img src={about.data.images.hero.src} alt="" />
+        </section>
+        <section class="about-information">
+          <p>{about.data.address}</p>
+          {hours && (
+            <p>
+              {hours.label}: {hours.value}
+            </p>
+          )}
+          {hours && (
+            <p>
+              {hours.closedLabel}: {hours.closedValue}
+            </p>
+          )}
+        </section>
+        <section class="about-statement">
+          <AboutContent />
+        </section>
+        <section class="about-gallery">
+          {about.data.images.gallery.map((image) => (
+            <img src={image.src} alt={image.alt} />
+          ))}
+        </section>
+      </main>
+    </Layout>
+  ) : null
+}

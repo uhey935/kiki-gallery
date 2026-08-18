@@ -21,10 +21,32 @@ test("public route-family availability describes page implementations only", () 
     assert.equal(routeFamilyAvailable(family, "en"), false);
   }
 
-  for (const family of ["home", "about", "privacy"] as const) {
+  for (const family of ["home", "about"] as const) {
+    assert.equal(routeFamilyAvailable(family, "ja"), true);
+    assert.equal(routeFamilyAvailable(family, "en"), true);
+  }
+
+  for (const family of ["privacy"] as const) {
     assert.equal(routeFamilyAvailable(family, "ja"), true);
     assert.equal(routeFamilyAvailable(family, "en"), false);
   }
+});
+
+test("EN Home and About share one capability-gated singleton implementation", async () => {
+  const source = await readFile("src/pages/en/[...singleton].astro", "utf8");
+  assert.match(source, /formal\("en"\)/);
+  assert.match(source, /singleton: undefined/);
+  assert.match(source, /singleton: "about"/);
+  assert.match(source, /locale="en"/);
+});
+
+test("JA singleton consumers automatically retire development projections", async () => {
+  const [home, about] = await Promise.all([
+    readFile("src/pages/index.astro", "utf8"),
+    readFile("src/pages/about.astro", "utf8"),
+  ]);
+  assert.match(home, /formal\("ja"\) \?\? homeFacade\.developmentJa\(\)/);
+  assert.match(about, /formal\("ja"\) \?\? aboutFacade\.developmentJa\(\)/);
 });
 
 test("localized Artist and Work pages pass explicit locale metadata", async () => {

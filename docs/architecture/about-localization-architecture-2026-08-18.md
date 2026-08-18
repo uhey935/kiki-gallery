@@ -478,3 +478,22 @@ JA/EN rendering.
 
 This architecture phase itself requires documentation formatting and
 `git diff --check` only. Production sources and assets must remain unchanged.
+
+## 18. Formal capability wiring
+
+The Production boundary exposes independent `formal(locale)` and
+`developmentJa()` projections. `/about/` selects formal JA first and uses the
+review projection only while formal capability is blocked. An approved JA
+fixture therefore retires review rendering without another page edit.
+
+Formal capability requires approved weekly hours, approved localized content,
+a placeholder-free address, statement and four alts, exactly five canonical
+Shared images, and a route implementation. Image validation follows canonical
+Shared URLs, rejects missing/non-regular/symlink files, decodes bytes with
+Sharp, admits JPEG for About, and requires positive dimensions. Extensions are
+not format evidence. Optional SEO and contact fields remain non-blocking.
+
+The EN implementation shares the conditional singleton route. Its source file
+establishes implementation availability, but static paths emit `/en/about/`
+only after formal capability succeeds. Current placeholder content and pending
+hours therefore leave the Production route absent.

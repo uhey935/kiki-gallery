@@ -1,12 +1,12 @@
-import { lstat } from "node:fs/promises";
 import path from "node:path";
 import type { Loader, LoaderContext } from "astro/loaders";
 import type { AboutAssetAvailability } from "./contracts.ts";
 import { createAboutFacade } from "./facade.ts";
 import { assertAboutTopology, loadAboutUnit } from "./repository.ts";
-import { ABOUT_ASSET_URLS, ABOUT_LOCALES } from "./schema.ts";
+import { ABOUT_LOCALES } from "./schema.ts";
+import { validatePublicImages } from "../../content-boundaries/public-image-validation.ts";
 
-async function assertAssets(publicRoot: string) {
+async function assertAssets(publicRoot: string, urls: readonly string[]) {
   const availability: AboutAssetAvailability = {
     hero: false,
     "gallery-1": false,
@@ -21,11 +21,12 @@ async function assertAssets(publicRoot: string) {
     "gallery-3",
     "gallery-4",
   ] as const;
-  for (const [index, url] of ABOUT_ASSET_URLS.entries()) {
-    const file = path.join(publicRoot, url.slice(1));
-    const stat = await lstat(file).catch(() => undefined);
-    if (!stat?.isFile() || stat.isSymbolicLink())
-      throw new Error(`Missing or unsafe About asset: ${url}`);
+  const validation = await validatePublicImages(publicRoot, urls, ["jpeg"]);
+  if (!validation.valid)
+    throw new Error(
+      `Invalid About assets: ${validation.issues.map(({ message }) => message).join("; ")}`,
+    );
+  for (const [index] of urls.entries()) {
     availability[keys[index]] = true;
   }
   return availability;
@@ -47,13 +48,16 @@ export async function synchronizeAboutStore(
     )
   )
     throw new Error("About exact three-file unit is structurally invalid");
-  const assets = await assertAssets(publicRoot);
+  const assetUrls = [
+    unit.shared.value.images.hero.src,
+    ...unit.shared.value.images.gallery.map(({ src }) => src),
+  ];
+  const assets = await assertAssets(publicRoot, assetUrls);
   const facade = createAboutFacade(unit, assets);
   context.store.clear();
   for (const locale of ABOUT_LOCALES) {
-    const capability = facade.capability(locale);
     const source = facade.source(locale);
-    if (!source || !capability.previewable) continue;
+    if (!source) continue;
     const localized = unit.locales[locale];
     if (localized.state !== "valid") continue;
     const filePath = path.join(directory, `${locale}.md`);
@@ -99,10 +103,7 @@ export function aboutThreeFileLoader(options: {
     async load(context) {
       await synchronizeAboutStore(context, root, publicRoot);
       if (!context.watcher) return;
-      context.watcher.add([
-        root,
-        ...ABOUT_ASSET_URLS.map((url) => path.join(publicRoot, url.slice(1))),
-      ]);
+      context.watcher.add([root, path.join(publicRoot, "images/about")]);
       let timer: ReturnType<typeof setTimeout> | undefined;
       const schedule = () => {
         if (timer) clearTimeout(timer);

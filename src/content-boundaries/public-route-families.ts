@@ -14,7 +14,7 @@ export type PublicRouteFamily =
   | "privacy";
 
 const PUBLIC_ROUTE_FAMILY_AVAILABILITY = {
-  home: { ja: true, en: false },
+  home: { ja: true, en: true },
   "artists-index": { ja: true, en: true },
   "artist-detail": { ja: true, en: true },
   "exhibitions-index": { ja: true, en: true },
@@ -23,7 +23,7 @@ const PUBLIC_ROUTE_FAMILY_AVAILABILITY = {
   "news-index": { ja: true, en: true },
   "journal-index": { ja: true, en: false },
   "journal-detail": { ja: true, en: false },
-  about: { ja: true, en: false },
+  about: { ja: true, en: true },
   privacy: { ja: true, en: false },
 } as const satisfies Record<PublicRouteFamily, Record<PublicLocale, boolean>>;
 

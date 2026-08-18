@@ -19,8 +19,8 @@
   },
   "cutoverRenderer": {
     "pagePath": "src/pages/about.astro",
-    "pageByteLength": 4446,
-    "pageSha256": "a516623a7e01c823d0f5e3dd2755e3cdfdb9640cde296c7322222c10ac0e685f",
+    "pageByteLength": 4505,
+    "pageSha256": "6abba3ace73db5b2cc555c2093eac9a173a921f2cf3d05ef8610266b3221c242",
     "cssPath": "src/styles/about.css",
     "cssByteLength": 3373,
     "cssSha256": "64ab10f72672d68528268646bb7e930d50ccbe452851a4e5adec0993494c2065"
