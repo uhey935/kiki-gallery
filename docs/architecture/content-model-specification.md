@@ -1,16 +1,16 @@
 # Content Model Specification
 
-Version: v1.1
+Version: v1.2
 Status: Approved
-Last Updated: 2026-08-12
+Last Updated: 2026-08-18
 
 ---
 
 ## 1. Overview and Content ID
 
-本仕様は KiKi Gallery の Schema、Editor、Astro、および将来の CMS 実装における正式な Content Model の基準である。対象は Artist、Work、Exhibition、Journal、News、Home とする。
+本仕様は KiKi Gallery の Schema、Editor、Astro、および将来の CMS 実装における正式な Content Model の基準である。対象は Artist、Work、Exhibition、Journal、News、Home、About とする。
 
-Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Collection ごとに承認・実装し、現在は Journal、Works、Artists、Exhibitions、Homeでcanonicalである。Home EditorもShared／JA／ENのthree-file lifecycleを実装済みであり、NewsはCollection固有の現行modelを維持する。
+Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Collection ごとに承認・実装し、現在は Journal、Works、Artists、Exhibitions、Homeでcanonicalである。Aboutの同形式singletonはimplementation-ready targetであり、まだcurrent canonical runtimeではない。Home EditorもShared／JA／ENのthree-file lifecycleを実装済みであり、NewsはCollection固有の現行modelを維持する。
 
 ```text
 Collection
@@ -52,6 +52,7 @@ Derived data は frontmatter へ保存しない。
 - Artist Detail における Work の順序と Layout は Artist が所有する。
 - Exhibition と Artist の関係は Exhibition の `artists` が所有する。
 - Home は参照先の Canonical data を複製しない。
+- About statementとHome `about_intro`は相互に複製・fallbackしない。
 - News の内部リンク先画像は Home 表示時に参照先から取得する。
 
 ### 2.3 Markdown, Editor, and Validation
@@ -138,14 +139,14 @@ home_hero:
 
 `home_hero` は Home 専用の Optional Object であり、画像と動画に対応する。
 
-| Field          | Required                  | Rule                               |
-| -------------- | ------------------------- | ---------------------------------- |
-| `media`        | Yes when Home Hero exists | Home Hero media                    |
-| `media.type`   | Yes                       | `image` or `video`                 |
-| `media.image`  | Conditional               | `type: image` で必須               |
-| `media.video`  | Conditional               | `type: video` で必須               |
-| `media.poster` | Conditional               | `type: video` のときのみ任意       |
-| `layout`       | Prohibited                | obsolete field                     |
+| Field          | Required                  | Rule                         |
+| -------------- | ------------------------- | ---------------------------- |
+| `media`        | Yes when Home Hero exists | Home Hero media              |
+| `media.type`   | Yes                       | `image` or `video`           |
+| `media.image`  | Conditional               | `type: image` で必須         |
+| `media.video`  | Conditional               | `type: video` で必須         |
+| `media.poster` | Conditional               | `type: video` のときのみ任意 |
+| `layout`       | Prohibited                | obsolete field               |
 
 - 未設定時は表示実装で `/images/home/fallback-hero.webp` を使用する。
 - Fallback 専用Fieldは保存しない。
@@ -475,7 +476,49 @@ Shared／JA／EN Load、Preview、Save、Publishは実装済みである。
 
 ---
 
-## 10. Validation
+## 10. About — implementation-ready target
+
+AboutはContent ID `about`のsingletonであり、target topologyは
+`src/content/about/about/{index.yaml,ja.md,en.md}`である。Missing、extra、
+symlink、non-regular、mixed legacy canonical stateをfail-closedにし、Create、
+Rename、Deleteを持たない。現行Productionは引き続きhard-coded
+`src/pages/about.astro`を使用するため、本節はcurrent runtime authorityではない。
+
+`index.yaml`はdecorative hero source、順序付き4件のgallery source、承認状態を
+含むstructured weekly hours、optional `email` / `map_url` /
+`instagram_url`を所有する。Phoneやgeneric social arrayは持たない。Hoursの
+`pending`状態は実値を持たずformal capabilityを許可しない。`approved`状態は
+timezone、open weekdays、open/close time、closed weekdaysを要求し、localized
+display copyはlocale presenterからDerivedする。
+
+`ja.md`と`en.md`はlocale content status、display address、順序対応する4件の
+gallery alt、optional `seo_title` / `description`、およびrequired Markdown
+statement bodyを所有する。Heroはdecorativeのためlocalized altを持たない。
+Shared gallery source countと各locale alt countは4で一致し、duplicate source、
+empty/placeholder alt、slot mismatchを拒否する。
+
+Formal locale capabilityはsafe/valid exact unit、approved Shared hours、approved
+locale content、address、statement、4 alts、required five assets、およびroute
+projectionを要求する。SEOとoptional contactのabsenceはblockerではない。
+Locale fallbackはなく、non-capable localeのrouteは生成しない。RoutesはJA
+`/about/`、EN `/en/about/`である。
+
+About EN capabilityはHome ENのAbout destination availabilityへ一方向に供給する。
+Home `about_intro`はHome-owned editorial contentのままであり、About bodyを再利用
+しない。Headerは将来のsite-wide capability-aware route projectionを利用し、
+counterpart不在時にlocale routeをhard-codeしない。
+
+Editor targetはShared／JA／ENのsingleton Load、locale-isolated Preview、atomic
+three-file Save、exact-evidence Publishであり、Create／Rename／Deleteを持たない。
+Legacy `GALLERY crossing` statementはhistorical migration evidenceとしてのみ保持し、
+current JA statementへ自動移行しない。完全なtarget schema、capability、Editor、
+migration、asset invariance契約は
+[About Localization Architecture](./about-localization-architecture-2026-08-18.md)
+をimplementation-ready authorityとする。
+
+---
+
+## 11. Validation
 
 Schema は Unknown Field を拒否する strict Schema とし、次を検証する。
 
