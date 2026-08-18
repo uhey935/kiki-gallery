@@ -7,6 +7,8 @@
 > Exhibitions-specific flat and single-file statements also predate the
 > three-file migration and are superseded by
 > [Exhibitions Localization Architecture](./exhibitions-localization-architecture-2026-08-12.md).
+> Home-specific flat-file statements are superseded by
+> [Home Localization Architecture](./home-localization-architecture-2026-08-12.md).
 
 | Property | Value                                                                          |
 | -------- | ------------------------------------------------------------------------------ |

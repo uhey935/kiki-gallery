@@ -39,7 +39,11 @@ Publish remains separate and includes only the exact new untracked source (and
 only an already-authorized Works saved-asset manifest). Create itself never
 uploads, moves, or infers ownership of assets.
 
-Home is the canonical `home.md` singleton and has no Create, Rename, or Delete
+Home is the canonical exact-three-file singleton
+`src/content/home/home/{index.yaml,ja.md,en.md}` and has no Create, Rename, or
+Delete capability. Its workspace edits independent Shared, JA, and EN state;
+temporary JA may Preview, EN placeholder may not Preview, and Save/Publish
+preserve the exact three-file unit without granting formal Production
 capability. Saved workspaces expose reviewed Rename and content-only Delete for
 Works, Journal, Exhibitions, Artists, and News. Rename may update only the
 typed references authorized by its reviewed plan; Delete never cascades.

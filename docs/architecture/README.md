@@ -37,19 +37,18 @@ evidence and are superseded for topology and lifecycle details.
 
 For Home localization, read
 [Home Localization Architecture](./home-localization-architecture-2026-08-12.md)
-as the current implemented Production authority. Home uses the exact
-three-file singleton and localized Production loader/facade. JA is rendered
-through the explicit temporary-copy development projection, EN remains absent,
-and the Editor is disabled pending its localized migration. The earlier Editor
-Phase 2 Home document remains historical evidence for the flat runtime.
-The frozen Home migration manifest records source, asset, and rollback evidence
-but intentionally leaves final target hashes pending human JA/EN input.
+as the current implemented authority. Home uses the exact three-file singleton,
+localized Production loader/facade, and Shared/JA/EN Editor lifecycle. JA is
+rendered through the explicit temporary-copy development projection and EN
+remains placeholder-blocked and absent. The earlier Editor Phase 2 Home document
+is historical flat-runtime evidence. The frozen Home migration manifest records
+source, three target hashes, asset invariance, and rollback evidence.
 
 | Document                                                       | Purpose                                                                                                                                                               |
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Artists Architecture — Current**                             | Current authority for the three-file topology, locale policy, Production facade, Editor lifecycle, references, and immutable migration evidence.                      |
 | **Works Localization Architecture — Current**                  | Current implemented authority for Works three-file localization, capability, Production/Editor lifecycle, asset safety, migration, recovery, and browser acceptance.  |
-| **Home Localization Architecture — Current Production**        | Current implemented Home three-file Production authority; JA temporary-copy bridge, EN absent, and localized Editor still pending.                                    |
+| **Home Localization Architecture — Current**                   | Current implemented Home three-file Production and Editor authority; JA temporary-copy bridge and placeholder-blocked EN route absent.                               |
 | **Browser Automation Foundation**                              | Defines the disposable-repository Playwright harness, representative lifecycle smoke coverage, local/CI operation, and deferred browser cases.                        |
 | **Editor Final Completion Audit**                              | Current authority for the completed Editor scope, final findings, verification, safety boundaries, and deferred work.                                                 |
 | **Works Delete Asset Lifecycle Semantics**                     | Finalizes content-only Works deletion, post-Delete ALv2 handoff, dual-lock coordination, unchanged assets/evidence, and asset-free Publish.                           |
@@ -94,7 +93,7 @@ but intentionally leaves final target hashes pending human JA/EN input.
 
 ## Documents
 
-### Home Localization Architecture — Current Production
+### Home Localization Architecture — Current
 
 **home-localization-architecture-2026-08-12.md**
 
@@ -102,7 +101,8 @@ Defines the implemented Home singleton Production architecture: exact
 three-file topology, strict Shared and localized ownership, decorative-media
 accessibility, locale capability and route projection, dynamic composition,
 and byte-evidenced migration. JA currently uses a temporary-copy development
-projection; EN publication and localized Editor lifecycle remain pending.
+projection; EN publication remains capability-gated while the localized Editor
+lifecycle is implemented.
 
 ### Artists Architecture — Current
 

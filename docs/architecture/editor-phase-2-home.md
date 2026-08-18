@@ -1,5 +1,10 @@
 # Phase 2 Home Editor audit
 
+> **Status: Historical / Superseded.** This document records the former flat
+> Home runtime and single-file Editor milestone. For the current exact
+> three-file Production and Editor authority, see
+> [Home Localization Architecture](./home-localization-architecture-2026-08-12.md).
+
 ## Production contract
 
 - `home` is glob-loaded, but production destructures only its first entry and fails when none exists. The Editor narrows this to singleton `src/content/home/home.md`; create, delete, and rename are outside the boundary.

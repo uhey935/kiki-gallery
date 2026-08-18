@@ -10,7 +10,7 @@ Last Updated: 2026-08-12
 
 本仕様は KiKi Gallery の Schema、Editor、Astro、および将来の CMS 実装における正式な Content Model の基準である。対象は Artist、Work、Exhibition、Journal、News、Home とする。
 
-Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Collection ごとに承認・実装し、現在は Journal、Works、Artists、Exhibitions、Homeでcanonicalである。Home Editor localizationは未実装であり、NewsはCollection固有の現行modelを維持する。
+Collection 内で Content Unit を識別する公開上の識別子を **Content ID** とする。Shared／Localized 分離が有効な Content Unit では Content ID を Unit ディレクトリ名から導出し、`index.yaml`、`ja.md`、`en.md` のいずれにも重複保存しない。3ファイル形式は Collection ごとに承認・実装し、現在は Journal、Works、Artists、Exhibitions、Homeでcanonicalである。Home EditorもShared／JA／ENのthree-file lifecycleを実装済みであり、NewsはCollection固有の現行modelを維持する。
 
 ```text
 Collection
@@ -144,8 +144,8 @@ home_hero:
 | `media.type`   | Yes                       | `image` or `video`                 |
 | `media.image`  | Conditional               | `type: image` で必須               |
 | `media.video`  | Conditional               | `type: video` で必須               |
-| `media.poster` | Conditional               | `type: video` で必須               |
-| `layout`       | No                        | `default`, `portrait`, `alternate` |
+| `media.poster` | Conditional               | `type: video` のときのみ任意       |
+| `layout`       | Prohibited                | obsolete field                     |
 
 - 未設定時は表示実装で `/images/home/fallback-hero.webp` を使用する。
 - Fallback 専用Fieldは保存しない。
@@ -470,7 +470,8 @@ destination routes、route projectionがすべてvalidなlocaleだけがHome rou
 完全なschema、capability、route/Editor/migration契約は
 [Home Localization Architecture](./home-localization-architecture-2026-08-12.md)
 をcurrent Production authorityとする。MigrationとProduction cutoverは完了済み
-だが、temporary JA copyの正式化、EN capability、Editor localizationは未完了である。
+だが、temporary JA copyの正式化とEN capabilityは未完了である。Home Editorの
+Shared／JA／EN Load、Preview、Save、Publishは実装済みである。
 
 ---
 

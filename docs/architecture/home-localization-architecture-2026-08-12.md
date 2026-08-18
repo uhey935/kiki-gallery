@@ -4,13 +4,14 @@
 
 **Date:** 2026-08-12
 
-**Runtime status:** Migrated and Production-cutover; JA temporary-copy bridge; EN absent; Editor not localized
+**Runtime status:** Migrated and Production-cutover; localized Editor implemented; JA temporary-copy bridge; EN placeholder and route absent
 
 This document is the current Production authority for the localized singleton
 Home Content Unit. The exact three-file migration and Production loader/facade
-cutover are complete. JA currently uses the explicit temporary-copy development
-projection and is not formally copy-capable; EN is non-capable and absent. The
-Editor remains intentionally disabled pending its separate localization phase.
+cutover are complete. The singleton Editor implements Shared/JA/EN Load,
+Preview, exact-three-file Save, and exact-three-file Publish. JA currently uses
+the explicit temporary-copy development projection and is not formally
+copy-capable; EN is placeholder-blocked, non-capable, and absent.
 
 ## 1. Scope and invariants
 
@@ -19,8 +20,8 @@ Editor remains intentionally disabled pending its separate localization phase.
 - Production content and asset bytes are outside this architecture phase.
 - Home has no Create, Rename, or Delete lifecycle.
 - Locale fallback, generated prose, and generated translation are prohibited.
-- Existing Home routes and the current Editor remain authoritative until their
-  separately approved replacements cut over.
+- `/` uses the explicit JA development projection while temporary copy remains;
+  `/en/` is capability-gated and absent.
 
 ## 2. Canonical topology
 
@@ -242,7 +243,9 @@ Preview must use Production-equivalent facades and projections, with no locale
 fallback, for hero, Artists, About, intro, Featured Exhibitions, Stories, route
 projection, locale capability, and SEO metadata where practical.
 
-This is the Editor target only; the current Editor is not changed in this phase.
+This Editor lifecycle is implemented. Draft Publish may publish structurally
+valid temporary/placeholder states; it does not confer formal locale capability
+or publish a blocked Production route.
 
 ## 12. Migration and rollback contract
 
@@ -300,17 +303,15 @@ These do not expand the present implementation contract.
 
 ## 15. Implementation verdict
 
-The architecture is **implementation-ready**. A three-file migration may be
-completed with mechanically marked temporary JA and placeholder EN copy. This
-does not make either locale Production-capable and does not claim Production or
-Editor cutover.
+The architecture is **implemented**. Migration, Production three-file cutover,
+and the localized singleton Editor lifecycle are complete. Temporary JA and
+placeholder EN copy do not make either locale formally Production-capable.
 
 ## 16. Migration foundation record
 
 The reusable Home schemas, exact-three-file repository, capability primitives,
-deterministic converter, dry-run manifest builder, and isolated-fixture executor
-are implemented under `src/content-loaders/home/`. They are not connected to
-the Production loader, routes, or Editor.
+deterministic converter, manifest tooling, Production boundary, routes, and
+Editor lifecycle are implemented.
 
 The frozen structural evidence is
 [`home-localization-manifest-2026-08-12.json`](../migrations/home-localization-manifest-2026-08-12.json).
