@@ -1,12 +1,12 @@
 ---
-content_status: placeholder
-address: __TODO_ABOUT_EN_ADDRESS__
+content_status: approved
+address: 3F 2-10-48 hakukou nishi-ku, yokohama-city, kanagawa
 images:
   gallery:
-    - alt: __TODO_ABOUT_EN_ALT_1__
-    - alt: __TODO_ABOUT_EN_ALT_2__
-    - alt: __TODO_ABOUT_EN_ALT_3__
-    - alt: __TODO_ABOUT_EN_ALT_4__
+    - alt: gallery 1
+    - alt: gallery 2
+    - alt: gallery 3
+    - alt: gallery 4
 ---
 
-<!-- __TODO_ABOUT_EN_STATEMENT__ -->
+test

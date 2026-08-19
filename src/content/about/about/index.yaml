@@ -7,4 +7,16 @@ images:
     - src: /images/about/about-03.jpg
     - src: /images/about/about-04.jpg
 hours:
-  status: pending
+  status: approved
+  timezone: Asia/Tokyo
+  open_days:
+    - sat
+    - sun
+  opens: 13:00
+  closes: 18:00
+  closed_days:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri

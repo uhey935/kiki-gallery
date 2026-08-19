@@ -1,5 +1,5 @@
 ---
-content_status: review
+content_status: approved
 address: 〒220-0004 神奈川県横浜市西区北幸2-10-48 むつみビル3階
 images:
   gallery:
