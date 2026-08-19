@@ -1,4 +1,4 @@
 ---
-title: __TODO_EN_TITLE__
-hero_alt: __TODO_EN_HERO_ALT__
+title: Roots
+hero_alt: Ceramic vessels of varying shapes and textures displayed on white plinths
 ---

@@ -27,6 +27,8 @@ import {
 import { loadExhibitionRepository, loadExhibitionUnit } from "./repository.ts";
 import { projectExhibitionRoute } from "./route-registry.ts";
 import { exhibitionLocalizedSchema, exhibitionSharedSchema } from "./schema.ts";
+import { loadArtistRepository } from "../artists/repository.ts";
+import { createArtistsPrototypeFacade } from "../artists/facade.ts";
 
 const frozenPath = path.resolve(
   "docs/architecture/exhibitions-migration-manifest-2026-08-12.json",
@@ -144,6 +146,33 @@ test("route projection never falls back", () => {
     "/en/exhibitions/sample/",
   );
   assert.equal(projectExhibitionRoute("sample", "en", false), undefined);
+});
+
+test("canonical production inventory exposes exactly the capable EN Exhibitions", async () => {
+  const [units, artistUnits] = await Promise.all([
+    loadExhibitionRepository(path.resolve("src/content/exhibitions")),
+    loadArtistRepository(path.resolve("src/content/artists")),
+  ]);
+  const artists = createArtistsPrototypeFacade(artistUnits);
+  const facade = createExhibitionsFacade(units, (contentId, locale) =>
+    Boolean(artists.find(contentId, locale)),
+  );
+  const contentIds = facade
+    .forLocale("en")
+    .map((entry) => entry.contentId);
+  assert.deepEqual(contentIds, [
+    "alana-wilson-2027-04",
+    "group-exhibition-2026-03",
+  ]);
+  assert.deepEqual(
+    contentIds.map((contentId) =>
+      projectExhibitionRoute(contentId, "en", true),
+    ),
+    [
+      "/en/exhibitions/alana-wilson-2027-04/",
+      "/en/exhibitions/group-exhibition-2026-03/",
+    ],
+  );
 });
 
 test("converter deterministically preserves all five IDs, references, hero paths, and JA bodies", async () => {

@@ -1,4 +1,4 @@
 ---
-title: __TODO_EN_TITLE__
-hero_alt: __TODO_EN_HERO_ALT__
+title: Group Exhibition
+hero_alt: Black and gray vessels set against strong light and shadow
 ---
