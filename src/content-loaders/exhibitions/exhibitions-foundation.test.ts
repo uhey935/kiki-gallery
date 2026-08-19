@@ -163,6 +163,9 @@ test("canonical production inventory exposes exactly the capable EN Exhibitions"
   assert.deepEqual(contentIds, [
     "alana-wilson-2027-04",
     "group-exhibition-2026-03",
+    "keisuke-matsuda-2024-07",
+    "reiko-kinoshita-2023-12",
+    "yuka-mori-2025-07",
   ]);
   assert.deepEqual(
     contentIds.map((contentId) =>
@@ -171,6 +174,9 @@ test("canonical production inventory exposes exactly the capable EN Exhibitions"
     [
       "/en/exhibitions/alana-wilson-2027-04/",
       "/en/exhibitions/group-exhibition-2026-03/",
+      "/en/exhibitions/keisuke-matsuda-2024-07/",
+      "/en/exhibitions/reiko-kinoshita-2023-12/",
+      "/en/exhibitions/yuka-mori-2025-07/",
     ],
   );
 });

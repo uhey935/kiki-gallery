@@ -1,5 +1,7 @@
 ---
-title: __TODO_EN_TITLE__
-hero_alt: __TODO_EN_HERO_ALT__
+title: Grains and Clusters
+hero_alt: Framed work with areas of blue and brown displayed on a white wall
 ---
-__TODO_EN_BODY__
+Reiko Kinoshita’s paintings are made on supports bearing irreversible phenomena such as the photosensitivity of photographic paper exposed to sunlight, sun damage to paper, and wrinkles and folds. Over these traces, she sprays a fine mist of acrylic paint dispersed from a spray gun and adds further touches. The joy of looking into the space between memory and record, intervening in changing time, and gathering up traces of the small events of life, quiet sorrows, and tenderness can be said to be the origin of Kinoshita’s creativity. Countless particles fixed to the picture surface reveal the texture of time through their tangible mass. There is a freshness like reaching for grapes on a table and touching a single grape, while at the same time there is a sense of emptiness: at the instant of contact, it flows like grains of sand, changes, and disperses elusively like mist. It is a physical experience of contemplating the nature of time.
+
+This exhibition, Kinoshita’s third solo exhibition at our gallery, presents a comprehensive selection ranging from earlier works, including previously unshown pieces made over the approximately ten years from 2014 to the present, to new works. Through the varied supports and many approaches to her themes, viewers will be able to sense both the expression at each individual point and Kinoshita’s perspective as it emerges from the whole.
