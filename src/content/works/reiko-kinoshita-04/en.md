@@ -1,7 +1,7 @@
 ---
-title: __TODO_WORK_TITLE__
+title: Recursion
 images:
-  - alt: __TODO_WORK_IMAGE_ALT_1__
-material: __TODO_WORK_MATERIAL__
-size: __TODO_WORK_SIZE__
+  - alt: Reiko Kinoshita abstract painting, spray technique, recursion concept, acrylic on paper
+material: Acrylic on paper
+size: H300 × W200 mm
 ---

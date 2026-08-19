@@ -198,10 +198,26 @@ test("canonical production inventory exposes exactly the capable EN Works", asyn
   }));
   assert.deepEqual(
     facade.forLocale("en").map((entry) => entry.contentId),
-    ["yuka-mori-01"],
+    [
+      "reiko-kinoshita-01",
+      "reiko-kinoshita-02",
+      "reiko-kinoshita-03",
+      "reiko-kinoshita-04",
+      "reiko-kinoshita-05",
+      "reiko-kinoshita-06",
+      "yuka-mori-01",
+    ],
   );
   assert.deepEqual(
     localizedWorkRoutes(facade).filter((route) => route.startsWith("/en/")),
-    ["/en/works/yuka-mori-01/"],
+    [
+      "/en/works/reiko-kinoshita-01/",
+      "/en/works/reiko-kinoshita-02/",
+      "/en/works/reiko-kinoshita-03/",
+      "/en/works/reiko-kinoshita-04/",
+      "/en/works/reiko-kinoshita-05/",
+      "/en/works/reiko-kinoshita-06/",
+      "/en/works/yuka-mori-01/",
+    ],
   );
 });
