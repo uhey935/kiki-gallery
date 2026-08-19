@@ -11,14 +11,11 @@ test("public route-family availability describes page implementations only", () 
     "exhibition-detail",
     "work-detail",
     "news-index",
+    "journal-index",
+    "journal-detail",
   ] as const) {
     assert.equal(routeFamilyAvailable(family, "ja"), true);
     assert.equal(routeFamilyAvailable(family, "en"), true);
-  }
-
-  for (const family of ["journal-index", "journal-detail"] as const) {
-    assert.equal(routeFamilyAvailable(family, "ja"), true);
-    assert.equal(routeFamilyAvailable(family, "en"), false);
   }
 
   for (const family of ["home", "about"] as const) {

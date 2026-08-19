@@ -1,0 +1,59 @@
+---
+import { render } from "astro:content";
+import { journalRouteRegistry } from "../../../content-boundaries/journal";
+import { getJournalProductionFacade } from "../../../content-boundaries/journal-production";
+import Layout from "../../../layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  const journal = (await getJournalProductionFacade()).forDetail("en");
+  return journal.map((item) => ({
+    params: journalRouteRegistry.params({
+      collection: "journal",
+      contentId: item.data.contentId,
+      locale: "en",
+    }),
+    props: { item },
+  }));
+}
+
+const { item } = Astro.props;
+const { Content } = await render(item);
+---
+
+<Layout
+  title={item.data.title}
+  description={item.data.summary}
+  image={item.data.hero.image}
+  locale="en"
+>
+  <article class="article">
+    <figure class="article-hero">
+      <img src={item.data.hero.image} alt={item.data.hero_alt} />
+      {
+        item.data.hero.hero_caption && (
+          <figcaption>{item.data.hero.hero_caption}</figcaption>
+        )
+      }
+    </figure>
+    <h1 class="article-title">{item.data.title}</h1>
+    {
+      item.data.date && (
+        <time class="article-date" datetime={item.data.date}>
+          Published{" "}
+          {new Date(item.data.date).toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })}
+        </time>
+      )
+    }
+    <div class="article-body">
+      <Content />
+    </div>
+  </article>
+  <nav class="detail-navigation" aria-label="All journal articles">
+    <a href="/en/journal/" class="action-link">View All Journal</a>
+  </nav>
+</Layout>

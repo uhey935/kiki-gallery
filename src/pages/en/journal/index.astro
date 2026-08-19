@@ -1,0 +1,112 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { journalRouteRegistry } from "../../../content-boundaries/journal";
+import { getJournalProductionFacade } from "../../../content-boundaries/journal-production";
+
+const journal = (await getJournalProductionFacade()).forIndex("en");
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+const items = journal.map((item) => ({
+  id: item.data.contentId,
+  href: journalRouteRegistry.build({
+    collection: "journal",
+    contentId: item.data.contentId,
+    locale: "en",
+  }),
+  title: item.data.title,
+  date: item.data.date ? new Date(item.data.date) : null,
+  summary: item.data.summary,
+  categories: item.data.categories ?? [],
+  hero: item.data.hero,
+  hero_alt: item.data.hero_alt,
+}));
+const hero = items[0];
+const topItems = items.slice(1, 5);
+const restItems = items.slice(5);
+---
+
+<Layout title="Journal" locale="en">
+  <section class="section journal">
+    <h1 class="index-h1">Journal</h1>
+    <div class="journal-grid">
+      {
+        hero && (
+          <article class="card journal-card journal-card--hero">
+            <a href={hero.href} class="card-link">
+              <div class="card-image journal-image">
+                <img src={hero.hero.image} alt={hero.hero_alt} />
+              </div>
+              <div class="card-meta journal-meta">
+                {hero.categories[0] && (
+                  <p class="journal-category">{hero.categories[0]}</p>
+                )}
+                <h2 class="journal-title">{hero.title}</h2>
+                {hero.date && (
+                  <time class="journal-date" datetime={hero.date.toISOString()}>
+                    {formatDate(hero.date)}
+                  </time>
+                )}
+              </div>
+            </a>
+          </article>
+        )
+      }
+      {
+        topItems.map((item, index) => (
+          <article class={`card journal-card journal-card--item-${index + 1}`}>
+            <a href={item.href} class="card-link">
+              <div class="card-image journal-image">
+                <img src={item.hero.image} alt={item.hero_alt} />
+              </div>
+              <div class="card-meta journal-meta">
+                {item.categories[0] && (
+                  <p class="journal-category">{item.categories[0]}</p>
+                )}
+                <h2 class="journal-card-title">{item.title}</h2>
+                {item.date && (
+                  <time class="journal-date" datetime={item.date.toISOString()}>
+                    {formatDate(item.date)}
+                  </time>
+                )}
+              </div>
+            </a>
+          </article>
+        ))
+      }
+    </div>
+    {
+      restItems.length > 0 && (
+        <div class="journal-grid--list">
+          {restItems.map((item) => (
+            <article class="card journal-card">
+              <a href={item.href} class="card-link">
+                <div class="card-image journal-image">
+                  <img src={item.hero.image} alt={item.hero_alt} />
+                </div>
+                <div class="card-meta journal-meta">
+                  {item.categories[0] && (
+                    <p class="journal-category">{item.categories[0]}</p>
+                  )}
+                  <h2 class="journal-card-title">{item.title}</h2>
+                  {item.date && (
+                    <time
+                      class="journal-date"
+                      datetime={item.date.toISOString()}
+                    >
+                      {formatDate(item.date)}
+                    </time>
+                  )}
+                </div>
+              </a>
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</Layout>

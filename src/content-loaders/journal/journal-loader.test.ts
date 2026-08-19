@@ -215,6 +215,67 @@ test("Production facade transports repository issues to all four Journal surface
   );
 });
 
+test("canonical production inventory exposes all JA Journal routes and exactly one EN Journal route", async () => {
+  const units = await loadJournalRepository(
+    path.resolve("src/content/journal"),
+  );
+  const production = createJournalProductionFacade(
+    createJournalReadModel(entriesFromUnits(units), units),
+  );
+  const jaContentIds = production
+    .forDetail("ja")
+    .map((entry) => entry.data.contentId);
+  const enContentIds = production
+    .forDetail("en")
+    .map((entry) => entry.data.contentId);
+  assert.deepEqual(jaContentIds, [
+    "essay-keisuke-matsuda",
+    "interview-keisuke-matsuda-2026-02",
+    "report-yuka-mori-2025-07",
+    "interview-keisuke-matsuda-2020-02",
+    "interview-keisuke-matsuda-2020-03",
+    "interview-keisuke-matsuda-2020-04",
+    "interview-keisuke-matsuda-2020-06",
+    "interview-keisuke-matsuda-2020-07",
+    "interview-keisuke-matsuda-2020-09",
+  ]);
+  assert.deepEqual(enContentIds, ["essay-keisuke-matsuda"]);
+  assert.deepEqual(
+    jaContentIds.map((contentId) =>
+      journalRouteRegistry.build({
+        collection: "journal",
+        contentId,
+        locale: "ja",
+      }),
+    ),
+    [
+      "/journal/essay-keisuke-matsuda/",
+      "/journal/interview-keisuke-matsuda-2026-02/",
+      "/journal/report-yuka-mori-2025-07/",
+      "/journal/interview-keisuke-matsuda-2020-02/",
+      "/journal/interview-keisuke-matsuda-2020-03/",
+      "/journal/interview-keisuke-matsuda-2020-04/",
+      "/journal/interview-keisuke-matsuda-2020-06/",
+      "/journal/interview-keisuke-matsuda-2020-07/",
+      "/journal/interview-keisuke-matsuda-2020-09/",
+    ],
+  );
+  assert.deepEqual(
+    enContentIds.map((contentId) =>
+      journalRouteRegistry.build({
+        collection: "journal",
+        contentId,
+        locale: "en",
+      }),
+    ),
+    ["/en/journal/essay-keisuke-matsuda/"],
+  );
+  assert.deepEqual(
+    production.forIndex("en").map((entry) => entry.data.contentId),
+    ["essay-keisuke-matsuda"],
+  );
+});
+
 test("Route Registry normalizes generated routes and accepts either trailing-slash input", () => {
   const ja = {
     collection: "journal",

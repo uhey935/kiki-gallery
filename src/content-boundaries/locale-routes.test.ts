@@ -13,7 +13,7 @@ const capabilities: LocaleRouteCapabilityProviders = {
   artist: async (id) => capableIds.has(id),
   exhibition: async (id) => capableIds.has(id),
   work: async (id) => capableIds.has(id),
-  journal: async () => true,
+  journal: async (id) => capableIds.has(id),
   home: async () => true,
   about: async () => true,
 };
@@ -73,6 +73,7 @@ test("implemented indexes project in both directions without entry counts", asyn
     ["artists-index", "/artists/", "/en/artists/"],
     ["exhibitions-index", "/exhibitions/", "/en/exhibitions/"],
     ["news-index", "/news/", "/en/news/"],
+    ["journal-index", "/journal/", "/en/journal/"],
   ] as const) {
     assert.deepEqual(await project({ surface }, "ja"), {
       kind: "available",
@@ -90,6 +91,7 @@ test("detail projection preserves capable canonical Content IDs without fallback
     ["artist-detail", "artists"],
     ["exhibition-detail", "exhibitions"],
     ["work-detail", "works"],
+    ["journal-detail", "journal"],
   ] as const) {
     assert.deepEqual(
       await project({ surface, contentId: "capable-entry" }, "en"),
@@ -136,8 +138,6 @@ test("capability-gated EN singleton implementations project only when capable", 
 test("unimplemented EN families remain unavailable despite content capability", async () => {
   for (const identity of [
     { surface: "privacy" },
-    { surface: "journal-index" },
-    { surface: "journal-detail", contentId: "capable-entry" },
   ] as PublicRouteIdentity[]) {
     assert.deepEqual(await project(identity, "en"), { kind: "unavailable" });
   }

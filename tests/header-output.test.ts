@@ -30,12 +30,31 @@ test("available About counterparts render exact canonical links", async () => {
   assert.match(en, /aria-current="true">EN/);
 });
 
+test("available Journal counterparts render exact canonical links", async () => {
+  const ja = languageControl(await output("journal/index.html"));
+  const en = languageControl(await output("en/journal/index.html"));
+  assert.match(ja, /href="\/en\/journal\/"/);
+  assert.match(en, /href="\/journal\/"/);
+  assert.match(ja, /aria-current="true">JA/);
+  assert.match(en, /aria-current="true">EN/);
+});
+
+test("available detail counterparts render exact canonical links", async () => {
+  const artist = languageControl(
+    await output("artists/alana-wilson/index.html"),
+  );
+  const journal = languageControl(
+    await output("journal/essay-keisuke-matsuda/index.html"),
+  );
+  assert.match(artist, /href="\/en\/artists\/alana-wilson\/"/);
+  assert.match(
+    journal,
+    /href="\/en\/journal\/essay-keisuke-matsuda\/"/,
+  );
+});
+
 test("unavailable counterparts retain current locale without anchor or separator", async () => {
-  for (const path of [
-    "journal/index.html",
-    "artists/alana-wilson/index.html",
-    "404.html",
-  ]) {
+  for (const path of ["404.html"]) {
     const control = languageControl(await output(path));
     assert.match(control, /aria-current="true">JA/);
     assert.doesNotMatch(control, /<a /);
@@ -56,12 +75,13 @@ test("EN navigation includes implemented families and omits dead EN routes", asy
   for (const href of [
     "/en/artists/",
     "/en/exhibitions/",
+    "/en/journal/",
     "/en/news/",
     "/en/about/",
   ]) {
     assert.match(nav, new RegExp(`href="${href}"`));
   }
-  for (const href of ["/en/journal/", "/en/privacy/"]) {
+  for (const href of ["/en/privacy/"]) {
     assert.doesNotMatch(html, new RegExp(`href="${href}"`));
   }
   assert.match(html, /<a href="\/en\/" class="site-header__logo"/);
