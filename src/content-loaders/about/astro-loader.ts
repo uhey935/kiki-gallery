@@ -6,6 +6,19 @@ import { assertAboutTopology, loadAboutUnit } from "./repository.ts";
 import { ABOUT_LOCALES } from "./schema.ts";
 import { validatePublicImages } from "../../content-boundaries/public-image-validation.ts";
 
+export function isAboutWatchedPath(
+  changedPath: string,
+  root: string,
+  publicRoot: string,
+) {
+  const aboutAssetsRoot = path.join(publicRoot, "images/about");
+  return [root, aboutAssetsRoot].some(
+    (watchedRoot) =>
+      changedPath === watchedRoot ||
+      changedPath.startsWith(`${watchedRoot}${path.sep}`),
+  );
+}
+
 async function assertAssets(publicRoot: string, urls: readonly string[]) {
   const availability: AboutAssetAvailability = {
     hero: false,
@@ -105,7 +118,8 @@ export function aboutThreeFileLoader(options: {
       if (!context.watcher) return;
       context.watcher.add([root, path.join(publicRoot, "images/about")]);
       let timer: ReturnType<typeof setTimeout> | undefined;
-      const schedule = () => {
+      const schedule = (changedPath: string) => {
+        if (!isAboutWatchedPath(changedPath, root, publicRoot)) return;
         if (timer) clearTimeout(timer);
         timer = setTimeout(
           () => void synchronizeAboutStore(context, root, publicRoot),
