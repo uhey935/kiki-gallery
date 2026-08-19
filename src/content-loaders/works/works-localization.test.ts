@@ -188,3 +188,20 @@ test("repository exact unit, IDs, independent capability, artist boundary and ro
     await fs.rm(tmp, { recursive: true, force: true });
   }
 });
+
+test("canonical production inventory exposes exactly the capable EN Works", async () => {
+  const units = await loadWorkRepository(path.resolve("src/content/works"));
+  const facade = createWorksPrototypeFacade(units, (contentId, locale) => ({
+    contentId,
+    name: contentId,
+    route: locale === "ja" ? `/artists/${contentId}/` : `/en/artists/${contentId}/`,
+  }));
+  assert.deepEqual(
+    facade.forLocale("en").map((entry) => entry.contentId),
+    ["yuka-mori-01"],
+  );
+  assert.deepEqual(
+    localizedWorkRoutes(facade).filter((route) => route.startsWith("/en/")),
+    ["/en/works/yuka-mori-01/"],
+  );
+});
