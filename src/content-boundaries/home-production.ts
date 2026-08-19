@@ -1,9 +1,11 @@
 import { getCollection } from "astro:content";
-import { fileURLToPath } from "node:url";
 import { projectPublicRouteIdentity } from "./locale-routes.ts";
-import { validatePublicImages } from "./public-image-validation.ts";
+import {
+  resolveProjectPublicRoot,
+  validatePublicImages,
+} from "./public-image-validation.ts";
 
-const publicRoot = fileURLToPath(new URL("../../public/", import.meta.url));
+const publicRoot = resolveProjectPublicRoot();
 
 export const projectHomeDestination = (
   destination: "artists" | "about",

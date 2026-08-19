@@ -1,0 +1,128 @@
+---
+import type { AboutLocale } from "../content-loaders/about/schema.ts";
+
+interface Props {
+  locale: AboutLocale;
+  contentStatus: string;
+  hero: { src: string };
+  gallery: Array<{ src: string; alt: string }>;
+  address: string;
+  hours?: {
+    label: string;
+    value: string;
+    closedLabel: string;
+    closedValue: string;
+  };
+  contact?: {
+    email?: string;
+    map_url?: string;
+    instagram_url?: string;
+  };
+  preview?: boolean;
+}
+
+const {
+  locale,
+  contentStatus,
+  hero,
+  gallery,
+  address,
+  hours,
+  contact,
+  preview = false,
+} = Astro.props;
+---
+
+<main
+  class="about"
+  data-content-status={contentStatus}
+  data-about-preview={preview ? locale : undefined}
+>
+  <h1 class="visually-hidden">About</h1>
+
+  <div class="about-intro">
+    <section class="about-hero" aria-hidden="true">
+      <div
+        class="about-hero-image"
+        style={`--about-hero-image: url("${hero.src}")`}
+      >
+      </div>
+    </section>
+    <section class="about-information">
+      <ul class="about-information-list">
+        <li class="about-information-item about-information-address">
+          {
+            contact?.map_url ? (
+              <a
+                href={contact.map_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {address}
+              </a>
+            ) : (
+              <span>{address}</span>
+            )
+          }
+        </li>
+
+        {
+          hours && (
+            <>
+              <li class="about-information-item">
+                <span class="about-information-label">{hours.label}</span>
+                <span>{hours.value}</span>
+              </li>
+              <li class="about-information-item">
+                <span class="about-information-label">{hours.closedLabel}</span>
+                <span>{hours.closedValue}</span>
+              </li>
+            </>
+          )
+        }
+
+        {
+          contact?.email && (
+            <li class="about-information-item about-information-email">
+              <span class="about-information-label">Email</span>
+              <a href={`mailto:${contact.email}`}>{contact.email}</a>
+            </li>
+          )
+        }
+
+        {
+          contact?.instagram_url && (
+            <li class="about-information-item">
+              <a
+                href={contact.instagram_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+              >
+                <svg
+                  class="about-information-ig"
+                  viewBox="0 0 19 19"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M13.76-.007H5.24A5.258 5.258 0 0 0-.01 5.24v8.52a5.258 5.258 0 0 0 5.25 5.247h8.52a5.258 5.258 0 0 0 5.25-5.247V5.24a5.258 5.258 0 0 0-5.25-5.247zM17 14a2.683 2.683 0 0 1-3 3H5a2.683 2.683 0 0 1 3-3h9a2.683 2.683 0 0 1 3 3v9zM9.5 4.6a4.9 4.9 0 1 0 4.9 4.9 4.906 4.906 0 0 0-4.9-4.9zm0 8.111a3.212 3.212 0 1 1 3.21-3.212 3.215 3.215 0 0 1-3.21 3.213zm5.1-9.542a1.233 1.233 0 1 0 .88.362 1.245 1.245 0 0 0-.88-.361z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </a>
+            </li>
+          )
+        }
+      </ul>
+    </section>
+  </div>
+
+  <section class="about-statement">
+    <h2 class="about-statement-heading">About</h2>
+    <div class="about-statement-body"><slot name="statement" /></div>
+  </section>
+
+  <section class="about-gallery">
+    {gallery.map((image) => <img src={image.src} alt={image.alt} />)}
+  </section>
+</main>

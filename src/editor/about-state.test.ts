@@ -47,9 +47,9 @@ test("loads current exact singleton and hydrates independent scopes", async () =
     draft.locales.en.state !== "editable"
   )
     return;
-  assert.equal(draft.shared.value.hours.status, "pending");
-  assert.equal(draft.locales.ja.value.content_status, "review");
-  assert.equal(draft.locales.en.value.content_status, "placeholder");
+  assert.equal(draft.shared.value.hours.status, "approved");
+  assert.equal(draft.locales.ja.value.content_status, "approved");
+  assert.equal(draft.locales.en.value.content_status, "approved");
   assert.equal(draft.shared.value.images.gallery.length, 4);
   const changed = structuredClone(draft);
   if (changed.locales.ja.state === "editable")
@@ -88,8 +88,30 @@ test("validation covers hours, contacts, statuses, placeholders, body and alts",
     await readAboutEditorEntry(path.dirname(canonical)),
   );
   assert.equal(validateAboutEditorDraft(base).capabilities.preview.ja, true);
-  assert.equal(validateAboutEditorDraft(base).capabilities.preview.en, false);
-  const en = structuredClone(base);
+  assert.equal(validateAboutEditorDraft(base).capabilities.preview.en, true);
+  const pending = structuredClone(base);
+  if (pending.shared.state === "editable")
+    pending.shared.value.hours = { status: "pending" };
+  if (pending.locales.ja.state === "editable")
+    pending.locales.ja.value.content_status = "review";
+  if (pending.locales.en.state === "editable") {
+    pending.locales.en.value = {
+      content_status: "placeholder",
+      address: "__TODO_ABOUT_EN_ADDRESS__",
+      images: {
+        gallery: [1, 2, 3, 4].map((i) => ({
+          alt: `__TODO_ABOUT_EN_ALT_${i}__`,
+        })),
+      },
+      body: "__TODO_ABOUT_EN_STATEMENT__",
+    };
+  }
+  assert.equal(validateAboutEditorDraft(pending).capabilities.preview.ja, true);
+  assert.equal(
+    validateAboutEditorDraft(pending).capabilities.preview.en,
+    false,
+  );
+  const en = structuredClone(pending);
   if (en.locales.en.state === "editable") {
     en.locales.en.value = {
       content_status: "review",
@@ -105,7 +127,7 @@ test("validation covers hours, contacts, statuses, placeholders, body and alts",
   assert.equal(model.contact, undefined);
   assert.equal(model.gallery[3].alt, "Gallery 4");
   assert.throws(
-    () => createAboutPreviewModel(base, "en"),
+    () => createAboutPreviewModel(pending, "en"),
     (e: unknown) =>
       e instanceof AboutPreviewError && e.code === "preview-blocked",
   );

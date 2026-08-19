@@ -1,7 +1,9 @@
 ---
 import { createMarkdownProcessor } from "@astrojs/markdown-remark";
+import AboutView from "../../components/AboutView.astro";
 import Layout from "../../layouts/Layout.astro";
 import { aboutPreviewStore, AboutPreviewError } from "../about-preview.ts";
+import "../../styles/about.css";
 const { token, contentId } = Astro.params;
 let preview;
 let previewError;
@@ -27,60 +29,21 @@ const statement = preview
       title={`${preview.seoTitle ?? "About"} · Draft Preview`}
       description={preview.description}
     >
-      <main
-        class="about"
-        data-content-status={preview.contentStatus}
-        data-about-preview={preview.locale}
+      <p class="editor-preview-notice">
+        Draft preview · {preview.contentStatus} · not formal Production approval
+      </p>
+      <AboutView
+        locale={preview.locale}
+        contentStatus={preview.contentStatus}
+        hero={preview.hero}
+        gallery={preview.gallery}
+        address={preview.address}
+        hours={preview.hours}
+        contact={preview.contact}
+        preview
       >
-        <>
-          <p class="editor-preview-notice">
-            Draft preview · {preview.contentStatus} · not formal Production
-            approval
-          </p>
-          <h1 class="visually-hidden">About</h1>
-          <section class="about-hero" aria-hidden="true">
-            <img src={preview.hero.src} alt="" />
-          </section>
-          <section class="about-information">
-            <p>{preview.address}</p>
-            {preview.hours ? (
-              <>
-                <p>
-                  <strong>{preview.hours.label}</strong> {preview.hours.value}
-                </p>
-                <p>
-                  <strong>{preview.hours.closedLabel}</strong>{" "}
-                  {preview.hours.closedValue}
-                </p>
-              </>
-            ) : (
-              <p data-hours-pending>Hours are pending and are not published.</p>
-            )}
-            {preview.contact?.email && (
-              <a href={`mailto:${preview.contact.email}`}>
-                {preview.contact.email}
-              </a>
-            )}
-            {preview.contact?.map_url && (
-              <a href={preview.contact.map_url}>Map</a>
-            )}
-            {preview.contact?.instagram_url && (
-              <a href={preview.contact.instagram_url}>Instagram</a>
-            )}
-          </section>
-          <section class="about-statement">
-            <>
-              <h2>About</h2>
-              <div set:html={statement?.code} />
-            </>
-          </section>
-          <section class="about-gallery">
-            {preview.gallery.map((image) => (
-              <img src={image.src} alt={image.alt} />
-            ))}
-          </section>
-        </>
-      </main>
+        <Fragment slot="statement" set:html={statement?.code} />
+      </AboutView>
     </Layout>
   ) : (
     <main>
@@ -91,3 +54,19 @@ const statement = preview
     </main>
   )
 }
+
+<style>
+  .editor-preview-notice {
+    position: fixed;
+    z-index: 20;
+    top: 0;
+    right: 0;
+    margin: 0;
+    padding: 8px 12px;
+    background: #fff4c2;
+    color: #594c18;
+    font:
+      600 0.72rem/1.4 system-ui,
+      sans-serif;
+  }
+</style>

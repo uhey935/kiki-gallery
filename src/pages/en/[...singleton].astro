@@ -6,6 +6,7 @@ import {
   projectHomeDestination,
 } from "../../content-boundaries/home-production.ts";
 import { presentAboutHours } from "../../content-loaders/about/hours-presenter.ts";
+import AboutView from "../../components/AboutView.astro";
 import Layout from "../../layouts/Layout.astro";
 
 type Props =
@@ -80,33 +81,42 @@ const hours = about ? presentAboutHours(about.data.hours, "en") : undefined;
       title={about.data.seo_title ?? "About"}
       description={about.data.description}
     >
-      <main class="about" data-content-status={about.data.content_status}>
-        <h1>About</h1>
-        <section class="about-hero" aria-hidden="true">
-          <img src={about.data.images.hero.src} alt="" />
-        </section>
-        <section class="about-information">
-          <p>{about.data.address}</p>
-          {hours && (
-            <p>
-              {hours.label}: {hours.value}
-            </p>
-          )}
-          {hours && (
-            <p>
-              {hours.closedLabel}: {hours.closedValue}
-            </p>
-          )}
-        </section>
-        <section class="about-statement">
-          <AboutContent />
-        </section>
-        <section class="about-gallery">
-          {about.data.images.gallery.map((image) => (
-            <img src={image.src} alt={image.alt} />
-          ))}
-        </section>
-      </main>
+      <AboutView
+        locale="en"
+        contentStatus={about.data.content_status}
+        hero={about.data.images.hero}
+        gallery={about.data.images.gallery}
+        address={about.data.address}
+        hours={hours}
+        contact={about.data.contact}
+      >
+        <AboutContent slot="statement" />
+      </AboutView>
     </Layout>
   ) : null
 }
+
+<script>
+  const heroImage = document.querySelector<HTMLElement>(".about-hero-image");
+
+  if (heroImage) {
+    const speed = 0.12;
+    let ticking = false;
+    const updateParallax = () => {
+      const rect = heroImage.parentElement!.getBoundingClientRect();
+      heroImage.style.transform = `translateY(${rect.top * speed}px)`;
+      ticking = false;
+    };
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          requestAnimationFrame(updateParallax);
+          ticking = true;
+        }
+      },
+      { passive: true },
+    );
+    updateParallax();
+  }
+</script>

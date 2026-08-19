@@ -1,10 +1,12 @@
 import { getCollection } from "astro:content";
-import { fileURLToPath } from "node:url";
 import { containsAboutPlaceholder } from "../content-loaders/about/schema.ts";
 import { routeFamilyAvailable } from "./public-route-families.ts";
-import { validatePublicImages } from "./public-image-validation.ts";
+import {
+  resolveProjectPublicRoot,
+  validatePublicImages,
+} from "./public-image-validation.ts";
 
-const publicRoot = fileURLToPath(new URL("../../public/", import.meta.url));
+const publicRoot = resolveProjectPublicRoot();
 
 export async function getAboutProductionFacade() {
   const entries = await getCollection("aboutThreeFile");

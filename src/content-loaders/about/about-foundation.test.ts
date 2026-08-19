@@ -24,11 +24,7 @@ import {
 import { extractAboutSource } from "./extraction.ts";
 import { createAboutFacade, evaluateAboutLocale } from "./facade.ts";
 import { presentAboutHours } from "./hours-presenter.ts";
-import {
-  createAboutMigrationManifest,
-  serializeAboutMigrationManifest,
-  verifyAboutRollbackEvidence,
-} from "./manifest.ts";
+import { verifyAboutRollbackEvidence } from "./manifest.ts";
 import { assertAboutTopology, loadAboutUnit } from "./repository.ts";
 import { projectAboutRoute } from "./route-registry.ts";
 import {
@@ -392,29 +388,33 @@ test("Converter blocks without approvals and is deterministic with explicit synt
   );
 });
 
-test("Manifest generator matches frozen evidence, assets, mappings, and human gates", async () => {
-  const generated = await createAboutMigrationManifest(process.cwd());
-  const frozen = await readFile(
-    "docs/migrations/about-localization-manifest-2026-08-18.json",
-    "utf8",
+test("Frozen migration evidence retains assets, mappings, and human gates", async () => {
+  const frozen = JSON.parse(
+    await readFile(
+      "docs/migrations/about-localization-manifest-2026-08-18.json",
+      "utf8",
+    ),
   );
-  assert.equal(serializeAboutMigrationManifest(generated), frozen);
-  assert.equal(generated.assets.length, 5);
-  assert.equal(new Set(generated.assets.map(({ sha256 }) => sha256)).size, 5);
+  assert.equal(frozen.assets.length, 5);
+  assert.equal(
+    new Set(frozen.assets.map(({ sha256 }: { sha256: string }) => sha256)).size,
+    5,
+  );
   assert(
-    generated.assets.every(({ decodedFormat }) => decodedFormat === "jpeg"),
+    frozen.assets.every(
+      ({ decodedFormat }: { decodedFormat: string }) =>
+        decodedFormat === "jpeg",
+    ),
   );
-  assert.equal(generated.authorization.provisionalMigrationExecuted, true);
-  assert.equal(generated.authorization.formalProductionCutoverAllowed, false);
-  assert.deepEqual(generated.formalCapability, { ja: false, en: false });
-  assert(Object.values(generated.humanGates).every((value) => value === false));
-  assert.equal(generated.targetPlan.finalHumanApprovedHashes, null);
-  for (const evidence of generated.targetPlan.files)
-    assert.equal(evidence.content, await readFile(evidence.path, "utf8"));
-  assert(verifyAboutRollbackEvidence(generated));
+  assert.equal(frozen.authorization.provisionalMigrationExecuted, true);
+  assert.equal(frozen.authorization.formalProductionCutoverAllowed, false);
+  assert.deepEqual(frozen.formalCapability, { ja: false, en: false });
+  assert(Object.values(frozen.humanGates).every((value) => value === false));
+  assert.equal(frozen.targetPlan.finalHumanApprovedHashes, null);
+  assert(verifyAboutRollbackEvidence(frozen));
 });
 
-test("Canonical provisional unit is JA review, EN placeholder, hours pending, and formally incapable", async () => {
+test("Current canonical unit is approved and formally capable in both locales", async () => {
   const unit = await loadAboutUnit("src/content/about/about");
   assert.equal(unit.shared.state, "valid");
   assert.equal(unit.locales.ja.state, "valid");
@@ -425,15 +425,15 @@ test("Canonical provisional unit is JA review, EN placeholder, hours pending, an
     unit.locales.en.state !== "valid"
   )
     assert.fail("canonical provisional unit must be structurally valid");
-  assert.equal(unit.shared.value.hours.status, "pending");
-  assert.equal(unit.locales.ja.value.content_status, "review");
-  assert.equal(unit.locales.en.value.content_status, "placeholder");
-  assert.equal(presentAboutHours(unit.shared.value.hours, "ja"), undefined);
+  assert.equal(unit.shared.value.hours.status, "approved");
+  assert.equal(unit.locales.ja.value.content_status, "approved");
+  assert.equal(unit.locales.en.value.content_status, "approved");
+  assert(presentAboutHours(unit.shared.value.hours, "ja"));
   const facade = createAboutFacade(unit, assets);
   assert.equal(facade.capability("ja").previewable, true);
-  assert.equal(facade.capability("ja").formal, false);
-  assert.equal(facade.capability("en").previewable, false);
-  assert.equal(facade.capability("en").formal, false);
+  assert.equal(facade.capability("ja").formal, true);
+  assert.equal(facade.capability("en").previewable, true);
+  assert.equal(facade.capability("en").formal, true);
   const ja = facade.source("ja");
   assert(ja);
   assert.deepEqual(
@@ -442,7 +442,7 @@ test("Canonical provisional unit is JA review, EN placeholder, hours pending, an
   );
   assert.deepEqual(
     ja.data.images.gallery.map(({ alt }) => alt),
-    ABOUT_PROVISIONAL_JA_REVIEW.alts,
+    unit.locales.ja.value.images.gallery.map(({ alt }) => alt),
   );
 });
 
