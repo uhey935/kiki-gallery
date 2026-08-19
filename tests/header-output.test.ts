@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const output = (path: string) => readFile(`dist/${path}`, "utf8");
+const headerSource = () => readFile("src/components/Header.astro", "utf8");
 const languageControl = (html: string) =>
   html.match(/<div class="site-header__language"[^>]*>(.*?)<\/div>/s)?.[1] ??
   "";
@@ -45,4 +46,40 @@ test("EN navigation includes implemented families and omits dead EN routes", asy
     assert.doesNotMatch(html, new RegExp(`href="${href}"`));
   }
   assert.match(html, /<a href="\/" class="site-header__logo"/);
+});
+
+test("menu navigation waits for the actual overlay close transition with a fallback", async () => {
+  const source = await headerSource();
+
+  assert.match(source, /overlay\.addEventListener\("transitionend"/);
+  assert.match(source, /event\.propertyName === "transform"/);
+  assert.match(source, /window\.getComputedStyle\(overlay\)/);
+  assert.match(
+    source,
+    /window\.setTimeout\(finishClose, transitionTime \+ 100\)/,
+  );
+  assert.match(source, /window\.location\.assign\(destination\.href\)/);
+});
+
+test("menu navigation interception preserves native non-standard clicks and links", async () => {
+  const source = await headerSource();
+
+  for (const nativeBehaviorGuard of [
+    "event.button !== 0",
+    "event.metaKey",
+    "event.ctrlKey",
+    "event.shiftKey",
+    "event.altKey",
+    'link.target.toLowerCase() === "_blank"',
+    'link.hasAttribute("download")',
+    "destination.origin === window.location.origin",
+    "isSameDocument",
+  ]) {
+    assert.ok(source.includes(nativeBehaviorGuard), nativeBehaviorGuard);
+  }
+
+  assert.match(
+    source,
+    /if \(pendingNavigation\) \{\s*event\.preventDefault\(\)/,
+  );
 });
