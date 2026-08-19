@@ -44,3 +44,37 @@ test("all Home consumers share composition and presentation boundaries", async (
     assert.doesNotMatch(source, /home-exhibition__item/);
   }
 });
+
+test("Production and Preview cannot diverge in Home story IDs", async () => {
+  const [ja, en, preview] = await Promise.all(
+    [
+      "src/pages/index.astro",
+      "src/pages/en/[...singleton].astro",
+      "src/editor/routes/home-preview.astro",
+    ].map((path) => readFile(path, "utf8")),
+  );
+  for (const source of [ja, en, preview])
+    assert.match(source, /createHomePresentationModel/);
+  assert.doesNotMatch(preview, /forHomeStories|forHome\(|selectHomeStories/);
+});
+
+test("HomePresentation omits empty optional sections and renders nonempty sections", async () => {
+  const source = await readFile(
+    "src/components/HomePresentation.astro",
+    "utf8",
+  );
+  assert.match(source, /exhibitions\.length > 0 && exhibitionsHref/);
+  assert.match(source, /stories\.length > 0 && storiesHref/);
+  assert.match(source, /stories\.map\(\(story\)/);
+  assert.match(source, /exhibitions\.map\(\(exhibition\)/);
+});
+
+test("Journal candidates require locale-route availability before Home selection", async () => {
+  const source = await readFile(
+    "src/content-boundaries/home-composition.ts",
+    "utf8",
+  );
+  assert.match(source, /journalFacade\.forHomeStories\(locale\)/);
+  assert.match(source, /route\.kind === "available"/);
+  assert.match(source, /selectHomeStories\(newsStories, journalStories\)/);
+});

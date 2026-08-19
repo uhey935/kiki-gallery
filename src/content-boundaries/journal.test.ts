@@ -358,6 +358,25 @@ test("localized News image resolution omits unavailable counterparts before stri
   );
 });
 
+test("localized News image resolution omits external links without internal projection or fabricated images", async () => {
+  let projected = false;
+  assert.equal(
+    await resolveLocalizedNewsImage(
+      {
+        id: "en::external-news",
+        data: { link: "https://example.com/announcement" },
+      },
+      { exhibitions: new Map(), artists: new Map(), journal: [] },
+      async () => {
+        projected = true;
+        return { kind: "available", href: "/fabricated/" };
+      },
+    ),
+    null,
+  );
+  assert.equal(projected, false);
+});
+
 test("localized News image resolution keeps canonical lookup strict after route projection", async () => {
   const news = {
     id: "en::artist-news",
