@@ -58,7 +58,7 @@ function serializeLocale(
     summary: localized.summary,
     hero_alt: localized.hero_alt,
   };
-  return `---\n${stringify(frontmatter)}---\n${body}`;
+  return `---\n${stringify(frontmatter, { lineWidth: 0 })}---\n${body}`;
 }
 
 export function serializeJournalEditorDraft(

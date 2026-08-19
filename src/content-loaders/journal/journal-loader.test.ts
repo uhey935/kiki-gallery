@@ -215,7 +215,7 @@ test("Production facade transports repository issues to all four Journal surface
   );
 });
 
-test("canonical production inventory exposes all JA Journal routes and exactly one EN Journal route", async () => {
+test("canonical production inventory exposes all JA Journal routes and exactly two EN Journal routes", async () => {
   const units = await loadJournalRepository(
     path.resolve("src/content/journal"),
   );
@@ -239,7 +239,10 @@ test("canonical production inventory exposes all JA Journal routes and exactly o
     "interview-keisuke-matsuda-2020-07",
     "interview-keisuke-matsuda-2020-09",
   ]);
-  assert.deepEqual(enContentIds, ["essay-keisuke-matsuda"]);
+  assert.deepEqual(enContentIds, [
+    "essay-keisuke-matsuda",
+    "report-yuka-mori-2025-07",
+  ]);
   assert.deepEqual(
     jaContentIds.map((contentId) =>
       journalRouteRegistry.build({
@@ -268,11 +271,14 @@ test("canonical production inventory exposes all JA Journal routes and exactly o
         locale: "en",
       }),
     ),
-    ["/en/journal/essay-keisuke-matsuda/"],
+    [
+      "/en/journal/essay-keisuke-matsuda/",
+      "/en/journal/report-yuka-mori-2025-07/",
+    ],
   );
   assert.deepEqual(
     production.forIndex("en").map((entry) => entry.data.contentId),
-    ["essay-keisuke-matsuda"],
+    ["essay-keisuke-matsuda", "report-yuka-mori-2025-07"],
   );
 });
 
