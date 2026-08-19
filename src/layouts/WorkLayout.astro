@@ -5,12 +5,14 @@ interface Props {
   title?: string;
   description?: string;
   locale: "ja" | "en";
+  counterpartHref?: string;
 }
 
 const {
   title = "KiKi Gallery",
   description = "KiKi Gallery",
   locale,
+  counterpartHref,
 } = Astro.props;
 ---
 
@@ -24,6 +26,25 @@ const {
   </head>
 
   <body>
+    {
+      counterpartHref && (
+        <nav class="works-detail-language" aria-label="Language">
+          {locale === "en" ? (
+            <>
+              <span aria-current="true">EN</span>
+              <span aria-hidden="true">/</span>
+              <a href={counterpartHref}>JA</a>
+            </>
+          ) : (
+            <>
+              <a href={counterpartHref}>EN</a>
+              <span aria-hidden="true">/</span>
+              <span aria-current="true">JA</span>
+            </>
+          )}
+        </nav>
+      )
+    }
     <slot />
   </body>
 </html>

@@ -90,6 +90,45 @@
   background: #555;
 }
 
+.works-detail-language {
+  position: fixed;
+  top: 28px;
+  right: var(--layout-space);
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.works-detail-language a {
+  position: relative;
+}
+
+.works-detail-language a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.18em;
+
+  width: 100%;
+  height: 2px;
+
+  background: currentColor;
+
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s ease;
+}
+
+.works-detail-language a:hover::after,
+.works-detail-language a:focus-visible::after {
+  transform: scaleX(1);
+}
+
 /* =========================
    Meta
 ========================= */
@@ -136,8 +175,7 @@
 
 .works-detail-artist a:hover::after,
 .works-detail-artist a:focus-visible::after {
-  animation: hover-underline-cycle 450ms
-    cubic-bezier(0.22, 1, 0.36, 1);
+  animation: hover-underline-cycle 450ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .works-detail-information {

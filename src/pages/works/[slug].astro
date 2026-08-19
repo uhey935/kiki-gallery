@@ -7,7 +7,8 @@ import { render } from "astro:content";
 import { getWorksProductionFacade } from "../../content-boundaries/works-production";
 
 export async function getStaticPaths() {
-  const works = (await getWorksProductionFacade()).forLocale("ja");
+  const facade = await getWorksProductionFacade();
+  const works = facade.forLocale("ja");
   return works.map((work) => {
     return {
       params: {
@@ -16,12 +17,13 @@ export async function getStaticPaths() {
       props: {
         work,
         artist: work.artist,
+        counterpartHref: facade.detailRoute(work.contentId, "en"),
       },
     };
   });
 }
 
-const { work, artist } = Astro.props;
+const { work, artist, counterpartHref } = Astro.props;
 const artistName = artist.data.display_name ?? artist.data.name;
 
 const { Content } = await render(work);
@@ -44,7 +46,12 @@ const isSingleLandscape =
   images.length === 1 && work.data.orientation === "landscape";
 ---
 
-<WorkLayout title={workTitle} description={description} locale="ja">
+<WorkLayout
+  title={workTitle}
+  description={description}
+  locale="ja"
+  counterpartHref={counterpartHref}
+>
   <button class="works-detail-close" type="button" aria-label="Close viewer">
     <svg
       width="18"

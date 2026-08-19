@@ -55,8 +55,8 @@ export function serializeWorksEditorDraft(
 }
 
 export type SerializedWorksUnit = { shared: string; ja: string; en: string };
-const markdown = (data: unknown, body: string) =>
-  `---\n${stringify(data).trimEnd()}\n---\n${body ? `${body.replace(/\s+$/, "")}\n` : ""}`;
+const markdown = (data: unknown, body: string, preserveLongLines = false) =>
+  `---\n${(preserveLongLines ? stringify(data, { lineWidth: 0 }) : stringify(data)).trimEnd()}\n---\n${body ? `${body.replace(/\s+$/, "")}\n` : ""}`;
 
 export function serializeWorksEditorUnit(
   draft: WorksEditorDraftState,
@@ -90,6 +90,6 @@ export function serializeWorksEditorUnit(
   return {
     shared: stringify(shared),
     ja: markdown(ja, jaBody),
-    en: markdown(en, enBody),
+    en: markdown(en, enBody, true),
   };
 }

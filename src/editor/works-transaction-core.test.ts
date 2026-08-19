@@ -36,8 +36,10 @@ test("three-file Save edits JA while preserving Shared and EN ownership", async 
     draft.body = "Statement";
     const saved = await saveWorksEditorDraft(draft, baseline, root);
     assert.equal(saved.data.title, "Edited JA");
-    assert.equal(saved.localized?.en.title, "__TODO_WORK_TITLE__");
+    assert.equal(saved.localized?.en.title, baseline.localized?.en.title);
+    assert.equal(saved.localized?.en.title, "Mesh");
     assert.equal(saved.sourceFiles?.shared, baseline.sourceFiles?.shared);
+    assert.equal(saved.sourceFiles?.en, baseline.sourceFiles?.en);
     assert.match(saved.sourceFiles!.ja, /Edited JA/);
     assert.doesNotMatch(saved.sourceFiles!.shared, /alt:/);
     assert.doesNotMatch(saved.sourceFiles!.ja, /src:/);
@@ -170,18 +172,20 @@ test("content rollback failure persists durable manual recovery evidence", async
   }
 });
 
-test("Preview isolates JA from placeholder EN and Publish evidence names exactly three files", async () => {
+test("Preview isolates capable JA and EN while Publish evidence names exactly three files", async () => {
   const { root, id } = await fixture();
   try {
     const draft = createWorksEditorDraft(await readWorksEditorEntry(id, root))!;
+    const enTitle = draft.localized?.en.title;
+    draft.data.title = "JA-only preview title";
     assert.equal(
       createWorksPreviewModel(draft, undefined, "ja").data.title,
-      draft.data.title,
+      "JA-only preview title",
     );
-    assert.throws(
-      () => createWorksPreviewModel(draft, undefined, "en"),
-      /placeholder/,
-    );
+    const enPreview = createWorksPreviewModel(draft, undefined, "en");
+    assert.equal(enPreview.locale, "en");
+    assert.equal(enPreview.data.title, enTitle);
+    assert.notEqual(enPreview.data.title, draft.data.title);
     const manifest = createWorksAssetPublishManifest(id, draft.sourceRaw, []);
     assert.deepEqual(manifest.contentPaths, [
       `src/content/works/${id}/index.yaml`,

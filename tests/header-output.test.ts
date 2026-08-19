@@ -9,6 +9,9 @@ const languageControl = (html: string) =>
   "";
 const globalNavigation = (html: string) =>
   html.match(/<nav class="site-header__nav"[^>]*>(.*?)<\/nav>/s)?.[1] ?? "";
+const workLanguageControl = (html: string) =>
+  html.match(/<nav class="works-detail-language"[^>]*>(.*?)<\/nav>/s)?.[1] ??
+  "";
 
 test("available index counterparts render exact canonical links", async () => {
   const ja = languageControl(await output("artists/index.html"));
@@ -47,10 +50,37 @@ test("available detail counterparts render exact canonical links", async () => {
     await output("journal/essay-keisuke-matsuda/index.html"),
   );
   assert.match(artist, /href="\/en\/artists\/alana-wilson\/"/);
-  assert.match(
-    journal,
-    /href="\/en\/journal\/essay-keisuke-matsuda\/"/,
-  );
+  assert.match(journal, /href="\/en\/journal\/essay-keisuke-matsuda\/"/);
+});
+
+test("Work details render exact capable counterparts and localized Artist links", async () => {
+  for (const contentId of [
+    "reiko-kinoshita-01",
+    "reiko-kinoshita-02",
+    "reiko-kinoshita-03",
+    "reiko-kinoshita-04",
+    "reiko-kinoshita-05",
+    "reiko-kinoshita-06",
+    "yuka-mori-01",
+  ]) {
+    const ja = workLanguageControl(
+      await output(`works/${contentId}/index.html`),
+    );
+    const en = workLanguageControl(
+      await output(`en/works/${contentId}/index.html`),
+    );
+    assert.match(ja, new RegExp(`href="/en/works/${contentId}/"`));
+    assert.match(en, new RegExp(`href="/works/${contentId}/"`));
+    assert.match(ja, /aria-current="true">JA/);
+    assert.match(en, /aria-current="true">EN/);
+    assert.equal((ja.match(/<a /g) ?? []).length, 1);
+    assert.equal((en.match(/<a /g) ?? []).length, 1);
+  }
+
+  const jaHtml = await output("works/yuka-mori-01/index.html");
+  const enHtml = await output("en/works/yuka-mori-01/index.html");
+  assert.match(jaHtml, /href="\/artists\/yuka-mori\/"/);
+  assert.match(enHtml, /href="\/en\/artists\/yuka-mori\/"/);
 });
 
 test("unavailable counterparts retain current locale without anchor or separator", async () => {

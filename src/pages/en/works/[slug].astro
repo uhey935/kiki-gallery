@@ -5,12 +5,17 @@ import { render } from "astro:content";
 import { getWorksProductionFacade } from "../../../content-boundaries/works-production";
 
 export async function getStaticPaths() {
-  return (await getWorksProductionFacade()).forLocale("en").map((work) => ({
+  const facade = await getWorksProductionFacade();
+  return facade.forLocale("en").map((work) => ({
     params: { slug: work.contentId },
-    props: { work, artist: work.artist },
+    props: {
+      work,
+      artist: work.artist,
+      counterpartHref: facade.detailRoute(work.contentId, "ja"),
+    },
   }));
 }
-const { work, artist } = Astro.props;
+const { work, artist, counterpartHref } = Astro.props;
 const { Content } = await render(work);
 const hasStatement = (work.body ?? "").trim().length > 0;
 const inquiry = work.data.inquiry;
@@ -20,6 +25,7 @@ const inquiry = work.data.inquiry;
   title={work.data.seo_title ?? work.data.title}
   description={work.data.description ?? `${work.data.title} | KiKi Gallery`}
   locale="en"
+  counterpartHref={counterpartHref}
 >
   <main class="works-detail">
     {
