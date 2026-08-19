@@ -6,7 +6,10 @@ import {
   journalRouteRegistry,
   type JournalIndexIssue,
 } from "./journal.ts";
-import { resolveNewsImage } from "../utils/resolveNewsImage.ts";
+import {
+  resolveLocalizedNewsImage,
+  resolveNewsImage,
+} from "../utils/resolveNewsImage.ts";
 
 const production = <
   T extends {
@@ -337,6 +340,56 @@ test("News image resolution parses an internal Journal route and resolves locale
       journal,
     }),
     { image: "/images/journal/public.jpg", alt: "Public hero" },
+  );
+});
+
+test("localized News image resolution omits unavailable counterparts before strict lookup", async () => {
+  const news = {
+    id: "en::artist-news",
+    data: { link: "/artists/ja-only" },
+  };
+  assert.equal(
+    await resolveLocalizedNewsImage(
+      news,
+      { exhibitions: new Map(), artists: new Map(), journal: [] },
+      async () => ({ kind: "unavailable" }),
+    ),
+    null,
+  );
+});
+
+test("localized News image resolution keeps canonical lookup strict after route projection", async () => {
+  const news = {
+    id: "en::artist-news",
+    data: { link: "/artists/capable" },
+  };
+  const artists = new Map([
+    [
+      "capable",
+      {
+        data: { hero: { image: "/artist.jpg" }, hero_alt: "Artist" },
+      } as never,
+    ],
+  ]);
+  assert.deepEqual(
+    await resolveLocalizedNewsImage(
+      news,
+      { exhibitions: new Map(), artists, journal: [] },
+      async () => ({ kind: "available", href: "/en/artists/capable/" }),
+    ),
+    {
+      href: "/en/artists/capable/",
+      image: "/artist.jpg",
+      alt: "Artist",
+    },
+  );
+  await assert.rejects(
+    resolveLocalizedNewsImage(
+      { id: "en::broken", data: { link: "/artists/missing" } },
+      { exhibitions: new Map(), artists: new Map(), journal: [] },
+      async () => ({ kind: "available", href: "/en/artists/missing/" }),
+    ),
+    /broken image source link/,
   );
 });
 

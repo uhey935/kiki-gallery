@@ -35,7 +35,7 @@ test("loads exact three-file singleton and copy states", async (t) => {
   t.after(() => fs.rm(temporary, { recursive: true, force: true }));
   const entry = await readHomeEditorEntry(root);
   assert.equal(entry.structuralStatus, "valid");
-  assert.deepEqual(entry.copyStatus, { ja: "temporary", en: "placeholder" });
+  assert.deepEqual(entry.copyStatus, { ja: "temporary", en: "approved" });
   assert.equal((await readHomeEditorState(root)).entries.length, 1);
   assert.deepEqual(
     Object.keys(serializeHomeEditorDraft(createHomeEditorDraft(entry))).sort(),
@@ -89,6 +89,9 @@ test("JA temporary previews, EN placeholder blocks, and resolved EN previews wit
     createHomePreviewModel(draft, "ja").localized.about_intro.includes("KiKi"),
     true,
   );
+  if (draft.locales.en.state === "editable")
+    draft.locales.en.value.about_intro = "__TODO_HOME_EN_ABOUT_INTRO__";
+  draft.copyStatus.en = "placeholder";
   assert.throws(
     () => createHomePreviewModel(draft, "en"),
     (error) =>
@@ -116,6 +119,34 @@ test("atomic Save supports localized draft status and preserves all three baseli
     await fs.readFile(path.join(root, "home", "ja.md"), "utf8"),
     /TODO_HOME_JA/,
   );
+});
+
+test("resolved EN intro Save survives canonical reread and reload", async (t) => {
+  const { temporary, root } = await fixture();
+  t.after(() => fs.rm(temporary, { recursive: true, force: true }));
+  const baseline = createHomeEditorDraft(await readHomeEditorEntry(root));
+  const draft = structuredClone(baseline);
+  if (draft.locales.en.state !== "editable") assert.fail();
+  draft.locales.en.value.about_intro =
+    "A formally approved English introduction.";
+  // Reproduce the old UI request: the text changed while its loaded status was
+  // still placeholder. Canonical reread owns the derived EN copy status.
+  draft.copyStatus.en = "placeholder";
+
+  const saved = await saveHomeEditorDraft(draft, baseline, root);
+  assert.equal(saved.copyStatus.en, "approved");
+  assert.equal(
+    saved.locales.en.state === "editable" && saved.locales.en.value.about_intro,
+    "A formally approved English introduction.",
+  );
+  const reloaded = createHomeEditorDraft(await readHomeEditorEntry(root));
+  assert.deepEqual(reloaded, saved);
+  assert.match(
+    await fs.readFile(path.join(root, "home", "en.md"), "utf8"),
+    /A formally approved English introduction\./,
+  );
+  assert.equal(validateHomeEditorDraft(saved).capabilities.preview.en, true);
+  assert.equal(validateHomeEditorDraft(saved).capabilities.formal.en, true);
 });
 
 test("Save refuses drift in every canonical file", async (t) => {

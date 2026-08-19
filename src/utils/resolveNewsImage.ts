@@ -24,6 +24,9 @@ type NewsImageCollections = {
   journal: JournalImageEntry[];
 };
 
+type LocaleRouteDecision =
+  { kind: "available"; href: string } | { kind: "unavailable" };
+
 export const resolveNewsImage = (
   news: { id: string; data: { link?: string } },
   collections: NewsImageCollections,
@@ -72,3 +75,18 @@ export const resolveNewsImage = (
     alt: entry.data.hero_alt,
   };
 };
+
+export async function resolveLocalizedNewsImage(
+  news: { id: string; data: { link?: string } },
+  collections: NewsImageCollections,
+  project: (pathname: string) => Promise<LocaleRouteDecision>,
+): Promise<(ImageSource & { href: string }) | null> {
+  const link = news.data.link;
+  if (!link || /^https?:\/\//.test(link)) return null;
+
+  const route = await project(link);
+  if (route.kind === "unavailable") return null;
+
+  const image = resolveNewsImage(news, collections);
+  return image ? { ...image, href: route.href } : null;
+}

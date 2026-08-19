@@ -32,7 +32,6 @@ test("available About counterparts render exact canonical links", async () => {
 
 test("unavailable counterparts retain current locale without anchor or separator", async () => {
   for (const path of [
-    "index.html",
     "journal/index.html",
     "artists/alana-wilson/index.html",
     "404.html",
@@ -42,6 +41,13 @@ test("unavailable counterparts retain current locale without anchor or separator
     assert.doesNotMatch(control, /<a /);
     assert.doesNotMatch(control, /site-header__language-separator/);
   }
+});
+
+test("capable Home counterparts render exact canonical links", async () => {
+  const ja = languageControl(await output("index.html"));
+  const en = languageControl(await output("en/index.html"));
+  assert.match(ja, /href="\/en\/"/);
+  assert.match(en, /href="\/"/);
 });
 
 test("EN navigation includes implemented families and omits dead EN routes", async () => {
@@ -55,10 +61,10 @@ test("EN navigation includes implemented families and omits dead EN routes", asy
   ]) {
     assert.match(nav, new RegExp(`href="${href}"`));
   }
-  for (const href of ["/en/", "/en/journal/", "/en/privacy/"]) {
+  for (const href of ["/en/journal/", "/en/privacy/"]) {
     assert.doesNotMatch(html, new RegExp(`href="${href}"`));
   }
-  assert.match(html, /<a href="\/" class="site-header__logo"/);
+  assert.match(html, /<a href="\/en\/" class="site-header__logo"/);
 });
 
 test("menu navigation waits for the actual overlay close transition with a fallback", async () => {

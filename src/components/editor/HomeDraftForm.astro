@@ -132,14 +132,16 @@ const shared = draft.shared.value;
                   />
                 </>
               </label>
-              <label>
-                <input
-                  type="checkbox"
-                  name={`${locale}_copy_approved`}
-                  checked={draft.copyStatus[locale] === "approved"}
-                />{" "}
-                Copy finalized
-              </label>
+              {locale === "ja" && (
+                <label>
+                  <input
+                    type="checkbox"
+                    name="ja_copy_approved"
+                    checked={draft.copyStatus.ja === "approved"}
+                  />{" "}
+                  Copy finalized
+                </label>
+              )}
             </div>
           </>
         </section>

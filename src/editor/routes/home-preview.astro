@@ -1,9 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import HomePresentation from "../../components/HomePresentation.astro";
 import { homePreviewStore, HomePreviewError } from "../home-preview";
-import { getExhibitionsProductionFacade } from "../../content-boundaries/exhibitions-production.ts";
-import { getJournalProductionFacade } from "../../content-boundaries/journal-production.ts";
-import { getNewsProductionFacade } from "../../content-boundaries/news-production.ts";
+import { createHomePresentationModel } from "../../content-boundaries/home-composition.ts";
 const { token, contentId } = Astro.params;
 let preview;
 let previewError;
@@ -18,103 +17,16 @@ try {
       : 404;
   previewError = error instanceof Error ? error.message : "Preview unavailable";
 }
-const artists = preview?.shared.sections.artists;
-const about = preview?.shared.sections.about;
-const hero = preview?.shared.home_hero?.media;
 const locale = preview?.locale ?? "ja";
-const featured = preview
-  ? (await getExhibitionsProductionFacade()).forHome(locale, 2)
-  : [];
-const stories = preview
-  ? [
-      ...(await getNewsProductionFacade())
-        .forHome(locale)
-        .map((entry) => ({ title: entry.data.title })),
-      ...(await getJournalProductionFacade())
-        .forHomeStories(locale)
-        .map((entry) => ({ title: entry.data.title })),
-    ].slice(0, 6)
-  : [];
+const presentation = preview
+  ? await createHomePresentationModel(locale, preview.shared, preview.localized)
+  : undefined;
 ---
 
 {
   preview ? (
-    <Layout title="Home · Draft Preview">
-      <div class="home">
-        <>
-          <section class="home-hero">
-            <div class="home-hero__fallback">
-              <>
-                <div class="home-hero__fallback-image-wrap">
-                  {hero?.type === "video" ? (
-                    <video
-                      src={hero.video}
-                      poster={hero.poster}
-                      class="home-hero__fallback-image"
-                      autoplay
-                      muted
-                      loop
-                      playsinline
-                    />
-                  ) : (
-                    <img
-                      src={
-                        hero?.type === "image"
-                          ? hero.image
-                          : "/images/home/fallback-hero.webp"
-                      }
-                      alt="KiKi Gallery"
-                      class="home-hero__fallback-image"
-                    />
-                  )}
-                </div>
-                <div class="home-hero__content">
-                  <h1 class="home-hero__title">KiKi Gallery</h1>
-                </div>
-              </>
-            </div>
-          </section>
-          <section class="home-sections">
-            <div class="home-sections__inner">
-              <>
-                <div class="home-sections__artists">
-                  <>
-                    <h2 class="home-sections__artists-title">Artists</h2>
-                    <a href={preview.destinations.artists}>
-                      <img src={artists?.image.src} alt="" />
-                    </a>
-                  </>
-                </div>
-                <div class="home-sections__about">
-                  <a href={preview.destinations.about}>
-                    <>
-                      <img src={about?.image.src} alt="" />
-                      <h2>About</h2>
-                      <p>{preview.localized.about_intro}</p>
-                    </>
-                  </a>
-                </div>
-              </>
-            </div>
-          </section>
-          {featured.length ? (
-            <section>
-              <h2>Exhibitions</h2>
-              {featured.map((entry) => (
-                <article>{entry.data.title}</article>
-              ))}
-            </section>
-          ) : null}
-          {stories.length ? (
-            <section>
-              <h2>Stories</h2>
-              {stories.map((entry) => (
-                <article>{entry.title}</article>
-              ))}
-            </section>
-          ) : null}
-        </>
-      </div>
+    <Layout title="Home · Draft Preview" locale={locale} flush={true}>
+      <HomePresentation {...presentation!} />
     </Layout>
   ) : (
     <main class="editor-preview-error">

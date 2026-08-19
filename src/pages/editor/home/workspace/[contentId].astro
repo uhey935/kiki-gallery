@@ -3,6 +3,8 @@ import ActionBar from "../../../../components/editor/ActionBar.astro";
 import HomeDraftForm from "../../../../components/editor/HomeDraftForm.astro";
 import { createHomeEditorDraft } from "../../../../editor/home-draft-state.ts";
 import { readHomeEditorEntry } from "../../../../editor/home-state.ts";
+import { getHomeProductionFacade } from "../../../../content-boundaries/home-production.ts";
+import { getAboutProductionFacade } from "../../../../content-boundaries/about-production.ts";
 import EditorLayout from "../../../../layouts/EditorLayout.astro";
 export async function getStaticPaths() {
   return [
@@ -14,7 +16,17 @@ export async function getStaticPaths() {
 }
 const { entry } = Astro.props;
 const draft = createHomeEditorDraft(entry);
+const homeProduction = await getHomeProductionFacade();
+const aboutProduction = await getAboutProductionFacade();
+const homeCapabilities = {
+  ja: homeProduction.capability("ja"),
+  en: homeProduction.capability("en"),
+};
+const enExternalBlockers = homeCapabilities.en.issues.filter(
+  (issue) => issue !== "placeholder",
+);
 const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
+const serializedExternalBlockers = JSON.stringify(enExternalBlockers);
 ---
 
 <EditorLayout title="Home" section="Home">
@@ -30,13 +42,27 @@ const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
     <aside class="editor-panel">
       <h2>Capability</h2><dl>
         <dt>JA Preview</dt><dd data-home-capability="ja-preview">
-          Available (temporary allowed)
+          {
+            entry.capabilities.preview.ja
+              ? "Available (temporary allowed)"
+              : "Blocked"
+          }
         </dd><dt>JA formal</dt><dd data-home-capability="ja-formal">
-          Temporary copy pending
+          {homeCapabilities.ja.capable ? "Available" : "Temporary copy pending"}
         </dd><dt>EN Preview</dt><dd data-home-capability="en-preview">
-          Blocked by placeholder
-        </dd><dt>EN Production</dt><dd>
-          Blocked: copy, /en/about/, and route projection
+          {
+            entry.capabilities.preview.en
+              ? "Available"
+              : "Blocked by placeholder"
+          }
+        </dd><dt>About EN formal</dt><dd data-home-capability="about-en-formal">
+          {aboutProduction.capability("en").capable ? "Available" : "Blocked"}
+        </dd><dt>EN Production</dt><dd data-home-capability="en-production">
+          {
+            homeCapabilities.en.capable
+              ? "Available"
+              : `Blocked: ${homeCapabilities.en.issues.join(", ")}`
+          }
         </dd>
       </dl><p>Home has no Create, Rename, or Delete lifecycle.</p>
     </aside>
@@ -54,6 +80,12 @@ const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
   is:inline
   id="home-editor-draft"
   set:html={serialized}
+/>
+<script
+  type="application/json"
+  is:inline
+  id="home-en-external-blockers"
+  set:html={serializedExternalBlockers}
 />
 <script>
   import {
@@ -82,6 +114,19 @@ const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
   const status = document.querySelector<HTMLElement>(
     "[data-home-action-status]",
   );
+  const capabilityJaFormal = document.querySelector<HTMLElement>(
+    '[data-home-capability="ja-formal"]',
+  );
+  const capabilityEnPreview = document.querySelector<HTMLElement>(
+    '[data-home-capability="en-preview"]',
+  );
+  const capabilityEnProduction = document.querySelector<HTMLElement>(
+    '[data-home-capability="en-production"]',
+  );
+  const enExternalBlockers = JSON.parse(
+    document.querySelector<HTMLScriptElement>("#home-en-external-blockers")
+      ?.textContent ?? "[]",
+  ) as string[];
   if (raw && form && save && publish && previewJa && previewEn && status) {
     let baseline = JSON.parse(raw) as HomeEditorDraftState;
     let draft = structuredClone(baseline);
@@ -136,8 +181,9 @@ const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
       }
       for (const locale of ["ja", "en"] as const)
         if (draft.locales[locale].state === "editable") {
+          const aboutIntro = String(data.get(`${locale}_about_intro`));
           draft.locales[locale].value = {
-            about_intro: String(data.get(`${locale}_about_intro`)),
+            about_intro: aboutIntro,
             ...(optional(data.get(`${locale}_seo_title`))
               ? { seo_title: optional(data.get(`${locale}_seo_title`)) }
               : {}),
@@ -150,13 +196,12 @@ const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
               data.get("ja_copy_approved") === "on" ? "approved" : "temporary";
           else
             draft.copyStatus.en =
-              data.get("en_copy_approved") === "on"
-                ? "approved"
-                : "placeholder";
+              aboutIntro === "__TODO_HOME_EN_ABOUT_INTRO__"
+                ? "placeholder"
+                : "approved";
         }
     };
     const render = () => {
-      read();
       const validation = validateHomeEditorDraft(draft);
       const dirty = isHomeEditorDraftDirty(baseline, draft);
       const scopes = homeDirtyScopes(baseline, draft);
@@ -164,6 +209,22 @@ const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
       publish.disabled = dirty || !validation.capabilities.publish;
       previewJa.disabled = !validation.capabilities.preview.ja;
       previewEn.disabled = !validation.capabilities.preview.en;
+      if (capabilityJaFormal)
+        capabilityJaFormal.textContent = validation.capabilities.formal.ja
+          ? "Available after Save"
+          : "Temporary copy pending";
+      if (capabilityEnPreview)
+        capabilityEnPreview.textContent = validation.capabilities.preview.en
+          ? "Available"
+          : "Blocked by placeholder";
+      if (capabilityEnProduction)
+        capabilityEnProduction.textContent = validation.capabilities.formal.en
+          ? enExternalBlockers.length
+            ? `Blocked: ${enExternalBlockers.join(", ")}`
+            : dirty
+              ? "Available after Save"
+              : "Available"
+          : "Blocked: placeholder";
       status.textContent = dirty
         ? `Unsaved: ${Object.entries(scopes)
             .filter(([, v]) => v)
@@ -171,8 +232,14 @@ const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
             .join(", ")}`
         : "Saved · ready";
     };
-    form.addEventListener("input", render);
-    form.addEventListener("change", render);
+    form.addEventListener("input", () => {
+      read();
+      render();
+    });
+    form.addEventListener("change", () => {
+      read();
+      render();
+    });
     const preview = async (locale: "ja" | "en") => {
       read();
       const response = await fetch("/editor/api/home-preview/create", {

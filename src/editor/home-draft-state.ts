@@ -102,7 +102,12 @@ export function validateHomeEditorDraft(draft: HomeEditorDraftState) {
       },
       formal: {
         ja: structural && draft.copyStatus.ja === "approved",
-        en: false,
+        en:
+          structural &&
+          draft.copyStatus.en === "approved" &&
+          draft.locales.en.state === "editable" &&
+          draft.locales.en.value.about_intro !==
+            HOME_EN_ABOUT_INTRO_PLACEHOLDER,
       },
       publish: structural,
     },

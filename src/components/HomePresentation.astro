@@ -1,0 +1,286 @@
+---
+type Hero =
+  | { type: "image"; image: string }
+  | { type: "video"; video: string; poster?: string };
+type Exhibition = {
+  href: string;
+  image: string;
+  alt: string;
+  status: string;
+  artists: string[];
+  title: string;
+  start: string;
+  end: string;
+};
+type Story = {
+  href: string;
+  image: string;
+  alt: string;
+  type?: string;
+  title: string;
+};
+interface Props {
+  hero?: Hero;
+  artists: { href: string; image: string };
+  about: { href: string; image: string; intro: string };
+  exhibitions: Exhibition[];
+  exhibitionsHref?: string;
+  stories: Story[];
+  storiesHref?: string;
+}
+const {
+  hero,
+  artists,
+  about,
+  exhibitions,
+  exhibitionsHref,
+  stories,
+  storiesHref,
+} = Astro.props;
+const dateParts = (value: string) => {
+  const date = new Date(`${value}T00:00:00`);
+  return {
+    date: `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`,
+    weekday: ["Sun.", "Mon.", "Tue.", "Wed.", "Thu.", "Fri.", "Sat."][
+      date.getDay()
+    ],
+  };
+};
+---
+
+<div class="home">
+  <section class="home-hero">
+    <div class="home-hero__fallback">
+      <div class="home-hero__fallback-image-wrap">
+        {
+          hero?.type === "video" ? (
+            <video
+              src={hero.video}
+              poster={hero.poster}
+              class="home-hero__fallback-image"
+              autoplay
+              muted
+              loop
+              playsinline
+            />
+          ) : (
+            <img
+              src={
+                hero?.type === "image"
+                  ? hero.image
+                  : "/images/home/fallback-hero.webp"
+              }
+              alt="KiKi Gallery"
+              class="home-hero__fallback-image"
+            />
+          )
+        }
+        <span class="home-hero__cover home-hero__cover--1"></span>
+        <span class="home-hero__cover home-hero__cover--2"></span>
+        <span class="home-hero__cover home-hero__cover--3"></span>
+      </div>
+      <div class="home-hero__content">
+        <h1 class="home-hero__title">KiKi Gallery</h1>
+      </div>
+    </div>
+  </section>
+
+  {
+    exhibitions.length > 0 && exhibitionsHref && (
+      <section
+        class="home-exhibition"
+        aria-labelledby="home-exhibition-heading"
+      >
+        <div class="home-exhibition__inner">
+          <header class="home-section__header">
+            <h2 id="home-exhibition-heading" class="home-section__heading">
+              Exhibitions
+            </h2>
+            <a class="home-section__action" href={exhibitionsHref}>
+              View All
+            </a>
+          </header>
+          <div class="home-exhibition__list">
+            {exhibitions.map((exhibition) => {
+              const start = dateParts(exhibition.start);
+              const end = dateParts(exhibition.end);
+              return (
+                <article class="home-exhibition__item">
+                  <a href={exhibition.href} class="home-exhibition__link">
+                    <div class="home-exhibition__image">
+                      <figure class="home-exhibition__media">
+                        <img src={exhibition.image} alt={exhibition.alt} />
+                      </figure>
+                      <span
+                        class={`home-exhibition__status home-exhibition__status--${exhibition.status}`}
+                      >
+                        {exhibition.status}
+                      </span>
+                    </div>
+                    <div class="home-exhibition__content">
+                      <div class="home-exhibition__heading-row">
+                        <div class="home-exhibition__heading-left">
+                          {exhibition.artists.length > 0 && (
+                            <p class="home-exhibition__artist">
+                              {exhibition.artists.join("、")}
+                            </p>
+                          )}
+                          <h3 class="home-exhibition__title">
+                            {exhibition.title}
+                          </h3>
+                        </div>
+                        <p class="home-exhibition__date">
+                          <span class="home-exhibition__date-value">
+                            {start.date}
+                          </span>
+                          <span class="home-exhibition__date-weekday">
+                            {start.weekday}
+                          </span>
+                          <span class="home-exhibition__date-separator">
+                            {" "}
+                            -{" "}
+                          </span>
+                          <span class="home-exhibition__date-value">
+                            {end.date.slice(5)}
+                          </span>
+                          <span class="home-exhibition__date-weekday">
+                            {end.weekday}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="home-sections">
+    <div class="home-sections__inner">
+      <div class="home-sections__artists">
+        <h2 class="home-sections__artists-title">Artists</h2>
+        <a href={artists.href} class="home-sections__link">
+          <figure class="home-sections__artists-media home-sections__media">
+            <img src={artists.image} alt="" />
+          </figure>
+        </a>
+      </div>
+      <div class="home-sections__about">
+        <a href={about.href} class="home-sections__link">
+          <figure class="home-sections__about-media home-sections__media">
+            <img src={about.image} alt="" />
+          </figure>
+          <h2 class="home-sections__about-title">About</h2>
+          <p class="home-sections__description">
+            {about.intro}<span class="home-sections__learn-more"
+              >Learn More</span
+            >
+          </p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {
+    stories.length > 0 && storiesHref && (
+      <section class="home-stories" aria-labelledby="home-stories-heading">
+        <div class="home-stories__inner">
+          <header class="home-section__header">
+            <h2 id="home-stories-heading" class="home-section__heading">
+              Stories
+            </h2>
+            <a class="home-section__action" href={storiesHref}>
+              View All
+            </a>
+          </header>
+          <div class="home-stories__list">
+            {stories.map((story) => (
+              <article class="home-stories__item">
+                <a href={story.href} class="home-stories__link">
+                  <figure class="home-stories__media">
+                    <img src={story.image} alt={story.alt} loading="lazy" />
+                  </figure>
+                  <div class="home-stories__body">
+                    {story.type && (
+                      <p class="home-stories__kind">{story.type}</p>
+                    )}
+                    <h3 class="home-stories__title">{story.title}</h3>
+                  </div>
+                </a>
+              </article>
+            ))}
+          </div>
+          <div class="home-stories__progress" aria-hidden="true">
+            <div class="home-stories__progress-bar" />
+          </div>
+        </div>
+      </section>
+    )
+  }
+</div>
+
+<script>
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.1 },
+  );
+  document
+    .querySelectorAll(".home-sections__media")
+    .forEach((element) => observer.observe(element));
+
+  if (window.matchMedia("(max-width: 767px)").matches) {
+    const list = document.querySelector<HTMLElement>(".home-stories__list");
+    const bar = document.querySelector<HTMLElement>(
+      ".home-stories__progress-bar",
+    );
+    if (list && bar) {
+      const update = () => {
+        const max = list.scrollWidth - list.clientWidth;
+        bar.style.transform = `scaleX(${0.25 + (max > 0 ? list.scrollLeft / max : 0) * 0.75})`;
+      };
+      update();
+      list.addEventListener("scroll", update);
+      window.addEventListener("resize", update);
+    }
+  }
+
+  const sections = document.querySelector<HTMLElement>(".home-sections");
+  const about = document.querySelector<HTMLElement>(".home-sections__about");
+  if (sections && about) {
+    let ticking = false;
+    const update = () => {
+      const rect = sections.getBoundingClientRect();
+      const height = window.innerHeight;
+      if (rect.bottom <= 0 || rect.top >= height) about.style.transform = "";
+      else {
+        const offset = height * 0.3;
+        const progress = Math.min(
+          Math.max(
+            (height - rect.top - offset) / (height + rect.height - offset),
+            0,
+          ),
+          1,
+        );
+        about.style.transform = `translateY(${-progress * 97}px)`;
+      }
+      ticking = false;
+    };
+    const schedule = () => {
+      if (!ticking) requestAnimationFrame(update);
+      ticking = true;
+    };
+    window.addEventListener("scroll", schedule);
+    window.addEventListener("resize", schedule);
+    schedule();
+  }
+</script>

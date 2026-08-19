@@ -1,12 +1,11 @@
 ---
 import { render, type CollectionEntry } from "astro:content";
 import { getAboutProductionFacade } from "../../content-boundaries/about-production.ts";
-import {
-  getHomeProductionFacade,
-  projectHomeDestination,
-} from "../../content-boundaries/home-production.ts";
+import { getHomeProductionFacade } from "../../content-boundaries/home-production.ts";
 import { presentAboutHours } from "../../content-loaders/about/hours-presenter.ts";
 import AboutView from "../../components/AboutView.astro";
+import HomePresentation from "../../components/HomePresentation.astro";
+import { createHomePresentationModel } from "../../content-boundaries/home-composition.ts";
 import Layout from "../../layouts/Layout.astro";
 
 type Props =
@@ -42,6 +41,9 @@ const about = props.kind === "about" ? props.entry : undefined;
 const rendered = about ? await render(about) : undefined;
 const AboutContent = rendered?.Content;
 const hours = about ? presentAboutHours(about.data.hours, "en") : undefined;
+const homePresentation = home
+  ? await createHomePresentationModel("en", home.data, home.data)
+  : undefined;
 ---
 
 {
@@ -52,28 +54,7 @@ const hours = about ? presentAboutHours(about.data.hours, "en") : undefined;
       title={home.data.seo_title}
       description={home.data.description}
     >
-      <main class="home">
-        <section class="home-hero">
-          <h1>KiKi Gallery</h1>
-        </section>
-        <section class="home-sections">
-          <div class="home-sections__inner">
-            <div class="home-sections__artists">
-              <h2>Artists</h2>
-              <a href={projectHomeDestination("artists", "en")}>
-                <img src={home.data.sections.artists.image.src} alt="" />
-              </a>
-            </div>
-            <div class="home-sections__about">
-              <a href={projectHomeDestination("about", "en")}>
-                <img src={home.data.sections.about.image.src} alt="" />
-                <h2>About</h2>
-                <p>{home.data.about_intro}</p>
-              </a>
-            </div>
-          </div>
-        </section>
-      </main>
+      <HomePresentation {...homePresentation!} />
     </Layout>
   ) : about && AboutContent ? (
     <Layout

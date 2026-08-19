@@ -1,3 +1,3 @@
 ---
-about_intro: __TODO_HOME_EN_ABOUT_INTRO__
+about_intro: White Porcelain Chrysanthemum-shaped Dish
 ---

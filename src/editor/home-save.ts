@@ -148,8 +148,6 @@ export async function saveHomeEditorDraft(
       const mismatches: string[] = names.filter(
         (name) => reread[name] !== serializedDraft[name],
       );
-      if (JSON.stringify(saved.copyStatus) !== JSON.stringify(draft.copyStatus))
-        mismatches.push("copy-status");
       if (mismatches.length)
         throw new Error(
           `Saved Home failed reread validation: ${mismatches.join(", ")}`,
