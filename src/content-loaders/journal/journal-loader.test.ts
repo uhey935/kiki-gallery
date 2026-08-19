@@ -215,7 +215,7 @@ test("Production facade transports repository issues to all four Journal surface
   );
 });
 
-test("canonical production inventory exposes all JA Journal routes and exactly two EN Journal routes", async () => {
+test("canonical production inventory exposes all JA and EN Journal routes", async () => {
   const units = await loadJournalRepository(
     path.resolve("src/content/journal"),
   );
@@ -241,7 +241,14 @@ test("canonical production inventory exposes all JA Journal routes and exactly t
   ]);
   assert.deepEqual(enContentIds, [
     "essay-keisuke-matsuda",
+    "interview-keisuke-matsuda-2026-02",
     "report-yuka-mori-2025-07",
+    "interview-keisuke-matsuda-2020-02",
+    "interview-keisuke-matsuda-2020-03",
+    "interview-keisuke-matsuda-2020-04",
+    "interview-keisuke-matsuda-2020-06",
+    "interview-keisuke-matsuda-2020-07",
+    "interview-keisuke-matsuda-2020-09",
   ]);
   assert.deepEqual(
     jaContentIds.map((contentId) =>
@@ -273,12 +280,29 @@ test("canonical production inventory exposes all JA Journal routes and exactly t
     ),
     [
       "/en/journal/essay-keisuke-matsuda/",
+      "/en/journal/interview-keisuke-matsuda-2026-02/",
       "/en/journal/report-yuka-mori-2025-07/",
+      "/en/journal/interview-keisuke-matsuda-2020-02/",
+      "/en/journal/interview-keisuke-matsuda-2020-03/",
+      "/en/journal/interview-keisuke-matsuda-2020-04/",
+      "/en/journal/interview-keisuke-matsuda-2020-06/",
+      "/en/journal/interview-keisuke-matsuda-2020-07/",
+      "/en/journal/interview-keisuke-matsuda-2020-09/",
     ],
   );
   assert.deepEqual(
     production.forIndex("en").map((entry) => entry.data.contentId),
-    ["essay-keisuke-matsuda", "report-yuka-mori-2025-07"],
+    [
+      "essay-keisuke-matsuda",
+      "interview-keisuke-matsuda-2026-02",
+      "report-yuka-mori-2025-07",
+      "interview-keisuke-matsuda-2020-02",
+      "interview-keisuke-matsuda-2020-03",
+      "interview-keisuke-matsuda-2020-04",
+      "interview-keisuke-matsuda-2020-06",
+      "interview-keisuke-matsuda-2020-07",
+      "interview-keisuke-matsuda-2020-09",
+    ],
   );
 });
 
