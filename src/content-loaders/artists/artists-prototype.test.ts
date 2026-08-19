@@ -113,7 +113,7 @@ test("non-empty locale body is rejected by the initial prototype", async () => {
   );
 });
 
-test("Production exposes five canonical JA Artists and only the capable Keisuke Matsuda EN entry", async () => {
+test("Production exposes five canonical JA Artists and exactly the capable EN entries", async () => {
   const facade = await getArtistsProductionFacade();
   const ja = facade.forLocale("ja");
   assert.deepEqual(ja.map((entry) => entry.id).sort(), [
@@ -125,7 +125,7 @@ test("Production exposes five canonical JA Artists and only the capable Keisuke 
   ]);
   assert.deepEqual(
     facade.forLocale("en").map((entry) => entry.id),
-    ["keisuke-matsuda"],
+    ["keisuke-matsuda", "takeyoshi-mitsui"],
   );
   assert.ok(ja.every((entry) => !entry.id.includes("::")));
   assert.equal(
