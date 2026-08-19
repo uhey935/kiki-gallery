@@ -125,12 +125,21 @@ test("Production exposes five canonical JA Artists and exactly the capable EN en
   ]);
   assert.deepEqual(
     facade.forLocale("en").map((entry) => entry.id),
-    ["keisuke-matsuda", "takeyoshi-mitsui"],
+    [
+      "alana-wilson",
+      "keisuke-matsuda",
+      "reiko-kinoshita",
+      "takeyoshi-mitsui",
+      "yuka-mori",
+    ],
   );
   assert.ok(ja.every((entry) => !entry.id.includes("::")));
   assert.equal(
     facade.find("reiko-kinoshita", "ja")?.data.display_name,
     "木下令子",
   );
-  assert.equal(facade.find("reiko-kinoshita", "en"), undefined);
+  assert.equal(
+    facade.find("reiko-kinoshita", "en")?.data.name,
+    "Reiko Kinoshita",
+  );
 });
