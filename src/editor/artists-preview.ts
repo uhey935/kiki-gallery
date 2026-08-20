@@ -31,7 +31,14 @@ export function createArtistsPreviewModel(
       "Artist is blocked from preview",
       "preview-blocked",
     );
-  if (draft.shared.state !== "editable" || draft.locales[locale].state !== "editable") throw new ArtistsPreviewError("Artist locale is unavailable for preview", "preview-blocked");
+  if (
+    draft.shared.state !== "editable" ||
+    draft.locales[locale].state !== "editable"
+  )
+    throw new ArtistsPreviewError(
+      "Artist locale is unavailable for preview",
+      "preview-blocked",
+    );
   const shared = draft.shared.value;
   const localized = draft.locales[locale].value;
   return {
@@ -41,7 +48,18 @@ export function createArtistsPreviewModel(
       display_name: localized.name,
       hero: shared.hero,
       medium: shared.medium,
-      ...(shared.works_layout ? { works_layout: shared.works_layout.map((section) => ({ layout: section.layout, works: section.works.map((id) => ({ id, collection: "works" as const })) })) } : {}),
+      medium_label: localized.medium_label,
+      ...(shared.works_layout
+        ? {
+            works_layout: shared.works_layout.map((section) => ({
+              layout: section.layout,
+              works: section.works.map((id) => ({
+                id,
+                collection: "works" as const,
+              })),
+            })),
+          }
+        : {}),
       short_bio: localized.short_bio,
       biography: localized.biography,
       hero_alt: localized.hero_alt,

@@ -150,7 +150,9 @@ lifecycle is implemented.
 
 Defines the implemented Artists three-file Content Unit, canonical Content ID,
 opaque localized entry IDs, shared/localized schema ownership, no-fallback
-locale policy, Production facade, complete Editor lifecycle, intentional
+locale policy, the distinction between Shared `medium[]` classification and
+localized `medium_label` presentation, Production facade, complete Editor
+lifecycle, intentional
 read-only legacy detection, and completed migration evidence. Read this before
 the historical Artists prototype, Editor, Rename, Delete, and completion
 records.

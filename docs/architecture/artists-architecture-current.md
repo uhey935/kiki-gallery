@@ -1,10 +1,10 @@
 # Artists Architecture — Current
 
-| Property | Value |
-| --- | --- |
-| Status | Current architecture authority |
-| Effective date | 2026-08-11 |
-| Scope | Artists localization, Production reads, Editor lifecycle, references, and migration evidence |
+| Property       | Value                                                                                        |
+| -------------- | -------------------------------------------------------------------------------------------- |
+| Status         | Current architecture authority                                                               |
+| Effective date | 2026-08-11                                                                                   |
+| Scope          | Artists localization, Production reads, Editor lifecycle, references, and migration evidence |
 
 This document is the current authority for Artists. Earlier prototype, Editor,
 Rename, Delete, and migration documents remain useful historical records, but
@@ -38,11 +38,12 @@ Content IDs, or cross-collection references.
 - `hero.image`
 - optional `works_layout[]`, whose entries contain `layout` and Work Content IDs
   in `works[]`
-- `medium[]`
+- `medium[]`, the canonical classification/navigation terms
 
 Each locale file owns:
 
 - `name`
+- `medium_label`, the required locale-specific public display text
 - `short_bio`
 - optional `biography`
 - `hero_alt`
@@ -51,11 +52,18 @@ Each locale file owns:
 
 Locale Markdown bodies are currently required to be empty.
 
+Public Artists index and detail surfaces display only the locale-owned
+`medium_label`. They must not derive visible medium text from Shared `medium[]`.
+
 ## Locale and capability policy
 
 JA and EN are independent. Runtime fallback from JA to EN or EN to JA is
 prohibited. A missing, invalid, or unresolved-placeholder locale is not exposed
 by that locale's Production query or Detail route.
+
+A missing, invalid, empty, or unresolved-placeholder `medium_label` blocks only
+its owning locale. There is no fallback to Shared `medium[]` or to the sibling
+locale.
 
 Reserved EN placeholders block EN capability only. They do not block a valid
 canonical identity or valid JA capability.

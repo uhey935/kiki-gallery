@@ -33,6 +33,7 @@ export function createArtistSchema<W extends z.ZodType>(workReference: W) {
       works_layout: z.array(workLayout).optional(),
       name: nonEmpty,
       display_name: nonEmpty.optional(),
+      medium_label: nonEmpty.optional(),
       biography: nonEmpty.optional(),
       short_bio: nonEmpty,
       medium: z.array(navigationTerm).min(1),

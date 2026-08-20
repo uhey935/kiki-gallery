@@ -37,7 +37,7 @@ const workSections = (artist.data.works_layout ?? []).flatMap((section) => {
       <div class="artists-intro__left">
         <h1 class="artists-h1-title">{artist.data.name}</h1>
         <p class="artists-intro__medium">
-          {artist.data.medium.join(", ")}
+          {artist.data.medium_label}
         </p>
       </div>
       <div class="artists-intro__right">

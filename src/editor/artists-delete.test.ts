@@ -36,8 +36,15 @@ async function fixture() {
     });
   await fs.mkdir(path.join(repository, "public/images"), { recursive: true });
   await fs.mkdir(unit);
-  await fs.writeFile(path.join(unit, "index.yaml"), "sort_name: Delete Me\nhero:\n  image: /images/artists/delete-me.jpg\nmedium:\n  - Painting\n");
-  for (const locale of ["ja", "en"]) await fs.writeFile(path.join(unit, `${locale}.md`), `---\nname: Delete Me\nshort_bio: Delete me\nhero_alt: Delete me\n---\n`);
+  await fs.writeFile(
+    path.join(unit, "index.yaml"),
+    "sort_name: Delete Me\nhero:\n  image: /images/artists/delete-me.jpg\nmedium:\n  - Painting\n",
+  );
+  for (const locale of ["ja", "en"])
+    await fs.writeFile(
+      path.join(unit, `${locale}.md`),
+      `---\nname: Delete Me\nmedium_label: ${locale === "ja" ? "陶芸" : "Ceramics"}\nshort_bio: Delete me\nhero_alt: Delete me\n---\n`,
+    );
   await fs.writeFile(
     path.join(repository, "src/content/home/home.md"),
     "---\ntitle: unrelated\n---\n\nNo reference.\n",
@@ -54,7 +61,10 @@ async function fixture() {
 
 test("Artists Delete requires exact backup bytes and refuses incoming references", async () => {
   const value = await fixture();
-  await fs.writeFile(path.join(value.unit, "index.yaml"), "sort_name: Drifty\nhero:\n  image: /images/artists/delete-me.jpg\nmedium:\n  - Painting\n");
+  await fs.writeFile(
+    path.join(value.unit, "index.yaml"),
+    "sort_name: Drifty\nhero:\n  image: /images/artists/delete-me.jpg\nmedium:\n  - Painting\n",
+  );
   await assert.rejects(
     () =>
       planArtistsDelete({
@@ -64,7 +74,10 @@ test("Artists Delete requires exact backup bytes and refuses incoming references
       }),
     (error: Error & { code?: string }) => error.code === "backup-proof-stale",
   );
-  await fs.writeFile(path.join(value.unit, "index.yaml"), "sort_name: Delete Me\nhero:\n  image: /images/artists/delete-me.jpg\nmedium:\n  - Painting\n");
+  await fs.writeFile(
+    path.join(value.unit, "index.yaml"),
+    "sort_name: Delete Me\nhero:\n  image: /images/artists/delete-me.jpg\nmedium:\n  - Painting\n",
+  );
   const incomingNews = path.join(value.repository, "src/content/news/incoming");
   await fs.mkdir(incomingNews);
   await fs.writeFile(
@@ -105,9 +118,18 @@ test("Artists Delete requires exact backup bytes and refuses incoming references
   await fs.rm(incomingNews, { recursive: true });
   const work = path.join(value.repository, "src/content/works/incoming");
   await fs.mkdir(work);
-  await fs.writeFile(path.join(work, "index.yaml"), "artist: delete-me\nimages:\n  - src: /images/works/incoming.jpg\ninquiry:\n  type: none\n");
-  await fs.writeFile(path.join(work, "ja.md"), "---\ntitle: Incoming\nimages:\n  - alt: Incoming\n---\n");
-  await fs.writeFile(path.join(work, "en.md"), "---\ntitle: Incoming EN\nimages:\n  - alt: Incoming EN\n---\n");
+  await fs.writeFile(
+    path.join(work, "index.yaml"),
+    "artist: delete-me\nimages:\n  - src: /images/works/incoming.jpg\ninquiry:\n  type: none\n",
+  );
+  await fs.writeFile(
+    path.join(work, "ja.md"),
+    "---\ntitle: Incoming\nimages:\n  - alt: Incoming\n---\n",
+  );
+  await fs.writeFile(
+    path.join(work, "en.md"),
+    "---\ntitle: Incoming EN\nimages:\n  - alt: Incoming EN\n---\n",
+  );
   await assert.rejects(
     () =>
       planArtistsDelete({
@@ -184,7 +206,10 @@ test("reviewed Artists Delete moves the complete unit, records evidence, and Pub
   );
   assert.equal(
     await git(value.repository, ["show", "--name-only", "--format=", "HEAD"]),
-    plan.preimages.map((item) => item.path).sort().join("\n"),
+    plan.preimages
+      .map((item) => item.path)
+      .sort()
+      .join("\n"),
   );
   assert.match(await git(value.repository, ["status", "--short"]), /home\.md/);
 });

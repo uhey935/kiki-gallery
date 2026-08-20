@@ -61,6 +61,8 @@ test("Artists operator flow validates, previews, saves, and publishes", async ({
   await page.locator('input[name="contentId"]').fill(contentId);
   await page.locator('input[name="name"]').fill("Browser Acceptance Artist");
   await page.locator('input[name="display_name"]').fill("ブラウザ受入作家");
+  await page.locator('input[name="medium_label"]').fill("陶芸");
+  await page.locator('input[name="en.medium_label"]').fill("Ceramics");
   await page.locator('textarea[name="medium"]').fill("Ceramics");
   await page
     .locator('textarea[name="short_bio"]')

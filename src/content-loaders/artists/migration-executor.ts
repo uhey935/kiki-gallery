@@ -2,7 +2,6 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseDocument } from "yaml";
-import { evaluateArtistCapabilities } from "./capabilities.ts";
 import {
   ARTIST_MIGRATION_INVENTORY,
   artistMigrationSha256,
@@ -11,8 +10,10 @@ import {
   type LegacyArtistMigrationItem,
   type LegacyArtistMigrationManifest,
 } from "./migration-manifest.ts";
-import { loadArtistUnit } from "./repository.ts";
-import { artistIdentitySchema, artistLocalizedSchema } from "./schema.ts";
+import {
+  artistIdentitySchema,
+  historicalArtistLocalizedSchema,
+} from "./schema.ts";
 
 export const FROZEN_ARTISTS_MIGRATION_MANIFEST_SHA256 =
   "6618fb544aeb3bb6b75b2904ebf734aba7ea066ad0fa03f62b9d2e7acdb42cde";
@@ -153,7 +154,7 @@ function validateGeneratedSchemas(entry: LegacyArtistMigrationItem) {
       entry.generated[locale].content,
       `${entry.contentId}/${locale}.md`,
     );
-    if (!artistLocalizedSchema.safeParse(data).success)
+    if (!historicalArtistLocalizedSchema.safeParse(data).success)
       throw new Error(
         `${entry.contentId}: generated ${locale} schema is invalid`,
       );
@@ -315,21 +316,19 @@ async function verifyInstalledUnit(
       path.join(directory, filename),
       entry.generated[key],
     );
-  const unit = await loadArtistUnit(directory);
-  const capabilities = evaluateArtistCapabilities(unit);
-  if (
-    unit.identity.state !== "valid" ||
-    unit.locales.ja.state !== "valid" ||
-    unit.locales.en.state !== "valid" ||
-    !capabilities.identity.allowed ||
-    !capabilities.locale.ja.allowed ||
-    capabilities.locale.en.allowed ||
-    !unit.issues.some(
-      (issue) =>
-        issue.locale === "en" &&
-        issue.ruleId === "content.placeholder.unresolved",
-    )
-  )
+  const ja = parseMarkdownFrontmatter(
+    entry.generated.ja.content,
+    `${entry.contentId}/ja.md`,
+  ) as Record<string, unknown>;
+  const en = parseMarkdownFrontmatter(
+    entry.generated.en.content,
+    `${entry.contentId}/en.md`,
+  ) as Record<string, unknown>;
+  const hasPlaceholder = (data: Record<string, unknown>) =>
+    Object.values(data).some(
+      (value) => typeof value === "string" && value.includes("__TODO_"),
+    );
+  if (hasPlaceholder(ja) || !hasPlaceholder(en))
     throw new Error(`${entry.contentId}: installed unit validation failed`);
 }
 

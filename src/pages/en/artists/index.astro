@@ -24,7 +24,7 @@ const artists = (await getArtistsProductionFacade()).forLocale("en");
               </div>
               <div class="artists-meta">
                 <h2 class="artists-name">{artist.data.name}</h2>
-                <p class="artists-medium">{artist.data.medium.join(" / ")}</p>
+                <p class="artists-medium">{artist.data.medium_label}</p>
               </div>
             </a>
           </article>

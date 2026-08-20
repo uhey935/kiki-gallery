@@ -54,6 +54,7 @@ export const artistIdentitySchema = z
 export const artistLocalizedSchema = z
   .object({
     name: nonEmpty,
+    medium_label: nonEmpty,
     short_bio: nonEmpty,
     biography: nonEmpty.optional(),
     hero_alt: nonEmpty,
@@ -62,6 +63,14 @@ export const artistLocalizedSchema = z
   })
   .strict();
 
+/** Frozen 2026-08-11 migration output shape; not a runtime compatibility path. */
+export const historicalArtistLocalizedSchema = artistLocalizedSchema.omit({
+  medium_label: true,
+});
+
 export type ArtistIdentity = z.infer<typeof artistIdentitySchema>;
 export type ArtistLocalized = z.infer<typeof artistLocalizedSchema>;
+export type HistoricalArtistLocalized = z.infer<
+  typeof historicalArtistLocalizedSchema
+>;
 export type ArtistLocale = (typeof ARTIST_LOCALES)[number];

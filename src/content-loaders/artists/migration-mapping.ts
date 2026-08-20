@@ -1,4 +1,4 @@
-import type { ArtistIdentity, ArtistLocalized } from "./schema.ts";
+import type { ArtistIdentity, HistoricalArtistLocalized } from "./schema.ts";
 
 export type LegacyArtistMigrationInput = {
   name: string;
@@ -15,8 +15,8 @@ export type LegacyArtistMigrationInput = {
 
 export type ArtistMigrationMapping = {
   shared: ArtistIdentity;
-  ja: ArtistLocalized;
-  en: ArtistLocalized;
+  ja: HistoricalArtistLocalized;
+  en: HistoricalArtistLocalized;
 };
 
 const TODO = {

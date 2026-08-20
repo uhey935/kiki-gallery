@@ -1,5 +1,6 @@
 ---
 name: Alana Wilson
+medium_label: Ceramics
 short_bio: Alana Wilson was born in Canberra, Australia, in 1989. A New Zealand national, she studied ceramics at the National Art School in Sydney and works primarily with ceramics.
 biography: |
   Alana Wilson was born in Canberra, Australia, in 1989. A New Zealand national, she studied ceramics at the National Art School in Sydney and works primarily with ceramics.

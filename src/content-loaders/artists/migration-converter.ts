@@ -3,9 +3,9 @@ import { parseDocument, stringify } from "yaml";
 import { editorArtistSchema } from "../../content-schemas/artist.ts";
 import {
   artistIdentitySchema,
-  artistLocalizedSchema,
+  historicalArtistLocalizedSchema,
   type ArtistIdentity,
-  type ArtistLocalized,
+  type HistoricalArtistLocalized,
 } from "./schema.ts";
 
 export const ARTISTS_MIGRATION_VERSION = 1 as const;
@@ -67,7 +67,7 @@ function splitLegacyMarkdown(bytes: Buffer, source: string) {
   return { frontmatter: match[1], body };
 }
 
-function markdownFile(frontmatter: ArtistLocalized): string {
+function markdownFile(frontmatter: HistoricalArtistLocalized): string {
   return `---\n${stringify(frontmatter).trimEnd()}\n---\n`;
 }
 
@@ -143,8 +143,8 @@ export function convertLegacyArtistMarkdown(
       : {}),
   };
   const shared = artistIdentitySchema.parse(sharedCandidate);
-  const ja = artistLocalizedSchema.parse(jaCandidate);
-  const en = artistLocalizedSchema.parse(enCandidate);
+  const ja = historicalArtistLocalizedSchema.parse(jaCandidate);
+  const en = historicalArtistLocalizedSchema.parse(enCandidate);
 
   const fieldMapping: ArtistFieldMappingEvidence[] = [
     copy("name", "index.yaml", "sort_name"),

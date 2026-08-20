@@ -1,5 +1,6 @@
 ---
 name: Reiko Kinoshita
+medium_label: Ceramics
 short_bio: Reiko Kinoshita is a painter who completed her graduate studies at Musashino Art University. Rather than using brushes, she applies a fine mist of acrylic paint with a spray gun, working in dialogue with the folds and creases of paper and fabric. Inspired by analog photographic development, her practice explores changing images and the emergence and transformation of things through the question of whether the passage of time can be made into a painting.
 biography: |
   Reiko Kinoshita completed her graduate studies in oil painting at Musashino Art University. Her paintings are made without brushes, using a spray gun to apply acrylic paint in a fine mist.

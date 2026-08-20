@@ -4,7 +4,10 @@ import ArtistsDraftForm from "../../../../components/editor/ArtistsDraftForm.ast
 import ArtistsValidationPanel from "../../../../components/editor/ArtistsValidationPanel.astro";
 import ArtistsDeletePanel from "../../../../components/editor/ArtistsDeletePanel.astro";
 import RenamePanel from "../../../../components/editor/RenamePanel.astro";
-import { createArtistsEditorDraft, validateArtistsEditorDraft } from "../../../../editor/artists-draft-state";
+import {
+  createArtistsEditorDraft,
+  validateArtistsEditorDraft,
+} from "../../../../editor/artists-draft-state";
 import {
   readArtistsEditorEntry,
   readArtistsEditorState,
@@ -21,7 +24,9 @@ export async function getStaticPaths() {
 }
 const { entry } = Astro.props;
 const draft = createArtistsEditorDraft(entry);
-const initialCapabilities = draft ? validateArtistsEditorDraft(draft).capabilities : { localePreview: { ja: false, en: false } };
+const initialCapabilities = draft
+  ? validateArtistsEditorDraft(draft).capabilities
+  : { localePreview: { ja: false, en: false } };
 const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
 ---
 
@@ -52,7 +57,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       <ArtistsDeletePanel contentId={entry.contentId} />
     </aside>
   </div>
-  <ActionBar mode="artists" loaded={Boolean(draft)} preview={initialCapabilities.localePreview} />
+  <ActionBar
+    mode="artists"
+    loaded={Boolean(draft)}
+    preview={initialCapabilities.localePreview}
+  />
 </EditorLayout>
 <script
   type="application/json"
@@ -79,7 +88,9 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     "[data-artists-draft-form]",
   );
   const save = document.querySelector<HTMLButtonElement>("[data-save-artists]");
-  const previews = [...document.querySelectorAll<HTMLButtonElement>("[data-preview-artists]")];
+  const previews = [
+    ...document.querySelectorAll<HTMLButtonElement>("[data-preview-artists]"),
+  ];
   const publish = document.querySelector<HTMLButtonElement>(
     "[data-publish-artists]",
   );
@@ -121,16 +132,28 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           body: "",
           locales: {
             ...draft.locales,
-            en: { ...(draft.locales.en.state === "editable" ? draft.locales.en : {}), state: "editable", value: {
-              name: value("en.name"), short_bio: value("en.short_bio"),
-              biography: optional(value("en.biography")), hero_alt: value("en.hero_alt"),
-              seo_title: optional(value("en.seo_title")), description: optional(value("en.description")), body: "",
-            } },
+            en: {
+              ...(draft.locales.en.state === "editable"
+                ? draft.locales.en
+                : {}),
+              state: "editable",
+              value: {
+                name: value("en.name"),
+                medium_label: value("en.medium_label"),
+                short_bio: value("en.short_bio"),
+                biography: optional(value("en.biography")),
+                hero_alt: value("en.hero_alt"),
+                seo_title: optional(value("en.seo_title")),
+                description: optional(value("en.description")),
+                body: "",
+              },
+            },
           },
           data: {
             ...draft.data,
             name: value("name"),
             display_name: optional(value("display_name")),
+            medium_label: value("medium_label"),
             short_bio: value("short_bio"),
             biography: optional(value("biography")),
             medium: value("medium")
@@ -196,7 +219,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         )
           control.disabled = deleteLocked;
       save.disabled = locked || !dirty || !capabilities.save;
-      for (const preview of previews) { const locale = preview.dataset.previewArtists as "ja" | "en"; preview.disabled = locked || !validation.capabilities.localePreview[locale]; }
+      for (const preview of previews) {
+        const locale = preview.dataset.previewArtists as "ja" | "en";
+        preview.disabled =
+          locked || !validation.capabilities.localePreview[locale];
+      }
       publish.disabled = locked || dirty || !capabilities.publish;
       form
         .querySelectorAll<
@@ -208,7 +235,9 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         pending,
         dirty,
         canSave: capabilities.save,
-        canPreview: validation.capabilities.localePreview.ja || validation.capabilities.localePreview.en,
+        canPreview:
+          validation.capabilities.localePreview.ja ||
+          validation.capabilities.localePreview.en,
         canPublish: capabilities.publish,
         savedSincePublish,
         recoveryRequired,
@@ -263,24 +292,26 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         render();
       }
     });
-    for (const preview of previews) preview.addEventListener("click", async () => {
-      const locale = preview.dataset.previewArtists as "ja" | "en";
-      pending = "preview";
-      render();
-      try {
-        const result = await request("/editor/api/artists-preview/create", {
-          draft, locale,
-        });
-        window.open(result.url, "_blank", "noopener,noreferrer");
-        statusMessage = `${locale.toUpperCase()} draft preview opened`;
-      } catch (error) {
-        const value = error as Error & { code?: string };
-        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
-      } finally {
-        pending = null;
+    for (const preview of previews)
+      preview.addEventListener("click", async () => {
+        const locale = preview.dataset.previewArtists as "ja" | "en";
+        pending = "preview";
         render();
-      }
-    });
+        try {
+          const result = await request("/editor/api/artists-preview/create", {
+            draft,
+            locale,
+          });
+          window.open(result.url, "_blank", "noopener,noreferrer");
+          statusMessage = `${locale.toUpperCase()} draft preview opened`;
+        } catch (error) {
+          const value = error as Error & { code?: string };
+          statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
+        } finally {
+          pending = null;
+          render();
+        }
+      });
     publish.addEventListener("click", async () => {
       pending = "publish";
       render();

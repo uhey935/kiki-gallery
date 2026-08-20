@@ -30,7 +30,8 @@ const git = (root: string, args: string[]) =>
     stdout.trim(),
   );
 const source = {
-  shared: "artist: fixture-artist\nimages:\n  - src: /images/works/delete-me.png\ninquiry:\n  type: none\n",
+  shared:
+    "artist: fixture-artist\nimages:\n  - src: /images/works/delete-me.png\ninquiry:\n  type: none\n",
   ja: "---\ntitle: Delete Me\nimages:\n  - alt: Delete me\nsize: 1 x 1\nmaterial: Pixel\n---\nBody\n",
   en: "---\ntitle: Delete Me EN\nimages:\n  - alt: Delete me EN\nsize: 1 x 1\nmaterial: Pixel\n---\nBody EN\n",
 };
@@ -61,9 +62,18 @@ async function fixture() {
   await fs.writeFile(asset, png);
   const artist = path.join(repository, "src/content/artists/fixture-artist");
   await fs.mkdir(artist);
-  await fs.writeFile(path.join(artist, "index.yaml"), "sort_name: Fixture\nhero:\n  image: /images/artists/fixture.jpg\nmedium:\n  - Painting\n");
-  await fs.writeFile(path.join(artist, "ja.md"), "---\nname: Fixture\nshort_bio: Fixture\nhero_alt: Fixture\n---\n");
-  await fs.writeFile(path.join(artist, "en.md"), "---\nname: Fixture\nshort_bio: Fixture\nhero_alt: Fixture\n---\n");
+  await fs.writeFile(
+    path.join(artist, "index.yaml"),
+    "sort_name: Fixture\nhero:\n  image: /images/artists/fixture.jpg\nmedium:\n  - Painting\n",
+  );
+  await fs.writeFile(
+    path.join(artist, "ja.md"),
+    "---\nname: Fixture\nmedium_label: 陶芸\nshort_bio: Fixture\nhero_alt: Fixture\n---\n",
+  );
+  await fs.writeFile(
+    path.join(artist, "en.md"),
+    "---\nname: Fixture\nmedium_label: Ceramics\nshort_bio: Fixture\nhero_alt: Fixture\n---\n",
+  );
   await git(repository, ["init", "-b", "main"]);
   await git(repository, ["config", "user.email", "test@example.test"]);
   await git(repository, ["config", "user.name", "Test"]);
@@ -154,7 +164,11 @@ test("Works Delete gates backup, incoming references, pending state, and asset l
 
 test("Works Delete moves only Markdown, preserves assets/evidence, rolls back, and publishes one path", async () => {
   const rollback = await fixture();
-  const original = await Promise.all(["index.yaml", "ja.md", "en.md"].map((name) => fs.readFile(path.join(rollback.unit, name))));
+  const original = await Promise.all(
+    ["index.yaml", "ja.md", "en.md"].map((name) =>
+      fs.readFile(path.join(rollback.unit, name)),
+    ),
+  );
   const assetHash = hash(await fs.readFile(rollback.asset));
   const rollbackPlan = await planWorksDelete({
     repositoryRoot: rollback.repository,
@@ -169,7 +183,14 @@ test("Works Delete moves only Markdown, preserves assets/evidence, rolls back, a
     }),
     (e) => e instanceof WorksDeleteError && e.code === "delete-failed",
   );
-  assert.deepEqual(await Promise.all(["index.yaml", "ja.md", "en.md"].map((name) => fs.readFile(path.join(rollback.unit, name)))), original);
+  assert.deepEqual(
+    await Promise.all(
+      ["index.yaml", "ja.md", "en.md"].map((name) =>
+        fs.readFile(path.join(rollback.unit, name)),
+      ),
+    ),
+    original,
+  );
   assert.equal(hash(await fs.readFile(rollback.asset)), assetHash);
   const value = await fixture();
   const plan = await planWorksDelete({
@@ -188,7 +209,11 @@ test("Works Delete moves only Markdown, preserves assets/evidence, rolls back, a
     plan.operationId,
     value.repository,
   );
-  assert.deepEqual(published.files.sort(), ["src/content/works/delete-me/en.md", "src/content/works/delete-me/index.yaml", "src/content/works/delete-me/ja.md"]);
+  assert.deepEqual(published.files.sort(), [
+    "src/content/works/delete-me/en.md",
+    "src/content/works/delete-me/index.yaml",
+    "src/content/works/delete-me/ja.md",
+  ]);
   assert.equal(
     await git(value.repository, ["show", "--name-only", "--format=", "HEAD"]),
     "src/content/works/delete-me/en.md\nsrc/content/works/delete-me/index.yaml\nsrc/content/works/delete-me/ja.md",

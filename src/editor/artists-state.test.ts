@@ -31,6 +31,7 @@ works_layout:
 `;
 const ja = `---
 name: テスト作家
+medium_label: 絵画
 short_bio: Short biography.
 biography: Full biography.
 hero_alt: Test artwork
@@ -38,6 +39,7 @@ hero_alt: Test artwork
 `;
 const en = `---
 name: Test Artist
+medium_label: Painting
 short_bio: Short biography.
 hero_alt: Test artwork
 ---
@@ -63,7 +65,18 @@ test("reads a canonical Artist and preserves a clean serialization", async () =>
       await readArtistsEditorEntry("test-artist", root),
     );
     assert.ok(draft);
-    assert.deepEqual(serializeArtistsEditorDraft(draft), { "index.yaml": shared, "ja.md": ja, "en.md": en });
+    assert.equal(draft.data.medium_label, "絵画");
+    assert.equal(
+      draft.locales.en.state === "editable"
+        ? draft.locales.en.value.medium_label
+        : undefined,
+      "Painting",
+    );
+    assert.deepEqual(serializeArtistsEditorDraft(draft), {
+      "index.yaml": shared,
+      "ja.md": ja,
+      "en.md": en,
+    });
   } finally {
     await rm(root, { recursive: true });
   }
@@ -147,6 +160,7 @@ test("preview tokens are content-bound and expire", () => {
     contentId: "test-artist",
     data: {
       name: "Test Artist",
+      medium_label: "Painting",
       hero: { image: "/test.jpg" },
       hero_alt: "Alt",
       short_bio: "Bio",
@@ -163,4 +177,49 @@ test("preview tokens are content-bound and expire", () => {
     (error: unknown) =>
       error instanceof ArtistsPreviewError && error.code === "preview-expired",
   );
+});
+
+test("JA and EN Preview project only their localized medium_label", async () => {
+  const root = await fixture();
+  try {
+    const draft = createArtistsEditorDraft(
+      await readArtistsEditorEntry("test-artist", root),
+    )!;
+    assert.equal(
+      createArtistsPreviewModel(draft, "ja").data.medium_label,
+      "絵画",
+    );
+    assert.equal(
+      createArtistsPreviewModel(draft, "en").data.medium_label,
+      "Painting",
+    );
+    assert.deepEqual(createArtistsPreviewModel(draft, "ja").data.medium, [
+      "Painting",
+    ]);
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+test("Save serializes medium_label into only its owning locale file", async () => {
+  const root = await fixture();
+  try {
+    const baseline = createArtistsEditorDraft(
+      await readArtistsEditorEntry("test-artist", root),
+    )!;
+    const draft = structuredClone(baseline);
+    draft.data.medium_label = "陶芸";
+    const saved = await saveArtistsEditorDraft(draft, baseline, root);
+    assert.equal(saved.data.medium_label, "陶芸");
+    assert.match(
+      await readFile(path.join(root, "test-artist/ja.md"), "utf8"),
+      /medium_label: 陶芸/,
+    );
+    assert.equal(
+      await readFile(path.join(root, "test-artist/en.md"), "utf8"),
+      en,
+    );
+  } finally {
+    await rm(root, { recursive: true });
+  }
 });

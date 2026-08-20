@@ -88,6 +88,12 @@ const en =
         </span>
         <input name="display_name" value={data.display_name ?? ""} />
       </label>
+      <label data-editor-field="medium_label">
+        <span>
+          JA medium label <small class="editor-field-badge">Required</small>
+        </span>
+        <input name="medium_label" value={data.medium_label ?? ""} />
+      </label>
       <label class="editor-field-wide" data-editor-field="short_bio">
         <span>
           JA short biography <small class="editor-field-badge">Required</small>
@@ -123,6 +129,12 @@ const en =
       <label data-editor-field="en.name"
         ><span>EN name <small class="editor-field-badge">Required</small></span
         ><input name="en.name" value={en?.name ?? ""} /></label
+      >
+      <label data-editor-field="en.medium_label"
+        ><span
+          >EN medium label <small class="editor-field-badge">Required</small
+          ></span
+        ><input name="en.medium_label" value={en?.medium_label ?? ""} /></label
       >
       <label class="editor-field-wide" data-editor-field="en.short_bio"
         ><span

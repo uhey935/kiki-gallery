@@ -1,5 +1,6 @@
 ---
 name: アラーナ・ウィルソン
+medium_label: 陶芸
 short_bio: Alana Wilson（アラーナ・ウィルソン）。1989年オーストラリア・キャンベラ生まれ。ニュージーランド国籍を持ち、シドニー
   National Art Schoolで陶芸を学び、陶器を主なメディアとして制作を行う。
 biography: |

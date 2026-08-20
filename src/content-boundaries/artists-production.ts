@@ -15,6 +15,7 @@ export type ArtistProductionEntry = {
     hero: { image: string };
     hero_alt: string;
     medium: string[];
+    medium_label: string;
     works_layout?: Array<{
       layout: "single-a" | "single-b" | "double-a" | "double-b";
       works: Array<{ id: string; collection: "works" }>;
@@ -55,6 +56,7 @@ export async function getArtistsProductionFacade(): Promise<ArtistsProductionFac
       hero: entry.identity.hero,
       hero_alt: entry.data.hero_alt,
       medium: entry.identity.medium,
+      medium_label: entry.data.medium_label,
       ...(entry.identity.works_layout
         ? {
             works_layout: entry.identity.works_layout.map((section) => ({

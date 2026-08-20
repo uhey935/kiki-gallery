@@ -1,5 +1,6 @@
 ---
 name: Keisuke Matsuda
+medium_label: Ceramics
 short_bio: Keisuke Matsuda was born in Gunma Prefecture in 1984 and currently lives in Kyoto Prefecture. In 2009, he completed the Painting program at the Graduate School of Arts, Kyoto City University of Arts.
 biography: |
   Keisuke Matsuda was born in Gunma Prefecture in 1984 and currently lives in Kyoto Prefecture. In 2009, he completed the Painting program at the Graduate School of Arts, Kyoto City University of Arts.

@@ -79,16 +79,28 @@ function readDraft(
       body: "",
       locales: {
         ...current.locales,
-        en: { ...(current.locales.en.state === "editable" ? current.locales.en : {}), state: "editable" as const, value: {
-          name: value("en.name"), short_bio: value("en.short_bio"),
-          biography: optional(value("en.biography")), hero_alt: value("en.hero_alt"),
-          seo_title: optional(value("en.seo_title")), description: optional(value("en.description")), body: "",
-        } },
+        en: {
+          ...(current.locales.en.state === "editable"
+            ? current.locales.en
+            : {}),
+          state: "editable" as const,
+          value: {
+            name: value("en.name"),
+            medium_label: value("en.medium_label"),
+            short_bio: value("en.short_bio"),
+            biography: optional(value("en.biography")),
+            hero_alt: value("en.hero_alt"),
+            seo_title: optional(value("en.seo_title")),
+            description: optional(value("en.description")),
+            body: "",
+          },
+        },
       },
       data: {
         ...current.data,
         name: value("name"),
         display_name: optional(value("display_name")),
+        medium_label: value("medium_label"),
         short_bio: value("short_bio"),
         biography: optional(value("biography")),
         medium: lines(value("medium")),
@@ -111,23 +123,44 @@ function readDraft(
   if (collection === "exhibitions") {
     const current = draft as ExhibitionsEditorDraftState;
     const display = value("shared.display_artists");
-    const localized = (locale: "ja" | "en") => ({ state: "editable" as const, value: {
-      title: value(`${locale}.title`), hero_alt: value(`${locale}.hero_alt`), body: value(`${locale}.body`),
-      summary: optional(value(`${locale}.summary`)), venue: optional(value(`${locale}.venue`)), opening_hours: optional(value(`${locale}.opening_hours`)), closed_days: optional(value(`${locale}.closed_days`)), attendance: optional(value(`${locale}.attendance`)), hero_caption: optional(value(`${locale}.hero_caption`)), seo_title: optional(value(`${locale}.seo_title`)), description: optional(value(`${locale}.description`)),
-    }});
+    const localized = (locale: "ja" | "en") => ({
+      state: "editable" as const,
+      value: {
+        title: value(`${locale}.title`),
+        hero_alt: value(`${locale}.hero_alt`),
+        body: value(`${locale}.body`),
+        summary: optional(value(`${locale}.summary`)),
+        venue: optional(value(`${locale}.venue`)),
+        opening_hours: optional(value(`${locale}.opening_hours`)),
+        closed_days: optional(value(`${locale}.closed_days`)),
+        attendance: optional(value(`${locale}.attendance`)),
+        hero_caption: optional(value(`${locale}.hero_caption`)),
+        seo_title: optional(value(`${locale}.seo_title`)),
+        description: optional(value(`${locale}.description`)),
+      },
+    });
     return {
       ...current,
       contentId,
-      shared: { state: "editable" as const, value: {
-        artists: lines(value("shared.artists")),
-        works: lines(value("shared.works")),
-        start_date: value("shared.start_date"), end_date: value("shared.end_date"),
-        display_artists: display === "default" ? undefined : display === "true",
-        hero: {
-          image: value("shared.hero.image"), orientation: value("shared.hero.orientation") as "portrait" | "landscape",
-          position: optional(value("shared.hero.position")) as never, treatment: optional(value("shared.hero.treatment")) as never,
+      shared: {
+        state: "editable" as const,
+        value: {
+          artists: lines(value("shared.artists")),
+          works: lines(value("shared.works")),
+          start_date: value("shared.start_date"),
+          end_date: value("shared.end_date"),
+          display_artists:
+            display === "default" ? undefined : display === "true",
+          hero: {
+            image: value("shared.hero.image"),
+            orientation: value("shared.hero.orientation") as
+              "portrait" | "landscape",
+            position: optional(value("shared.hero.position")) as never,
+            treatment: optional(value("shared.hero.treatment")) as never,
+          },
         },
-      }}, locales: { ja: localized("ja"), en: localized("en") },
+      },
+      locales: { ja: localized("ja"), en: localized("en") },
     };
   }
   const current = draft as NewsEditorDraftState;

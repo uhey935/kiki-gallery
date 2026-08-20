@@ -148,6 +148,37 @@ test("missing, invalid, and placeholder EN block EN only", async () => {
   assert.ok(!entries.some((entry) => entry.id === "en::placeholder-en"));
 });
 
+test("medium_label is required per locale without Shared or sibling fallback", async (t) => {
+  for (const [locale, replacement] of [
+    ["ja", ""],
+    ["en", "medium_label: ''"],
+    ["ja", "medium_label: __TODO_JA_MEDIUM_LABEL__"],
+  ] as const) {
+    await t.test(`${locale} ${replacement || "missing"}`, async (t) => {
+      const { unit } = await temporaryArtistUnit(t);
+      const file = path.join(unit, `${locale}.md`);
+      const raw = await fs.readFile(file, "utf8");
+      await fs.writeFile(
+        file,
+        replacement
+          ? raw.replace(/^medium_label:.*$/m, replacement)
+          : raw.replace(/^medium_label:.*\n/m, ""),
+      );
+      const loaded = await loadArtistUnit(unit);
+      const capabilities = evaluateArtistCapabilities(loaded);
+      const sibling = locale === "ja" ? "en" : "ja";
+      assert.equal(capabilities.locale[locale].allowed, false);
+      assert.equal(capabilities.locale[sibling].allowed, true);
+      assert.equal(
+        localizedEntriesFromUnits([loaded]).some(
+          (entry) => entry.locale === locale,
+        ),
+        false,
+      );
+    });
+  }
+});
+
 test("canonical Artist identity remains the external contentId", async () => {
   const units = await loadArtistRepository(fixtures);
   const identities = identityEntriesFromUnits(units);
@@ -247,5 +278,15 @@ test("Production exposes five canonical JA Artists and exactly the capable EN en
   assert.equal(
     facade.find("reiko-kinoshita", "en")?.data.name,
     "Reiko Kinoshita",
+  );
+  assert.ok(ja.every((entry) => entry.data.medium_label === "陶芸"));
+  assert.ok(
+    facade
+      .forLocale("en")
+      .every((entry) => entry.data.medium_label === "Ceramics"),
+  );
+  assert.equal(
+    facade.find("reiko-kinoshita", "ja")?.data.medium[0],
+    "Painting",
   );
 });

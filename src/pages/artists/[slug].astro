@@ -155,15 +155,7 @@ const breadcrumbJsonLd = {
       <div class="artists-intro__left">
         <h1 class="artists-h1-title">{artistName}</h1>
 
-        {
-          artist.data.medium && (
-            <p class="artists-intro__medium">
-              {Array.isArray(artist.data.medium)
-                ? artist.data.medium.join(", ")
-                : artist.data.medium}
-            </p>
-          )
-        }
+        <p class="artists-intro__medium">{artist.data.medium_label}</p>
       </div>
 
       <div class="artists-intro__right">
