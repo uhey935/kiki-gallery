@@ -318,6 +318,38 @@ button {
   margin: 0;
   overflow-wrap: anywhere;
 }
+.editor-capability__body {
+  padding: 4px 22px 20px;
+}
+.editor-capability__group {
+  margin-top: 18px;
+}
+.editor-capability__group + .editor-capability__group {
+  padding-top: 18px;
+  border-top: 1px solid #e2e6e1;
+}
+.editor-capability__group h3 {
+  margin: 0 0 4px;
+  color: #65706a;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.editor-capability__group .editor-detail-list > div {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.editor-capability__group .editor-detail-list dd {
+  text-align: right;
+}
+.editor-capability__note {
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid #e2e6e1;
+  color: #65706a;
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
 .editor-readonly-body h3 {
   margin: 22px 0 8px;
   font-size: 0.82rem;

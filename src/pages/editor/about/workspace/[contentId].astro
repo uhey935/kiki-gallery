@@ -1,6 +1,7 @@
 ---
 import ActionBar from "../../../../components/editor/ActionBar.astro";
 import AboutDraftForm from "../../../../components/editor/AboutDraftForm.astro";
+import CapabilityPanel from "../../../../components/editor/CapabilityPanel.astro";
 import { createAboutEditorDraft } from "../../../../editor/about-draft-state.ts";
 import { readAboutEditorEntry } from "../../../../editor/about-state.ts";
 import EditorLayout from "../../../../layouts/EditorLayout.astro";
@@ -15,6 +16,44 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const draft = createAboutEditorDraft(entry);
 const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
+const capabilityGroups = [
+  {
+    label: "Shared",
+    rows: [
+      {
+        label: "Hours",
+        value:
+          draft.shared.state === "editable"
+            ? draft.shared.value.hours.status
+            : "unavailable",
+        attributes: { "data-about-hours": "" },
+      },
+    ],
+  },
+  ...(["ja", "en"] as const).map((locale) => ({
+    label: locale.toUpperCase(),
+    rows: [
+      {
+        label: "Status",
+        value:
+          draft.locales[locale].state === "editable"
+            ? draft.locales[locale].value.content_status
+            : "unavailable",
+        attributes: { [`data-about-${locale}-status`]: "" },
+      },
+      {
+        label: "Preview",
+        value: entry.capabilities.preview[locale] ? "Available" : "Blocked",
+        attributes: { [`data-about-${locale}-preview`]: "" },
+      },
+      {
+        label: "Formal",
+        value: entry.capabilities.formal[locale] ? "Capable" : "Blocked",
+        attributes: { [`data-about-${locale}-formal`]: "" },
+      },
+    ],
+  })),
+];
 ---
 
 <EditorLayout title="About" section="About"
@@ -25,37 +64,12 @@ const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
   </header><div class="editor-workspace">
     <main class="editor-panel editor-canvas">
       <AboutDraftForm draft={draft} />
-    </main><aside class="editor-panel">
-      <h2>Capability</h2><dl data-about-capabilities>
-        <dt>Shared hours</dt><dd data-about-hours>
-          {
-            draft.shared.state === "editable"
-              ? draft.shared.value.hours.status
-              : "unavailable"
-          }
-        </dd><dt>JA status</dt><dd data-about-ja-status>
-          {
-            draft.locales.ja.state === "editable"
-              ? draft.locales.ja.value.content_status
-              : "unavailable"
-          }
-        </dd><dt>JA Preview</dt><dd data-about-ja-preview>
-          {entry.capabilities.preview.ja ? "Available" : "Blocked"}
-        </dd><dt>JA formal</dt><dd data-about-ja-formal>
-          {entry.capabilities.formal.ja ? "Capable" : "Blocked"}
-        </dd><dt>EN status</dt><dd data-about-en-status>
-          {
-            draft.locales.en.state === "editable"
-              ? draft.locales.en.value.content_status
-              : "unavailable"
-          }
-        </dd><dt>EN Preview</dt><dd data-about-en-preview>
-          {entry.capabilities.preview.en ? "Available" : "Blocked"}
-        </dd><dt>EN formal</dt><dd data-about-en-formal>
-          {entry.capabilities.formal.en ? "Capable" : "Blocked"}
-        </dd>
-      </dl><p>About has no Create, Rename, or Delete lifecycle.</p>
-    </aside>
+    </main><CapabilityPanel
+      headingId="about-capability-heading"
+      groups={capabilityGroups}
+      note="About has no Create, Rename, or Delete lifecycle."
+      attributes={{ "data-about-capabilities": "" }}
+    />
   </div><ActionBar
     mode="about"
     loaded={true}

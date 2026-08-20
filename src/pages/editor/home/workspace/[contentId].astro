@@ -1,5 +1,6 @@
 ---
 import ActionBar from "../../../../components/editor/ActionBar.astro";
+import CapabilityPanel from "../../../../components/editor/CapabilityPanel.astro";
 import HomeDraftForm from "../../../../components/editor/HomeDraftForm.astro";
 import { createHomeEditorDraft } from "../../../../editor/home-draft-state.ts";
 import { readHomeEditorEntry } from "../../../../editor/home-state.ts";
@@ -27,6 +28,53 @@ const enExternalBlockers = homeCapabilities.en.issues.filter(
 );
 const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
 const serializedExternalBlockers = JSON.stringify(enExternalBlockers);
+const capabilityGroups = [
+  {
+    label: "JA",
+    rows: [
+      {
+        label: "Preview",
+        value: entry.capabilities.preview.ja
+          ? "Available (temporary allowed)"
+          : "Blocked",
+        attributes: { "data-home-capability": "ja-preview" },
+      },
+      {
+        label: "Formal",
+        value: homeCapabilities.ja.capable
+          ? "Available"
+          : "Temporary copy pending",
+        attributes: { "data-home-capability": "ja-formal" },
+      },
+    ],
+  },
+  {
+    label: "EN",
+    rows: [
+      {
+        label: "Preview",
+        value: entry.capabilities.preview.en
+          ? "Available"
+          : "Blocked by placeholder",
+        attributes: { "data-home-capability": "en-preview" },
+      },
+      {
+        label: "About formal",
+        value: aboutProduction.capability("en").capable
+          ? "Available"
+          : "Blocked",
+        attributes: { "data-home-capability": "about-en-formal" },
+      },
+      {
+        label: "Production",
+        value: homeCapabilities.en.capable
+          ? "Available"
+          : `Blocked: ${homeCapabilities.en.issues.join(", ")}`,
+        attributes: { "data-home-capability": "en-production" },
+      },
+    ],
+  },
+];
 ---
 
 <EditorLayout title="Home" section="Home">
@@ -39,33 +87,11 @@ const serializedExternalBlockers = JSON.stringify(enExternalBlockers);
     <main class="editor-panel editor-canvas">
       <HomeDraftForm draft={draft} />
     </main>
-    <aside class="editor-panel">
-      <h2>Capability</h2><dl>
-        <dt>JA Preview</dt><dd data-home-capability="ja-preview">
-          {
-            entry.capabilities.preview.ja
-              ? "Available (temporary allowed)"
-              : "Blocked"
-          }
-        </dd><dt>JA formal</dt><dd data-home-capability="ja-formal">
-          {homeCapabilities.ja.capable ? "Available" : "Temporary copy pending"}
-        </dd><dt>EN Preview</dt><dd data-home-capability="en-preview">
-          {
-            entry.capabilities.preview.en
-              ? "Available"
-              : "Blocked by placeholder"
-          }
-        </dd><dt>About EN formal</dt><dd data-home-capability="about-en-formal">
-          {aboutProduction.capability("en").capable ? "Available" : "Blocked"}
-        </dd><dt>EN Production</dt><dd data-home-capability="en-production">
-          {
-            homeCapabilities.en.capable
-              ? "Available"
-              : `Blocked: ${homeCapabilities.en.issues.join(", ")}`
-          }
-        </dd>
-      </dl><p>Home has no Create, Rename, or Delete lifecycle.</p>
-    </aside>
+    <CapabilityPanel
+      headingId="home-capability-heading"
+      groups={capabilityGroups}
+      note="Home has no Create, Rename, or Delete lifecycle."
+    />
   </div>
   <ActionBar
     mode="home"

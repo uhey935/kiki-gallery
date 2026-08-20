@@ -1,0 +1,52 @@
+---
+export type CapabilityRow = {
+  label: string;
+  value: string;
+  attributes?: Record<string, string>;
+};
+
+export type CapabilityGroup = {
+  label: string;
+  rows: CapabilityRow[];
+};
+
+interface Props {
+  headingId: string;
+  groups: CapabilityGroup[];
+  note: string;
+  attributes?: Record<string, string>;
+}
+
+const { headingId, groups, note, attributes = {} } = Astro.props;
+---
+
+<aside
+  class="editor-panel editor-capability"
+  aria-labelledby={headingId}
+  {...attributes}
+>
+  <div class="editor-panel__heading">
+    <div>
+      <p class="editor-eyebrow">Workspace state</p>
+      <h2 id={headingId}>Capability</h2>
+    </div>
+  </div>
+  <div class="editor-capability__body">
+    {
+      groups.map((group) => (
+        <section class="editor-capability__group">
+          <h3>{group.label}</h3>
+          <dl class="editor-detail-list">
+            {group.rows.map((row) => (
+              <div>
+                <dt>{row.label}</dt>
+                <dd {...row.attributes}>{row.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ))
+    }
+    <p class="editor-capability__note">{note}</p>
+  </div>
+</aside>
