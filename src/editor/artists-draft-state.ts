@@ -17,7 +17,7 @@ const clone = <T>(value: T): T => structuredClone(value);
 const source = <T>(value: T | undefined, raw?: string): ArtistsEditorDraftSource<T> => value ? { state: "editable", value: clone(value), baseline: clone(value), raw } : { state: "unavailable", sourceState: "missing" };
 
 export const createArtistsEditorDraft = (entry: ArtistsEditorEntryState): ArtistsEditorDraftState | undefined =>
-  entry.shared && entry.locales.ja && entry.data ? {
+  entry.shared && entry.locales.ja && entry.data && !entry.issues.some((issue) => issue.category === "repository-integrity") ? {
     contentId: entry.contentId,
     shared: source(entry.shared, entry.canonicalFiles?.["index.yaml"]),
     locales: { ja: source(entry.locales.ja, entry.canonicalFiles?.["ja.md"]), en: source(entry.locales.en, entry.canonicalFiles?.["en.md"]) },

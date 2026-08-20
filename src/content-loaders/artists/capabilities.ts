@@ -26,7 +26,9 @@ export function evaluateArtistCapabilities(
     (item) =>
       item.severity === "error" &&
       item.locale === undefined &&
-      ["parse", "structure", "unit-integrity"].includes(item.category),
+      ["parse", "structure", "unit-integrity", "repository-integrity"].includes(
+        item.category,
+      ),
   );
   const localeBlockers = (locale: ArtistLocale) =>
     unit.issues.filter(

@@ -1,7 +1,6 @@
-import { readdir } from "node:fs/promises";
 import path from "node:path";
 import type { ContentIssue } from "../content-loaders/journal/contracts.ts";
-import { loadArtistUnit } from "../content-loaders/artists/repository.ts";
+import { loadArtistRepository, loadArtistUnit } from "../content-loaders/artists/repository.ts";
 import type {
   ArtistIdentity,
   ArtistLocale,
@@ -86,10 +85,8 @@ async function readThreeFileEntry(contentId: string, root: string) {
 }
 
 async function readEntries(root: string) {
-  const entries = await readdir(root, { withFileTypes: true });
-  if (entries.some((entry) => entry.isFile() && entry.name.endsWith(".md")))
-    throw new ArtistsLegacySourceDetectedError("Legacy flat Artist source detected; Editor refuses mixed repositories.");
-  return Promise.all(entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort().map((id) => readThreeFileEntry(id, root)));
+  const units = await loadArtistRepository(root);
+  return Promise.all(units.map((unit) => readThreeFileEntry(unit.contentId, root)));
 }
 
 export async function readArtistsEditorState(root = canonicalRoot): Promise<EditorCollectionState> {
@@ -104,8 +101,7 @@ export async function readArtistsEditorState(root = canonicalRoot): Promise<Edit
 
 export async function readArtistsEditorEntry(contentId: string, root = canonicalRoot) {
   if (!isContentId(contentId)) throw new ArtistsEditorEntryNotFoundError(contentId);
-  const entries = await readdir(root, { withFileTypes: true });
-  if (entries.some((entry) => entry.isFile() && entry.name.toLowerCase() === `${contentId}.md`.toLowerCase())) throw new ArtistsLegacySourceDetectedError(contentId);
-  if (entries.some((entry) => entry.name === contentId && entry.isDirectory())) return readThreeFileEntry(contentId, root);
+  const units = await loadArtistRepository(root);
+  if (units.some((unit) => unit.contentId === contentId)) return readThreeFileEntry(contentId, root);
   throw new ArtistsEditorEntryNotFoundError(contentId);
 }

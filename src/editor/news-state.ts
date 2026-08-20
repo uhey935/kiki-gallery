@@ -1,7 +1,9 @@
-import { readdir } from "node:fs/promises";
 import path from "node:path";
 import type { ContentIssue } from "../content-loaders/journal/contracts.ts";
-import { loadNewsUnit } from "../content-loaders/news/repository.ts";
+import {
+  loadNewsRepository,
+  loadNewsUnit,
+} from "../content-loaders/news/repository.ts";
 import type {
   NewsLocale,
   NewsLocalized,
@@ -83,11 +85,9 @@ async function readThreeFileEntry(contentId: string, root: string) {
 }
 
 async function readEntries(root: string): Promise<NewsEditorEntryState[]> {
-  const directoryEntries = await readdir(root, { withFileTypes: true });
-  const contentIds = directoryEntries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort();
+  const contentIds = (await loadNewsRepository(root)).map(
+    (unit) => unit.contentId,
+  );
   return Promise.all(
     contentIds.map((contentId) => readThreeFileEntry(contentId, root)),
   );
@@ -115,10 +115,8 @@ export async function readNewsEditorEntry(
 ) {
   if (!isContentId(contentId))
     throw new NewsEditorEntryNotFoundError(contentId);
-  const entries = await readdir(root, { withFileTypes: true });
-  const directory = entries.find(
-    (entry) => entry.name === contentId && entry.isDirectory(),
-  );
-  if (directory) return readThreeFileEntry(contentId, root);
+  const units = await loadNewsRepository(root);
+  if (units.some((unit) => unit.contentId === contentId))
+    return readThreeFileEntry(contentId, root);
   throw new NewsEditorEntryNotFoundError(contentId);
 }

@@ -12,7 +12,12 @@ export type {
 export type ArtistContentIssue = {
   ruleId: string;
   severity: "error" | "warning" | "info";
-  category: "parse" | "structure" | "unit-integrity" | "content-quality";
+  category:
+    | "parse"
+    | "structure"
+    | "unit-integrity"
+    | "repository-integrity"
+    | "content-quality";
   collection: "artists";
   contentId: string;
   locale?: ArtistLocale;

@@ -49,7 +49,7 @@ async function fixture() {
     "---\ntitle: Delete me\n---\n\nBody\n",
   );
   await fs.writeFile(
-    path.join(repository, "src/content/news/unrelated.md"),
+    path.join(repository, "src/content/home/unrelated.md"),
     "---\ntitle: unrelated\n---\n\nNo reference.\n",
   );
   await git(repository, ["init", "-b", "main"]);
@@ -79,7 +79,7 @@ test("News Delete requires exact backup bytes and refuses unresolved references"
     "---\ntitle: 削除\n---\n\n本文\n",
   );
   await fs.writeFile(
-    path.join(value.repository, "src/content/news/incoming.md"),
+    path.join(value.repository, "src/content/home/incoming.md"),
     "[News](/news/delete-me/)\n",
   );
   await assert.rejects(
@@ -121,7 +121,7 @@ test("reviewed News Delete moves the complete unit, records evidence, and Publis
   );
   assert.equal(evidence.state, "completed");
   await fs.appendFile(
-    path.join(value.repository, "src/content/news/unrelated.md"),
+    path.join(value.repository, "src/content/home/unrelated.md"),
     "unrelated change\n",
   );
   const published = await publishNewsDelete(plan.operationId, value.repository);

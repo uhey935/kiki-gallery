@@ -465,6 +465,18 @@ async function buildPlan(input: {
       "Artist source is missing or unsafe.",
       "source-unavailable",
     );
+  const destinationName = input.destinationContentId.toLocaleLowerCase(
+    "en-US",
+  );
+  if (
+    (await fs.readdir(artistsRoot)).some(
+      (name) => [destinationName, `${destinationName}.md`].includes(name.toLocaleLowerCase("en-US")),
+    )
+  )
+    throw new ArtistsRenameError(
+      "The destination Artist ID or case-fold equivalent already exists.",
+      "destination-conflict",
+    );
   const entry = await readArtistsEditorEntry(
     input.sourceContentId,
     artistsRoot,
@@ -479,18 +491,6 @@ async function buildPlan(input: {
     throw new ArtistsRenameError(
       "Fix Artist validation issues first.",
       "source-unavailable",
-    );
-  const destinationName = input.destinationContentId.toLocaleLowerCase(
-    "en-US",
-  );
-  if (
-    (await fs.readdir(artistsRoot)).some(
-      (name) => [destinationName, `${destinationName}.md`].includes(name.toLocaleLowerCase("en-US")),
-    )
-  )
-    throw new ArtistsRenameError(
-      "The destination Artist ID or case-fold equivalent already exists.",
-      "destination-conflict",
     );
   const inventory = await walkCanonical(repositoryRoot);
   await validateProspectiveTypedGraph(

@@ -48,7 +48,13 @@ function compatibilityData(
 export const createNewsEditorDraft = (
   entry: NewsEditorEntryState,
 ): NewsEditorDraftState | undefined => {
-  if (!entry.shared || !entry.locales.ja || !entry.data) return undefined;
+  if (
+    !entry.shared ||
+    !entry.locales.ja ||
+    !entry.data ||
+    entry.issues.some((issue) => issue.category === "repository-integrity")
+  )
+    return undefined;
   return {
     contentId: entry.contentId,
     shared: source(entry.shared),

@@ -31,16 +31,25 @@ export function evaluateNewsCapabilities(
   unit: LoadedNewsUnit,
 ): NewsContentCapabilities {
   const saveBlockers = unit.issues.filter((item) =>
-    ["parse", "structure", "conflict", "infrastructure"].includes(
-      item.category,
-    ),
+    [
+      "parse",
+      "structure",
+      "repository-integrity",
+      "conflict",
+      "infrastructure",
+    ].includes(item.category),
   );
   const preview = (locale: NewsLocale) =>
     unit.issues.filter(
       (item) =>
         item.severity === "error" &&
         (item.locale === locale || item.locale === undefined) &&
-        (["parse", "structure", "unit-integrity"].includes(item.category) ||
+        ([
+          "parse",
+          "structure",
+          "unit-integrity",
+          "repository-integrity",
+        ].includes(item.category) ||
           item.ruleId === "content.placeholder.unresolved"),
     );
   const publishBlockers = unit.issues.filter(

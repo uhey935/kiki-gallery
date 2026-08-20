@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { promises as fs } from "node:fs";
+import os from "node:os";
 import path from "node:path";
-import test from "node:test";
+import test, { type TestContext } from "node:test";
 import { getArtistsProductionFacade } from "../../content-boundaries/artists-production.ts";
 import { exhibitionArtistReferenceSchema } from "../../content-schemas/exhibition.ts";
 import { workArtistReferenceSchema } from "../../content-schemas/work.ts";
@@ -12,10 +14,114 @@ import {
 } from "./entry-adapter.ts";
 import { createArtistsPrototypeFacade } from "./facade.ts";
 import { specifyLegacyArtistMapping } from "./migration-mapping.ts";
-import { loadArtistRepository } from "./repository.ts";
+import { loadArtistRepository, loadArtistUnit } from "./repository.ts";
 import { artistDetailRoute, localizedArtistRoutes } from "./route-registry.ts";
 
 const fixtures = path.resolve("src/content-loaders/artists/fixtures");
+
+async function temporaryArtistUnit(t: TestContext) {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "artist-topology-"));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const unit = path.join(root, "exact-artist");
+  await fs.cp(path.join(fixtures, "valid-artist"), unit, { recursive: true });
+  return { root, unit };
+}
+
+function assertArtistRepositoryIntegrity(
+  unit: Awaited<ReturnType<typeof loadArtistUnit>>,
+) {
+  assert.ok(
+    unit.issues.some(
+      (issue) =>
+        issue.ruleId === "content.repository.inventory" &&
+        issue.category === "repository-integrity",
+    ),
+  );
+  const capabilities = evaluateArtistCapabilities(unit);
+  assert.equal(capabilities.identity.allowed, false);
+  assert.equal(capabilities.locale.ja.allowed, false);
+  assert.equal(capabilities.locale.en.allowed, false);
+  assert.deepEqual(localizedEntriesFromUnits([unit]), []);
+}
+
+test("Artists repository accepts only exact, safe localized units", async (t) => {
+  await t.test("valid exact unit", async (t) => {
+    const { unit } = await temporaryArtistUnit(t);
+    const loaded = await loadArtistUnit(unit);
+    assert.equal(loaded.issues.length, 0);
+    assert.deepEqual(
+      localizedEntriesFromUnits([loaded]).map((entry) => entry.id),
+      ["ja::exact-artist", "en::exact-artist"],
+    );
+  });
+
+  for (const expected of ["index.yaml", "ja.md", "en.md"] as const) {
+    await t.test(`missing ${expected}`, async (t) => {
+      const { unit } = await temporaryArtistUnit(t);
+      await fs.rm(path.join(unit, expected));
+      const loaded = await loadArtistUnit(unit);
+      if (expected === "index.yaml") {
+        assert.equal(loaded.identity.state, "missing");
+        assert.ok(
+          loaded.issues.some(
+            (issue) => issue.ruleId === "content.identity.missing",
+          ),
+        );
+      } else {
+        const locale = expected.slice(0, 2) as "ja" | "en";
+        const sibling = locale === "ja" ? "en" : "ja";
+        assert.equal(loaded.locales[locale].state, "missing");
+        assert.ok(
+          loaded.issues.some(
+            (issue) =>
+              issue.ruleId === "content.locale.missing" &&
+              issue.locale === locale,
+          ),
+        );
+        const capabilities = evaluateArtistCapabilities(loaded);
+        assert.equal(capabilities.locale[locale].allowed, false);
+        assert.equal(capabilities.locale[sibling].allowed, true);
+      }
+    });
+  }
+
+  for (const topology of ["extra", "nested"] as const) {
+    await t.test(topology, async (t) => {
+      const { unit } = await temporaryArtistUnit(t);
+      if (topology === "extra")
+        await fs.writeFile(path.join(unit, "extra.txt"), "unexpected");
+      else {
+        await fs.mkdir(path.join(unit, "nested"));
+        await fs.writeFile(path.join(unit, "nested", "entry.md"), "nested");
+      }
+      assertArtistRepositoryIntegrity(await loadArtistUnit(unit));
+    });
+  }
+
+  for (const expected of ["index.yaml", "ja.md", "en.md"] as const) {
+    await t.test(`symlinked ${expected}`, async (t) => {
+      const { root, unit } = await temporaryArtistUnit(t);
+      const source = path.join(unit, expected);
+      const target = path.join(root, `target-${expected.replace(".", "-")}`);
+      await fs.rename(source, target);
+      await fs.symlink(target, source);
+      assertArtistRepositoryIntegrity(await loadArtistUnit(unit));
+    });
+  }
+
+  await t.test("non-regular expected source", async (t) => {
+    const { unit } = await temporaryArtistUnit(t);
+    await fs.rm(path.join(unit, "ja.md"));
+    await fs.mkdir(path.join(unit, "ja.md"));
+    assertArtistRepositoryIntegrity(await loadArtistUnit(unit));
+  });
+
+  await t.test("unexpected root entry", async (t) => {
+    const { root } = await temporaryArtistUnit(t);
+    await fs.writeFile(path.join(root, "unexpected.txt"), "unexpected");
+    await assert.rejects(loadArtistRepository(root), /extra|non-directory/);
+  });
+});
 
 test("JA and EN remain independent without runtime fallback", async () => {
   const units = await loadArtistRepository(fixtures);
