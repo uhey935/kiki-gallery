@@ -17,20 +17,6 @@ export type EditorCollectionAdapter = {
 };
 
 export const editorCollectionRegistry = {
-  about: {
-    id: "about",
-    label: "About",
-    description: "Localized singleton · Shared, JA, and EN drafts",
-    canCreate: false,
-    readState: readAboutEditorState,
-  },
-  home: {
-    id: "home",
-    label: "Home",
-    description: "Localized singleton · Shared, JA, and EN drafts",
-    canCreate: false,
-    readState: readHomeEditorState,
-  },
   artists: {
     id: "artists",
     label: "Artists",
@@ -45,6 +31,13 @@ export const editorCollectionRegistry = {
     description: "Flat Markdown · schedule, references, and presentation",
     canCreate: true,
     readState: readExhibitionsEditorState,
+  },
+  works: {
+    id: "works",
+    label: "Works",
+    description: "Flat Markdown · Save, Preview, and Publish",
+    canCreate: true,
+    readState: readWorksEditorState,
   },
   journal: {
     id: "journal",
@@ -72,12 +65,19 @@ export const editorCollectionRegistry = {
     canCreate: true,
     readState: readNewsEditorState,
   },
-  works: {
-    id: "works",
-    label: "Works",
-    description: "Flat Markdown · Save, Preview, and Publish",
-    canCreate: true,
-    readState: readWorksEditorState,
+  home: {
+    id: "home",
+    label: "Home",
+    description: "Localized singleton · Shared, JA, and EN drafts",
+    canCreate: false,
+    readState: readHomeEditorState,
+  },
+  about: {
+    id: "about",
+    label: "About",
+    description: "Localized singleton · Shared, JA, and EN drafts",
+    canCreate: false,
+    readState: readAboutEditorState,
   },
 } satisfies Record<string, EditorCollectionAdapter>;
 
