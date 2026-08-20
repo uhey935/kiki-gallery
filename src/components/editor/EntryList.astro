@@ -5,10 +5,11 @@ import type { EditorEntrySummary } from "../../editor/collection-contracts";
 interface Props {
   collectionId: string;
   collectionLabel: string;
+  canCreate: boolean;
   entries: EditorEntrySummary[];
 }
 
-const { collectionId, collectionLabel, entries } = Astro.props;
+const { collectionId, collectionLabel, canCreate, entries } = Astro.props;
 ---
 
 <section class="editor-panel" aria-labelledby="entries-heading">
@@ -20,7 +21,7 @@ const { collectionId, collectionLabel, entries } = Astro.props;
     <div>
       <span class="editor-count">{entries.length} entries</span>
       {
-        collectionId !== "home" && (
+        canCreate && (
           <a class="editor-button" href={`/editor/${collectionId}/create/`}>
             Create {collectionLabel}
           </a>

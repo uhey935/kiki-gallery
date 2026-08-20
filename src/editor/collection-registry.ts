@@ -12,6 +12,7 @@ export type EditorCollectionAdapter = {
     "journal" | "works" | "exhibitions" | "artists" | "news" | "home" | "about";
   label: string;
   description: string;
+  canCreate: boolean;
   readState: () => Promise<EditorCollectionState>;
 };
 
@@ -20,12 +21,14 @@ export const editorCollectionRegistry = {
     id: "about",
     label: "About",
     description: "Localized singleton · Shared, JA, and EN drafts",
+    canCreate: false,
     readState: readAboutEditorState,
   },
   home: {
     id: "home",
     label: "Home",
     description: "Localized singleton · Shared, JA, and EN drafts",
+    canCreate: false,
     readState: readHomeEditorState,
   },
   artists: {
@@ -33,18 +36,21 @@ export const editorCollectionRegistry = {
     label: "Artists",
     description:
       "Three-file Content Unit · localized biography and Work references",
+    canCreate: true,
     readState: readArtistsEditorState,
   },
   exhibitions: {
     id: "exhibitions",
     label: "Exhibitions",
     description: "Flat Markdown · schedule, references, and presentation",
+    canCreate: true,
     readState: readExhibitionsEditorState,
   },
   journal: {
     id: "journal",
     label: "Journal",
     description: "Three-file Content Units",
+    canCreate: true,
     readState: async () => {
       const state = await readJournalEditorState();
       return {
@@ -63,12 +69,14 @@ export const editorCollectionRegistry = {
     id: "news",
     label: "News",
     description: "Flat Markdown · announcements and optional links",
+    canCreate: true,
     readState: readNewsEditorState,
   },
   works: {
     id: "works",
     label: "Works",
     description: "Flat Markdown · Save, Preview, and Publish",
+    canCreate: true,
     readState: readWorksEditorState,
   },
 } satisfies Record<string, EditorCollectionAdapter>;

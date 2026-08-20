@@ -23,6 +23,7 @@ const state = await collection.readState();
   <EntryList
     collectionId={collection.id}
     collectionLabel={collection.label}
+    canCreate={collection.canCreate}
     entries={state.entries}
   />
 </EditorLayout>
