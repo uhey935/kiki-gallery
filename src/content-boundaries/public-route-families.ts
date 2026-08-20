@@ -24,7 +24,7 @@ const PUBLIC_ROUTE_FAMILY_AVAILABILITY = {
   "journal-index": { ja: true, en: true },
   "journal-detail": { ja: true, en: true },
   about: { ja: true, en: true },
-  privacy: { ja: true, en: false },
+  privacy: { ja: true, en: true },
 } as const satisfies Record<PublicRouteFamily, Record<PublicLocale, boolean>>;
 
 /**

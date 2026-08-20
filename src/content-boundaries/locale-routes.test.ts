@@ -135,14 +135,6 @@ test("capability-gated EN singleton implementations project only when capable", 
   }
 });
 
-test("unimplemented EN families remain unavailable despite content capability", async () => {
-  for (const identity of [
-    { surface: "privacy" },
-  ] as PublicRouteIdentity[]) {
-    assert.deepEqual(await project(identity, "en"), { kind: "unavailable" });
-  }
-});
-
 test("intentional current JA singleton/static routes remain valid targets", async () => {
   assert.deepEqual(await project({ surface: "home" }, "ja"), {
     kind: "available",
@@ -155,5 +147,9 @@ test("intentional current JA singleton/static routes remain valid targets", asyn
   assert.deepEqual(await project({ surface: "privacy" }, "ja"), {
     kind: "available",
     href: "/privacy/",
+  });
+  assert.deepEqual(await project({ surface: "privacy" }, "en"), {
+    kind: "available",
+    href: "/en/privacy/",
   });
 });

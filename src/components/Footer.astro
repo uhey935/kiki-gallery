@@ -1,5 +1,11 @@
 ---
+import { localeFromPathname } from "../content-boundaries/locale-routes.ts";
+
 const year = new Date().getFullYear();
+const privacyHref =
+  localeFromPathname(Astro.url.pathname) === "en"
+    ? "/en/privacy/"
+    : "/privacy/";
 ---
 
 <footer class="footer">
@@ -7,10 +13,11 @@ const year = new Date().getFullYear();
 
   <nav aria-label="Footer navigation" class="footer-nav">
     <ul>
-      <li><a href="/privacy">Privacy Policy</a></li>
+      <li><a href={privacyHref}>Privacy Policy</a></li>
       <li>
         <a href="https://instagram.com" target="_blank" rel="noopener"
-          >Instagram</a>
+          >Instagram</a
+        >
       </li>
     </ul>
   </nav>

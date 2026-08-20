@@ -42,6 +42,35 @@ test("available Journal counterparts render exact canonical links", async () => 
   assert.match(en, /aria-current="true">EN/);
 });
 
+test("available Privacy counterparts render exact canonical links", async () => {
+  const jaHtml = await output("privacy/index.html");
+  const enHtml = await output("en/privacy/index.html");
+  const ja = languageControl(jaHtml);
+  const en = languageControl(enHtml);
+
+  assert.match(ja, /href="\/en\/privacy\/"/);
+  assert.match(en, /href="\/privacy\/"/);
+  assert.match(ja, /aria-current="true">JA/);
+  assert.match(en, /aria-current="true">EN/);
+  assert.match(jaHtml, /<html lang="ja">/);
+  assert.match(enHtml, /<html lang="en">/);
+  assert.match(
+    jaHtml,
+    /rel="canonical" href="https:\/\/your-domain\.com\/privacy\/"/,
+  );
+  assert.match(
+    enHtml,
+    /rel="canonical" href="https:\/\/your-domain\.com\/en\/privacy\/"/,
+  );
+});
+
+test("Footer links to the canonical Privacy route for each locale", async () => {
+  const ja = await output("privacy/index.html");
+  const en = await output("en/privacy/index.html");
+  assert.match(ja, /<a href="\/privacy\/">Privacy Policy<\/a>/);
+  assert.match(en, /<a href="\/en\/privacy\/">Privacy Policy<\/a>/);
+});
+
 test("available detail counterparts render exact canonical links", async () => {
   const artist = languageControl(
     await output("artists/alana-wilson/index.html"),
@@ -99,7 +128,7 @@ test("capable Home counterparts render exact canonical links", async () => {
   assert.match(en, /href="\/"/);
 });
 
-test("EN navigation includes implemented families and omits dead EN routes", async () => {
+test("EN navigation and Footer include implemented families", async () => {
   const html = await output("en/artists/index.html");
   const nav = globalNavigation(html);
   for (const href of [
@@ -111,9 +140,7 @@ test("EN navigation includes implemented families and omits dead EN routes", asy
   ]) {
     assert.match(nav, new RegExp(`href="${href}"`));
   }
-  for (const href of ["/en/privacy/"]) {
-    assert.doesNotMatch(html, new RegExp(`href="${href}"`));
-  }
+  assert.match(html, /href="\/en\/privacy\/"/);
   assert.match(html, /<a href="\/en\/" class="site-header__logo"/);
 });
 

@@ -18,14 +18,9 @@ test("public route-family availability describes page implementations only", () 
     assert.equal(routeFamilyAvailable(family, "en"), true);
   }
 
-  for (const family of ["home", "about"] as const) {
+  for (const family of ["home", "about", "privacy"] as const) {
     assert.equal(routeFamilyAvailable(family, "ja"), true);
     assert.equal(routeFamilyAvailable(family, "en"), true);
-  }
-
-  for (const family of ["privacy"] as const) {
-    assert.equal(routeFamilyAvailable(family, "ja"), true);
-    assert.equal(routeFamilyAvailable(family, "en"), false);
   }
 });
 
