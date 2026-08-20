@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import test from "node:test";
+import test, { type TestContext } from "node:test";
 import { stringify } from "yaml";
-import { loadJournalRepository } from "./repository.ts";
+import { loadJournalRepository, loadJournalUnit } from "./repository.ts";
 import { entriesFromUnits } from "./entry-adapter.ts";
 import { evaluateJournalCapabilities } from "./capabilities.ts";
 import {
@@ -21,6 +21,31 @@ import {
 import { journalSchema } from "./schema.ts";
 
 const fixtures = path.resolve("src/content-loaders/journal/fixtures");
+
+async function temporaryExactUnit(t: TestContext) {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "journal-topology-"));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const unit = path.join(root, "exact-unit");
+  await fs.cp(path.join(fixtures, "valid-public"), unit, { recursive: true });
+  return { root, unit };
+}
+
+function assertRepositoryIntegrity(
+  unit: Awaited<ReturnType<typeof loadJournalUnit>>,
+) {
+  assert.ok(
+    unit.issues.some(
+      (issue) =>
+        issue.ruleId === "content.repository.inventory" &&
+        issue.category === "repository-integrity",
+    ),
+  );
+  const capabilities = evaluateJournalCapabilities(unit);
+  assert.equal(capabilities.save.allowed, false);
+  assert.equal(capabilities.preview.ja.allowed, false);
+  assert.equal(capabilities.preview.en.allowed, false);
+  assert.equal(capabilities.publish.allowed, false);
+}
 
 test("loads three-file units as locale entries and retains raw Markdown", async () => {
   const units = await loadJournalRepository(fixtures);
@@ -42,6 +67,107 @@ test("loads three-file units as locale entries and retains raw Markdown", async 
     Buffer.from(findJournalEntry(entries, "ja", "valid-public")?.body ?? ""),
     raw.subarray(bodyStart),
   );
+});
+
+test("repository accepts only exact, safe three-file Journal units", async (t) => {
+  await t.test("valid exact unit", async (t) => {
+    const { unit } = await temporaryExactUnit(t);
+    const loaded = await loadJournalUnit(unit);
+    assert.equal(loaded.issues.length, 0);
+    assert.deepEqual(
+      entriesFromUnits([loaded]).map((entry) => entry.id),
+      ["ja::exact-unit", "en::exact-unit"],
+    );
+  });
+
+  for (const expected of ["index.yaml", "ja.md", "en.md"] as const) {
+    await t.test(`missing ${expected}`, async (t) => {
+      const { unit } = await temporaryExactUnit(t);
+      await fs.rm(path.join(unit, expected));
+      const loaded = await loadJournalUnit(unit);
+      if (expected === "index.yaml") {
+        assert.equal(loaded.shared.state, "missing");
+        assert.ok(
+          loaded.issues.some(
+            (issue) => issue.ruleId === "content.file.missing",
+          ),
+        );
+        const capabilities = evaluateJournalCapabilities(loaded);
+        assert.equal(capabilities.preview.ja.allowed, false);
+        assert.equal(capabilities.preview.en.allowed, false);
+      } else {
+        const locale = expected.slice(0, 2) as "ja" | "en";
+        const sibling = locale === "ja" ? "en" : "ja";
+        assert.equal(loaded.locales[locale].state, "missing");
+        assert.ok(
+          loaded.issues.some(
+            (issue) =>
+              issue.ruleId === "content.locale.missing" &&
+              issue.locale === locale,
+          ),
+        );
+        const capabilities = evaluateJournalCapabilities(loaded);
+        assert.equal(capabilities.preview[locale].allowed, false);
+        assert.equal(capabilities.preview[sibling].allowed, true);
+      }
+    });
+  }
+
+  await t.test("unexpected extra regular file", async (t) => {
+    const { unit } = await temporaryExactUnit(t);
+    await fs.writeFile(path.join(unit, "extra.txt"), "unexpected");
+    assertRepositoryIntegrity(await loadJournalUnit(unit));
+  });
+
+  await t.test("nested directory and content", async (t) => {
+    const { unit } = await temporaryExactUnit(t);
+    await fs.mkdir(path.join(unit, "nested"));
+    await fs.writeFile(path.join(unit, "nested", "entry.md"), "nested");
+    assertRepositoryIntegrity(await loadJournalUnit(unit));
+  });
+
+  for (const expected of ["index.yaml", "ja.md", "en.md"] as const) {
+    await t.test(`symlinked ${expected}`, async (t) => {
+      const { root, unit } = await temporaryExactUnit(t);
+      const source = path.join(unit, expected);
+      const target = path.join(root, `target-${expected.replace(".", "-")}`);
+      await fs.rename(source, target);
+      await fs.symlink(target, source);
+      const loaded = await loadJournalUnit(unit);
+      assertRepositoryIntegrity(loaded);
+      if (expected === "index.yaml") {
+        assert.equal(loaded.shared.state, "missing");
+        assert.ok(
+          loaded.issues.some((issue) => issue.ruleId === "content.file.unsafe"),
+        );
+      } else {
+        const locale = expected.slice(0, 2) as "ja" | "en";
+        assert.equal(loaded.locales[locale].state, "missing");
+        assert.ok(
+          loaded.issues.some(
+            (issue) =>
+              issue.ruleId === "content.locale.unsafe" &&
+              issue.locale === locale,
+          ),
+        );
+      }
+    });
+  }
+
+  await t.test("non-regular expected source path", async (t) => {
+    const { unit } = await temporaryExactUnit(t);
+    await fs.rm(path.join(unit, "ja.md"));
+    await fs.mkdir(path.join(unit, "ja.md"));
+    const loaded = await loadJournalUnit(unit);
+    assertRepositoryIntegrity(loaded);
+    assert.equal(loaded.locales.ja.state, "missing");
+    assert.ok(
+      loaded.issues.some(
+        (issue) =>
+          issue.ruleId === "content.locale.unsafe" && issue.locale === "ja",
+      ),
+    );
+  });
 });
 
 test("repository and canonical Astro schema accept the same integrated entries", async () => {

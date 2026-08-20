@@ -12,6 +12,7 @@ import type {
 import { journalLocalizedSchema, journalSharedSchema } from "./schema.ts";
 
 const LOCALES = ["ja", "en"] as const;
+const EXACT_UNIT_INVENTORY = ["en.md", "index.yaml", "ja.md"] as const;
 const CONTENT_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function issue(
@@ -132,12 +133,62 @@ function parseMarkdown(
   return { value, issues };
 }
 
-async function readSource(file: string): Promise<string | undefined> {
+type SourceRead =
+  | { state: "present"; raw: string }
+  | { state: "missing" }
+  | { state: "unsafe" };
+
+async function readSource(file: string): Promise<SourceRead> {
   try {
-    return await fs.readFile(file, "utf8");
+    const stat = await fs.lstat(file);
+    if (stat.isSymbolicLink() || !stat.isFile()) return { state: "unsafe" };
+    return { state: "present", raw: await fs.readFile(file, "utf8") };
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+    if ((error as NodeJS.ErrnoException).code === "ENOENT")
+      return { state: "missing" };
     throw error;
+  }
+}
+
+async function inspectUnitTopology(
+  directory: string,
+  contentId: string,
+): Promise<ContentIssue[]> {
+  try {
+    const stat = await fs.lstat(directory);
+    if (stat.isSymbolicLink() || !stat.isDirectory()) {
+      throw new Error("Content unit is not a regular non-symlink directory");
+    }
+    const entries = await fs.readdir(directory, { withFileTypes: true });
+    const names = entries.map((entry) => entry.name).sort();
+    const unexpected = names.filter(
+      (name) =>
+        !EXACT_UNIT_INVENTORY.includes(
+          name as (typeof EXACT_UNIT_INVENTORY)[number],
+        ),
+    );
+    if (unexpected.length > 0) {
+      throw new Error(
+        `Exact three-file inventory required; got ${names.join(", ")}`,
+      );
+    }
+    const unsafe = entries.find(
+      (entry) => entry.isSymbolicLink() || !entry.isFile(),
+    );
+    if (unsafe) throw new Error(`${unsafe.name} is not a regular file`);
+    return [];
+  } catch (error) {
+    return [
+      issue(contentId, {
+        ruleId: "content.repository.inventory",
+        severity: "error",
+        category: "repository-integrity",
+        file: directory,
+        messageKey: "content.repository.inventoryInvalid",
+        params: { detail: String((error as Error).message) },
+        recovery: { kind: "manual-review" },
+      }),
+    ];
   }
 }
 
@@ -145,7 +196,10 @@ export async function loadJournalUnit(
   directory: string,
 ): Promise<LoadedJournalUnit> {
   const contentId = path.basename(directory);
-  const issues: ContentIssue[] = [];
+  const issues: ContentIssue[] = await inspectUnitTopology(
+    directory,
+    contentId,
+  );
   if (!CONTENT_ID.test(contentId)) {
     issues.push(
       issue(contentId, {
@@ -159,22 +213,32 @@ export async function loadJournalUnit(
     );
   }
   const sharedFile = path.join(directory, "index.yaml");
-  const sharedRaw = await readSource(sharedFile);
+  const sharedSource = await readSource(sharedFile);
   let shared: SourceState<JournalShared>;
-  if (sharedRaw === undefined) {
+  if (sharedSource.state !== "present") {
     shared = { state: "missing" };
     issues.push(
       issue(contentId, {
-        ruleId: "content.file.missing",
+        ruleId:
+          sharedSource.state === "missing"
+            ? "content.file.missing"
+            : "content.file.unsafe",
         severity: "error",
         category: "unit-integrity",
         file: sharedFile,
-        messageKey: "content.file.missing",
+        messageKey:
+          sharedSource.state === "missing"
+            ? "content.file.missing"
+            : "content.file.unsafe",
         params: { expected: "index.yaml" },
-        recovery: { kind: "edit-source" },
+        recovery: {
+          kind:
+            sharedSource.state === "missing" ? "edit-source" : "manual-review",
+        },
       }),
     );
   } else {
+    const sharedRaw = sharedSource.raw;
     const result = parseShared(sharedRaw, contentId, sharedFile);
     issues.push(...result.issues);
     shared = result.value
@@ -184,22 +248,31 @@ export async function loadJournalUnit(
   const locales = {} as LoadedJournalUnit["locales"];
   for (const locale of LOCALES) {
     const file = path.join(directory, `${locale}.md`);
-    const raw = await readSource(file);
-    if (raw === undefined) {
+    const source = await readSource(file);
+    if (source.state !== "present") {
       locales[locale] = { state: "missing" };
       issues.push(
         issue(contentId, {
-          ruleId: "content.locale.missing",
+          ruleId:
+            source.state === "missing"
+              ? "content.locale.missing"
+              : "content.locale.unsafe",
           severity: "error",
           category: "unit-integrity",
           locale,
           file,
-          messageKey: "content.locale.missing",
-          recovery: { kind: "edit-source" },
+          messageKey:
+            source.state === "missing"
+              ? "content.locale.missing"
+              : "content.locale.unsafe",
+          recovery: {
+            kind: source.state === "missing" ? "edit-source" : "manual-review",
+          },
         }),
       );
       continue;
     }
+    const raw = source.raw;
     const result = parseMarkdown(raw, contentId, locale, file);
     issues.push(...result.issues);
     locales[locale] = result.value
@@ -212,9 +285,17 @@ export async function loadJournalUnit(
 export async function loadJournalRepository(
   root: string,
 ): Promise<LoadedJournalUnit[]> {
+  const rootStat = await fs.lstat(root);
+  if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) {
+    throw new Error("Journal repository root is unsafe");
+  }
   const entries = await fs.readdir(root, { withFileTypes: true });
+  if (entries.some((entry) => entry.isSymbolicLink() || !entry.isDirectory())) {
+    throw new Error(
+      "Journal repository contains an extra, symlinked, or non-directory entry",
+    );
+  }
   const directories = entries
-    .filter((entry) => entry.isDirectory())
     .map((entry) => path.join(root, entry.name))
     .sort();
   return Promise.all(directories.map(loadJournalUnit));
