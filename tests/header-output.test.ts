@@ -112,15 +112,6 @@ test("Work details render exact capable counterparts and localized Artist links"
   assert.match(enHtml, /href="\/en\/artists\/yuka-mori\/"/);
 });
 
-test("unavailable counterparts retain current locale without anchor or separator", async () => {
-  for (const path of ["404.html"]) {
-    const control = languageControl(await output(path));
-    assert.match(control, /aria-current="true">JA/);
-    assert.doesNotMatch(control, /<a /);
-    assert.doesNotMatch(control, /site-header__language-separator/);
-  }
-});
-
 test("capable Home counterparts render exact canonical links", async () => {
   const ja = languageControl(await output("index.html"));
   const en = languageControl(await output("en/index.html"));

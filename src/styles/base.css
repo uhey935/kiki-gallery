@@ -301,8 +301,18 @@ body {
 ========================= */
 
 .not-found {
+  min-height: 100vh;
   padding-top: clamp(140px, 12vw, 179px);
   padding-bottom: clamp(240px, 24vw, 360px);
+  position: relative;
+}
+
+.not-found-logo {
+  font-size: var(--font-size-body-supporting);
+  letter-spacing: 0.02em;
+  position: absolute;
+  top: clamp(24px, 3vw, 42px);
+  left: var(--layout-space);
 }
 
 .not-found .index-h1 {
@@ -321,6 +331,13 @@ body {
   margin-bottom: clamp(96px, 12vw, 171px);
 }
 
+.not-found-description p + p {
+  margin-top: 0.35em;
+}
+
 .not-found-action {
+  display: flex;
+  justify-content: center;
+  gap: clamp(24px, 4vw, 48px);
   text-align: center;
 }

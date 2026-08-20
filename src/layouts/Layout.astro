@@ -16,7 +16,11 @@ interface Props {
   description?: string;
   image?: string;
   flush?: boolean;
-  locale?: "ja" | "en";
+  locale?: "ja" | "en" | "und";
+  robots?: string;
+  canonical?: boolean;
+  social?: boolean;
+  chrome?: boolean;
 }
 
 const {
@@ -25,6 +29,10 @@ const {
   image,
   flush = false,
   locale = "ja",
+  robots,
+  canonical = true,
+  social = true,
+  chrome = true,
 } = Astro.props;
 
 // TODO: 本番ドメイン設定後、Astro.siteのみを使用する
@@ -44,31 +52,43 @@ const ogImageUrl = new URL(image ?? "/default-og.jpg", siteUrl).toString();
 
     <title>{title ? `${title} | KiKi Gallery` : "KiKi Gallery"}</title>
     <meta name="description" content={description ?? "KiKi Gallery"} />
-    <link
-      rel="canonical"
-      href={new URL(Astro.url.pathname, siteUrl).toString()}
-    />
+    {robots && <meta name="robots" content={robots} />}
+    {
+      canonical && (
+        <link
+          rel="canonical"
+          href={new URL(Astro.url.pathname, siteUrl).toString()}
+        />
+      )
+    }
 
-    <meta property="og:title" content={title ?? "KiKi Gallery"} />
-    <meta property="og:description" content={description ?? "KiKi Gallery"} />
-    <meta property="og:type" content="website" />
-    <meta
-      property="og:url"
-      content={new URL(Astro.url.pathname, siteUrl).toString()}
-    />
-    <meta property="og:image" content={ogImageUrl} />
-    <meta property="og:site_name" content="KiKi Gallery" />
-
+    {
+      social && (
+        <>
+          <meta property="og:title" content={title ?? "KiKi Gallery"} />
+          <meta
+            property="og:description"
+            content={description ?? "KiKi Gallery"}
+          />
+          <meta property="og:type" content="website" />
+          <meta
+            property="og:url"
+            content={new URL(Astro.url.pathname, siteUrl).toString()}
+          />
+          <meta property="og:image" content={ogImageUrl} />
+          <meta property="og:site_name" content="KiKi Gallery" />
+        </>
+      )
+    }
   </head>
 
   <body>
-    <Header />
+    {chrome && <Header />}
 
     <main class:list={["site-main", { "site-main--flush": flush }]}>
       <slot />
     </main>
 
-    <Footer />
-
+    {chrome && <Footer />}
   </body>
 </html>

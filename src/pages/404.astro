@@ -1,21 +1,31 @@
 ---
 import Layout from "../layouts/Layout.astro";
-
-const pageTitle = "404 | KiKi Gallery";
 ---
 
-<Layout title={pageTitle}>
+<Layout
+  title="404"
+  description="The requested page could not be found. お探しのページが見つかりませんでした。"
+  locale="und"
+  robots="noindex, follow"
+  canonical={false}
+  social={false}
+  chrome={false}
+>
   <section class="not-found section">
+    <a href="/" class="not-found-logo" aria-label="KiKi Gallery home">KiKi</a>
+
     <div class="not-found-content">
-      <h1 class="index-h1">Page Not Found</h1>
+      <h1 class="index-h1" lang="en">Page Not Found</h1>
 
-      <p class="not-found-description">
-        お探しのページは削除されたか、URLが変更された可能性があります。
-      </p>
+      <div class="not-found-description">
+        <p lang="en">The requested page could not be found.</p>
+        <p lang="ja">お探しのページが見つかりませんでした。</p>
+      </div>
     </div>
 
-    <div class="not-found-action">
-      <a href="/" class="action-link">Back to Home</a>
-    </div>
+    <nav class="not-found-action" aria-label="Home">
+      <a href="/" class="action-link" lang="ja">日本語 Home</a>
+      <a href="/en/" class="action-link" lang="en">English Home</a>
+    </nav>
   </section>
 </Layout>
