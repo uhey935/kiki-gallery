@@ -2,7 +2,8 @@
 import type { ArtistsEditorDraftState } from "../../editor/artists-draft-state";
 const { draft } = Astro.props as { draft: ArtistsEditorDraftState };
 const { data } = draft;
-const en = draft.locales.en.state === "editable" ? draft.locales.en.value : undefined;
+const en =
+  draft.locales.en.state === "editable" ? draft.locales.en.value : undefined;
 ---
 
 <form class="editor-draft-form" data-artists-draft-form>
@@ -12,18 +13,19 @@ const en = draft.locales.en.state === "editable" ? draft.locales.en.value : unde
   </div>
   <section class="editor-entry-section">
     <header>
-      <div><p class="editor-eyebrow">Identity</p><h2>Artist</h2></div>
+      <div><p class="editor-eyebrow">Shared fields</p><h2>Shared</h2></div>
     </header>
+    <p>
+      Asset upload and replacement are outside this milestone. Edit the
+      canonical public path only.
+    </p>
     <div class="editor-entry-section__content editor-field-grid">
       <label data-editor-field="name">
-        <span>Sort name (Shared) <small class="editor-field-badge">Required</small></span>
+        <span
+          >Sort name (Shared) <small class="editor-field-badge">Required</small
+          ></span
+        >
         <input name="name" value={data.name} />
-      </label>
-      <label data-editor-field="display_name">
-        <span>
-          JA name <small class="editor-field-badge">Required</small>
-        </span>
-        <input name="display_name" value={data.display_name ?? ""} />
       </label>
       <label class="editor-field-wide" data-editor-field="medium">
         <span>
@@ -32,45 +34,11 @@ const en = draft.locales.en.state === "editable" ? draft.locales.en.value : unde
         </span>
         <textarea name="medium">{data.medium.join("\n")}</textarea>
       </label>
-      <label class="editor-field-wide" data-editor-field="short_bio">
-        <span>
-          JA short biography <small class="editor-field-badge">Required</small>
-        </span>
-        <textarea name="short_bio">{data.short_bio}</textarea>
-      </label>
-      <label class="editor-field-wide" data-editor-field="biography">
-        <span>
-          JA biography
-          <small class="editor-field-badge editor-field-badge--optional">
-            Optional
-          </small>
-        </span>
-        <textarea name="biography">{data.biography ?? ""}</textarea>
-      </label>
-    </div>
-  </section>
-  <section class="editor-entry-section">
-    <header>
-      <div>
-        <p class="editor-eyebrow">Existing asset reference</p><h2>Hero</h2>
-      </div>
-    </header>
-    <p>
-      Asset upload and replacement are outside this milestone. Edit the
-      canonical public path only.
-    </p>
-    <div class="editor-entry-section__content editor-field-grid">
       <label class="editor-field-wide" data-editor-field="hero.image">
         <span>
           Image path <small class="editor-field-badge">Required</small>
         </span>
         <input name="hero.image" value={data.hero.image} />
-      </label>
-      <label class="editor-field-wide" data-editor-field="hero_alt">
-        <span>
-          JA alt text <small class="editor-field-badge">Required</small>
-        </span>
-        <textarea name="hero_alt">{data.hero_alt}</textarea>
       </label>
     </div>
   </section>
@@ -109,7 +77,79 @@ const en = draft.locales.en.state === "editable" ? draft.locales.en.value : unde
   </section>
   <section class="editor-entry-section">
     <header>
-      <div><p class="editor-eyebrow">Metadata</p><h2>SEO & body</h2></div>
+      <div>
+        <p class="editor-eyebrow">Japanese locale</p><h2>JA content</h2>
+      </div>
+    </header>
+    <div class="editor-entry-section__content editor-field-grid">
+      <label data-editor-field="display_name">
+        <span>
+          JA name <small class="editor-field-badge">Required</small>
+        </span>
+        <input name="display_name" value={data.display_name ?? ""} />
+      </label>
+      <label class="editor-field-wide" data-editor-field="short_bio">
+        <span>
+          JA short biography <small class="editor-field-badge">Required</small>
+        </span>
+        <textarea name="short_bio">{data.short_bio}</textarea>
+      </label>
+      <label class="editor-field-wide" data-editor-field="biography">
+        <span>
+          JA biography
+          <small class="editor-field-badge editor-field-badge--optional">
+            Optional
+          </small>
+        </span>
+        <textarea name="biography">{data.biography ?? ""}</textarea>
+      </label>
+      <label class="editor-field-wide" data-editor-field="hero_alt">
+        <span>
+          JA alt text <small class="editor-field-badge">Required</small>
+        </span>
+        <textarea name="hero_alt">{data.hero_alt}</textarea>
+      </label>
+    </div>
+  </section>
+  <section class="editor-entry-section">
+    <header>
+      <div><p class="editor-eyebrow">English locale</p><h2>EN content</h2></div>
+    </header>
+    <p>
+      Placeholder values keep the EN route unpublished and never fall back to
+      JA.
+    </p>
+    <div class="editor-entry-section__content editor-field-grid">
+      <label data-editor-field="en.name"
+        ><span>EN name <small class="editor-field-badge">Required</small></span
+        ><input name="en.name" value={en?.name ?? ""} /></label
+      >
+      <label class="editor-field-wide" data-editor-field="en.short_bio"
+        ><span
+          >EN short biography <small class="editor-field-badge">Required</small
+          ></span
+        ><textarea name="en.short_bio">{en?.short_bio ?? ""}</textarea></label
+      >
+      <label class="editor-field-wide" data-editor-field="en.biography"
+        ><span
+          >EN biography <small
+            class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        ><textarea name="en.biography">{en?.biography ?? ""}</textarea></label
+      >
+      <label class="editor-field-wide" data-editor-field="en.hero_alt"
+        ><span
+          >EN alt text <small class="editor-field-badge">Required</small></span
+        ><textarea name="en.hero_alt">{en?.hero_alt ?? ""}</textarea></label
+      >
+    </div>
+  </section>
+  <section class="editor-entry-section">
+    <header>
+      <div>
+        <p class="editor-eyebrow">Localized metadata</p><h2>Metadata</h2>
+      </div>
     </header>
     <div class="editor-entry-section__content editor-field-grid">
       <label data-editor-field="seo_title">
@@ -130,18 +170,23 @@ const en = draft.locales.en.state === "editable" ? draft.locales.en.value : unde
         </span>
         <textarea name="description">{data.description ?? ""}</textarea>
       </label>
-    </div>
-  </section>
-  <section class="editor-entry-section">
-    <header><div><p class="editor-eyebrow">English locale</p><h2>EN content</h2></div></header>
-    <p>Placeholder values keep the EN route unpublished and never fall back to JA.</p>
-    <div class="editor-entry-section__content editor-field-grid">
-      <label data-editor-field="en.name"><span>EN name <small class="editor-field-badge">Required</small></span><input name="en.name" value={en?.name ?? ""} /></label>
-      <label class="editor-field-wide" data-editor-field="en.short_bio"><span>EN short biography <small class="editor-field-badge">Required</small></span><textarea name="en.short_bio">{en?.short_bio ?? ""}</textarea></label>
-      <label class="editor-field-wide" data-editor-field="en.biography"><span>EN biography <small class="editor-field-badge editor-field-badge--optional">Optional</small></span><textarea name="en.biography">{en?.biography ?? ""}</textarea></label>
-      <label class="editor-field-wide" data-editor-field="en.hero_alt"><span>EN alt text <small class="editor-field-badge">Required</small></span><textarea name="en.hero_alt">{en?.hero_alt ?? ""}</textarea></label>
-      <label data-editor-field="en.seo_title"><span>EN SEO title <small class="editor-field-badge editor-field-badge--optional">Optional</small></span><input name="en.seo_title" value={en?.seo_title ?? ""} /></label>
-      <label class="editor-field-wide" data-editor-field="en.description"><span>EN description <small class="editor-field-badge editor-field-badge--optional">Optional</small></span><textarea name="en.description">{en?.description ?? ""}</textarea></label>
+      <label data-editor-field="en.seo_title"
+        ><span
+          >EN SEO title <small
+            class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        ><input name="en.seo_title" value={en?.seo_title ?? ""} /></label
+      >
+      <label class="editor-field-wide" data-editor-field="en.description"
+        ><span
+          >EN description <small
+            class="editor-field-badge editor-field-badge--optional"
+            >Optional</small
+          ></span
+        ><textarea name="en.description">{en?.description ?? ""}</textarea
+        ></label
+      >
     </div>
   </section>
 </form>
