@@ -7,6 +7,12 @@ works:
 start_date: 2026-03-05
 end_date: 2026-07-09
 display_artists: true
+opening_hours:
+  opens: 13:00
+  closes: 17:00
+closed_weekdays:
+  - wed
+  - thu
 hero:
   image: /images/exhibitions/group-exhibition-2026-03.jpg
   orientation: landscape

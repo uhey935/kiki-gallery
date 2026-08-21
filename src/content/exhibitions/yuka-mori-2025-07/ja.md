@@ -3,8 +3,6 @@ title: Intertwined ー 戯れるメッシュ
 venue: |
   KiKi Gallery
   神奈川県横浜市西区北幸2-10-48　むつみビル3階
-opening_hours: 13:00-17:00
-closed_days: 水曜・木曜
 hero_alt: 淡い青灰色の面に虹色を帯びた光が弧を描く様子
 ---
 

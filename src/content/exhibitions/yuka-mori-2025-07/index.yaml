@@ -3,6 +3,12 @@ artists:
 start_date: 2025-07-02
 end_date: 2025-07-26
 display_artists: true
+opening_hours:
+  opens: 13:00
+  closes: 17:00
+closed_weekdays:
+  - wed
+  - thu
 hero:
   image: /images/exhibitions/yuka-mori-2025-07.jpg
   orientation: portrait

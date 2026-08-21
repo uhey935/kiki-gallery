@@ -401,6 +401,36 @@ button {
   color: #65706a;
   font-size: 0.78rem;
 }
+
+.editor-checkbox-fieldset {
+  margin: 0;
+  border: 1px solid #dfe4df;
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.editor-checkbox-fieldset legend {
+  padding: 0 4px;
+  font-weight: 600;
+}
+
+.editor-checkbox-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 10px;
+}
+
+.editor-field-grid .editor-checkbox-option {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.editor-field-grid .editor-checkbox-option input {
+  width: auto;
+}
 .editor-field-grid label.is-modified input,
 .editor-field-grid label.is-modified textarea {
   border-color: #b06a56;

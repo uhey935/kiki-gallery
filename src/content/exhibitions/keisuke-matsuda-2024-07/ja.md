@@ -1,8 +1,6 @@
 ---
 title: Undulation
 venue: KiKi Gallery
-opening_hours: 13:00-17:00
-closed_days: 水曜・木曜
 hero_alt: 青灰色の濃淡と流れるような線で構成された抽象画
 ---
 

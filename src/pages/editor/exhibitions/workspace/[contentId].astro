@@ -82,6 +82,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     validateExhibitionsEditorDraft,
     type ExhibitionsEditorDraftState,
   } from "../../../../editor/exhibitions-draft-state";
+  import type { ExhibitionWeekday } from "../../../../content-loaders/exhibitions/schema";
   import {
     editorFailureGuidance,
     isEditorSaveShortcut,
@@ -138,6 +139,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       const data = new FormData(form);
       const value = (name: string) => String(data.get(name) ?? "");
       const display = value("shared.display_artists");
+      const opens = value("shared.opening_hours.opens");
+      const closes = value("shared.opening_hours.closes");
+      const closedWeekdays = data
+        .getAll("shared.closed_weekdays")
+        .map(String) as ExhibitionWeekday[];
       const localized = (locale: "ja" | "en") => ({
         state: "editable" as const,
         value: {
@@ -146,8 +152,6 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           body: value(`${locale}.body`),
           summary: optional(value(`${locale}.summary`)),
           venue: optional(value(`${locale}.venue`)),
-          opening_hours: optional(value(`${locale}.opening_hours`)),
-          closed_days: optional(value(`${locale}.closed_days`)),
           attendance: optional(value(`${locale}.attendance`)),
           hero_caption: optional(value(`${locale}.hero_caption`)),
           seo_title: optional(value(`${locale}.seo_title`)),
@@ -165,6 +169,12 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
             end_date: value("shared.end_date"),
             display_artists:
               display === "default" ? undefined : display === "true",
+            ...(opens || closes
+              ? { opening_hours: { opens, closes } }
+              : {}),
+            ...(data.get("shared.closed_weekdays.known") === "on"
+              ? { closed_weekdays: closedWeekdays }
+              : {}),
             hero: {
               image: value("shared.hero.image"),
               orientation: value("shared.hero.orientation") as

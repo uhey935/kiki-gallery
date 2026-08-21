@@ -16,6 +16,7 @@ import {
   validateWorksEditorDraft,
   type WorksEditorDraftState,
 } from "./works-draft-state.ts";
+import type { ExhibitionWeekday } from "../content-loaders/exhibitions/schema.ts";
 
 type Collection = "works" | "artists" | "exhibitions" | "news";
 type Draft =
@@ -123,6 +124,11 @@ function readDraft(
   if (collection === "exhibitions") {
     const current = draft as ExhibitionsEditorDraftState;
     const display = value("shared.display_artists");
+    const opens = value("shared.opening_hours.opens");
+    const closes = value("shared.opening_hours.closes");
+    const closedWeekdays = data
+      .getAll("shared.closed_weekdays")
+      .map(String) as ExhibitionWeekday[];
     const localized = (locale: "ja" | "en") => ({
       state: "editable" as const,
       value: {
@@ -131,8 +137,6 @@ function readDraft(
         body: value(`${locale}.body`),
         summary: optional(value(`${locale}.summary`)),
         venue: optional(value(`${locale}.venue`)),
-        opening_hours: optional(value(`${locale}.opening_hours`)),
-        closed_days: optional(value(`${locale}.closed_days`)),
         attendance: optional(value(`${locale}.attendance`)),
         hero_caption: optional(value(`${locale}.hero_caption`)),
         seo_title: optional(value(`${locale}.seo_title`)),
@@ -151,6 +155,12 @@ function readDraft(
           end_date: value("shared.end_date"),
           display_artists:
             display === "default" ? undefined : display === "true",
+          ...(opens || closes
+            ? { opening_hours: { opens, closes } }
+            : {}),
+          ...(data.get("shared.closed_weekdays.known") === "on"
+            ? { closed_weekdays: closedWeekdays }
+            : {}),
           hero: {
             image: value("shared.hero.image"),
             orientation: value("shared.hero.orientation") as

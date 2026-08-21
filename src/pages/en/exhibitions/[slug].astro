@@ -22,6 +22,8 @@ const shared = {
   start_date: exhibition.data.start_date.toISOString().slice(0, 10),
   end_date: exhibition.data.end_date.toISOString().slice(0, 10),
   display_artists: exhibition.data.display_artists,
+  opening_hours: exhibition.data.opening_hours,
+  closed_weekdays: exhibition.data.closed_weekdays,
   hero: {
     image: exhibition.data.hero.image,
     orientation: exhibition.data.hero.orientation,
@@ -33,8 +35,6 @@ const localized = {
   title: exhibition.data.title,
   summary: exhibition.data.summary,
   venue: exhibition.data.venue,
-  opening_hours: exhibition.data.opening_hours,
-  closed_days: exhibition.data.closed_days,
   attendance: exhibition.data.attendance,
   hero_alt: exhibition.data.hero_alt,
   hero_caption: exhibition.data.hero.hero_caption,

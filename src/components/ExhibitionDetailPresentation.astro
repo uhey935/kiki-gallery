@@ -72,11 +72,15 @@ const artistSeparator = locale === "ja" ? "、" : ", ";
             model.openingHours && (
               <>
                 <dt>{labels.openingHours}</dt>
-                <dd>
-                  {locale === "ja"
-                    ? model.openingHours.replace("-", " - ")
-                    : model.openingHours}
-                </dd>
+                <dd>{model.openingHours}</dd>
+              </>
+            )
+          }
+          {
+            !model.venue && model.closedDays && (
+              <>
+                <dt>{labels.closed}</dt>
+                <dd>{model.closedDays}</dd>
               </>
             )
           }
@@ -88,7 +92,7 @@ const artistSeparator = locale === "ja" ? "、" : ", ";
         {model.summary && <p>{model.summary}</p>}
         <slot />
         {
-          (locale === "ja" || model.venue || model.closedDays) && (
+          model.venue && (
             <section class="exhibitions-venue">
               <h3 class="exhibitions-venue-title">{labels.venue}</h3>
               {model.venue && (

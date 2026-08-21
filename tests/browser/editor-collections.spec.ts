@@ -216,6 +216,11 @@ test("Exhibitions operator flow validates, previews, saves, and publishes", asyn
     .fill("browser-acceptance-artist");
   await page.locator('input[name="shared.start_date"]').fill("2026-08-09");
   await page.locator('input[name="shared.end_date"]').fill("2026-08-10");
+  await page.locator('input[name="shared.opening_hours.opens"]').fill("13:00");
+  await page.locator('input[name="shared.opening_hours.closes"]').fill("17:00");
+  await page.locator('input[name="shared.closed_weekdays.known"]').check();
+  await page.locator('input[name="shared.closed_weekdays"][value="wed"]').check();
+  await page.locator('input[name="shared.closed_weekdays"][value="thu"]').check();
   await page.locator('input[name="ja.title"]').fill(createTitle);
   await page.locator('input[name="ja.venue"]').fill("KiKi Gallery");
   await page
@@ -296,6 +301,9 @@ test("Exhibitions JA and EN previews render the current draft through public pre
   await page
     .locator('input[name="ja.attendance"]')
     .fill("JA unsaved attendance");
+  await page.locator('input[name="shared.opening_hours.opens"]').fill("12:30");
+  await page.locator('input[name="shared.closed_weekdays"][value="thu"]').uncheck();
+  await page.locator('input[name="shared.closed_weekdays"][value="fri"]').check();
   await expect(page.locator("[data-publish-exhibitions]")).toBeDisabled();
   const jaPreview = await openPreview(context, previewJaButton);
   await expect(
@@ -304,6 +312,8 @@ test("Exhibitions JA and EN previews render the current draft through public pre
     ),
   ).toBeVisible();
   await expect(jaPreview.getByText("JA unsaved attendance")).toBeVisible();
+  await expect(jaPreview.getByText("12:30–17:00")).toBeVisible();
+  await expect(jaPreview.getByText("水曜・金曜")).toBeVisible();
   await expect(jaPreview.getByText("木下令子、森夕香")).toBeVisible();
   await expect(jaPreview.locator(".exhibitions-work")).toHaveCount(2);
   await expect(
@@ -321,8 +331,11 @@ test("Exhibitions JA and EN previews render the current draft through public pre
     ),
   ).toBeVisible();
   await expect(enPreview.getByText("EN unsaved attendance")).toBeVisible();
+  await expect(enPreview.getByText("12:30–17:00")).toBeVisible();
+  await expect(enPreview.getByText("Wednesday and Friday")).toBeVisible();
   await expect(enPreview.getByText("Reiko Kinoshita, Yuka Mori")).toBeVisible();
   await expect(enPreview.getByText("Artist attendance")).toBeVisible();
+  await expect(enPreview.getByRole("heading", { name: "Venue" })).toHaveCount(0);
   await expect(enPreview.locator(".exhibitions-work")).toHaveCount(0);
   await expect(
     enPreview.getByRole("link", { name: "View All Exhibitions" }),
@@ -331,6 +344,8 @@ test("Exhibitions JA and EN previews render the current draft through public pre
 
   const publicJa = await context.newPage();
   await publicJa.goto(`/exhibitions/${contentId}/`);
+  await expect(publicJa.getByText("13:00–17:00")).toBeVisible();
+  await expect(publicJa.getByText("水曜・木曜")).toBeVisible();
   await expect(
     publicJa.locator('[data-exhibition-detail-presentation][data-locale="ja"]'),
   ).toBeVisible();
@@ -340,6 +355,9 @@ test("Exhibitions JA and EN previews render the current draft through public pre
 
   const publicEn = await context.newPage();
   await publicEn.goto(`/en/exhibitions/${contentId}/`);
+  await expect(publicEn.getByText("13:00–17:00")).toBeVisible();
+  await expect(publicEn.getByText("Wednesday and Thursday")).toBeVisible();
+  await expect(publicEn.getByRole("heading", { name: "Venue" })).toHaveCount(0);
   await expect(
     publicEn.locator('[data-exhibition-detail-presentation][data-locale="en"]'),
   ).toBeVisible();

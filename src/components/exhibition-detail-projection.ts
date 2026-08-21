@@ -11,6 +11,10 @@ import type {
   ExhibitionShared,
 } from "../content-loaders/exhibitions/schema.ts";
 import { formatDateRangeJa } from "../utils/date.ts";
+import {
+  formatExhibitionClosedWeekdays,
+  formatExhibitionOpeningHours,
+} from "../utils/exhibition-schedule.ts";
 import type { ExhibitionDetailPresentationModel } from "./exhibition-detail-presentation.ts";
 
 type ProjectionInput = {
@@ -104,9 +108,14 @@ export async function createExhibitionDetailPresentationModel({
       caption: localized.hero_caption,
     },
     attendance: localized.attendance,
-    openingHours: localized.opening_hours,
+    openingHours: shared.opening_hours
+      ? formatExhibitionOpeningHours(shared.opening_hours)
+      : undefined,
     venue: localized.venue,
-    closedDays: localized.closed_days,
+    closedDays:
+      shared.closed_weekdays === undefined
+        ? undefined
+        : formatExhibitionClosedWeekdays(shared.closed_weekdays, locale),
     summary: localized.summary,
     works,
     indexHref: exhibitionIndexRoute(locale),

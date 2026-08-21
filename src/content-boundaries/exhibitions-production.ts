@@ -29,6 +29,10 @@ export type ExhibitionProductionEntry = {
     start_date: Date;
     end_date: Date;
     display_artists?: boolean;
+    opening_hours?: { opens: string; closes: string };
+    closed_weekdays?: Array<
+      "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun"
+    >;
     hero: {
       image: string;
       orientation: "portrait" | "landscape";
@@ -39,8 +43,6 @@ export type ExhibitionProductionEntry = {
     title: string;
     summary?: string;
     venue?: string;
-    opening_hours?: string;
-    closed_days?: string;
     attendance?: string;
     hero_alt: string;
     seo_title?: string;
@@ -76,6 +78,12 @@ const adapt = (source: SourceEntry): ExhibitionProductionEntry => ({
     ...(source.data.display_artists === undefined
       ? {}
       : { display_artists: source.data.display_artists }),
+    ...(source.data.opening_hours
+      ? { opening_hours: source.data.opening_hours }
+      : {}),
+    ...(source.data.closed_weekdays === undefined
+      ? {}
+      : { closed_weekdays: source.data.closed_weekdays }),
     hero: {
       ...source.data.hero,
       ...(source.data.hero_caption
@@ -85,12 +93,6 @@ const adapt = (source: SourceEntry): ExhibitionProductionEntry => ({
     title: source.data.title,
     ...(source.data.summary ? { summary: source.data.summary } : {}),
     ...(source.data.venue ? { venue: source.data.venue } : {}),
-    ...(source.data.opening_hours
-      ? { opening_hours: source.data.opening_hours }
-      : {}),
-    ...(source.data.closed_days
-      ? { closed_days: source.data.closed_days }
-      : {}),
     ...(source.data.attendance ? { attendance: source.data.attendance } : {}),
     hero_alt: source.data.hero_alt,
     ...(source.data.seo_title ? { seo_title: source.data.seo_title } : {}),

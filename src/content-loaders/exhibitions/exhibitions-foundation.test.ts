@@ -91,6 +91,56 @@ test("strict target schemas enforce uniqueness, dates, and required localized fi
     exhibitionLocalizedSchema.safeParse({ title: "x", hero_alt: "y" }).success,
     true,
   );
+  assert.equal(
+    exhibitionLocalizedSchema.safeParse({
+      title: "x",
+      hero_alt: "y",
+      opening_hours: "13:00-17:00",
+    }).success,
+    false,
+  );
+});
+
+test("Shared schedule validates time ranges and canonical weekdays", () => {
+  const base = {
+    artists: ["a"],
+    start_date: "2026-01-01",
+    end_date: "2026-01-02",
+    hero: { image: "/x", orientation: "portrait" as const },
+  };
+  assert(exhibitionSharedSchema.safeParse(base).success);
+  assert(
+    exhibitionSharedSchema.safeParse({
+      ...base,
+      opening_hours: { opens: "13:00", closes: "17:00" },
+      closed_weekdays: [],
+    }).success,
+  );
+  assert(
+    exhibitionSharedSchema.safeParse({
+      ...base,
+      closed_weekdays: ["wed", "thu"],
+    }).success,
+  );
+  for (const opening_hours of [
+    { opens: "3:00", closes: "17:00" },
+    { opens: "24:00", closes: "25:00" },
+    { opens: "17:00", closes: "17:00" },
+    { opens: "18:00", closes: "17:00" },
+  ])
+    assert.equal(
+      exhibitionSharedSchema.safeParse({ ...base, opening_hours }).success,
+      false,
+    );
+  for (const closed_weekdays of [
+    ["wed", "wed"],
+    ["thu", "wed"],
+    ["holiday"],
+  ])
+    assert.equal(
+      exhibitionSharedSchema.safeParse({ ...base, closed_weekdays }).success,
+      false,
+    );
 });
 
 test("repository requires exact files and isolates placeholder EN from JA", async () => {
@@ -262,7 +312,7 @@ test("frozen manifest binds exact five sources, targets, hashes, and rollback by
   );
 });
 
-test("executor dry-run does not mutate and fixture execution installs all five units", async () => {
+test("v1 executor dry-run remains reproducible while final schema rejects legacy postimages", async () => {
   const manifest = await frozen();
   const root = await tempSources(manifest);
   try {
@@ -271,18 +321,18 @@ test("executor dry-run does not mutate and fixture execution installs all five u
       dryRun: true,
     });
     assert.equal(dry.mode, "dry-run");
-    const result = await executeExhibitionMigration(manifest, {
-      rootOverride: root,
-      dryRun: false,
-    });
-    assert.equal(result.createdDirectories.length, 5);
-    for (const id of EXHIBITION_MIGRATION_INVENTORY) {
-      await assert.rejects(readFile(path.join(root, `${id}.md`)));
-      assert.equal(
-        (await loadExhibitionUnit(path.join(root, id))).shared.state,
-        "valid",
+    await assert.rejects(
+      executeExhibitionMigration(manifest, {
+        rootOverride: root,
+        dryRun: false,
+      }),
+      /post-install verification failed/,
+    );
+    for (const entry of manifest.entries)
+      assert.deepEqual(
+        await readFile(path.join(root, `${entry.contentId}.md`)),
+        Buffer.from(entry.source.originalBase64, "base64"),
       );
-    }
   } finally {
     await rm(root, { recursive: true });
   }
@@ -315,7 +365,7 @@ test("executor rejects drift and collision without mutation", async () => {
   }
 });
 
-test("executor rolls every installed directory back after post-install failure", async () => {
+test("v1 executor rolls installed legacy postimages back under the final schema", async () => {
   const manifest = await frozen();
   const root = await tempSources(manifest);
   try {
@@ -330,7 +380,7 @@ test("executor rolls every installed directory back after post-install failure",
           },
         },
       }),
-      /injected/,
+      /post-install verification failed/,
     );
     for (const entry of manifest.entries) {
       assert.equal(
@@ -373,7 +423,7 @@ test("staged-write and source-removal failures leave or restore every source", a
                   },
                 },
         }),
-        /injected/,
+        failure === "staging" ? /injected/ : /post-install verification failed/,
       );
       for (const entry of manifest.entries)
         assert.deepEqual(

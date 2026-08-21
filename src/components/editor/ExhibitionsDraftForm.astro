@@ -14,6 +14,15 @@ const en = localized("en");
       <label class="editor-field-wide"><span>Works <small class="editor-field-badge editor-field-badge--optional">Optional</small></span><textarea name="shared.works">{shared.works?.join("\n") ?? ""}</textarea></label>
       <label><span>Start date <small class="editor-field-badge">Required</small></span><input name="shared.start_date" type="date" value={shared.start_date} /></label>
       <label><span>End date <small class="editor-field-badge">Required</small></span><input name="shared.end_date" type="date" value={shared.end_date} /></label>
+      <label><span>Opens <small class="editor-field-badge editor-field-badge--optional">Optional</small></span><input name="shared.opening_hours.opens" type="time" value={shared.opening_hours?.opens ?? ""} /></label>
+      <label><span>Closes <small class="editor-field-badge editor-field-badge--optional">Optional</small></span><input name="shared.opening_hours.closes" type="time" value={shared.opening_hours?.closes ?? ""} /></label>
+      <fieldset class="editor-field-wide editor-checkbox-fieldset">
+        <legend>Closed weekdays <small class="editor-field-badge editor-field-badge--optional">Optional</small></legend>
+        <label class="editor-checkbox-option editor-checkbox-option--status"><input name="shared.closed_weekdays.known" type="checkbox" checked={shared.closed_weekdays !== undefined} /> Information set</label>
+        <div class="editor-checkbox-options">
+          {([['mon','Monday'],['tue','Tuesday'],['wed','Wednesday'],['thu','Thursday'],['fri','Friday'],['sat','Saturday'],['sun','Sunday']] as const).map(([value, label]) => <label class="editor-checkbox-option"><input name="shared.closed_weekdays" type="checkbox" value={value} checked={shared.closed_weekdays?.includes(value)} /> {label}</label>)}
+        </div>
+      </fieldset>
       <label><span>Display artists</span><select name="shared.display_artists"><option value="default" selected={shared.display_artists === undefined}>Default</option><option value="true" selected={shared.display_artists === true}>Yes</option><option value="false" selected={shared.display_artists === false}>No</option></select></label>
       <label class="editor-field-wide"><span>Hero image <small class="editor-field-badge">Required</small></span><input name="shared.hero.image" value={shared.hero.image} /></label>
       <label><span>Orientation <small class="editor-field-badge">Required</small></span><select name="shared.hero.orientation"><option selected={shared.hero.orientation === "portrait"}>portrait</option><option selected={shared.hero.orientation === "landscape"}>landscape</option></select></label>
@@ -23,7 +32,7 @@ const en = localized("en");
   {["ja", "en"].map((locale) => { const data = localized(locale as "ja" | "en"); return <section class="editor-entry-section" data-editor-section={locale}><header><div><p class="editor-eyebrow">Localized content</p><h2>{locale.toUpperCase()}</h2></div></header>{data ? <div class="editor-entry-section__content editor-field-grid">
     <label class="editor-field-wide"><span>Title <small class="editor-field-badge">Required</small></span><input name={`${locale}.title`} value={data.title} /></label>
     <label class="editor-field-wide"><span>Summary</span><textarea name={`${locale}.summary`}>{data.summary ?? ""}</textarea></label>
-    {(["venue","opening_hours","closed_days","attendance","hero_caption"] as const).map(field => <label><span>{field}</span><input name={`${locale}.${field}`} value={data[field] ?? ""} /></label>)}
+    {(["venue","attendance","hero_caption"] as const).map(field => <label><span>{field}</span><input name={`${locale}.${field}`} value={data[field] ?? ""} /></label>)}
     <label class="editor-field-wide"><span>Hero alt <small class="editor-field-badge">Required</small></span><textarea name={`${locale}.hero_alt`}>{data.hero_alt}</textarea></label>
     <label class="editor-field-wide"><span>Markdown body</span><textarea name={`${locale}.body`} rows="14">{data.body}</textarea></label>
   </div> : <p>{locale.toUpperCase()} source unavailable.</p>}</section>; })}

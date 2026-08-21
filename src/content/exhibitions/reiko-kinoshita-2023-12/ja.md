@@ -3,8 +3,6 @@ title: 粒と房
 venue: |
   KiKi Gallery
   神奈川県横浜市西区北幸2-10-48　むつみビル3階
-opening_hours: 13:00-17:00
-closed_days: 水曜・木曜
 hero_alt: 白い壁に掛けられた、青と茶の色面による額装作品
 ---
 

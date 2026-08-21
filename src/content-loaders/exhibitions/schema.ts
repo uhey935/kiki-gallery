@@ -1,8 +1,44 @@
 import { z } from "astro/zod";
 
 export const EXHIBITION_LOCALES = ["ja", "en"] as const;
+export const EXHIBITION_WEEKDAYS = [
+  "mon",
+  "tue",
+  "wed",
+  "thu",
+  "fri",
+  "sat",
+  "sun",
+] as const;
 const nonEmpty = z.string().min(1);
 const contentId = nonEmpty.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+const time = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/);
+const weekday = z.enum(EXHIBITION_WEEKDAYS);
+const closedWeekdays = z.array(weekday).superRefine((days, context) => {
+  if (new Set(days).size !== days.length)
+    context.addIssue({ code: "custom", message: "weekdays must be unique" });
+  const positions = days.map((day) => EXHIBITION_WEEKDAYS.indexOf(day));
+  if (
+    positions.some(
+      (position, index) => index > 0 && position <= positions[index - 1],
+    )
+  )
+    context.addIssue({
+      code: "custom",
+      message: "weekdays must use canonical order",
+    });
+});
+const openingHours = z
+  .object({ opens: time, closes: time })
+  .strict()
+  .superRefine((hours, context) => {
+    if (hours.opens >= hours.closes)
+      context.addIssue({
+        code: "custom",
+        path: ["closes"],
+        message: "opens must be before closes",
+      });
+  });
 
 export const exhibitionSharedSchema = z
   .object({
@@ -11,6 +47,8 @@ export const exhibitionSharedSchema = z
     start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     display_artists: z.boolean().optional(),
+    opening_hours: openingHours.optional(),
+    closed_weekdays: closedWeekdays.optional(),
     hero: z
       .object({
         image: nonEmpty,
@@ -52,8 +90,6 @@ export const exhibitionLocalizedSchema = z
     title: nonEmpty,
     summary: nonEmpty.optional(),
     venue: nonEmpty.optional(),
-    opening_hours: nonEmpty.optional(),
-    closed_days: nonEmpty.optional(),
     attendance: nonEmpty.optional(),
     hero_alt: nonEmpty,
     hero_caption: nonEmpty.optional(),
@@ -73,3 +109,4 @@ export const exhibitionAstroEntrySchema = z.intersection(
 export type ExhibitionShared = z.infer<typeof exhibitionSharedSchema>;
 export type ExhibitionLocalized = z.infer<typeof exhibitionLocalizedSchema>;
 export type ExhibitionLocale = (typeof EXHIBITION_LOCALES)[number];
+export type ExhibitionWeekday = (typeof EXHIBITION_WEEKDAYS)[number];

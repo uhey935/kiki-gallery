@@ -1,7 +1,8 @@
 import { TextDecoder } from "node:util";
 import { parseDocument, stringify } from "yaml";
 import { editorExhibitionSchema } from "../../content-schemas/exhibition.ts";
-import { exhibitionLocalizedSchema, exhibitionSharedSchema } from "./schema.ts";
+import { exhibitionSharedSchema } from "./schema.ts";
+import { exhibitionV1LocalizedSchema } from "./migration-v1-schema.ts";
 
 export const EXHIBITIONS_MIGRATION_VERSION = 1 as const;
 export const EXHIBITIONS_EN_PLACEHOLDERS = {
@@ -88,7 +89,7 @@ export function convertLegacyExhibitionMarkdown(
       ...(hero.treatment ? { treatment: hero.treatment } : {}),
     },
   });
-  const localized = exhibitionLocalizedSchema.parse({
+  const localized = exhibitionV1LocalizedSchema.parse({
     title: legacy.data.title,
     ...(legacy.data.summary ? { summary: legacy.data.summary } : {}),
     ...(legacy.data.venue ? { venue: legacy.data.venue } : {}),
@@ -103,7 +104,7 @@ export function convertLegacyExhibitionMarkdown(
     ...(hero.hero_caption ? { hero_caption: hero.hero_caption } : {}),
   });
   const body = match[2];
-  const en = exhibitionLocalizedSchema.parse({
+  const en = exhibitionV1LocalizedSchema.parse({
     title: EXHIBITIONS_EN_PLACEHOLDERS.title,
     hero_alt: EXHIBITIONS_EN_PLACEHOLDERS.hero_alt,
   });

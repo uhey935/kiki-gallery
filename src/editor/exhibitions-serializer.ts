@@ -14,6 +14,8 @@ function shared(v: ExhibitionShared): ExhibitionShared { return {
   start_date: v.start_date,
   end_date: v.end_date,
   ...(v.display_artists === undefined ? {} : { display_artists: v.display_artists }),
+  ...(v.opening_hours ? { opening_hours: v.opening_hours } : {}),
+  ...(v.closed_weekdays === undefined ? {} : { closed_weekdays: v.closed_weekdays }),
   hero: { image: v.hero.image, orientation: v.hero.orientation, ...(v.hero.position ? { position: v.hero.position } : {}), ...(v.hero.treatment ? { treatment: v.hero.treatment } : {}) },
 }; }
 function locale(v: ExhibitionLocalized & { body: string }) {
@@ -22,8 +24,6 @@ function locale(v: ExhibitionLocalized & { body: string }) {
     title: data.title,
     ...(data.summary ? { summary: data.summary } : {}),
     ...(data.venue ? { venue: data.venue } : {}),
-    ...(data.opening_hours ? { opening_hours: data.opening_hours } : {}),
-    ...(data.closed_days ? { closed_days: data.closed_days } : {}),
     ...(data.attendance ? { attendance: data.attendance } : {}),
     hero_alt: data.hero_alt,
     ...(data.hero_caption ? { hero_caption: data.hero_caption } : {}),

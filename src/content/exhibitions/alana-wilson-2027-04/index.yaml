@@ -2,6 +2,12 @@ artists:
   - alana-wilson
 start_date: 2027-04-04
 end_date: 2027-04-07
+opening_hours:
+  opens: 13:00
+  closes: 17:00
+closed_weekdays:
+  - wed
+  - thu
 hero:
   image: /images/exhibitions/alana-wilson-2024-04.png
   orientation: portrait
