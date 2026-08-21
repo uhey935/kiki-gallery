@@ -1,7 +1,20 @@
 ---
+import ArtistDetailPresentation from "../../components/ArtistDetailPresentation.astro";
+import type {
+  ArtistDetailExhibition,
+  ArtistDetailWorkSection,
+} from "../../components/artist-detail-presentation.ts";
+import { getArtistsProductionFacade } from "../../content-boundaries/artists-production";
+import { getExhibitionsProductionFacade } from "../../content-boundaries/exhibitions-production";
+import { getWorksProductionFacade } from "../../content-boundaries/works-production";
 import Layout from "../../layouts/Layout.astro";
+import { formatDateRangeJa } from "../../utils/date";
+import {
+  getExhibitionDisplayTitle,
+  resolveExhibitionArtists,
+} from "../../utils/exhibitionDisplay";
 import { artistsPreviewStore, ArtistsPreviewError } from "../artists-preview";
-import "../../styles/artists.css";
+
 const { token, contentId } = Astro.params;
 let preview;
 let previewError;
@@ -16,58 +29,127 @@ try {
       : 404;
   previewError = error instanceof Error ? error.message : "Preview unavailable";
 }
+
+let workSections: ArtistDetailWorkSection[] = [];
+let exhibitions: ArtistDetailExhibition[] = [];
+if (preview) {
+  const locale = preview.locale;
+  const worksFacade = await getWorksProductionFacade();
+  const workById = new Map(
+    worksFacade.forLocale(locale).map((work) => [work.contentId, work]),
+  );
+  const displayedWorkIds = new Set<string>();
+  workSections = (preview.data.works_layout ?? []).flatMap((section) => {
+    const works = section.works.flatMap((reference) => {
+      const work = workById.get(reference.id);
+      if (!work) {
+        if (locale === "ja")
+          throw new Error(
+            `Artist "${preview.contentId}" references missing work "${reference.id}".`,
+          );
+        return [];
+      }
+      if (work.data.artist !== preview.contentId) {
+        if (locale === "ja")
+          throw new Error(
+            `Artist "${preview.contentId}" references work "${reference.id}" owned by "${work.data.artist}".`,
+          );
+        return [];
+      }
+      if (displayedWorkIds.has(reference.id))
+        throw new Error(
+          `Artist "${preview.contentId}" references work "${reference.id}" more than once.`,
+        );
+      displayedWorkIds.add(reference.id);
+      return [
+        {
+          contentId: work.contentId,
+          href: worksFacade.detailRoute(work.contentId, locale)!,
+          image: {
+            src: work.data.images[0].src,
+            alt: work.data.images[0].alt ?? work.data.title,
+          },
+          title: work.data.title,
+          ...(locale === "ja"
+            ? {
+                year: work.data.year,
+                size: work.data.size,
+                material: work.data.material,
+              }
+            : {}),
+        },
+      ];
+    });
+    return works.length ? [{ layout: section.layout, works }] : [];
+  });
+
+  const exhibitionsFacade = await getExhibitionsProductionFacade();
+  const artistMap = new Map(
+    (await getArtistsProductionFacade())
+      .forLocale(locale)
+      .map((artist) => [artist.id, artist]),
+  );
+  exhibitions = exhibitionsFacade
+    .forArtist(preview.contentId, locale)
+    .map((exhibition) => ({
+      contentId: exhibition.contentId,
+      href: exhibitionsFacade.detailRoute(exhibition.id, locale)!,
+      image: {
+        src: exhibition.data.hero.image,
+        alt: exhibition.data.hero_alt,
+      },
+      title:
+        locale === "ja"
+          ? getExhibitionDisplayTitle(
+              exhibition,
+              resolveExhibitionArtists(exhibition, artistMap),
+            )
+          : exhibition.data.title,
+      ...(locale === "ja"
+        ? {
+            date: formatDateRangeJa(
+              exhibition.data.start_date.toISOString().slice(0, 10),
+              exhibition.data.end_date.toISOString().slice(0, 10),
+            ),
+            venue: exhibition.data.venue,
+          }
+        : {}),
+    }));
+}
 ---
 
 {
   preview ? (
     <Layout
       title={`${preview.data.display_name ?? preview.data.name} · Draft Preview`}
+      locale={preview.locale}
     >
-      <>
-        <figure class="artists-bio-image">
-          <img src={preview.data.hero.image} alt={preview.data.hero_alt} />
-        </figure>
-        <p class="artists-intro__medium">{preview.data.medium_label}</p>
-        {preview.data.biography && (
-          <section class="section artists-bio">
-            <h2>Biography</h2>
-            <p class="artists-bio-text">{preview.data.biography}</p>
-          </section>
-        )}
-        <section class="section artists-works">
-          <>
-            <h2>Works layout</h2>
-            <p>
-              {preview.data.works_layout
-                ?.flatMap((section) => section.works.map(({ id }) => id))
-                .join(" · ") || "No works selected"}
-            </p>
-          </>
-        </section>
-      </>
+      <ArtistDetailPresentation
+        locale={preview.locale}
+        artist={{
+          contentId: preview.contentId,
+          name: preview.data.display_name ?? preview.data.name,
+          mediumLabel: preview.data.medium_label!,
+          shortBio: preview.data.short_bio,
+          biography: preview.data.biography,
+          hero: {
+            src: preview.data.hero.image,
+            alt: preview.data.hero_alt,
+          },
+        }}
+        {workSections}
+        {exhibitions}
+      />
     </Layout>
   ) : (
     <main class="editor-preview-error">
-      <>
-        <h1>Draft preview unavailable</h1>
-        <p>{previewError}</p>
-      </>
+      <h1>Draft preview unavailable</h1>
+      <p>{previewError}</p>
     </main>
   )
 }
+
 <style>
-  .editor-preview-banner {
-    position: sticky;
-    z-index: 10;
-    top: 0;
-    padding: 10px 20px;
-    background: #fff4c2;
-    color: #594c18;
-    text-align: center;
-    font:
-      600 0.78rem/1.4 system-ui,
-      sans-serif;
-  }
   .editor-preview-error {
     margin: 10vh auto;
     width: min(640px, calc(100% - 40px));

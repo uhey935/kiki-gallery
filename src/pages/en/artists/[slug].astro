@@ -1,8 +1,9 @@
 ---
+import ArtistDetailPresentation from "../../../components/ArtistDetailPresentation.astro";
 import { getArtistsProductionFacade } from "../../../content-boundaries/artists-production";
-import Layout from "../../../layouts/Layout.astro";
 import { getExhibitionsProductionFacade } from "../../../content-boundaries/exhibitions-production";
 import { getWorksProductionFacade } from "../../../content-boundaries/works-production";
+import Layout from "../../../layouts/Layout.astro";
 
 export async function getStaticPaths() {
   return (await getArtistsProductionFacade()).forLocale("en").map((artist) => ({
@@ -12,8 +13,6 @@ export async function getStaticPaths() {
 }
 
 const { artist } = Astro.props;
-const exhibitionsFacade = await getExhibitionsProductionFacade();
-const exhibitions = exhibitionsFacade.forArtist(artist.id, "en");
 const worksFacade = await getWorksProductionFacade();
 const workById = new Map(
   worksFacade.forLocale("en").map((work) => [work.contentId, work]),
@@ -21,10 +20,28 @@ const workById = new Map(
 const workSections = (artist.data.works_layout ?? []).flatMap((section) => {
   const works = section.works.flatMap((reference) => {
     const work = workById.get(reference.id);
-    return work && work.data.artist === artist.id ? [work] : [];
+    if (!work || work.data.artist !== artist.id) return [];
+    return [
+      {
+        contentId: work.contentId,
+        href: worksFacade.detailRoute(work.contentId, "en")!,
+        image: { src: work.data.images[0].src, alt: work.data.images[0].alt },
+        title: work.data.title,
+      },
+    ];
   });
   return works.length ? [{ layout: section.layout, works }] : [];
 });
+
+const exhibitionsFacade = await getExhibitionsProductionFacade();
+const exhibitions = exhibitionsFacade
+  .forArtist(artist.id, "en")
+  .map((exhibition) => ({
+    contentId: exhibition.contentId,
+    href: exhibitionsFacade.detailRoute(exhibition.id, "en")!,
+    image: { src: exhibition.data.hero.image, alt: exhibition.data.hero_alt },
+    title: exhibition.data.title,
+  }));
 ---
 
 <Layout
@@ -32,85 +49,17 @@ const workSections = (artist.data.works_layout ?? []).flatMap((section) => {
   description={artist.data.description ?? artist.data.short_bio}
   locale="en"
 >
-  <article>
-    <section class="section artists-intro">
-      <div class="artists-intro__left">
-        <h1 class="artists-h1-title">{artist.data.name}</h1>
-        <p class="artists-intro__medium">
-          {artist.data.medium_label}
-        </p>
-      </div>
-      <div class="artists-intro__right">
-        <p class="artists-bio-short">{artist.data.short_bio}</p>
-      </div>
-    </section>
-    {
-      workSections.length > 0 && (
-        <section class="section artists-works">
-          <h2 class="detail-h2-title">Works</h2>
-          {workSections.map((section) => (
-            <div
-              class={`artists-works-section artists-works-section--${section.layout}`}
-            >
-              {section.works.map((work) => (
-                <figure class="artists-works-section__item">
-                  <a href={worksFacade.detailRoute(work.contentId, "en")}>
-                    <img
-                      class="artists-works-image"
-                      src={work.data.images[0].src}
-                      alt={work.data.images[0].alt}
-                    />
-                    <figcaption>{work.data.title}</figcaption>
-                  </a>
-                </figure>
-              ))}
-            </div>
-          ))}
-        </section>
-      )
-    }
-    {
-      artist.data.biography && (
-        <section class="section artists-bio">
-          <h2 class="detail-h2-title">Biography</h2>
-          <div class="artists-bio-layout">
-            <div class="artists-bio-image">
-              <img
-                src={artist.data.hero.image}
-                alt={artist.data.hero_alt}
-                width="400"
-              />
-            </div>
-            <p class="artists-bio-text">{artist.data.biography}</p>
-          </div>
-        </section>
-      )
-    }
-    {
-      exhibitions.length > 0 && (
-        <section class="section artists-exhibitions">
-          <h2 class="detail-h2-title">Exhibitions</h2>
-          <div class="artists-exhibitions-list">
-            {exhibitions.map((exhibition) => (
-              <article class="artists-exhibitions-card">
-                <a href={exhibitionsFacade.detailRoute(exhibition.id, "en")}>
-                  <div class="artists-exhibitions-card-image">
-                    <img
-                      src={exhibition.data.hero.image}
-                      alt={exhibition.data.hero_alt}
-                    />
-                  </div>
-                  <div class="artists-exhibitions-card-meta">
-                    <h3 class="artists-exhibitions-card-title">
-                      {exhibition.data.title}
-                    </h3>
-                  </div>
-                </a>
-              </article>
-            ))}
-          </div>
-        </section>
-      )
-    }
-  </article>
+  <ArtistDetailPresentation
+    locale="en"
+    artist={{
+      contentId: artist.contentId,
+      name: artist.data.name,
+      mediumLabel: artist.data.medium_label,
+      shortBio: artist.data.short_bio,
+      biography: artist.data.biography,
+      hero: { src: artist.data.hero.image, alt: artist.data.hero_alt },
+    }}
+    {workSections}
+    {exhibitions}
+  />
 </Layout>

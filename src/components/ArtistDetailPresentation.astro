@@ -1,0 +1,179 @@
+---
+import type { ArtistLocale } from "../content-loaders/artists/contracts.ts";
+import type {
+  ArtistDetailExhibition,
+  ArtistDetailWorkSection,
+} from "./artist-detail-presentation.ts";
+
+interface Props {
+  locale: ArtistLocale;
+  artist: {
+    contentId: string;
+    name: string;
+    mediumLabel: string;
+    shortBio: string;
+    biography?: string;
+    hero: { src: string; alt: string };
+  };
+  workSections: ArtistDetailWorkSection[];
+  exhibitions: ArtistDetailExhibition[];
+}
+
+const { locale, artist, workSections, exhibitions } = Astro.props;
+const hasWorkSections = workSections.length > 0;
+---
+
+<article data-artist-detail-presentation data-locale={locale}>
+  <section class="section artists-intro">
+    <div class="artists-intro__left">
+      <h1 class="artists-h1-title">{artist.name}</h1>
+      <p class="artists-intro__medium">{artist.mediumLabel}</p>
+    </div>
+
+    <div class="artists-intro__right">
+      <p class="artists-bio-short">{artist.shortBio}</p>
+      {
+        locale === "ja" && artist.biography && (
+          <a href="#full-biography" class="artists-biography-link">
+            Read full biography
+          </a>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    (locale === "ja" || hasWorkSections) && (
+      <section class="section artists-works">
+        <h2 class="detail-h2-title">Works</h2>
+        {hasWorkSections ? (
+          workSections.map((section) => (
+            <div
+              class={`artists-works-section artists-works-section--${section.layout}`}
+              data-layout={section.layout}
+            >
+              {section.works.map((work) => (
+                <figure class="artists-works-section__item">
+                  <a href={work.href} class="artists-works-link">
+                    <img
+                      class="artists-works-image"
+                      src={work.image.src}
+                      alt={work.image.alt}
+                    />
+                    <figcaption class="artists-works-caption">
+                      {locale === "ja" ? (
+                        <>
+                          <p class="artists-works-title">
+                            {work.year
+                              ? `${work.title.trim()}, ${work.year}`
+                              : work.title.trim()}
+                          </p>
+                          {(work.size || work.material) && (
+                            <p class="artists-works-meta">
+                              {[work.size, work.material]
+                                .filter(Boolean)
+                                .join(", ")}
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        work.title
+                      )}
+                    </figcaption>
+                  </a>
+                </figure>
+              ))}
+            </div>
+          ))
+        ) : (
+          <p class="artists-exhibitions-empty">No works available.</p>
+        )}
+      </section>
+    )
+  }
+
+  {
+    (locale === "ja" || artist.biography) && (
+      <section class="section artists-bio" id="full-biography">
+        <h2 class="detail-h2-title">Biography</h2>
+        <div class="artists-bio-layout">
+          <div class="artists-bio-image">
+            <img src={artist.hero.src} alt={artist.hero.alt} width="400" />
+          </div>
+          <p class="artists-bio-text">{artist.biography}</p>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    (locale === "ja" || exhibitions.length > 0) && (
+      <section class="section artists-exhibitions">
+        <h2 class="detail-h2-title">Exhibitions</h2>
+        <div class="artists-exhibitions-list">
+          {exhibitions.length > 0 ? (
+            exhibitions.map((exhibition) => (
+              <article class="artists-exhibitions-card">
+                <a href={exhibition.href}>
+                  <div class="artists-exhibitions-card-image">
+                    <img
+                      src={exhibition.image.src}
+                      alt={exhibition.image.alt}
+                    />
+                  </div>
+                  <div class="artists-exhibitions-card-meta">
+                    <h3 class="artists-exhibitions-card-title">
+                      {exhibition.title}
+                    </h3>
+                    {locale === "ja" && exhibition.date && (
+                      <p class="artists-exhibitions-card-date">
+                        {exhibition.date}
+                      </p>
+                    )}
+                    {locale === "ja" && exhibition.venue && (
+                      <p class="artists-exhibitions-card-venue">
+                        {exhibition.venue}
+                      </p>
+                    )}
+                  </div>
+                </a>
+              </article>
+            ))
+          ) : (
+            <p class="artists-exhibitions-empty">No exhibitions available.</p>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    locale === "ja" && (
+      <nav class="detail-navigation" aria-label="All artists">
+        <a href="/artists" class="action-link">
+          {" "}
+          View All Artists{" "}
+        </a>
+      </nav>
+    )
+  }
+</article>
+
+<script>
+  document
+    .querySelectorAll<HTMLElement>(
+      "[data-artist-detail-presentation] .artists-bio-image:not(.is-visible)",
+    )
+    .forEach((bioImage) => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) {
+            bioImage.classList.add("is-visible");
+            observer.unobserve(bioImage);
+          }
+        },
+        { threshold: 0.4 },
+      );
+      observer.observe(bioImage);
+    });
+</script>

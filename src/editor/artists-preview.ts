@@ -20,7 +20,7 @@ export class ArtistsPreviewError extends Error {
 export type ArtistsPreviewModel = Pick<
   ArtistsEditorDraftState,
   "contentId" | "data" | "body"
->;
+> & { locale: ArtistLocale };
 export function createArtistsPreviewModel(
   input: ArtistsEditorDraftState,
   locale: ArtistLocale = "ja",
@@ -43,6 +43,7 @@ export function createArtistsPreviewModel(
   const localized = draft.locales[locale].value;
   return {
     contentId: draft.contentId,
+    locale,
     data: {
       name: shared.sort_name,
       display_name: localized.name,

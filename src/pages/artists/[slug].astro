@@ -1,117 +1,89 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import type { ArtistProductionEntry } from "../../content-boundaries/artists-production";
+import ArtistDetailPresentation from "../../components/ArtistDetailPresentation.astro";
 import { getArtistsProductionFacade } from "../../content-boundaries/artists-production";
-import { formatDateRangeJa } from "../../utils/date";
+import type { ArtistProductionEntry } from "../../content-boundaries/artists-production";
+import { getExhibitionsProductionFacade } from "../../content-boundaries/exhibitions-production";
 import { getWorksProductionFacade } from "../../content-boundaries/works-production";
+import Layout from "../../layouts/Layout.astro";
+import { formatDateRangeJa } from "../../utils/date";
 import {
   getExhibitionDisplayTitle,
   resolveExhibitionArtists,
 } from "../../utils/exhibitionDisplay";
-import { getExhibitionsProductionFacade } from "../../content-boundaries/exhibitions-production";
 
-/* =========================
-   getStaticPaths
-========================= */
 export async function getStaticPaths() {
-  const artists = (await getArtistsProductionFacade()).forLocale("ja");
-  await getWorksProductionFacade();
-
-  return artists.map((artist) => ({
+  return (await getArtistsProductionFacade()).forLocale("ja").map((artist) => ({
     params: { slug: artist.id },
     props: { artist },
   }));
 }
 
-/* =========================
-   Props
-========================= */
-const { artist } = Astro.props as {
-  artist: ArtistProductionEntry;
-};
-
+const { artist } = Astro.props as { artist: ArtistProductionEntry };
 const artistName = artist.data.display_name || artist.data.name;
-
-/* =========================
-   description
-========================= */
 const description = artist.data.short_bio
   ? `${artistName}の作品・経歴を紹介｜KiKi Gallery`
   : artistName;
 
-/* =========================
-   works
-========================= */
-const allWorks = (await getWorksProductionFacade()).forLocale("ja");
-
-const workById = new Map(allWorks.map((work) => [work.contentId, work]));
+const worksFacade = await getWorksProductionFacade();
+const workById = new Map(
+  worksFacade.forLocale("ja").map((work) => [work.contentId, work]),
+);
 const displayedWorkIds = new Set<string>();
-
 const workSections = (artist.data.works_layout ?? []).map((section) => ({
   layout: section.layout,
-  works: section.works.map((workReference) => {
-    const workId = workReference.id;
-    const work = workById.get(workId);
-
-    if (!work) {
+  works: section.works.map((reference) => {
+    const work = workById.get(reference.id);
+    if (!work)
       throw new Error(
-        `Artist "${artist.id}" references missing work "${workId}".`,
+        `Artist "${artist.id}" references missing work "${reference.id}".`,
       );
-    }
-
-    if (work.data.artist !== artist.id) {
+    if (work.data.artist !== artist.id)
       throw new Error(
-        `Artist "${artist.id}" references work "${workId}" owned by "${work.data.artist}".`,
+        `Artist "${artist.id}" references work "${reference.id}" owned by "${work.data.artist}".`,
       );
-    }
-
-    if (displayedWorkIds.has(workId)) {
+    if (displayedWorkIds.has(reference.id))
       throw new Error(
-        `Artist "${artist.id}" references work "${workId}" more than once.`,
+        `Artist "${artist.id}" references work "${reference.id}" more than once.`,
       );
-    }
-
-    displayedWorkIds.add(workId);
-    return work;
+    displayedWorkIds.add(reference.id);
+    return {
+      contentId: work.contentId,
+      href: worksFacade.detailRoute(work.contentId, "ja")!,
+      image: {
+        src: work.data.images[0].src,
+        alt: work.data.images[0].alt ?? work.data.title,
+      },
+      title: work.data.title,
+      year: work.data.year,
+      size: work.data.size,
+      material: work.data.material,
+    };
   }),
 }));
 
-const hasWorkSections = workSections.length > 0;
-
-/* =========================
-   exhibitions
-========================= */
 const exhibitionsFacade = await getExhibitionsProductionFacade();
-const rawExhibitions = exhibitionsFacade.forArtist(artist.id, "ja");
 const allArtists = (await getArtistsProductionFacade()).forLocale("ja");
 const artistMap = new Map(allArtists.map((item) => [item.id, item]));
+const exhibitions = exhibitionsFacade
+  .forArtist(artist.id, "ja")
+  .map((exhibition) => ({
+    contentId: exhibition.contentId,
+    href: exhibitionsFacade.detailRoute(exhibition.id, "ja")!,
+    image: { src: exhibition.data.hero.image, alt: exhibition.data.hero_alt },
+    title: getExhibitionDisplayTitle(
+      exhibition,
+      resolveExhibitionArtists(exhibition, artistMap),
+    ),
+    date: formatDateRangeJa(
+      exhibition.data.start_date.toISOString().slice(0, 10),
+      exhibition.data.end_date.toISOString().slice(0, 10),
+    ),
+    venue: exhibition.data.venue,
+  }));
 
-/* ▼ 日付ソート */
-rawExhibitions.sort((a, b) => {
-  return b.data.start_date.getTime() - a.data.start_date.getTime();
-});
-
-const formattedExhibitions = rawExhibitions.map((exhibition) => {
-  const exhibitionArtists = resolveExhibitionArtists(exhibition, artistMap);
-
-  return {
-    ...exhibition,
-    displayTitle: getExhibitionDisplayTitle(exhibition, exhibitionArtists),
-    startDateValue: exhibition.data.start_date.toISOString().slice(0, 10),
-    endDateValue: exhibition.data.end_date.toISOString().slice(0, 10),
-  };
-});
-
-/* =========================
-   URL
-========================= */
 const siteUrl = Astro.site
   ? new URL(`/artists/${artist.id}`, Astro.site).href
   : null;
-
-/* =========================
-   JSON-LD
-========================= */
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
@@ -119,7 +91,6 @@ const jsonLd = {
   description: artist.data.short_bio,
   ...(siteUrl && { url: siteUrl }),
 };
-
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -140,176 +111,24 @@ const breadcrumbJsonLd = {
 };
 ---
 
-<!-- ▼ Breadcrumb -->
 <script
   type="application/ld+json"
   set:html={JSON.stringify(breadcrumbJsonLd)}
 />
-
-<!-- ▼ Person -->
 <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-<Layout title={artistName} description={description}>
-  <article>
-    <section class="section artists-intro">
-      <div class="artists-intro__left">
-        <h1 class="artists-h1-title">{artistName}</h1>
-
-        <p class="artists-intro__medium">{artist.data.medium_label}</p>
-      </div>
-
-      <div class="artists-intro__right">
-        <p class="artists-bio-short">{artist.data.short_bio}</p>
-
-        <a href="#full-biography" class="artists-biography-link">
-          Read full biography
-        </a>
-      </div>
-    </section>
-
-    {
-      /* =========================
-   Works
-========================= */
-    }
-    <section class="section artists-works">
-      <h2 class="detail-h2-title">Works</h2>
-
-      {
-        hasWorkSections ? (
-          workSections.map((section) => (
-            <div
-              class={`artists-works-section artists-works-section--${section.layout}`}
-              data-layout={section.layout}
-            >
-              {section.works.map((work) => (
-                <figure class="artists-works-section__item">
-                  <a
-                    href={`/works/${work.contentId}`}
-                    class="artists-works-link"
-                  >
-                    <img
-                      class="artists-works-image"
-                      src={work.data.images[0].src}
-                      alt={work.data.images[0].alt ?? work.data.title}
-                    />
-
-                    <figcaption class="artists-works-caption">
-                      <p class="artists-works-title">
-                        {work.data.year
-                          ? `${work.data.title.trim()}, ${work.data.year}`
-                          : work.data.title.trim()}
-                      </p>
-
-                      {(work.data.size || work.data.material) && (
-                        <p class="artists-works-meta">
-                          {[work.data.size, work.data.material]
-                            .filter(Boolean)
-                            .join(", ")}
-                        </p>
-                      )}
-                    </figcaption>
-                  </a>
-                </figure>
-              ))}
-            </div>
-          ))
-        ) : (
-          <p class="artists-exhibitions-empty">No works available.</p>
-        )
-      }
-    </section>
-
-    {
-      /* =========================
-       Biography
-    ========================= */
-    }
-    <section class="section artists-bio" id="full-biography">
-      <h2 class="detail-h2-title">Biography</h2>
-
-      <div class="artists-bio-layout">
-        <div class="artists-bio-image">
-          <img
-            src={artist.data.hero.image}
-            alt={artist.data.hero_alt}
-            width="400"
-          />
-        </div>
-
-        <p class="artists-bio-text">{artist.data.biography}</p>
-      </div>
-    </section>
-
-    {
-      /* =========================
-       Exhibitions
-    ========================= */
-    }
-    <section class="section artists-exhibitions">
-      <h2 class="detail-h2-title">Exhibitions</h2>
-
-      <div class="artists-exhibitions-list">
-        {
-          formattedExhibitions.length > 0 ? (
-            formattedExhibitions.map((exh) => (
-              <article class="artists-exhibitions-card">
-                <a href={exhibitionsFacade.detailRoute(exh.id, "ja")}>
-                  {/* 画像 */}
-                  <div class="artists-exhibitions-card-image">
-                    <img src={exh.data.hero.image} alt={exh.data.hero_alt} />
-                  </div>
-
-                  {/* テキスト */}
-                  <div class="artists-exhibitions-card-meta">
-                    <h3 class="artists-exhibitions-card-title">
-                      {exh.displayTitle}
-                    </h3>
-
-                    <p class="artists-exhibitions-card-date">
-                      {formatDateRangeJa(exh.startDateValue, exh.endDateValue)}
-                    </p>
-
-                    {exh.data.venue && (
-                      <p class="artists-exhibitions-card-venue">
-                        {exh.data.venue}
-                      </p>
-                    )}
-                  </div>
-                </a>
-              </article>
-            ))
-          ) : (
-            <p class="artists-exhibitions-empty">No exhibitions available.</p>
-          )
-        }
-      </div>
-    </section>
-
-    <nav class="detail-navigation" aria-label="All artists">
-      <a href="/artists" class="action-link"> View All Artists </a>
-    </nav>
-  </article>
+<Layout title={artistName} description={description} locale="ja">
+  <ArtistDetailPresentation
+    locale="ja"
+    artist={{
+      contentId: artist.contentId,
+      name: artistName,
+      mediumLabel: artist.data.medium_label,
+      shortBio: artist.data.short_bio,
+      biography: artist.data.biography,
+      hero: { src: artist.data.hero.image, alt: artist.data.hero_alt },
+    }}
+    {workSections}
+    {exhibitions}
+  />
 </Layout>
-
-<script>
-  const bioImage = document.querySelector(".artists-bio-image");
-
-  if (bioImage) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-
-        if (entry.isIntersecting) {
-          bioImage.classList.add("is-visible");
-          observer.unobserve(bioImage);
-        }
-      },
-      {
-        threshold: 0.4,
-      },
-    );
-
-    observer.observe(bioImage);
-  }
-</script>

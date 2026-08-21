@@ -140,6 +140,68 @@ test("Artists operator flow validates, previews, saves, and publishes", async ({
   await expect(page.locator("[data-delete-status]")).toContainText("backup");
 });
 
+test("Artists JA and EN previews render shared visible Hero and localized Works", async ({
+  page,
+  context,
+}) => {
+  for (const publicPath of [
+    "/artists/reiko-kinoshita/",
+    "/en/artists/reiko-kinoshita/",
+  ]) {
+    await page.goto(publicPath);
+    const publicHero = page.locator(".artists-bio-image img");
+    await expect(publicHero).toBeVisible();
+    await expect
+      .poll(() =>
+        publicHero.evaluate((image: HTMLImageElement) => image.naturalWidth),
+      )
+      .toBeGreaterThan(0);
+    await expect(page.locator(".artists-bio-image")).toHaveCSS("opacity", "1");
+  }
+
+  await page.goto("/editor/artists/workspace/reiko-kinoshita/");
+  await page.waitForLoadState("networkidle");
+
+  for (const locale of ["ja", "en"] as const) {
+    const preview = await openPreview(
+      context,
+      page.locator(`[data-preview-artists="${locale}"]`),
+    );
+    await expect(preview.locator("html")).toHaveAttribute("lang", locale);
+    await expect(
+      preview.locator("[data-artist-detail-presentation]"),
+    ).toHaveAttribute("data-locale", locale);
+
+    const hero = preview.locator(".artists-bio-image img");
+    await expect(hero).toHaveAttribute(
+      "src",
+      "/images/artists/reiko-kinoshita.png",
+    );
+    await expect(hero).toBeVisible();
+    await expect
+      .poll(() =>
+        hero.evaluate((image: HTMLImageElement) => image.naturalWidth),
+      )
+      .toBeGreaterThan(0);
+    await expect(preview.locator(".artists-bio-image")).toHaveCSS(
+      "opacity",
+      "1",
+    );
+
+    const workImages = preview.locator(".artists-works-image");
+    await expect(workImages).toHaveCount(6);
+    for (const image of await workImages.all()) {
+      await expect(image).toBeVisible();
+      await expect
+        .poll(() =>
+          image.evaluate((element: HTMLImageElement) => element.naturalWidth),
+        )
+        .toBeGreaterThan(0);
+    }
+    await preview.close();
+  }
+});
+
 test("Exhibitions operator flow validates, previews, saves, and publishes", async ({
   page,
   context,

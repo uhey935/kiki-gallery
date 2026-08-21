@@ -158,6 +158,7 @@ test("preview tokens are content-bound and expire", () => {
   const store = new ArtistsPreviewStore(10, () => now);
   const model = {
     contentId: "test-artist",
+    locale: "ja" as const,
     data: {
       name: "Test Artist",
       medium_label: "Painting",
@@ -196,6 +197,12 @@ test("JA and EN Preview project only their localized medium_label", async () => 
     assert.deepEqual(createArtistsPreviewModel(draft, "ja").data.medium, [
       "Painting",
     ]);
+    assert.equal(createArtistsPreviewModel(draft, "ja").locale, "ja");
+    assert.equal(createArtistsPreviewModel(draft, "en").locale, "en");
+    assert.equal(
+      createArtistsPreviewModel(draft, "ja").data.hero.image,
+      "/images/artists/test.jpg",
+    );
   } finally {
     await rm(root, { recursive: true });
   }
