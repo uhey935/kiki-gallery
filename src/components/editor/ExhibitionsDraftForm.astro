@@ -3,6 +3,8 @@ import type { ExhibitionsEditorDraftState } from "../../editor/exhibitions-draft
 const { draft } = Astro.props as { draft: ExhibitionsEditorDraftState };
 const shared = draft.shared.state === "editable" ? draft.shared.value : undefined;
 const localized = (locale: "ja" | "en") => draft.locales[locale].state === "editable" ? draft.locales[locale].value : undefined;
+const ja = localized("ja");
+const en = localized("en");
 ---
 <form class="editor-draft-form" data-exhibitions-draft-form>
   <div class="editor-field-meaning" aria-label="Field requirement legend"><span><b>Required</b> needed for a valid draft</span><span><b>Optional</b> may be left blank</span></div>
@@ -21,9 +23,17 @@ const localized = (locale: "ja" | "en") => draft.locales[locale].state === "edit
   {["ja", "en"].map((locale) => { const data = localized(locale as "ja" | "en"); return <section class="editor-entry-section" data-editor-section={locale}><header><div><p class="editor-eyebrow">Localized content</p><h2>{locale.toUpperCase()}</h2></div></header>{data ? <div class="editor-entry-section__content editor-field-grid">
     <label class="editor-field-wide"><span>Title <small class="editor-field-badge">Required</small></span><input name={`${locale}.title`} value={data.title} /></label>
     <label class="editor-field-wide"><span>Summary</span><textarea name={`${locale}.summary`}>{data.summary ?? ""}</textarea></label>
-    {(["venue","opening_hours","closed_days","attendance","hero_caption","seo_title"] as const).map(field => <label><span>{field}</span><input name={`${locale}.${field}`} value={data[field] ?? ""} /></label>)}
+    {(["venue","opening_hours","closed_days","attendance","hero_caption"] as const).map(field => <label><span>{field}</span><input name={`${locale}.${field}`} value={data[field] ?? ""} /></label>)}
     <label class="editor-field-wide"><span>Hero alt <small class="editor-field-badge">Required</small></span><textarea name={`${locale}.hero_alt`}>{data.hero_alt}</textarea></label>
-    <label class="editor-field-wide"><span>Description</span><textarea name={`${locale}.description`}>{data.description ?? ""}</textarea></label>
     <label class="editor-field-wide"><span>Markdown body</span><textarea name={`${locale}.body`} rows="14">{data.body}</textarea></label>
   </div> : <p>{locale.toUpperCase()} source unavailable.</p>}</section>; })}
+  <section class="editor-entry-section">
+    <header><div><p class="editor-eyebrow">Localized metadata</p><h2>Metadata</h2></div></header>
+    <div class="editor-entry-section__content editor-field-grid">
+      <label data-editor-field="ja.seo_title"><span>JA SEO title <small class="editor-field-badge editor-field-badge--optional">Optional</small></span><input name="ja.seo_title" value={ja?.seo_title ?? ""} /></label>
+      <label class="editor-field-wide" data-editor-field="ja.description"><span>JA SEO description <small class="editor-field-badge editor-field-badge--optional">Optional</small></span><textarea name="ja.description">{ja?.description ?? ""}</textarea></label>
+      <label data-editor-field="en.seo_title"><span>EN SEO title <small class="editor-field-badge editor-field-badge--optional">Optional</small></span><input name="en.seo_title" value={en?.seo_title ?? ""} /></label>
+      <label class="editor-field-wide" data-editor-field="en.description"><span>EN SEO description <small class="editor-field-badge editor-field-badge--optional">Optional</small></span><textarea name="en.description">{en?.description ?? ""}</textarea></label>
+    </div>
+  </section>
 </form>
