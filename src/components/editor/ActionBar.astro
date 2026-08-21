@@ -24,9 +24,11 @@ const localizedCollection =
     ? "news"
     : mode === "artists"
       ? "artists"
-      : mode === "home" || mode === "about"
-        ? mode
-        : "journal";
+      : mode === "exhibitions"
+        ? "exhibitions"
+        : mode === "home" || mode === "about"
+          ? mode
+          : "journal";
 const localizedPreviewAttributes = (locale: "ja" | "en") => ({
   ["data-preview-" + localizedCollection]: locale,
 });
@@ -60,6 +62,7 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
     mode !== "journal" &&
     mode !== "news" &&
     mode !== "artists" &&
+    mode !== "exhibitions" &&
     mode !== "home" &&
     mode !== "about" ? (
       <>
@@ -117,6 +120,7 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
           data-action-status
           {...(mode === "news" ||
           mode === "artists" ||
+          mode === "exhibitions" ||
           mode === "home" ||
           mode === "about"
             ? flatStatusAttributes

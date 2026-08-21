@@ -281,6 +281,73 @@ test("Exhibitions operator flow validates, previews, saves, and publishes", asyn
   );
 });
 
+test("Exhibitions JA and EN previews render the current draft through public presentation", async ({
+  page,
+  context,
+}) => {
+  const contentId = "group-exhibition-2026-03";
+  await page.goto(`/editor/exhibitions/workspace/${contentId}/`);
+
+  const previewJaButton = page.locator('[data-preview-exhibitions="ja"]');
+  const previewEnButton = page.locator('[data-preview-exhibitions="en"]');
+  await expect(previewJaButton).toBeEnabled();
+  await expect(previewEnButton).toBeEnabled();
+
+  await page
+    .locator('input[name="ja.attendance"]')
+    .fill("JA unsaved attendance");
+  await expect(page.locator("[data-publish-exhibitions]")).toBeDisabled();
+  const jaPreview = await openPreview(context, previewJaButton);
+  await expect(
+    jaPreview.locator(
+      '[data-exhibition-detail-presentation][data-locale="ja"]',
+    ),
+  ).toBeVisible();
+  await expect(jaPreview.getByText("JA unsaved attendance")).toBeVisible();
+  await expect(jaPreview.getByText("木下令子、森夕香")).toBeVisible();
+  await expect(jaPreview.locator(".exhibitions-work")).toHaveCount(2);
+  await expect(
+    jaPreview.getByRole("link", { name: "View All Exhibitions" }),
+  ).toHaveAttribute("href", "/exhibitions/");
+  await jaPreview.close();
+
+  await page
+    .locator('input[name="en.attendance"]')
+    .fill("EN unsaved attendance");
+  const enPreview = await openPreview(context, previewEnButton);
+  await expect(
+    enPreview.locator(
+      '[data-exhibition-detail-presentation][data-locale="en"]',
+    ),
+  ).toBeVisible();
+  await expect(enPreview.getByText("EN unsaved attendance")).toBeVisible();
+  await expect(enPreview.getByText("Reiko Kinoshita, Yuka Mori")).toBeVisible();
+  await expect(enPreview.getByText("Artist attendance")).toBeVisible();
+  await expect(enPreview.locator(".exhibitions-work")).toHaveCount(0);
+  await expect(
+    enPreview.getByRole("link", { name: "View All Exhibitions" }),
+  ).toHaveAttribute("href", "/en/exhibitions/");
+  await enPreview.close();
+
+  const publicJa = await context.newPage();
+  await publicJa.goto(`/exhibitions/${contentId}/`);
+  await expect(
+    publicJa.locator('[data-exhibition-detail-presentation][data-locale="ja"]'),
+  ).toBeVisible();
+  await expect(publicJa.locator(".exhibitions-work")).toHaveCount(2);
+  await expect(publicJa.locator(".exhibitions-artists-list a")).toHaveCount(2);
+  await publicJa.close();
+
+  const publicEn = await context.newPage();
+  await publicEn.goto(`/en/exhibitions/${contentId}/`);
+  await expect(
+    publicEn.locator('[data-exhibition-detail-presentation][data-locale="en"]'),
+  ).toBeVisible();
+  await expect(publicEn.locator(".exhibitions-work")).toHaveCount(0);
+  await expect(publicEn.locator(".exhibitions-artists-list a")).toHaveCount(2);
+  await publicEn.close();
+});
+
 test("Exhibitions three-file Rename publishes exact paths and Delete fails closed without backup", async ({
   page,
 }) => {

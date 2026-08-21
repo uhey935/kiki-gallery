@@ -1,73 +1,62 @@
 ---
 import { render } from "astro:content";
-import Layout from "../../layouts/Layout.astro";
-import { formatDateRangeJa } from "../../utils/date";
-import {
-  getArtistDisplayName,
-  getExhibitionDisplayTitle,
-  resolveExhibitionArtists,
-} from "../../utils/exhibitionDisplay";
-import { getExhibitionStatus } from "../../utils/exhibitionStatus";
-import { getArtistsProductionFacade } from "../../content-boundaries/artists-production";
+import ExhibitionDetailPresentation from "../../components/ExhibitionDetailPresentation.astro";
+import { createExhibitionDetailPresentationModel } from "../../components/exhibition-detail-projection.ts";
 import { getExhibitionsProductionFacade } from "../../content-boundaries/exhibitions-production";
+import Layout from "../../layouts/Layout.astro";
+import { getExhibitionStatus } from "../../utils/exhibitionStatus";
 
-// getStaticPaths
 export async function getStaticPaths() {
   const facade = await getExhibitionsProductionFacade();
-  const exhibitions = facade.forLocale("ja");
-  const allArtists = (await getArtistsProductionFacade()).forLocale("ja");
-  const artistMap = new Map(allArtists.map((artist) => [artist.id, artist]));
-
-  return exhibitions.map((exh) => {
-    const artists = resolveExhibitionArtists(exh, artistMap);
-
-    return {
-      params: { slug: exh.id },
-      props: { exh, artists },
-    };
-  });
+  return facade.forLocale("ja").map((exhibition) => ({
+    params: { slug: exhibition.id },
+    props: { exhibition },
+  }));
 }
 
-// props
-const { exh, artists } = Astro.props;
-
-const exhibitionsFacade = await getExhibitionsProductionFacade();
-const exhibitionDate = exh.data.start_date;
-const exhibitionEndDate = exh.data.end_date;
-const toDateInputValue = (date: Date) => date.toISOString().slice(0, 10);
-const exhibitionDateValue = toDateInputValue(exhibitionDate);
-const exhibitionEndDateValue = toDateInputValue(exhibitionEndDate);
-
-const getFamilyName = (name: string) => name.trim().split(/\s+/).pop() ?? "";
-
-const exhibitionWorks = (
-  await exhibitionsFacade.worksProjection(exh, "ja")
-).sort((a, b) => {
-  const artistA = artists.find((artist) => artist.id === a.data.artist);
-
-  const artistB = artists.find((artist) => artist.id === b.data.artist);
-
-  const familyA = getFamilyName(artistA?.data.name ?? "");
-
-  const familyB = getFamilyName(artistB?.data.name ?? "");
-
-  return familyA.localeCompare(familyB, "en", { sensitivity: "base" });
+const { exhibition } = Astro.props;
+const facade = await getExhibitionsProductionFacade();
+const shared = {
+  artists: exhibition.data.artists.map(({ id }) => id),
+  works: exhibition.data.works?.map(({ id }) => id),
+  start_date: exhibition.data.start_date.toISOString().slice(0, 10),
+  end_date: exhibition.data.end_date.toISOString().slice(0, 10),
+  display_artists: exhibition.data.display_artists,
+  hero: {
+    image: exhibition.data.hero.image,
+    orientation: exhibition.data.hero.orientation,
+    position: exhibition.data.hero.position,
+    treatment: exhibition.data.hero.treatment,
+  },
+};
+const localized = {
+  title: exhibition.data.title,
+  summary: exhibition.data.summary,
+  venue: exhibition.data.venue,
+  opening_hours: exhibition.data.opening_hours,
+  closed_days: exhibition.data.closed_days,
+  attendance: exhibition.data.attendance,
+  hero_alt: exhibition.data.hero_alt,
+  hero_caption: exhibition.data.hero.hero_caption,
+  seo_title: exhibition.data.seo_title,
+  description: exhibition.data.description,
+};
+const model = await createExhibitionDetailPresentationModel({
+  contentId: exhibition.contentId,
+  locale: "ja",
+  shared,
+  localized,
 });
-
-const { Content } = await render(exh.source);
-
-const artistNames = artists.map(getArtistDisplayName).join("、");
-const displayTitle = getExhibitionDisplayTitle(exh, artists);
-const dateString = formatDateRangeJa(
-  exhibitionDateValue,
-  exhibitionEndDateValue,
-);
-
+const { Content } = await render(exhibition.source);
 const description =
-  exh.data.description ??
-  (artistNames ? `${artistNames}の展覧会｜${dateString}` : displayTitle);
-
-const status = getExhibitionStatus(exhibitionDate, exhibitionEndDate);
+  exhibition.data.description ??
+  (model.artists.length
+    ? `${model.artists.map(({ name }) => name).join("、")}の展覧会｜${model.date}`
+    : model.title);
+const status = getExhibitionStatus(
+  exhibition.data.start_date,
+  exhibition.data.end_date,
+);
 ---
 
 <script
@@ -75,10 +64,10 @@ const status = getExhibitionStatus(exhibitionDate, exhibitionEndDate);
   set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Event",
-    name: displayTitle,
+    name: model.title,
     description,
-    startDate: exhibitionDateValue,
-    endDate: exhibitionEndDateValue,
+    startDate: shared.start_date,
+    endDate: shared.end_date,
     eventStatus:
       status === "upcoming"
         ? "https://schema.org/EventScheduled"
@@ -87,214 +76,14 @@ const status = getExhibitionStatus(exhibitionDate, exhibitionEndDate);
           : "https://schema.org/EventCompleted",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     url: Astro.site
-      ? new URL(
-          exhibitionsFacade.detailRoute(exh.id, "ja")!,
-          Astro.site,
-        ).toString()
+      ? new URL(facade.detailRoute(exhibition.id, "ja")!, Astro.site).toString()
       : undefined,
-    location: {
-      "@type": "Place",
-      name: "KiKi Gallery",
-    },
+    location: { "@type": "Place", name: "KiKi Gallery" },
   })}
 />
 
-<Layout title={exh.data.seo_title ?? displayTitle} description={description}>
-  <section class="section exhibitions-detail">
-    <header class="exhibitions-heading">
-      {
-        exh.data.display_artists !== false && artistNames && (
-          <p class="exhibitions-heading-artist">{artistNames}</p>
-        )
-      }
-
-      <h1 class="exhibitions-h1-title">
-        {displayTitle}
-      </h1>
-
-      {
-        /*
-<p class="exhibitions-heading-status">
-  {status === "ongoing" && "Ongoing"}
-  {status === "upcoming" && "Upcoming"}
-  {status === "past" && "Past"}
-</p>
-*/
-      }
-    </header>
-  </section>
-
-  <figure
-    class:list={[
-      "exhibitions-detail-image",
-      {
-        "exhibitions-detail-image--portrait":
-          exh.data.hero.orientation === "portrait",
-      },
-    ]}
-  >
-    <img src={exh.data.hero.image} alt={exh.data.hero_alt} />
-    {
-      exh.data.hero.hero_caption && (
-        <figcaption>{exh.data.hero.hero_caption}</figcaption>
-      )
-    }
-  </figure>
-
-  <section class="section exhibitions-content">
-    <div class="exhibitions-main">
-      <section class="exhibitions-info">
-        <h2 class="visually-hidden">開催概要</h2>
-
-        <dl class="exhibitions-info-list">
-          <dt>開催期間</dt>
-          <dd class="exhibitions-date-main">
-            {dateString}
-          </dd>
-
-          {
-            exh.data.attendance && (
-              <>
-                <dt>作家在廊日</dt>
-                <dd>{exh.data.attendance}</dd>
-              </>
-            )
-          }
-
-          {
-            exh.data.opening_hours && (
-              <>
-                <dt>開催時間</dt>
-                <dd>{exh.data.opening_hours.replace("-", " - ")}</dd>
-              </>
-            )
-          }
-        </dl>
-      </section>
-
-      <article class="exhibitions-article">
-        <h2 class="visually-hidden">Exhibition Overview</h2>
-
-        {exh.data.summary && <p>{exh.data.summary}</p>}
-
-        <Content />
-
-        <section class="exhibitions-venue">
-          <h3 class="exhibitions-venue-title">会場</h3>
-
-          {
-            exh.data.venue && (
-              <p class="exhibitions-venue-address">{exh.data.venue}</p>
-            )
-          }
-
-          {
-            exh.data.closed_days && (
-              <p class="exhibitions-venue-closed">
-                休廊日 / {exh.data.closed_days}
-              </p>
-            )
-          }
-        </section>
-      </article>
-    </div>
-
-    {
-      exhibitionWorks.length > 0 && (
-        <section
-          class={`exhibitions-works ${
-            exhibitionWorks.length >= 6
-              ? "exhibitions-works--3col"
-              : "exhibitions-works--2col"
-          }`}
-        >
-          <h2 class="detail-h2-title">Works</h2>
-
-          <div class="exhibitions-works-list">
-            {exhibitionWorks.map((work) => {
-              const workArtist = artists.find(
-                (artist) => artist.id === work.data.artist,
-              );
-
-              if (!workArtist) {
-                throw new Error(
-                  `Exhibition "${exh.id}" work "${work.contentId}" references Artist "${work.data.artist}" outside the Exhibition artist list.`,
-                );
-              }
-
-              return (
-                <figure class="exhibitions-work">
-                  <img
-                    src={work.data.images[0].src}
-                    alt={work.data.images[0].alt ?? work.data.title}
-                  />
-
-                  <figcaption class="exhibitions-work-caption">
-                    {artists.length > 1 && (
-                      <p class="exhibitions-work-artist">
-                        <a href={`/artists/${work.data.artist}`}>
-                          {getArtistDisplayName(workArtist)}
-                        </a>
-                      </p>
-                    )}
-
-                    <p class="exhibitions-work-title">
-                      {work.data.year
-                        ? `${work.data.title}, ${work.data.year}`
-                        : work.data.title}
-                    </p>
-
-                    {work.data.material && (
-                      <p class="exhibitions-work-meta">{work.data.material}</p>
-                    )}
-                  </figcaption>
-                </figure>
-              );
-            })}
-          </div>
-        </section>
-      )
-    }
-
-    <section class="exhibitions-artists">
-      <h2 class="detail-h2-title">
-        {artists.length > 1 ? "Artists" : "Artist"}
-      </h2>
-
-      <ul class="exhibitions-artists-list">
-        {
-          artists.map((artist) => (
-            <li class="exhibitions-artist-item">
-              <a href={`/artists/${artist.id}`} class="action-link">
-                {getArtistDisplayName(artist)}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-
-    <nav class="detail-navigation" aria-label="All exhibitions">
-      <a href="/exhibitions" class="action-link"> View All Exhibitions </a>
-    </nav>
-  </section>
-
-  <script>
-    const heading = document.querySelector(
-      ".exhibitions-heading",
-    ) as HTMLElement | null;
-
-    const updateParallax = () => {
-      if (!heading) return;
-
-      const scrollY = window.scrollY;
-      const offset = scrollY * 0.19;
-
-      heading.style.transform = `translateY(${offset}px)`;
-    };
-
-    window.addEventListener("scroll", updateParallax, {
-      passive: true,
-    });
-  </script>
+<Layout title={exhibition.data.seo_title ?? model.title} {description}>
+  <ExhibitionDetailPresentation {model}>
+    <Content />
+  </ExhibitionDetailPresentation>
 </Layout>

@@ -1,0 +1,178 @@
+---
+import type { ExhibitionDetailPresentationModel } from "./exhibition-detail-presentation.ts";
+
+const { model } = Astro.props as { model: ExhibitionDetailPresentationModel };
+const { locale, artists, works } = model;
+const labels =
+  locale === "ja"
+    ? {
+        information: "開催概要",
+        dates: "開催期間",
+        attendance: "作家在廊日",
+        openingHours: "開催時間",
+        overview: "Exhibition Overview",
+        venue: "会場",
+        closed: "休廊日",
+      }
+    : {
+        information: "Exhibition information",
+        dates: "Dates",
+        attendance: "Artist attendance",
+        openingHours: "Opening hours",
+        overview: "Exhibition overview",
+        venue: "Venue",
+        closed: "Closed",
+      };
+const artistSeparator = locale === "ja" ? "、" : ", ";
+---
+
+<div data-exhibition-detail-presentation data-locale={locale}>
+  <section class="section exhibitions-detail">
+    <header class="exhibitions-heading">
+      {
+        model.displayArtists && artists.length > 0 && (
+          <p class="exhibitions-heading-artist">
+            {artists.map((artist) => artist.name).join(artistSeparator)}
+          </p>
+        )
+      }
+      <h1 class="exhibitions-h1-title">{model.title}</h1>
+    </header>
+  </section>
+
+  <figure
+    class:list={[
+      "exhibitions-detail-image",
+      {
+        "exhibitions-detail-image--portrait":
+          model.hero.orientation === "portrait",
+      },
+    ]}
+  >
+    <img src={model.hero.src} alt={model.hero.alt} />
+    {model.hero.caption && <figcaption>{model.hero.caption}</figcaption>}
+  </figure>
+
+  <section class="section exhibitions-content">
+    <div class="exhibitions-main">
+      <section class="exhibitions-info">
+        <h2 class="visually-hidden">{labels.information}</h2>
+        <dl class="exhibitions-info-list">
+          <dt>{labels.dates}</dt>
+          <dd class="exhibitions-date-main">{model.date}</dd>
+          {
+            model.attendance && (
+              <>
+                <dt>{labels.attendance}</dt>
+                <dd>{model.attendance}</dd>
+              </>
+            )
+          }
+          {
+            model.openingHours && (
+              <>
+                <dt>{labels.openingHours}</dt>
+                <dd>
+                  {locale === "ja"
+                    ? model.openingHours.replace("-", " - ")
+                    : model.openingHours}
+                </dd>
+              </>
+            )
+          }
+        </dl>
+      </section>
+
+      <article class="exhibitions-article">
+        <h2 class="visually-hidden">{labels.overview}</h2>
+        {model.summary && <p>{model.summary}</p>}
+        <slot />
+        {
+          (locale === "ja" || model.venue || model.closedDays) && (
+            <section class="exhibitions-venue">
+              <h3 class="exhibitions-venue-title">{labels.venue}</h3>
+              {model.venue && (
+                <p class="exhibitions-venue-address">{model.venue}</p>
+              )}
+              {model.closedDays && (
+                <p class="exhibitions-venue-closed">
+                  {labels.closed} / {model.closedDays}
+                </p>
+              )}
+            </section>
+          )
+        }
+      </article>
+    </div>
+
+    {
+      works.length > 0 && (
+        <section
+          class={`exhibitions-works ${
+            works.length >= 6
+              ? "exhibitions-works--3col"
+              : "exhibitions-works--2col"
+          }`}
+        >
+          <h2 class="detail-h2-title">Works</h2>
+          <div class="exhibitions-works-list">
+            {works.map((work) => (
+              <figure class="exhibitions-work">
+                <a href={work.href} class="exhibitions-work-link">
+                  <img src={work.image.src} alt={work.image.alt} />
+                </a>
+                <figcaption class="exhibitions-work-caption">
+                  {artists.length > 1 && work.artist && (
+                    <p class="exhibitions-work-artist">
+                      <a href={work.artist.href}>{work.artist.name}</a>
+                    </p>
+                  )}
+                  <p class="exhibitions-work-title">
+                    <a href={work.href}>
+                      {work.year ? `${work.title}, ${work.year}` : work.title}
+                    </a>
+                  </p>
+                  {work.material && (
+                    <p class="exhibitions-work-meta">{work.material}</p>
+                  )}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <section class="exhibitions-artists">
+      <h2 class="detail-h2-title">
+        {artists.length > 1 ? "Artists" : "Artist"}
+      </h2>
+      <ul class="exhibitions-artists-list">
+        {
+          artists.map((artist) => (
+            <li class="exhibitions-artist-item">
+              <a href={artist.href} class="action-link">
+                {artist.name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <nav class="detail-navigation" aria-label="All exhibitions">
+      <a href={model.indexHref} class="action-link">View All Exhibitions</a>
+    </nav>
+  </section>
+</div>
+
+<script>
+  const heading = document.querySelector(
+    "[data-exhibition-detail-presentation] .exhibitions-heading",
+  ) as HTMLElement | null;
+  const updateParallax = () => {
+    if (heading)
+      heading.style.transform = `translateY(${window.scrollY * 0.19}px)`;
+  };
+  window.addEventListener("scroll", updateParallax, { passive: true });
+</script>

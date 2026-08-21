@@ -4,7 +4,10 @@ import ExhibitionsDraftForm from "../../../../components/editor/ExhibitionsDraft
 import ExhibitionsValidationPanel from "../../../../components/editor/ExhibitionsValidationPanel.astro";
 import RenamePanel from "../../../../components/editor/RenamePanel.astro";
 import ExhibitionsDeletePanel from "../../../../components/editor/ExhibitionsDeletePanel.astro";
-import { createExhibitionsEditorDraft } from "../../../../editor/exhibitions-draft-state";
+import {
+  createExhibitionsEditorDraft,
+  validateExhibitionsEditorDraft,
+} from "../../../../editor/exhibitions-draft-state";
 import {
   readExhibitionsEditorEntry,
   readExhibitionsEditorState,
@@ -21,18 +24,26 @@ export async function getStaticPaths() {
 }
 const { entry } = Astro.props;
 const draft = createExhibitionsEditorDraft(entry);
+const initialCapabilities = validateExhibitionsEditorDraft(draft).capabilities;
 const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
 ---
 
 <EditorLayout
-  title={entry.locales.ja.state === "valid" ? entry.locales.ja.value.title : entry.contentId}
+  title={entry.locales.ja.state === "valid"
+    ? entry.locales.ja.value.title
+    : entry.contentId}
   section="Exhibitions"
 >
   <header class="editor-page-heading">
     <p class="editor-eyebrow">Exhibitions workspace</p><h1>
-      {entry.locales.ja.state === "valid" ? entry.locales.ja.value.title : entry.contentId}
+      {
+        entry.locales.ja.state === "valid"
+          ? entry.locales.ja.value.title
+          : entry.contentId
+      }
     </h1><p>
-      <span data-workspace-content-id>{entry.contentId}</span> · Three-file Content Unit
+      <span data-workspace-content-id>{entry.contentId}</span> · Three-file Content
+      Unit
     </p>
   </header>
   <div class="editor-workspace">
@@ -53,7 +64,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     </aside>
   </div>
   <ExhibitionsDeletePanel contentId={entry.contentId} />
-  <ActionBar mode="exhibitions" loaded={Boolean(draft)} preview={false} />
+  <ActionBar
+    mode="exhibitions"
+    loaded={Boolean(draft)}
+    preview={initialCapabilities.preview}
+  />
 </EditorLayout>
 <script
   type="application/json"
@@ -82,16 +97,18 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   const save = document.querySelector<HTMLButtonElement>(
     "[data-save-exhibitions]",
   );
-  const preview = document.querySelector<HTMLButtonElement>(
-    "[data-preview-exhibitions]",
-  );
+  const previews = [
+    ...document.querySelectorAll<HTMLButtonElement>(
+      "[data-preview-exhibitions]",
+    ),
+  ];
   const publish = document.querySelector<HTMLButtonElement>(
     "[data-publish-exhibitions]",
   );
   const status = document.querySelector<HTMLElement>(
     "[data-exhibitions-action-status]",
   );
-  if (raw && form && save && preview && publish && status) {
+  if (raw && form && save && previews.length === 2 && publish && status) {
     let baseline = JSON.parse(raw) as ExhibitionsEditorDraftState;
     let draft = structuredClone(baseline);
     let pending: "save" | "preview" | "publish" | null = null;
@@ -121,36 +138,75 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       const data = new FormData(form);
       const value = (name: string) => String(data.get(name) ?? "");
       const display = value("shared.display_artists");
-      const localized = (locale: "ja" | "en") => ({ state: "editable" as const, value: {
-        title: value(`${locale}.title`), hero_alt: value(`${locale}.hero_alt`), body: value(`${locale}.body`),
-        summary: optional(value(`${locale}.summary`)), venue: optional(value(`${locale}.venue`)), opening_hours: optional(value(`${locale}.opening_hours`)), closed_days: optional(value(`${locale}.closed_days`)), attendance: optional(value(`${locale}.attendance`)), hero_caption: optional(value(`${locale}.hero_caption`)), seo_title: optional(value(`${locale}.seo_title`)), description: optional(value(`${locale}.description`)),
-      }});
+      const localized = (locale: "ja" | "en") => ({
+        state: "editable" as const,
+        value: {
+          title: value(`${locale}.title`),
+          hero_alt: value(`${locale}.hero_alt`),
+          body: value(`${locale}.body`),
+          summary: optional(value(`${locale}.summary`)),
+          venue: optional(value(`${locale}.venue`)),
+          opening_hours: optional(value(`${locale}.opening_hours`)),
+          closed_days: optional(value(`${locale}.closed_days`)),
+          attendance: optional(value(`${locale}.attendance`)),
+          hero_caption: optional(value(`${locale}.hero_caption`)),
+          seo_title: optional(value(`${locale}.seo_title`)),
+          description: optional(value(`${locale}.description`)),
+        },
+      });
       draft = {
         ...draft,
-        shared: { state: "editable", value: {
-          artists: list(value("shared.artists")),
-          works: list(value("shared.works")),
-          start_date: value("shared.start_date"),
-          end_date: value("shared.end_date"),
-          display_artists:
-            display === "default" ? undefined : display === "true",
-          hero: {
-            image: value("shared.hero.image"),
-            orientation: value("shared.hero.orientation") as "portrait" | "landscape",
-            position: optional(value("shared.hero.position")) as never,
-            treatment: optional(value("shared.hero.treatment")) as never,
+        shared: {
+          state: "editable",
+          value: {
+            artists: list(value("shared.artists")),
+            works: list(value("shared.works")),
+            start_date: value("shared.start_date"),
+            end_date: value("shared.end_date"),
+            display_artists:
+              display === "default" ? undefined : display === "true",
+            hero: {
+              image: value("shared.hero.image"),
+              orientation: value("shared.hero.orientation") as
+                "portrait" | "landscape",
+              position: optional(value("shared.hero.position")) as never,
+              treatment: optional(value("shared.hero.treatment")) as never,
+            },
           },
-        }}, locales: { ja: localized("ja"), en: localized("en") },
+        },
+        locales: { ja: localized("ja"), en: localized("en") },
       };
     };
     const render = () => {
       const dirty = isExhibitionsEditorDraftDirty(baseline, draft);
       const validation = validateExhibitionsEditorDraft(draft);
       const capabilities = validation.capabilities;
-      renderFlatValidationPanel(form, { ...validation, issues: validation.issues as never, capabilities: { ...validation.capabilities, preview: validation.capabilities.preview.ja || validation.capabilities.preview.en } });
+      renderFlatValidationPanel(form, {
+        ...validation,
+        issues: validation.issues as never,
+        capabilities: {
+          ...validation.capabilities,
+          preview:
+            validation.capabilities.preview.ja ||
+            validation.capabilities.preview.en,
+        },
+      });
       const locked = pending !== null || recoveryRequired || deleteLocked;
       save.disabled = locked || !dirty || !capabilities.save;
-      preview.disabled = locked || !capabilities.preview.ja;
+      for (const preview of previews) {
+        const locale = preview.dataset.previewExhibitions as "ja" | "en";
+        preview.disabled = locked || !capabilities.preview[locale];
+        const reason = capabilities.preview[locale]
+          ? dirty
+            ? `Preview current unsaved ${locale.toUpperCase()} draft`
+            : `Preview current ${locale.toUpperCase()} draft`
+          : `${locale.toUpperCase()} Preview is blocked by draft validation`;
+        preview.title = reason;
+        const hint = preview.parentElement?.querySelector<HTMLElement>(
+          "[data-action-reason]",
+        );
+        if (hint) hint.textContent = reason;
+      }
       publish.disabled = locked || dirty || !capabilities.publish;
       form
         .querySelectorAll<
@@ -163,7 +219,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         dirty,
         ...{
           canSave: capabilities.save,
-          canPreview: capabilities.preview.ja,
+          canPreview: capabilities.preview.ja || capabilities.preview.en,
           canPublish: capabilities.publish,
         },
         savedSincePublish,
@@ -173,7 +229,6 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       status.textContent = ux.status;
       status.dataset.state = pending ? "pending" : dirty ? "dirty" : "saved";
       setActionReason("save", ux.saveTitle);
-      setActionReason("preview", ux.previewTitle);
       setActionReason("publish", ux.publishTitle);
       window.dispatchEvent(
         new CustomEvent("editor:workspace-state", {
@@ -217,24 +272,26 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         render();
       }
     });
-    preview.addEventListener("click", async () => {
-      pending = "preview";
-      render();
-      try {
-        const result = await request("/editor/api/exhibitions-preview/create", {
-          draft,
-          locale: "ja",
-        });
-        window.open(result.url, "_blank", "noopener,noreferrer");
-        statusMessage = "Draft preview opened";
-      } catch (error) {
-        const value = error as Error & { code?: string };
-        statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
-      } finally {
-        pending = null;
+    for (const preview of previews)
+      preview.addEventListener("click", async () => {
+        const locale = preview.dataset.previewExhibitions as "ja" | "en";
+        pending = "preview";
         render();
-      }
-    });
+        try {
+          const result = await request(
+            "/editor/api/exhibitions-preview/create",
+            { draft, locale },
+          );
+          window.open(result.url, "_blank", "noopener,noreferrer");
+          statusMessage = `${locale.toUpperCase()} draft preview opened`;
+        } catch (error) {
+          const value = error as Error & { code?: string };
+          statusMessage = `${value.message} ${editorFailureGuidance(value.code).message}`;
+        } finally {
+          pending = null;
+          render();
+        }
+      });
     publish.addEventListener("click", async () => {
       pending = "publish";
       render();

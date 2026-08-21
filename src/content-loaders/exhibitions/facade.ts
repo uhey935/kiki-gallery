@@ -16,6 +16,20 @@ export type WorksProjection = {
   visibleWorkIds: string[];
   warnings: string[];
 };
+export function projectExhibitionWorks(
+  ids: string[],
+  locale: ExhibitionLocale,
+): WorksProjection {
+  return locale === "ja"
+    ? { mode: "ja-compatibility", visibleWorkIds: ids, warnings: [] }
+    : {
+        mode: "omit",
+        visibleWorkIds: [],
+        warnings: ids.map(
+          (id) => `Work ${id} omitted until Works EN capability exists`,
+        ),
+      };
+}
 export function evaluateExhibitionLocale(
   unit: LoadedExhibitionUnit,
   locale: ExhibitionLocale,
@@ -82,15 +96,7 @@ export function createExhibitionsFacade(
       const unit = units.find((item) => item.contentId === contentId);
       const ids =
         unit?.shared.state === "valid" ? (unit.shared.value.works ?? []) : [];
-      return locale === "ja"
-        ? { mode: "ja-compatibility", visibleWorkIds: ids, warnings: [] }
-        : {
-            mode: "omit",
-            visibleWorkIds: [],
-            warnings: ids.map(
-              (id) => `Work ${id} omitted until Works EN capability exists`,
-            ),
-          };
+      return projectExhibitionWorks(ids, locale);
     },
   };
 }

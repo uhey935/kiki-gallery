@@ -1,12 +1,13 @@
 ---
 import { createMarkdownProcessor } from "@astrojs/markdown-remark";
+import ExhibitionDetailPresentation from "../../components/ExhibitionDetailPresentation.astro";
+import { createExhibitionDetailPresentationModel } from "../../components/exhibition-detail-projection.ts";
 import Layout from "../../layouts/Layout.astro";
 import {
   exhibitionsPreviewStore,
   ExhibitionsPreviewError,
 } from "../exhibitions-preview";
-import { formatDateRangeJa } from "../../utils/date";
-import "../../styles/exhibitions.css";
+
 const { token, contentId: locale } = Astro.params;
 let preview;
 let previewError;
@@ -27,78 +28,38 @@ try {
 const rendered = preview
   ? await (await createMarkdownProcessor()).render(preview.body)
   : undefined;
-const date = preview
-  ? formatDateRangeJa(
-      preview.shared.start_date,
-      preview.shared.end_date,
-    )
-  : "";
+const model = preview
+  ? await createExhibitionDetailPresentationModel({
+      contentId: preview.contentId,
+      locale: preview.locale,
+      shared: preview.shared,
+      localized: preview.localized,
+    })
+  : undefined;
 ---
 
 {
-  preview && rendered ? (
+  preview && rendered && model ? (
     <Layout
-      title={`${preview.localized.title} · Draft Preview`}
+      title={`${preview.localized.seo_title ?? model.title} · Draft Preview`}
+      description={preview.localized.description}
+      locale={preview.locale}
     >
-      <>
-        <aside class="editor-preview-banner">
-          Exhibitions draft preview · not saved
-        </aside>
-        <section class="section exhibitions-detail">
-          <header class="exhibitions-heading">
-            <>
-              <p class="exhibitions-heading-artist">
-                {preview.shared.artists.join("、")}
-              </p>
-              <h1 class="exhibitions-h1-title">
-                {preview.localized.title}
-              </h1>
-            </>
-          </header>
-        </section>
-        <figure
-          class:list={[
-            "exhibitions-detail-image",
-            {
-              "exhibitions-detail-image--portrait":
-                preview.shared.hero.orientation === "portrait",
-            },
-          ]}
-        >
-          <img src={preview.shared.hero.image} alt={preview.localized.hero_alt} />
-          {preview.localized.hero_caption && (
-            <figcaption>{preview.localized.hero_caption}</figcaption>
-          )}
-        </figure>
-        <section class="section exhibitions-content">
-          <div class="exhibitions-main">
-            <>
-              <section class="exhibitions-info">
-                <dl class="exhibitions-info-list">
-                  <>
-                    <dt>開催期間</dt>
-                    <dd>{date}</dd>
-                  </>
-                </dl>
-              </section>
-              <article class="exhibitions-article">
-                {preview.localized.summary && <p>{preview.localized.summary}</p>}
-                <div set:html={rendered.code} />
-              </article>
-            </>
-          </div>
-        </section>
-      </>
+      <aside class="editor-preview-banner">
+        Exhibitions {preview.locale.toUpperCase()} draft preview · not saved
+      </aside>
+      <ExhibitionDetailPresentation {model}>
+        <Fragment set:html={rendered.code} />
+      </ExhibitionDetailPresentation>
     </Layout>
   ) : (
     <main class="editor-preview-error">
-      <>
-        <h1>Draft preview unavailable</h1>
-        <p>{previewError}</p>
-      </>
+      <h1>Draft preview unavailable</h1>
+      <p>{previewError}</p>
     </main>
   )
 }
+
 <style>
   .editor-preview-banner {
     position: sticky;
