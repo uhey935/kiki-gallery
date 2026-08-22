@@ -95,16 +95,6 @@ const shared = draft.shared.value;
               </div>
             </header>
             <div class="editor-entry-section__content editor-field-grid">
-              <p
-                class="editor-field-wide"
-                data-copy-status={draft.copyStatus[locale]}
-              >
-                {locale === "ja" && draft.copyStatus.ja === "temporary"
-                  ? "Temporary / requires final copy"
-                  : locale === "en" && draft.copyStatus.en === "placeholder"
-                    ? "Unresolved translation / Preview blocked"
-                    : "Copy approved"}
-              </p>
               <label class="editor-field-wide">
                 <>
                   <span>About intro · Required</span>
@@ -114,16 +104,6 @@ const shared = draft.shared.value;
                   />
                 </>
               </label>
-              {locale === "ja" && (
-                <label>
-                  <input
-                    type="checkbox"
-                    name="ja_copy_approved"
-                    checked={draft.copyStatus.ja === "approved"}
-                  />{" "}
-                  Copy finalized
-                </label>
-              )}
             </div>
           </>
         </section>

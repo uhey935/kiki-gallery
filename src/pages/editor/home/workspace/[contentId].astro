@@ -23,9 +23,7 @@ const homeCapabilities = {
   ja: homeProduction.capability("ja"),
   en: homeProduction.capability("en"),
 };
-const enExternalBlockers = homeCapabilities.en.issues.filter(
-  (issue) => issue !== "placeholder",
-);
+const enExternalBlockers = homeCapabilities.en.issues;
 const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
 const serializedExternalBlockers = JSON.stringify(enExternalBlockers);
 const capabilityGroups = [
@@ -34,16 +32,14 @@ const capabilityGroups = [
     rows: [
       {
         label: "Preview",
-        value: entry.capabilities.preview.ja
-          ? "Available (temporary allowed)"
-          : "Blocked",
+        value: entry.capabilities.preview.ja ? "Available" : "Blocked",
         attributes: { "data-home-capability": "ja-preview" },
       },
       {
         label: "Formal",
         value: homeCapabilities.ja.capable
           ? "Available"
-          : "Temporary copy pending",
+          : `Blocked: ${homeCapabilities.ja.issues.join(", ")}`,
         attributes: { "data-home-capability": "ja-formal" },
       },
     ],
@@ -53,9 +49,7 @@ const capabilityGroups = [
     rows: [
       {
         label: "Preview",
-        value: entry.capabilities.preview.en
-          ? "Available"
-          : "Blocked by placeholder",
+        value: entry.capabilities.preview.en ? "Available" : "Blocked",
         attributes: { "data-home-capability": "en-preview" },
       },
       {
@@ -207,9 +201,8 @@ const capabilityGroups = [
       }
       for (const locale of ["ja", "en"] as const)
         if (draft.locales[locale].state === "editable") {
-          const aboutIntro = String(data.get(`${locale}_about_intro`));
           draft.locales[locale].value = {
-            about_intro: aboutIntro,
+            about_intro: String(data.get(`${locale}_about_intro`)),
             ...(optional(data.get(`${locale}_seo_title`))
               ? { seo_title: optional(data.get(`${locale}_seo_title`)) }
               : {}),
@@ -217,14 +210,6 @@ const capabilityGroups = [
               ? { description: optional(data.get(`${locale}_description`)) }
               : {}),
           };
-          if (locale === "ja")
-            draft.copyStatus.ja =
-              data.get("ja_copy_approved") === "on" ? "approved" : "temporary";
-          else
-            draft.copyStatus.en =
-              aboutIntro === "__TODO_HOME_EN_ABOUT_INTRO__"
-                ? "placeholder"
-                : "approved";
         }
     };
     const render = () => {
@@ -238,11 +223,11 @@ const capabilityGroups = [
       if (capabilityJaFormal)
         capabilityJaFormal.textContent = validation.capabilities.formal.ja
           ? "Available after Save"
-          : "Temporary copy pending";
+          : "Blocked";
       if (capabilityEnPreview)
         capabilityEnPreview.textContent = validation.capabilities.preview.en
           ? "Available"
-          : "Blocked by placeholder";
+          : "Blocked";
       if (capabilityEnProduction)
         capabilityEnProduction.textContent = validation.capabilities.formal.en
           ? enExternalBlockers.length
@@ -250,7 +235,7 @@ const capabilityGroups = [
             : dirty
               ? "Available after Save"
               : "Available"
-          : "Blocked: placeholder";
+          : "Blocked";
       status.textContent = dirty
         ? `Unsaved: ${Object.entries(scopes)
             .filter(([, v]) => v)

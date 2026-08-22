@@ -10,7 +10,7 @@ import {
   homeDirtyScopes,
   validateHomeEditorDraft,
 } from "./home-draft-state.ts";
-import { createHomePreviewModel, HomePreviewError } from "./home-preview.ts";
+import { createHomePreviewModel } from "./home-preview.ts";
 import { inspectHomePublish } from "./home-publish.ts";
 import {
   saveHomeEditorDraft,
@@ -30,12 +30,14 @@ async function fixture() {
   return { temporary, root };
 }
 
-test("loads exact three-file singleton and copy states", async (t) => {
+test("loads exact three-file singleton with symmetric locale capabilities", async (t) => {
   const { temporary, root } = await fixture();
   t.after(() => fs.rm(temporary, { recursive: true, force: true }));
   const entry = await readHomeEditorEntry(root);
   assert.equal(entry.structuralStatus, "valid");
-  assert.deepEqual(entry.copyStatus, { ja: "temporary", en: "approved" });
+  assert.deepEqual(entry.capabilities.preview, { ja: true, en: true });
+  assert.deepEqual(entry.capabilities.formal, { ja: true, en: true });
+  assert.equal("copyStatus" in entry, false);
   assert.equal((await readHomeEditorState(root)).entries.length, 1);
   assert.deepEqual(
     Object.keys(serializeHomeEditorDraft(createHomeEditorDraft(entry))).sort(),
@@ -73,7 +75,6 @@ test("Shared, JA, and EN dirty scopes are independent", async (t) => {
   });
   if (draft.locales.ja.state === "editable")
     draft.locales.ja.value.about_intro = "JA final";
-  draft.copyStatus.ja = "approved";
   assert.deepEqual(homeDirtyScopes(baseline, draft), {
     shared: false,
     ja: true,
@@ -81,7 +82,7 @@ test("Shared, JA, and EN dirty scopes are independent", async (t) => {
   });
 });
 
-test("JA temporary previews, EN placeholder blocks, and resolved EN previews without fallback", async (t) => {
+test("JA and EN unsaved localized content preview symmetrically", async (t) => {
   const { temporary, root } = await fixture();
   t.after(() => fs.rm(temporary, { recursive: true, force: true }));
   const draft = createHomeEditorDraft(await readHomeEditorEntry(root));
@@ -90,31 +91,24 @@ test("JA temporary previews, EN placeholder blocks, and resolved EN previews wit
     true,
   );
   if (draft.locales.en.state === "editable")
-    draft.locales.en.value.about_intro = "__TODO_HOME_EN_ABOUT_INTRO__";
-  draft.copyStatus.en = "placeholder";
-  assert.throws(
-    () => createHomePreviewModel(draft, "en"),
-    (error) =>
-      error instanceof HomePreviewError && error.code === "preview-blocked",
-  );
-  if (draft.locales.en.state === "editable")
-    draft.locales.en.value.about_intro = "Human EN fixture";
-  draft.copyStatus.en = "approved";
+    draft.locales.en.value.about_intro = "Unsaved EN fixture";
   const en = createHomePreviewModel(draft, "en");
-  assert.equal(en.localized.about_intro, "Human EN fixture");
+  assert.equal(en.localized.about_intro, "Unsaved EN fixture");
   assert.equal(en.destinations.about, "/en/about/");
 });
 
-test("atomic Save supports localized draft status and preserves all three baselines", async (t) => {
+test("atomic Save serializes localized content without restoring a TODO marker", async (t) => {
   const { temporary, root } = await fixture();
   t.after(() => fs.rm(temporary, { recursive: true, force: true }));
   const baseline = createHomeEditorDraft(await readHomeEditorEntry(root));
   const draft = structuredClone(baseline);
   if (draft.locales.ja.state === "editable")
     draft.locales.ja.value.about_intro = "Formal JA fixture";
-  draft.copyStatus.ja = "approved";
   const saved = await saveHomeEditorDraft(draft, baseline, root);
-  assert.equal(saved.copyStatus.ja, "approved");
+  assert.equal(
+    saved.locales.ja.state === "editable" && saved.locales.ja.value.about_intro,
+    "Formal JA fixture",
+  );
   assert.doesNotMatch(
     await fs.readFile(path.join(root, "home", "ja.md"), "utf8"),
     /TODO_HOME_JA/,
@@ -152,7 +146,7 @@ test("optional localized metadata saves, rereads, and omits empty fields", async
   );
 });
 
-test("resolved EN intro Save survives canonical reread and reload", async (t) => {
+test("EN intro Save survives canonical reread and reload", async (t) => {
   const { temporary, root } = await fixture();
   t.after(() => fs.rm(temporary, { recursive: true, force: true }));
   const baseline = createHomeEditorDraft(await readHomeEditorEntry(root));
@@ -160,12 +154,7 @@ test("resolved EN intro Save survives canonical reread and reload", async (t) =>
   if (draft.locales.en.state !== "editable") assert.fail();
   draft.locales.en.value.about_intro =
     "A formally approved English introduction.";
-  // Reproduce the old UI request: the text changed while its loaded status was
-  // still placeholder. Canonical reread owns the derived EN copy status.
-  draft.copyStatus.en = "placeholder";
-
   const saved = await saveHomeEditorDraft(draft, baseline, root);
-  assert.equal(saved.copyStatus.en, "approved");
   assert.equal(
     saved.locales.en.state === "editable" && saved.locales.en.value.about_intro,
     "A formally approved English introduction.",

@@ -34,7 +34,6 @@ export async function synchronizeHomeStore(
       data: {
         contentId: entry.contentId,
         locale: entry.locale,
-        copyStatus: entry.copyStatus,
         ...entry.data,
       },
       filePath,

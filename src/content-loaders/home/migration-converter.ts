@@ -2,11 +2,11 @@ import { TextDecoder } from "node:util";
 import { parseDocument, stringify } from "yaml";
 import { homeSchema } from "../../content-schemas/home.ts";
 import {
-  HOME_EN_ABOUT_INTRO_PLACEHOLDER,
-  HOME_JA_ABOUT_INTRO_TEMPORARY_MARKER,
-  homeLocalizedSchema,
-  homeSharedSchema,
-} from "./schema.ts";
+  HOME_MIGRATION_V1_EN_ABOUT_INTRO_PLACEHOLDER,
+  HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_MARKER,
+  homeMigrationV1LocalizedSchema,
+  homeMigrationV1SharedSchema,
+} from "./migration-v1-contract.ts";
 
 export const HOME_MIGRATION_VERSION = 1 as const;
 const legacyFields = new Set(["home_hero", "sections", "title", "description"]);
@@ -34,7 +34,7 @@ export type ConvertedHomeFiles = {
 const markdown = (frontmatter: object) =>
   `---\n${stringify(frontmatter).trimEnd()}\n---\n`;
 const temporaryJaMarkdown = (frontmatter: object) =>
-  `---\n# ${HOME_JA_ABOUT_INTRO_TEMPORARY_MARKER}\n${stringify(frontmatter).trimEnd()}\n---\n`;
+  `---\n# ${HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_MARKER}\n${stringify(frontmatter).trimEnd()}\n---\n`;
 
 export function convertLegacyHomeMarkdown(
   bytes: Buffer,
@@ -76,7 +76,7 @@ export function convertLegacyHomeMarkdown(
     about.image.src !== "/images/home/about-landscape.jpg"
   )
     throw new Error(`${source}: Home fixed composition mapping mismatch`);
-  const shared = homeSharedSchema.parse({
+  const shared = homeMigrationV1SharedSchema.parse({
     ...(legacy.home_hero
       ? { home_hero: { media: legacy.home_hero.media } }
       : {}),
@@ -85,15 +85,15 @@ export function convertLegacyHomeMarkdown(
       about: { destination: "about", image: { src: about.image.src } },
     },
   });
-  const ja = homeLocalizedSchema.parse({
+  const ja = homeMigrationV1LocalizedSchema.parse({
     about_intro: input.jaAboutIntro,
     ...(legacy.title ? { seo_title: legacy.title } : {}),
     ...(legacy.description ? { description: legacy.description } : {}),
   });
   const enPlaceholder = !input.enAboutIntro?.trim();
-  const en = homeLocalizedSchema.parse({
+  const en = homeMigrationV1LocalizedSchema.parse({
     about_intro: enPlaceholder
-      ? HOME_EN_ABOUT_INTRO_PLACEHOLDER
+      ? HOME_MIGRATION_V1_EN_ABOUT_INTRO_PLACEHOLDER
       : input.enAboutIntro,
   });
   return {

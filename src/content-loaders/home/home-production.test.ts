@@ -9,23 +9,29 @@ const homeDirectory = path.resolve(
   "../../content/home/home",
 );
 
-test("migrated Home exposes only the explicit JA development projection", async () => {
+test("current Home exposes symmetric formal locale projections", async () => {
   const unit = await loadHomeUnit(homeDirectory);
   const facade = createHomeFacade(
     unit,
     {
       ja: { artists: true, about: true },
-      en: { artists: true, about: false },
+      en: { artists: true, about: true },
     },
     true,
   );
-  assert.equal(facade.formal("ja"), undefined);
-  assert.equal(facade.formal("en"), undefined);
-  const ja = facade.developmentJa();
-  assert.equal(ja?.copyStatus, "temporary");
+  const ja = facade.formal("ja");
+  const en = facade.formal("en");
+  assert(ja);
+  assert(en);
   assert.equal(
     ja?.data.about_intro,
     "KiKi Galleryは、現代美術を中心に紹介するアートギャラリーです。",
   );
   assert.doesNotMatch(String(ja?.data.about_intro), /__TODO_/);
+  assert.equal(
+    en.data.about_intro,
+    "White Porcelain Chrysanthemum-shaped Dish",
+  );
+  assert.equal("copyStatus" in ja, false);
+  assert.equal("copyStatus" in en, false);
 });

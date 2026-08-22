@@ -5,9 +5,10 @@ import { fileURLToPath } from "node:url";
 import { parseDocument } from "yaml";
 import { convertLegacyHomeMarkdown } from "./migration-converter.ts";
 import {
-  HOME_JA_ABOUT_INTRO_TEMPORARY_COPY,
-  HOME_JA_ABOUT_INTRO_TEMPORARY_MARKER,
-} from "./schema.ts";
+  HOME_MIGRATION_V1_EN_ABOUT_INTRO_PLACEHOLDER,
+  HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_COPY,
+  HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_MARKER,
+} from "./migration-v1-contract.ts";
 
 export const homeMigrationSha256 = (value: Uint8Array | string) =>
   createHash("sha256").update(value).digest("hex");
@@ -53,13 +54,13 @@ export type HomeMigrationManifest = {
     jaAboutIntro: {
       status: "temporary";
       approved: false;
-      value: typeof HOME_JA_ABOUT_INTRO_TEMPORARY_COPY;
-      marker: typeof HOME_JA_ABOUT_INTRO_TEMPORARY_MARKER;
+      value: typeof HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_COPY;
+      marker: typeof HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_MARKER;
     };
     enAboutIntro: {
       status: "placeholder";
       approved: false;
-      value: "__TODO_HOME_EN_ABOUT_INTRO__";
+      value: typeof HOME_MIGRATION_V1_EN_ABOUT_INTRO_PLACEHOLDER;
     };
   };
   assets: Array<{
@@ -125,7 +126,7 @@ export async function createHomeMigrationManifest(
   const originalBase64 = source.toString("base64");
   const sha256 = homeMigrationSha256(source);
   const converted = convertLegacyHomeMarkdown(source, sourcePath, {
-    jaAboutIntro: HOME_JA_ABOUT_INTRO_TEMPORARY_COPY,
+    jaAboutIntro: HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_COPY,
     jaTemporary: true,
   });
   const convertedFiles = {
@@ -165,13 +166,13 @@ export async function createHomeMigrationManifest(
       jaAboutIntro: {
         status: "temporary",
         approved: false,
-        value: HOME_JA_ABOUT_INTRO_TEMPORARY_COPY,
-        marker: HOME_JA_ABOUT_INTRO_TEMPORARY_MARKER,
+        value: HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_COPY,
+        marker: HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_MARKER,
       },
       enAboutIntro: {
         status: "placeholder",
         approved: false,
-        value: "__TODO_HOME_EN_ABOUT_INTRO__",
+        value: HOME_MIGRATION_V1_EN_ABOUT_INTRO_PLACEHOLDER,
       },
     },
     assets: assetEvidence,

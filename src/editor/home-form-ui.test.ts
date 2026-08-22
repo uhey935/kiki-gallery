@@ -22,4 +22,7 @@ test("Home form separates localized content from localized metadata", async () =
     ),
   );
   assert.doesNotMatch(localizedContent, /SEO title|Description/);
+  assert.doesNotMatch(form, /Copy finalized|Copy approved|Temporary/);
+  assert.doesNotMatch(form, /copyStatus|TODO_HOME/);
+  assert.equal((form.match(/About intro · Required/g) ?? []).length, 1);
 });

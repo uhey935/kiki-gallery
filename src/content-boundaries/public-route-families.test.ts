@@ -37,7 +37,8 @@ test("JA singleton consumers automatically retire development projections", asyn
     readFile("src/pages/index.astro", "utf8"),
     readFile("src/pages/about.astro", "utf8"),
   ]);
-  assert.match(home, /formal\("ja"\) \?\? homeFacade\.developmentJa\(\)/);
+  assert.match(home, /homeFacade\.formal\("ja"\)/);
+  assert.doesNotMatch(home, /developmentJa/);
   assert.match(about, /formal\("ja"\) \?\? aboutFacade\.developmentJa\(\)/);
 });
 

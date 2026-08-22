@@ -6,7 +6,8 @@ import { getHomeProductionFacade } from "../content-boundaries/home-production.t
 import Layout from "../layouts/Layout.astro";
 
 const homeFacade = await getHomeProductionFacade();
-const home = homeFacade.formal("ja") ?? homeFacade.developmentJa();
+const home = homeFacade.formal("ja");
+if (!home) throw new Error("JA Home is not formally capable");
 const presentation = await createHomePresentationModel(
   "ja",
   home.data,

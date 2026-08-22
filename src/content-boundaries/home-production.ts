@@ -68,8 +68,6 @@ export async function getHomeProductionFacade() {
       );
       const issues: string[] = [];
       if (!entry) issues.push("source-unavailable");
-      if (entry?.data.copyStatus === "temporary") issues.push("temporary-copy");
-      if (entry?.data.copyStatus === "placeholder") issues.push("placeholder");
       if (!assets.valid) issues.push("asset-invalid");
       if (artists.kind !== "available")
         issues.push("artists-route-unavailable");
@@ -86,11 +84,6 @@ export async function getHomeProductionFacade() {
     formal: (locale: "ja" | "en") => {
       const result = capabilities[locale];
       return result.capable ? result.entry : undefined;
-    },
-    developmentJa: () => {
-      const entry = find("ja");
-      if (!entry) throw new Error("Missing structurally valid JA Home source");
-      return entry;
     },
     enCapable: capabilities.en.capable,
   };

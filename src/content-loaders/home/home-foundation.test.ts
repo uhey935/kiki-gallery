@@ -21,11 +21,12 @@ import {
   verifyHomeRollbackEvidence,
 } from "./migration-manifest.ts";
 import { assertHomeTopology, loadHomeUnit } from "./repository.ts";
+import { homeLocalizedSchema, homeSharedSchema } from "./schema.ts";
 import {
-  HOME_EN_ABOUT_INTRO_PLACEHOLDER,
-  homeLocalizedSchema,
-  homeSharedSchema,
-} from "./schema.ts";
+  HOME_MIGRATION_V1_EN_ABOUT_INTRO_PLACEHOLDER,
+  HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_COPY,
+  HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_MARKER,
+} from "./migration-v1-contract.ts";
 
 const projectRoot = path.resolve(import.meta.dirname, "../../..");
 const frozenManifestFile = path.join(
@@ -124,14 +125,19 @@ test("topology rejects flat, mixed, and unexpected nested inventory", async (t) 
   assert.ok(loaded.issues.some((item) => item.category === "unit-integrity"));
 });
 
-test("placeholder blocks only its locale and capability never falls back", async (t) => {
+test("current runtime treats both required locales symmetrically", async (t) => {
   const { root, unit } = await fixtureUnit();
   t.after(() => rm(root, { recursive: true, force: true }));
   await writeFile(
+    path.join(unit, "ja.md"),
+    `---\n# ${HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_MARKER}\nabout_intro: JA fixture\n---\n`,
+  );
+  await writeFile(
     path.join(unit, "en.md"),
-    localized(HOME_EN_ABOUT_INTRO_PLACEHOLDER),
+    localized(HOME_MIGRATION_V1_EN_ABOUT_INTRO_PLACEHOLDER),
   );
   const loaded = await loadHomeUnit(unit);
+  assert.equal(loaded.issues.length, 0);
   const routes = {
     ja: { artists: true, about: true },
     en: { artists: true, about: true },
@@ -142,7 +148,7 @@ test("placeholder blocks only its locale and capability never falls back", async
   );
   assert.equal(
     evaluateHomeCapability(loaded, "en", routes, true).allowed,
-    false,
+    true,
   );
   routes.en.about = false;
   assert.ok(
@@ -172,7 +178,10 @@ test("converter is deterministic, maps exact images, and requires JA human input
   assert.match(first.shared, /artists-square\.jpg/);
   assert.match(first.shared, /about-landscape\.jpg/);
   assert.equal(first.enPlaceholder, true);
-  assert.match(first.en, new RegExp(HOME_EN_ABOUT_INTRO_PLACEHOLDER));
+  assert.match(
+    first.en,
+    new RegExp(HOME_MIGRATION_V1_EN_ABOUT_INTRO_PLACEHOLDER),
+  );
   const withLayout = Buffer.from(
     source
       .toString()
@@ -211,6 +220,20 @@ test("frozen plan binds temporary copy, rollback, and immutable assets", async (
     ["webp", "webp", "webp"],
   );
   assert.ok(manifest.assets.every(({ mutated }) => mutated === false));
+  const regenerated = convertLegacyHomeMarkdown(decoded, manifest.source.path, {
+    jaAboutIntro: HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_COPY,
+    jaTemporary: true,
+  });
+  const regeneratedFiles = {
+    "index.yaml": regenerated.shared,
+    "ja.md": regenerated.ja,
+    "en.md": regenerated.en,
+  };
+  for (const target of manifest.targetPlan.files) {
+    const name = path.basename(target.path) as keyof typeof regeneratedFiles;
+    assert.equal(regeneratedFiles[name], target.content);
+    assert.equal(homeMigrationSha256(regeneratedFiles[name]), target.sha256);
+  }
 });
 
 test("fixture executor installs exact unit, rejects drift, and rolls back", async (t) => {

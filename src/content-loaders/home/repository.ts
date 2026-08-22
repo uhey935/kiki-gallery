@@ -7,7 +7,6 @@ import type {
   LoadedHomeUnit,
 } from "./contracts.ts";
 import {
-  HOME_EN_ABOUT_INTRO_PLACEHOLDER,
   HOME_LOCALES,
   homeLocalizedSchema,
   homeSharedSchema,
@@ -16,7 +15,6 @@ import {
 } from "./schema.ts";
 
 const exactInventory = ["en.md", "index.yaml", "ja.md"];
-const reservedPlaceholder = /__TODO_[A-Z0-9_]+__/;
 
 function issue(
   message: string,
@@ -105,13 +103,6 @@ export async function loadHomeUnit(directory: string): Promise<LoadedHomeUnit> {
       ? { state: "valid", raw, value }
       : { state: "invalid", raw };
     if (!value) issues.push(issue(`invalid ${locale}.md`, "structure", locale));
-    if (reservedPlaceholder.test(raw))
-      issues.push(issue("unresolved placeholder", "content-quality", locale));
-    if (
-      locale === "en" &&
-      value?.about_intro === HOME_EN_ABOUT_INTRO_PLACEHOLDER
-    )
-      continue;
   }
   return { ...empty, shared, locales, issues };
 }

@@ -1,6 +1,5 @@
 import type { HomeIssue } from "../content-loaders/home/contracts.ts";
 import {
-  HOME_EN_ABOUT_INTRO_PLACEHOLDER,
   homeLocalizedSchema,
   homeSharedSchema,
   type HomeLocalized,
@@ -15,7 +14,6 @@ export type HomeEditorDraftState = {
   contentId: "home";
   shared: Source<HomeShared>;
   locales: Record<"ja" | "en", Source<HomeLocalized>>;
-  copyStatus: { ja: "temporary" | "approved"; en: "placeholder" | "approved" };
   preimages: { "index.yaml": string; "ja.md": string; "en.md": string };
 };
 const source = <T>(value: { state: string; value?: T }): Source<T> =>
@@ -31,7 +29,6 @@ export const createHomeEditorDraft = (
   contentId: "home",
   shared: source(entry.shared),
   locales: { ja: source(entry.locales.ja), en: source(entry.locales.en) },
-  copyStatus: structuredClone(entry.copyStatus),
   preimages: {
     "index.yaml": entry.shared.state === "valid" ? entry.shared.raw : "",
     "ja.md": entry.locales.ja.state === "valid" ? entry.locales.ja.raw : "",
@@ -43,12 +40,8 @@ export const homeDirtyScopes = (
   b: HomeEditorDraftState,
 ) => ({
   shared: JSON.stringify(a.shared) !== JSON.stringify(b.shared),
-  ja:
-    JSON.stringify(a.locales.ja) !== JSON.stringify(b.locales.ja) ||
-    a.copyStatus.ja !== b.copyStatus.ja,
-  en:
-    JSON.stringify(a.locales.en) !== JSON.stringify(b.locales.en) ||
-    a.copyStatus.en !== b.copyStatus.en,
+  ja: JSON.stringify(a.locales.ja) !== JSON.stringify(b.locales.ja),
+  en: JSON.stringify(a.locales.en) !== JSON.stringify(b.locales.en),
 });
 export const isHomeEditorDraftDirty = (
   a: HomeEditorDraftState,
@@ -75,22 +68,6 @@ export function validateHomeEditorDraft(draft: HomeEditorDraftState) {
         message: `invalid ${locale} Home`,
       });
   }
-  if (draft.copyStatus.ja === "temporary")
-    issues.push({
-      category: "content-quality",
-      locale: "ja",
-      message: "temporary JA about_intro",
-    });
-  if (
-    draft.copyStatus.en === "placeholder" ||
-    (draft.locales.en.state === "editable" &&
-      draft.locales.en.value.about_intro === HOME_EN_ABOUT_INTRO_PLACEHOLDER)
-  )
-    issues.push({
-      category: "content-quality",
-      locale: "en",
-      message: "unresolved EN about_intro",
-    });
   const structural = sharedValid && localeValid.ja && localeValid.en;
   return {
     issues,
@@ -98,16 +75,11 @@ export function validateHomeEditorDraft(draft: HomeEditorDraftState) {
       save: structural,
       preview: {
         ja: structural && localeValid.ja,
-        en: structural && localeValid.en && draft.copyStatus.en === "approved",
+        en: structural && localeValid.en,
       },
       formal: {
-        ja: structural && draft.copyStatus.ja === "approved",
-        en:
-          structural &&
-          draft.copyStatus.en === "approved" &&
-          draft.locales.en.state === "editable" &&
-          draft.locales.en.value.about_intro !==
-            HOME_EN_ABOUT_INTRO_PLACEHOLDER,
+        ja: structural && localeValid.ja,
+        en: structural && localeValid.en,
       },
       publish: structural,
     },

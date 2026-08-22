@@ -1,12 +1,16 @@
 import { z } from "astro/zod";
 
-export const HOME_LOCALES = ["ja", "en"] as const;
-export const HOME_DESTINATIONS = ["artists", "about"] as const;
+export const HOME_MIGRATION_V1_EN_ABOUT_INTRO_PLACEHOLDER =
+  "__TODO_HOME_EN_ABOUT_INTRO__" as const;
+export const HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_MARKER =
+  "__TODO_HOME_JA_ABOUT_INTRO__" as const;
+export const HOME_MIGRATION_V1_JA_ABOUT_INTRO_TEMPORARY_COPY =
+  "KiKi Galleryは、現代美術を中心に紹介するアートギャラリーです。" as const;
 
 const nonEmpty = z.string().trim().min(1);
 const absoluteAssetPath = nonEmpty.startsWith("/");
 
-export const homeSharedSchema = z
+export const homeMigrationV1SharedSchema = z
   .object({
     home_hero: z
       .object({
@@ -31,9 +35,7 @@ export const homeSharedSchema = z
           .object({
             destination: z.literal("artists"),
             image: z
-              .object({
-                src: z.literal("/images/home/artists-square.jpg"),
-              })
+              .object({ src: z.literal("/images/home/artists-square.jpg") })
               .strict(),
           })
           .strict(),
@@ -41,9 +43,7 @@ export const homeSharedSchema = z
           .object({
             destination: z.literal("about"),
             image: z
-              .object({
-                src: z.literal("/images/home/about-landscape.jpg"),
-              })
+              .object({ src: z.literal("/images/home/about-landscape.jpg") })
               .strict(),
           })
           .strict(),
@@ -52,22 +52,10 @@ export const homeSharedSchema = z
   })
   .strict();
 
-export const homeLocalizedSchema = z
+export const homeMigrationV1LocalizedSchema = z
   .object({
     about_intro: nonEmpty,
     seo_title: nonEmpty.optional(),
     description: nonEmpty.optional(),
   })
   .strict();
-
-export const homeAstroEntrySchema = z.intersection(
-  z.object({
-    contentId: z.literal("home"),
-    locale: z.enum(HOME_LOCALES),
-  }),
-  z.intersection(homeSharedSchema, homeLocalizedSchema),
-);
-
-export type HomeShared = z.infer<typeof homeSharedSchema>;
-export type HomeLocalized = z.infer<typeof homeLocalizedSchema>;
-export type HomeLocale = (typeof HOME_LOCALES)[number];

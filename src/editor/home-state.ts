@@ -20,7 +20,6 @@ export type HomeEditorEntryState = {
   issues: HomeIssue[];
   structuralStatus: "valid" | "issues";
   issueCount: number;
-  copyStatus: { ja: "temporary" | "approved"; en: "placeholder" | "approved" };
   capabilities: {
     save: boolean;
     preview: { ja: boolean; en: boolean };
@@ -51,12 +50,6 @@ export async function readHomeEditorEntry(
     throw new HomeEditorEntryNotFoundError(
       "Home exact three-file unit is missing",
     );
-  const jaTemporary = unit.issues.some(
-    ({ locale, category }) => locale === "ja" && category === "content-quality",
-  );
-  const enPlaceholder = unit.issues.some(
-    ({ locale, category }) => locale === "en" && category === "content-quality",
-  );
   return {
     contentId: "home",
     shared: unit.shared,
@@ -64,17 +57,10 @@ export async function readHomeEditorEntry(
     issues: unit.issues,
     structuralStatus: valid ? "valid" : "issues",
     issueCount: unit.issues.length,
-    copyStatus: {
-      ja: jaTemporary ? "temporary" : "approved",
-      en: enPlaceholder ? "placeholder" : "approved",
-    },
     capabilities: {
       save: valid,
-      preview: { ja: valid, en: valid && !enPlaceholder },
-      formal: {
-        ja: valid && !jaTemporary,
-        en: valid && !enPlaceholder && false,
-      },
+      preview: { ja: valid, en: valid },
+      formal: { ja: valid, en: valid },
       publish: valid,
     },
   };
@@ -87,7 +73,7 @@ export async function readHomeEditorState(root = canonicalRoot) {
       {
         contentId: "home",
         title: "Home",
-        detail: `Shared · JA ${entry.copyStatus.ja} · EN ${entry.copyStatus.en}`,
+        detail: "Shared · JA · EN",
         status: entry.structuralStatus,
         statusLabel: entry.issueCount
           ? `${entry.issueCount} content status item(s)`
