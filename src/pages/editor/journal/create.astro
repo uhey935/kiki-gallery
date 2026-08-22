@@ -165,7 +165,6 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           else if (key === "hero" && nested)
             shared.hero[nested as "image" | "hero_caption"] =
               field.value || (undefined as never);
-          else if (key === "author") shared.author = field.value || undefined;
           else if (key === "date" || key === "visibility")
             Object.assign(shared, { [key]: field.value });
         } else if (

@@ -47,8 +47,6 @@ function orderedShared(draft: JournalEditorSharedDraft): JournalShared {
         ? {}
         : { hero_caption: shared.hero.hero_caption }),
     },
-    ...(shared.author === undefined ? {} : { author: shared.author }),
-    ...(shared.credits === undefined ? {} : { credits: shared.credits }),
   };
 }
 

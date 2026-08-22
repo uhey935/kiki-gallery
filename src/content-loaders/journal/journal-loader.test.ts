@@ -195,7 +195,6 @@ test("repository and canonical Astro schema accept the same integrated entries",
     date: "2026-01-31",
     category: "interview",
     hero: { image: "/images/journal/parity.jpg" },
-    author: "valid-author",
     visibility: "public",
   };
   const localized = {
@@ -204,31 +203,24 @@ test("repository and canonical Astro schema accept the same integrated entries",
     hero_alt: "Parity test image",
   };
   const cases = [
-    { name: "valid entry", shared },
+    { name: "valid entry", shared, accepted: true },
     {
       name: "invalid calendar date",
       shared: { ...shared, date: "2026-02-30" },
+      accepted: false,
     },
     {
-      name: "invalid author slug",
-      shared: { ...shared, author: "Invalid Author" },
+      name: "removed author field",
+      shared: { ...shared, author: "valid-author" },
+      accepted: false,
     },
     {
-      name: "unknown credit field",
-      shared: {
-        ...shared,
-        author: undefined,
-        credits: [
-          { role: "Photography", person: "valid-author", note: "unknown" },
-        ],
-      },
-    },
-    {
-      name: "author and credits together",
+      name: "removed credits field",
       shared: {
         ...shared,
         credits: [{ role: "Photography", person: "valid-author" }],
       },
+      accepted: false,
     },
   ];
 
@@ -259,6 +251,7 @@ test("repository and canonical Astro schema accept the same integrated entries",
         locale: "ja",
       }).success;
       assert.equal(repositoryAccepted, schemaAccepted, parityCase.name);
+      assert.equal(schemaAccepted, parityCase.accepted, parityCase.name);
     } finally {
       await fs.rm(temporaryRoot, { recursive: true, force: true });
     }

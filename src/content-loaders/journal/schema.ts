@@ -35,55 +35,14 @@ const journalHeroSchema = z
   })
   .strict();
 
-const creditSchema = z
-  .object({
-    role: nonEmptyStringSchema,
-    person: slugSchema.optional(),
-    member: slugSchema.optional(),
-  })
-  .strict()
-  .superRefine((credit, context) => {
-    const hasPerson = credit.person !== undefined;
-    const hasMember = credit.member !== undefined;
-
-    if (!hasPerson && !hasMember) {
-      context.addIssue({
-        code: "custom",
-        path: ["person"],
-        message: "Credit requires either person or member.",
-      });
-    }
-
-    if (hasPerson && hasMember) {
-      for (const field of ["person", "member"] as const) {
-        context.addIssue({
-          code: "custom",
-          path: [field],
-          message: "Credit must not define both person and member.",
-        });
-      }
-    }
-  });
-
 export const journalSharedSchema = z
   .object({
     date: journalDateSchema,
     category: journalCategorySchema,
     hero: journalHeroSchema,
-    author: slugSchema.optional(),
-    credits: z.array(creditSchema).optional(),
     visibility: z.enum(["public", "hidden"]),
   })
-  .strict()
-  .superRefine((journal, context) => {
-    if (journal.author !== undefined && journal.credits !== undefined) {
-      context.addIssue({
-        code: "custom",
-        path: ["author"],
-        message: "Journal must not define both author and credits.",
-      });
-    }
-  });
+  .strict();
 
 export const journalLocalizedSchema = z
   .object({

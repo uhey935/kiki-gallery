@@ -244,6 +244,8 @@ test("serializer writes singular category and never writes legacy categories", a
   const shared = serializeJournalEditorDraft(draft)["index.yaml"];
   assert.match(shared, /^category: interview$/m);
   assert.doesNotMatch(shared, /^categories:/m);
+  assert.doesNotMatch(shared, /^author:/m);
+  assert.doesNotMatch(shared, /^credits:/m);
 });
 
 test("serializer rejects unavailable three-file sources explicitly", async () => {
@@ -279,7 +281,6 @@ test("save writes one canonical three-file unit and rereads a clean baseline", a
     const initial = createJournalEditorDraft(entry);
     const edited = updateJournalEditorDraft(initial, (draft) => {
       if (draft.shared.state === "editable") {
-        draft.shared.value.author = "editor";
         draft.shared.value.category = "report";
         draft.shared.value.visibility = "hidden";
       }

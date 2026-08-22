@@ -104,18 +104,6 @@ const { draft } = Astro.props;
                 value={draft.shared.value.hero.hero_caption ?? ""}
               />
             </label>
-            <label data-editor-field="shared.author">
-              <span>
-                Author{" "}
-                <small class="editor-field-badge editor-field-badge--optional">
-                  Optional
-                </small>
-              </span>
-              <input
-                name="shared.author"
-                value={draft.shared.value.author ?? ""}
-              />
-            </label>
           </div>
         ) : (
           <p>

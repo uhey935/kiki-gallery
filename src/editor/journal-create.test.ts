@@ -65,6 +65,12 @@ test("create atomically materializes and rereads one three-file unit", async () 
       "index.yaml",
       "ja.md",
     ]);
+    const shared = await fs.readFile(
+      path.join(root, "new-entry", "index.yaml"),
+      "utf8",
+    );
+    assert.doesNotMatch(shared, /^author:/m);
+    assert.doesNotMatch(shared, /^credits:/m);
     assert.deepEqual(
       (await fs.readdir(root)).filter((name) =>
         name.startsWith(".journal-create-"),

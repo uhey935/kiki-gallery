@@ -340,8 +340,6 @@ Shared:
 | `date`     | `YYYY-MM-DD` String | Yes      |
 | `category` | Enum                | Yes      |
 | `hero`     | Journal Hero        | Yes      |
-| `author`   | Contributor ID      | No       |
-| `credits`  | Credit[]            | No       |
 
 Localized:
 
@@ -362,9 +360,8 @@ Rules:
 
 - `date` は Required の有効な `YYYY-MM-DD` 文字列。
 - `category` は Required の単一 enum、`summary` は Required。
-- `author` / `credits` は両方 Optional で、同時指定は禁止する。
-- Credit は Required の `role` と、`person` または `member` の一方を持つ。両方の同時指定は禁止する。
-- `hero_caption` の画像クレジットを Contributor Credits へ移さない。
+- `hero_caption` の画像クレジットは hero 固有fieldとして保持する。
+- Current runtime は attribution field を持たない。Historical v1 migration contract は dated artifact に隔離する。
 
 ---
 
