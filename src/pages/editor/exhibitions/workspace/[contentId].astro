@@ -150,7 +150,6 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           title: value(`${locale}.title`),
           hero_alt: value(`${locale}.hero_alt`),
           body: value(`${locale}.body`),
-          summary: optional(value(`${locale}.summary`)),
           venue: optional(value(`${locale}.venue`)),
           attendance: optional(value(`${locale}.attendance`)),
           hero_caption: optional(value(`${locale}.hero_caption`)),

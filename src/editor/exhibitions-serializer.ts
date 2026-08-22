@@ -22,7 +22,6 @@ function locale(v: ExhibitionLocalized & { body: string }) {
   const { body, ...data } = v;
   const ordered: ExhibitionLocalized = {
     title: data.title,
-    ...(data.summary ? { summary: data.summary } : {}),
     ...(data.venue ? { venue: data.venue } : {}),
     ...(data.attendance ? { attendance: data.attendance } : {}),
     hero_alt: data.hero_alt,

@@ -116,7 +116,6 @@ export async function createExhibitionDetailPresentationModel({
       shared.closed_weekdays === undefined
         ? undefined
         : formatExhibitionClosedWeekdays(shared.closed_weekdays, locale),
-    summary: localized.summary,
     works,
     indexHref: exhibitionIndexRoute(locale),
   };

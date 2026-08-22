@@ -41,7 +41,6 @@ export type ExhibitionProductionEntry = {
       hero_caption?: string;
     };
     title: string;
-    summary?: string;
     venue?: string;
     attendance?: string;
     hero_alt: string;
@@ -91,7 +90,6 @@ const adapt = (source: SourceEntry): ExhibitionProductionEntry => ({
         : {}),
     },
     title: source.data.title,
-    ...(source.data.summary ? { summary: source.data.summary } : {}),
     ...(source.data.venue ? { venue: source.data.venue } : {}),
     ...(source.data.attendance ? { attendance: source.data.attendance } : {}),
     hero_alt: source.data.hero_alt,

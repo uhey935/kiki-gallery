@@ -95,6 +95,14 @@ test("strict target schemas enforce uniqueness, dates, and required localized fi
     exhibitionLocalizedSchema.safeParse({
       title: "x",
       hero_alt: "y",
+      summary: "Legacy summary",
+    }).success,
+    false,
+  );
+  assert.equal(
+    exhibitionLocalizedSchema.safeParse({
+      title: "x",
+      hero_alt: "y",
       opening_hours: "13:00-17:00",
     }).success,
     false,

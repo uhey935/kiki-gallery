@@ -33,7 +33,6 @@ export type ExhibitionDetailPresentationModel = {
   openingHours?: string;
   venue?: string;
   closedDays?: string;
-  summary?: string;
   works: ExhibitionDetailWork[];
   indexHref: string;
 };

@@ -88,7 +88,6 @@ export const exhibitionSharedSchema = z
 export const exhibitionLocalizedSchema = z
   .object({
     title: nonEmpty,
-    summary: nonEmpty.optional(),
     venue: nonEmpty.optional(),
     attendance: nonEmpty.optional(),
     hero_alt: nonEmpty,

@@ -89,7 +89,6 @@ const artistSeparator = locale === "ja" ? "、" : ", ";
 
       <article class="exhibitions-article">
         <h2 class="visually-hidden">{labels.overview}</h2>
-        {model.summary && <p>{model.summary}</p>}
         <slot />
         {
           model.venue && (
