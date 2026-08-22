@@ -402,6 +402,22 @@ button {
   font-size: 0.78rem;
 }
 
+.editor-news-home-field {
+  display: grid;
+  gap: 7px;
+  color: #65706a;
+  font-size: 0.78rem;
+}
+
+.editor-field-grid .editor-news-home-field__control {
+  display: flex;
+  justify-content: center;
+}
+
+.editor-field-grid .editor-news-home-field__control input {
+  width: auto;
+}
+
 .editor-checkbox-fieldset {
   margin: 0;
   border: 1px solid #dfe4df;

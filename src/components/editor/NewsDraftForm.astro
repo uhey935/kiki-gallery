@@ -71,19 +71,25 @@ const { draft } = Astro.props as { draft: NewsEditorDraftState };
                 placeholder="/artists/example or https://…"
               />
             </label>
-            <p>
-              <label data-editor-field="shared.show_on_home">
-                <input
-                  name="shared.show_on_home"
-                  type="checkbox"
-                  checked={draft.shared.value.show_on_home}
-                />{" "}
+            <div
+              class="editor-news-home-field"
+              data-editor-field="shared.show_on_home"
+            >
+              <span id="news-show-on-home-label">
                 Show on Home
                 <small class="editor-field-badge editor-field-badge--optional">
                   Optional
                 </small>
+              </span>
+              <label class="editor-news-home-field__control">
+                <input
+                  name="shared.show_on_home"
+                  type="checkbox"
+                  checked={draft.shared.value.show_on_home}
+                  aria-labelledby="news-show-on-home-label"
+                />
               </label>
-            </p>
+            </div>
           </div>
         ) : (
           <p>
