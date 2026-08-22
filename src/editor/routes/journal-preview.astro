@@ -4,6 +4,8 @@ import { createMarkdownProcessor } from "@astrojs/markdown-remark";
 import type { Locale } from "../../content-loaders/journal/contracts";
 import { JournalPreviewError, journalPreviewStore } from "../journal-preview";
 import Layout from "../../layouts/Layout.astro";
+import JournalDetailPresentation from "../../components/JournalDetailPresentation.astro";
+import { createJournalDetailPresentationModel } from "../../components/journal-detail-presentation";
 
 const { token, locale } = Astro.params;
 let preview;
@@ -24,34 +26,33 @@ try {
 const rendered = preview
   ? await (await createMarkdownProcessor()).render(preview.body)
   : undefined;
+const model = preview
+  ? createJournalDetailPresentationModel({
+      locale: preview.locale,
+      hero: preview.shared.hero,
+      heroAlt: preview.localized.hero_alt,
+      title: preview.localized.title,
+      date: preview.shared.date,
+    })
+  : undefined;
 ---
 
 {
-  preview && rendered ? (
+  preview && rendered && model ? (
     <Layout
-      title={`${preview.localized.title} · Draft Preview`}
+      title={preview.localized.title}
       description={preview.localized.summary}
-      image={preview.shared.hero.image}
+      locale={preview.locale}
+      robots="noindex,nofollow"
+      canonical={false}
+      social={false}
     >
       <aside class="editor-preview-banner">
         Draft preview · {preview.locale.toUpperCase()} · not saved
       </aside>
-      <article class="article" lang={preview.locale}>
-        <figure class="article-hero">
-          <img
-            src={preview.shared.hero.image}
-            alt={preview.localized.hero_alt}
-          />
-          {preview.shared.hero.hero_caption && (
-            <figcaption>{preview.shared.hero.hero_caption}</figcaption>
-          )}
-        </figure>
-        <h1 class="article-title">{preview.localized.title}</h1>
-        <time class="article-date" datetime={preview.shared.date}>
-          {preview.shared.date}
-        </time>
-        <div class="article-body" set:html={rendered.code} />
-      </article>
+      <JournalDetailPresentation {model}>
+        <Fragment set:html={rendered.code} />
+      </JournalDetailPresentation>
     </Layout>
   ) : (
     <main class="editor-preview-error">

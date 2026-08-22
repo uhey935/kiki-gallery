@@ -1,0 +1,28 @@
+---
+import type { JournalDetailPresentationModel } from "./journal-detail-presentation.ts";
+
+const { model } = Astro.props as { model: JournalDetailPresentationModel };
+---
+
+<div data-journal-detail-presentation data-locale={model.locale}>
+  <article class="article" lang={model.locale}>
+    <figure class="article-hero">
+      <img src={model.hero.src} alt={model.hero.alt} />
+      {model.hero.caption && <figcaption>{model.hero.caption}</figcaption>}
+    </figure>
+
+    <h1 class="article-title">{model.title}</h1>
+
+    <time class="article-date" datetime={model.date}>
+      Published {model.publishedDate}
+    </time>
+
+    <div class="article-body">
+      <slot />
+    </div>
+  </article>
+
+  <nav class="detail-navigation" aria-label="All journal articles">
+    <a href={model.indexHref} class="action-link">View All Journal</a>
+  </nav>
+</div>

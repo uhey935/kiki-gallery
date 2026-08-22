@@ -3,6 +3,8 @@ import { render } from "astro:content";
 import { journalRouteRegistry } from "../../../content-boundaries/journal";
 import { getJournalProductionFacade } from "../../../content-boundaries/journal-production";
 import Layout from "../../../layouts/Layout.astro";
+import JournalDetailPresentation from "../../../components/JournalDetailPresentation.astro";
+import { createJournalDetailPresentationModel } from "../../../components/journal-detail-presentation";
 
 export async function getStaticPaths() {
   const journal = (await getJournalProductionFacade()).forDetail("en");
@@ -18,6 +20,13 @@ export async function getStaticPaths() {
 
 const { item } = Astro.props;
 const { Content } = await render(item);
+const model = createJournalDetailPresentationModel({
+  locale: "en",
+  hero: item.data.hero,
+  heroAlt: item.data.hero_alt,
+  title: item.data.title,
+  date: item.data.date,
+});
 ---
 
 <Layout
@@ -26,34 +35,7 @@ const { Content } = await render(item);
   image={item.data.hero.image}
   locale="en"
 >
-  <article class="article">
-    <figure class="article-hero">
-      <img src={item.data.hero.image} alt={item.data.hero_alt} />
-      {
-        item.data.hero.hero_caption && (
-          <figcaption>{item.data.hero.hero_caption}</figcaption>
-        )
-      }
-    </figure>
-    <h1 class="article-title">{item.data.title}</h1>
-    {
-      item.data.date && (
-        <time class="article-date" datetime={item.data.date}>
-          Published{" "}
-          {new Date(item.data.date).toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}
-        </time>
-      )
-    }
-    <div class="article-body">
-      <Content />
-    </div>
-  </article>
-  <nav class="detail-navigation" aria-label="All journal articles">
-    <a href="/en/journal/" class="action-link">View All Journal</a>
-  </nav>
+  <JournalDetailPresentation {model}>
+    <Content />
+  </JournalDetailPresentation>
 </Layout>

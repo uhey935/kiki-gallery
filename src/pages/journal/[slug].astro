@@ -3,6 +3,8 @@ import Layout from "../../layouts/Layout.astro";
 import { render } from "astro:content";
 import { journalRouteRegistry } from "../../content-boundaries/journal";
 import { getJournalProductionFacade } from "../../content-boundaries/journal-production";
+import JournalDetailPresentation from "../../components/JournalDetailPresentation.astro";
+import { createJournalDetailPresentationModel } from "../../components/journal-detail-presentation";
 
 /* =========================
    getStaticPaths
@@ -29,45 +31,22 @@ const { item } = Astro.props;
    Markdown → HTML
 ========================= */
 const { Content } = await render(item);
+const model = createJournalDetailPresentationModel({
+  locale: "ja",
+  hero: item.data.hero,
+  heroAlt: item.data.hero_alt,
+  title: item.data.title,
+  date: item.data.date,
+});
 ---
 
-<Layout title={item.data.title}>
-  <article class="article">
-    {/* Hero（全タイプ共通） */}
-    <figure class="article-hero">
-      <img src={item.data.hero.image} alt={item.data.hero_alt} />
-      {
-        item.data.hero.hero_caption && (
-          <figcaption>{item.data.hero.hero_caption}</figcaption>
-        )
-      }
-    </figure>
-
-    {/* Title */}
-    <h1 class="article-title">{item.data.title}</h1>
-
-    {/* Date */}
-    {
-      item.data.date && (
-        <time class="article-date" datetime={item.data.date}>
-          Published{" "}
-          {new Date(item.data.date).toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}
-        </time>
-      )
-    }
-
-    {/* 本文（共通） */}
-    <div class="article-body">
-      <Content />
-    </div>
-  </article>
-
-  <nav class="detail-navigation" aria-label="All journal articles">
-    <a href="/journal" class="action-link"> View All Journal </a>
-  </nav>
+<Layout
+  title={item.data.title}
+  description={item.data.summary}
+  image={item.data.hero.image}
+  locale="ja"
+>
+  <JournalDetailPresentation {model}>
+    <Content />
+  </JournalDetailPresentation>
 </Layout>
