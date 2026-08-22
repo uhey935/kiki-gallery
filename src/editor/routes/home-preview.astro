@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import HomePresentation from "../../components/HomePresentation.astro";
+import { createHomeMetadataModel } from "../../components/home-metadata.ts";
 import { homePreviewStore, HomePreviewError } from "../home-preview";
 import { createHomePresentationModel } from "../../content-boundaries/home-composition.ts";
 const { token, contentId } = Astro.params;
@@ -21,11 +22,23 @@ const locale = preview?.locale ?? "ja";
 const presentation = preview
   ? await createHomePresentationModel(locale, preview.shared, preview.localized)
   : undefined;
+const metadata = preview
+  ? createHomeMetadataModel(preview.shared, preview.localized)
+  : undefined;
 ---
 
 {
   preview ? (
-    <Layout title="Home · Draft Preview" locale={locale} flush={true}>
+    <Layout
+      title={metadata!.title}
+      description={metadata!.description}
+      image={metadata!.image}
+      locale={locale}
+      flush={true}
+      robots="noindex,nofollow"
+      canonical={false}
+      social={false}
+    >
       <HomePresentation {...presentation!} />
     </Layout>
   ) : (

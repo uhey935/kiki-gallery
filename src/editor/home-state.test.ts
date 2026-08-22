@@ -121,6 +121,37 @@ test("atomic Save supports localized draft status and preserves all three baseli
   );
 });
 
+test("optional localized metadata saves, rereads, and omits empty fields", async (t) => {
+  const { temporary, root } = await fixture();
+  t.after(() => fs.rm(temporary, { recursive: true, force: true }));
+  const baseline = createHomeEditorDraft(await readHomeEditorEntry(root));
+  const draft = structuredClone(baseline);
+  if (
+    draft.locales.ja.state !== "editable" ||
+    draft.locales.en.state !== "editable"
+  )
+    assert.fail("Localized Home sources unavailable");
+
+  draft.locales.ja.value.seo_title = "Unsaved JA SEO title";
+  draft.locales.ja.value.description = "Unsaved JA SEO description";
+  draft.locales.en.value.seo_title = undefined;
+  draft.locales.en.value.description = undefined;
+
+  const saved = await saveHomeEditorDraft(draft, baseline, root);
+  assert.equal(
+    saved.locales.ja.state === "editable" && saved.locales.ja.value.seo_title,
+    "Unsaved JA SEO title",
+  );
+  assert.match(
+    await fs.readFile(path.join(root, "home", "ja.md"), "utf8"),
+    /seo_title: Unsaved JA SEO title/,
+  );
+  assert.doesNotMatch(
+    await fs.readFile(path.join(root, "home", "en.md"), "utf8"),
+    /^(?:seo_title|description):/m,
+  );
+});
+
 test("resolved EN intro Save survives canonical reread and reload", async (t) => {
   const { temporary, root } = await fixture();
   t.after(() => fs.rm(temporary, { recursive: true, force: true }));

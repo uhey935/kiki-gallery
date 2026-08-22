@@ -1,5 +1,6 @@
 ---
 import HomePresentation from "../components/HomePresentation.astro";
+import { createHomeMetadataModel } from "../components/home-metadata.ts";
 import { createHomePresentationModel } from "../content-boundaries/home-composition.ts";
 import { getHomeProductionFacade } from "../content-boundaries/home-production.ts";
 import Layout from "../layouts/Layout.astro";
@@ -11,8 +12,14 @@ const presentation = await createHomePresentationModel(
   home.data,
   home.data,
 );
+const metadata = createHomeMetadataModel(home.data, home.data);
 ---
 
-<Layout flush={true}>
+<Layout
+  title={metadata.title}
+  description={metadata.description}
+  image={metadata.image}
+  flush={true}
+>
   <HomePresentation {...presentation} />
 </Layout>

@@ -114,24 +114,6 @@ const shared = draft.shared.value;
                   />
                 </>
               </label>
-              <label>
-                <>
-                  <span>SEO title · Optional</span>
-                  <input
-                    name={`${locale}_seo_title`}
-                    value={value.value.seo_title ?? ""}
-                  />
-                </>
-              </label>
-              <label>
-                <>
-                  <span>Description · Optional</span>
-                  <textarea
-                    name={`${locale}_description`}
-                    set:text={value.value.description ?? ""}
-                  />
-                </>
-              </label>
               {locale === "ja" && (
                 <label>
                   <input
@@ -148,4 +130,57 @@ const shared = draft.shared.value;
       );
     })
   }
+  <section class="editor-entry-section" data-editor-section="metadata">
+    <header>
+      <div>
+        <p class="editor-eyebrow">Localized metadata</p><h2>Metadata</h2>
+      </div>
+    </header>
+    <div class="editor-entry-section__content">
+      <p class="editor-field-help">
+        Leave fields blank to use the existing KiKi Gallery site fallback.
+      </p>
+      <div class="editor-field-grid">
+        {
+          (["ja", "en"] as const).map((locale) => {
+            const source = draft.locales[locale];
+            return source.state === "editable" ? (
+              <>
+                <label data-editor-field={`${locale}.seo_title`}>
+                  <span>
+                    {locale.toUpperCase()} SEO title{" "}
+                    <small class="editor-field-badge editor-field-badge--optional">
+                      Optional
+                    </small>
+                  </span>
+                  <input
+                    name={`${locale}_seo_title`}
+                    value={source.value.seo_title ?? ""}
+                  />
+                </label>
+                <label
+                  class="editor-field-wide"
+                  data-editor-field={`${locale}.description`}
+                >
+                  <span>
+                    {locale.toUpperCase()} SEO description{" "}
+                    <small class="editor-field-badge editor-field-badge--optional">
+                      Optional
+                    </small>
+                  </span>
+                  <textarea
+                    name={`${locale}_description`}
+                    rows="3"
+                    set:text={source.value.description ?? ""}
+                  />
+                </label>
+              </>
+            ) : (
+              <p>{locale.toUpperCase()} source unavailable.</p>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
 </form>

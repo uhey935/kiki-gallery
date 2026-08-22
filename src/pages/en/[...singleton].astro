@@ -5,6 +5,7 @@ import { getHomeProductionFacade } from "../../content-boundaries/home-productio
 import { presentAboutHours } from "../../content-loaders/about/hours-presenter.ts";
 import AboutView from "../../components/AboutView.astro";
 import HomePresentation from "../../components/HomePresentation.astro";
+import { createHomeMetadataModel } from "../../components/home-metadata.ts";
 import { createHomePresentationModel } from "../../content-boundaries/home-composition.ts";
 import Layout from "../../layouts/Layout.astro";
 
@@ -44,6 +45,9 @@ const hours = about ? presentAboutHours(about.data.hours, "en") : undefined;
 const homePresentation = home
   ? await createHomePresentationModel("en", home.data, home.data)
   : undefined;
+const homeMetadata = home
+  ? createHomeMetadataModel(home.data, home.data)
+  : undefined;
 ---
 
 {
@@ -51,8 +55,9 @@ const homePresentation = home
     <Layout
       locale="en"
       flush={true}
-      title={home.data.seo_title}
-      description={home.data.description}
+      title={homeMetadata!.title}
+      description={homeMetadata!.description}
+      image={homeMetadata!.image}
     >
       <HomePresentation {...homePresentation!} />
     </Layout>
