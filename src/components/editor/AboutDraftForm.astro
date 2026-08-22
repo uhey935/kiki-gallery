@@ -44,17 +44,37 @@ const shared = draft.shared.value;
       <fieldset
         data-approved-hours
         hidden={shared.hours.status !== "approved"}
-        class="editor-field-wide"
+        class="editor-field-wide editor-checkbox-fieldset"
       >
-        <legend>Approved hours · Asia/Tokyo</legend>
-        <label
-          ><span>Open days (mon,tue…)</span><input
-            name="open_days"
-            value={shared.hours.status === "approved"
-              ? shared.hours.open_days.join(",")
-              : ""}
-          /></label
-        >
+        <legend>Open days</legend>
+        <div class="editor-checkbox-options">
+          {
+            (
+              [
+                ["mon", "Monday"],
+                ["tue", "Tuesday"],
+                ["wed", "Wednesday"],
+                ["thu", "Thursday"],
+                ["fri", "Friday"],
+                ["sat", "Saturday"],
+                ["sun", "Sunday"],
+              ] as const
+            ).map(([value, label]) => (
+              <label class="editor-checkbox-option">
+                <input
+                  name="open_days"
+                  type="checkbox"
+                  value={value}
+                  checked={
+                    shared.hours.status === "approved" &&
+                    shared.hours.open_days.includes(value)
+                  }
+                />{" "}
+                {label}
+              </label>
+            ))
+          }
+        </div>
         <label
           ><span>Opens</span><input
             name="opens"
@@ -68,14 +88,6 @@ const shared = draft.shared.value;
             type="time"
             value={shared.hours.status === "approved"
               ? shared.hours.closes
-              : ""}
-          /></label
-        >
-        <label
-          ><span>Closed days</span><input
-            name="closed_days"
-            value={shared.hours.status === "approved"
-              ? shared.hours.closed_days.join(",")
               : ""}
           /></label
         >
@@ -162,7 +174,7 @@ const shared = draft.shared.value;
               </label>
               <label>
                 <>
-                  <span>Description · Optional</span>
+                  <span>SEO description · Optional</span>
                   <textarea
                     name={`${locale}_description`}
                     set:text={value.description ?? ""}

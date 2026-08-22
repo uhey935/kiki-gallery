@@ -109,11 +109,6 @@ const capabilityGroups = [
       draft = structuredClone(baseline);
     const optional = (v: FormDataEntryValue | null) =>
       String(v ?? "").trim() || undefined;
-    const days = (v: FormDataEntryValue | null) =>
-      String(v ?? "")
-        .split(",")
-        .map((v) => v.trim())
-        .filter(Boolean) as any;
     const read = () => {
       const data = new FormData(form);
       if (draft.shared.state === "editable") {
@@ -133,11 +128,9 @@ const capabilityGroups = [
             String(data.get("hours_status")) === "approved"
               ? {
                   status: "approved",
-                  timezone: "Asia/Tokyo",
-                  open_days: days(data.get("open_days")),
+                  open_days: data.getAll("open_days") as any,
                   opens: String(data.get("opens")),
                   closes: String(data.get("closes")),
-                  closed_days: days(data.get("closed_days")),
                 }
               : { status: "pending" },
           ...(Object.values(contact).some(Boolean) ? { contact } : {}),

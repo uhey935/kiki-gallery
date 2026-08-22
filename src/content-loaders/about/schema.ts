@@ -74,11 +74,9 @@ const pendingHoursSchema = z.object({ status: z.literal("pending") }).strict();
 const approvedHoursSchema = z
   .object({
     status: z.literal("approved"),
-    timezone: z.literal("Asia/Tokyo"),
     open_days: orderedUniqueDays,
     opens: time,
     closes: time,
-    closed_days: orderedUniqueDays,
   })
   .strict()
   .superRefine((hours, context) => {
@@ -86,21 +84,6 @@ const approvedHoursSchema = z
       context.addIssue({
         code: "custom",
         message: "opens must be before closes",
-      });
-    const open = new Set(hours.open_days);
-    const closed = new Set(hours.closed_days);
-    if (hours.open_days.some((day) => closed.has(day)))
-      context.addIssue({
-        code: "custom",
-        message: "open and closed days overlap",
-      });
-    if (
-      ABOUT_WEEKDAYS.some((day) => !open.has(day) && !closed.has(day)) ||
-      open.size + closed.size !== ABOUT_WEEKDAYS.length
-    )
-      context.addIssue({
-        code: "custom",
-        message: "hours must cover every weekday",
       });
   });
 

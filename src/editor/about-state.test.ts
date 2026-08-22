@@ -107,6 +107,7 @@ test("validation covers hours, contacts, statuses, placeholders, body and alts",
     };
   }
   assert.equal(validateAboutEditorDraft(pending).capabilities.preview.ja, true);
+  assert.equal(validateAboutEditorDraft(pending).capabilities.publish, true);
   assert.equal(
     validateAboutEditorDraft(pending).capabilities.preview.en,
     false,
@@ -135,16 +136,16 @@ test("validation covers hours, contacts, statuses, placeholders, body and alts",
   if (approved.shared.state === "editable")
     approved.shared.value.hours = {
       status: "approved",
-      timezone: "Asia/Tokyo",
       open_days: ["tue", "wed", "thu", "fri", "sat"],
       opens: "12:00",
       closes: "18:00",
-      closed_days: ["mon", "sun"],
     };
-  assert.match(
-    createAboutPreviewModel(approved, "en").hours?.value ?? "",
-    /12:00/,
-  );
+  assert.deepEqual(createAboutPreviewModel(approved, "en").hours, {
+    label: "Open",
+    value: "Tue, Wed, Thu, Fri, Sat 12:00–18:00",
+    closedLabel: "Closed",
+    closedValue: "Mon, Sun",
+  });
   const bad = structuredClone(approved);
   if (bad.shared.state === "editable")
     bad.shared.value.contact = { map_url: "https://example.com" };
@@ -152,11 +153,9 @@ test("validation covers hours, contacts, statuses, placeholders, body and alts",
   if (bad.shared.state === "editable")
     bad.shared.value.hours = {
       status: "approved",
-      timezone: "Asia/Tokyo",
       open_days: ["mon"],
       opens: "18:00",
       closes: "12:00",
-      closed_days: ["mon"],
     };
   assert.equal(validateAboutEditorDraft(bad).capabilities.save, false);
 });
@@ -168,6 +167,7 @@ test("serializer owns exactly shared src/hours/contact and localized alt/body", 
     files = serializeAboutEditorDraft(draft);
   assert.deepEqual(Object.keys(files).sort(), ["en.md", "index.yaml", "ja.md"]);
   assert.doesNotMatch(files["index.yaml"], /alt:/);
+  assert.doesNotMatch(files["index.yaml"], /timezone|closed_days/);
   assert.doesNotMatch(files["ja.md"], /src:/);
   assert.match(files["ja.md"], /確認中/);
 });

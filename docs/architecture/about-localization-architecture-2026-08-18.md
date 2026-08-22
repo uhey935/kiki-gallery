@@ -90,11 +90,9 @@ discriminated union:
 ```yaml
 hours:
   status: approved
-  timezone: Asia/Tokyo
   open_days: [wed, thu, fri, sat]
   opens: "12:00"
   closes: "18:00"
-  closed_days: [sun, mon, tue]
 
 contact:
   email: info@example.com
@@ -113,13 +111,14 @@ Rules:
 - Shared has no hero or gallery `alt` fields.
 - `hours.status: pending` admits no schedule fields and makes every formal
   locale non-capable.
-- `hours.status: approved` requires `timezone: Asia/Tokyo`, non-empty unique
-  `open_days`, `opens`, `closes`, and explicit `closed_days`.
+- `hours.status: approved` requires non-empty unique `open_days`, `opens`, and
+  `closes`.
 - Weekdays use `mon | tue | wed | thu | fri | sat | sun`.
 - Times use validated zero-padded 24-hour `HH:MM`; `opens < closes` for this
   first single-interval model.
-- `open_days` and `closed_days` must be disjoint and together cover all seven
-  weekdays exactly once. Order is Monday through Sunday within each list.
+- `open_days` uses canonical Monday-through-Sunday order. Closed days are
+  derived as the canonical weekday set minus `open_days`; they are never
+  canonical content. Seven-day opening is structurally valid.
 - Split daily hours, holiday exceptions, appointments, and multiple intervals
   are outside this first model and require a schema change rather than prose
   overrides.

@@ -23,7 +23,7 @@ import {
 } from "./executor.ts";
 import { extractAboutSource } from "./extraction.ts";
 import { createAboutFacade, evaluateAboutLocale } from "./facade.ts";
-import { presentAboutHours } from "./hours-presenter.ts";
+import { deriveAboutClosedDays, presentAboutHours } from "./hours-presenter.ts";
 import { verifyAboutRollbackEvidence } from "./manifest.ts";
 import { assertAboutTopology, loadAboutUnit } from "./repository.ts";
 import { projectAboutRoute } from "./route-registry.ts";
@@ -44,11 +44,9 @@ const assets = {
 } as const;
 const approvedHours: Exclude<AboutHours, { status: "pending" }> = {
   status: "approved" as const,
-  timezone: "Asia/Tokyo" as const,
   open_days: ["wed", "thu", "fri", "sat"],
   opens: "12:00",
   closes: "18:00",
-  closed_days: ["mon", "tue", "sun"],
 };
 const locale = (label: string) => ({
   statement: `${label} institutional statement`,
@@ -117,7 +115,7 @@ test("Shared schema accepts pending and a complete approved weekly schedule", ()
   ]);
 });
 
-test("Approved hours reject incomplete, overlap, order, time, range, and unknown fields", () => {
+test("Approved hours reject incomplete, order, time, range, and unknown fields", () => {
   const shared = planAboutMigration(approvedInput).files["index.yaml"];
   assert.match(shared, /status: approved/);
   const valid = aboutSharedSchema.parse({
@@ -128,9 +126,9 @@ test("Approved hours reject incomplete, overlap, order, time, range, and unknown
     hours: approvedHours,
   });
   for (const hours of [
-    { ...approvedHours, closed_days: ["mon", "tue"] },
-    { ...approvedHours, closed_days: ["mon", "tue", "wed", "sun"] },
+    { ...approvedHours, open_days: [] },
     { ...approvedHours, open_days: ["thu", "wed", "fri", "sat"] },
+    { ...approvedHours, open_days: ["wed", "wed"] },
     { ...approvedHours, opens: "9:00" },
     { ...approvedHours, opens: "18:00", closes: "18:00" },
     { ...approvedHours, invented: true },
@@ -146,6 +144,55 @@ test("Approved hours reject incomplete, overlap, order, time, range, and unknown
     }).success,
     false,
   );
+  assert(
+    aboutSharedSchema.safeParse({
+      ...valid,
+      hours: { ...approvedHours, open_days: [...ABOUT_WEEKDAYS] },
+    }).success,
+  );
+  assert.equal(
+    aboutSharedSchema.safeParse({
+      ...valid,
+      hours: { ...approvedHours, timezone: "Asia/Tokyo" },
+    }).success,
+    false,
+  );
+  assert.equal(
+    aboutSharedSchema.safeParse({
+      ...valid,
+      hours: { ...approvedHours, closed_days: ["sun"] },
+    }).success,
+    false,
+  );
+});
+
+test("Hours presenter derives canonical closed days for JA and EN", () => {
+  assert.deepEqual(deriveAboutClosedDays(["sat", "sun"]), [
+    "mon",
+    "tue",
+    "wed",
+    "thu",
+    "fri",
+  ]);
+  assert.deepEqual(
+    presentAboutHours({ ...approvedHours, open_days: ["sat", "sun"] }, "ja"),
+    {
+      label: "営業日",
+      value: "土・日 12:00–18:00",
+      closedLabel: "休廊日",
+      closedValue: "月・火・水・木・金",
+    },
+  );
+  assert.deepEqual(
+    presentAboutHours({ ...approvedHours, open_days: ["sat", "sun"] }, "en"),
+    {
+      label: "Open",
+      value: "Sat, Sun 12:00–18:00",
+      closedLabel: "Closed",
+      closedValue: "Mon, Tue, Wed, Thu, Fri",
+    },
+  );
+  assert.deepEqual(deriveAboutClosedDays(ABOUT_WEEKDAYS), []);
 });
 
 test("Image schemas enforce four unique Shared src and four localized alt-only slots", () => {
@@ -426,6 +473,9 @@ test("Current canonical unit is approved and formally capable in both locales", 
   )
     assert.fail("canonical provisional unit must be structurally valid");
   assert.equal(unit.shared.value.hours.status, "approved");
+  assert.deepEqual(unit.shared.value.hours.open_days, ["sat", "sun"]);
+  assert.equal(unit.shared.value.hours.opens, "13:00");
+  assert.equal(unit.shared.value.hours.closes, "18:00");
   assert.equal(unit.locales.ja.value.content_status, "approved");
   assert.equal(unit.locales.en.value.content_status, "approved");
   assert(presentAboutHours(unit.shared.value.hours, "ja"));

@@ -491,8 +491,8 @@ projectionとして`/about/`へ描画し、`src/pages/about.astro`はpresentatio
 含むstructured weekly hours、optional `email` / `map_url` /
 `instagram_url`を所有する。Phoneやgeneric social arrayは持たない。Hoursの
 `pending`状態は実値を持たずformal capabilityを許可しない。`approved`状態は
-timezone、open weekdays、open/close time、closed weekdaysを要求し、localized
-display copyはlocale presenterからDerivedする。
+open weekdaysとopen/close timeを要求し、closed weekdaysは全曜日からopen
+weekdaysを除いて求める。Localized display copyはlocale presenterからDerivedする。
 
 `ja.md`と`en.md`はlocale content status、display address、順序対応する4件の
 gallery alt、optional `seo_title` / `description`、およびrequired Markdown
