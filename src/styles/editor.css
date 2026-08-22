@@ -368,6 +368,53 @@ button {
 .editor-draft-form {
   margin: 0;
 }
+.editor-about-media {
+  display: grid;
+  gap: 18px;
+}
+.editor-about-image-slot {
+  padding: 16px;
+  border: 1px solid #dfe4df;
+  border-radius: 8px;
+  background: #fafbf9;
+}
+.editor-about-image-slot h3 {
+  margin: 0 0 12px;
+}
+.editor-about-thumbnail {
+  display: block;
+  width: min(280px, 100%);
+  height: 150px;
+  margin-bottom: 12px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #edf0ec;
+}
+.editor-about-image-error {
+  margin: -4px 0 12px;
+  color: #91433c !important;
+  font-size: 0.78rem;
+}
+.editor-about-image-slot > label {
+  display: grid;
+  gap: 7px;
+  color: #65706a;
+  font-size: 0.78rem;
+}
+.editor-about-image-slot select {
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid #cbd1cb;
+  border-radius: 8px;
+  background: white;
+  color: #18201d;
+  font: inherit;
+}
+.editor-field-help {
+  margin: 7px 0 0;
+  color: #65706a !important;
+  font-size: 0.72rem;
+}
 .editor-field-meaning {
   margin-bottom: 24px;
   padding: 12px 14px;

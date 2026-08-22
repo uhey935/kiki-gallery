@@ -76,6 +76,23 @@ test("preimage drift refuses before mutation", async () => {
   }
 });
 
+test("Save rejects a draft that references a missing About image", async () => {
+  const f = await fixture();
+  try {
+    const baseline = createAboutEditorDraft(await readAboutEditorEntry(f.root)),
+      draft = structuredClone(baseline);
+    if (draft.shared.state !== "editable") assert.fail("shared unavailable");
+    draft.shared.value.images.hero.src = "/images/about/missing.jpg";
+    await assert.rejects(
+      saveAboutEditorDraft(draft, baseline, f.root),
+      (error: unknown) =>
+        error instanceof AboutSaveError && error.code === "invalid-draft",
+    );
+  } finally {
+    await f.cleanup();
+  }
+});
+
 test("install failures at each canonical slot restore all preimages byte-exact", async (t) => {
   for (const failAt of [1, 2, 3])
     await t.test(`install ${failAt}`, async () => {

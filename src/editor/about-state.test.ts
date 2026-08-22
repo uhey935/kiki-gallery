@@ -22,6 +22,10 @@ import {
 } from "./about-preview.ts";
 import { readAboutEditorEntry } from "./about-state.ts";
 import { serializeAboutEditorDraft } from "./about-serializer.ts";
+import {
+  discoverAboutImageAssets,
+  validateAboutDraftAssets,
+} from "./about-assets.ts";
 
 const canonical = path.resolve("src/content/about/about");
 async function fixture() {
@@ -63,6 +67,51 @@ test("loads current exact singleton and hydrates independent scopes", async () =
     ja: true,
     en: false,
   });
+});
+
+test("current canonical assets pass production-equivalent Editor validation", async () => {
+  const draft = createAboutEditorDraft(
+    await readAboutEditorEntry(path.dirname(canonical)),
+  );
+  const validation = await validateAboutDraftAssets(draft);
+  assert.equal(validation.valid, true);
+  assert.deepEqual(await discoverAboutImageAssets(), [
+    "/images/about/about-01.jpg",
+    "/images/about/about-02.jpg",
+    "/images/about/about-03.jpg",
+    "/images/about/about-04.jpg",
+    "/images/about/about-hero.jpg",
+  ]);
+});
+
+test("About Editor asset validation rejects missing and non-JPEG images", async () => {
+  const draft = createAboutEditorDraft(
+    await readAboutEditorEntry(path.dirname(canonical)),
+  );
+  if (draft.shared.state !== "editable")
+    assert.fail("shared About unavailable");
+  draft.shared.value.images.hero.src = "/images/about/missing.jpg";
+  const missing = await validateAboutDraftAssets(draft);
+  assert.equal(missing.valid, false);
+  assert.equal(missing.issues[0].code, "asset-missing");
+
+  const publicRoot = await mkdtemp(path.join(tmpdir(), "about-assets-"));
+  try {
+    await mkdir(path.join(publicRoot, "images/about"), { recursive: true });
+    await writeFile(
+      path.join(publicRoot, "images/about/not-jpeg.png"),
+      Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    );
+    draft.shared.value.images.hero.src = "/images/about/not-jpeg.png";
+    const invalid = await validateAboutDraftAssets(draft, publicRoot);
+    assert.equal(invalid.valid, false);
+    assert.equal(invalid.issues[0].code, "asset-invalid");
+  } finally {
+    await rm(publicRoot, { recursive: true, force: true });
+  }
 });
 
 test("topology fails closed for extra and symlink files", async (t) => {

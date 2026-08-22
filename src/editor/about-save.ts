@@ -11,6 +11,7 @@ import {
   type AboutSerializedFiles,
 } from "./about-serializer.ts";
 import { readAboutEditorEntry } from "./about-state.ts";
+import { validateAboutDraftAssets } from "./about-assets.ts";
 
 const names = ["index.yaml", "ja.md", "en.md"] as const;
 const canonicalRoot = path.resolve("src/content/about");
@@ -166,6 +167,11 @@ export async function saveAboutEditorDraft(
   if (!validateAboutEditorDraft(draft).capabilities.save)
     throw new AboutSaveError(
       "About draft has blocking issues",
+      "invalid-draft",
+    );
+  if (!(await validateAboutDraftAssets(draft)).valid)
+    throw new AboutSaveError(
+      "About draft contains missing or invalid image assets",
       "invalid-draft",
     );
   const entry = await readAboutEditorEntry(root);

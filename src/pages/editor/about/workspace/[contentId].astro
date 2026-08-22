@@ -4,6 +4,7 @@ import AboutDraftForm from "../../../../components/editor/AboutDraftForm.astro";
 import CapabilityPanel from "../../../../components/editor/CapabilityPanel.astro";
 import { createAboutEditorDraft } from "../../../../editor/about-draft-state.ts";
 import { readAboutEditorEntry } from "../../../../editor/about-state.ts";
+import { discoverAboutImageAssets } from "../../../../editor/about-assets.ts";
 import EditorLayout from "../../../../layouts/EditorLayout.astro";
 export async function getStaticPaths() {
   return [
@@ -15,6 +16,7 @@ export async function getStaticPaths() {
 }
 const { entry } = Astro.props;
 const draft = createAboutEditorDraft(entry);
+const imageAssets = await discoverAboutImageAssets();
 const serialized = JSON.stringify(draft).replaceAll("<", "\\u003c");
 const capabilityGroups = [
   {
@@ -63,7 +65,7 @@ const capabilityGroups = [
     </p>
   </header><div class="editor-workspace">
     <main class="editor-panel editor-canvas">
-      <AboutDraftForm draft={draft} />
+      <AboutDraftForm draft={draft} imageAssets={imageAssets} />
     </main><CapabilityPanel
       headingId="about-capability-heading"
       groups={capabilityGroups}
@@ -177,6 +179,28 @@ const capabilityGroups = [
     };
     form.addEventListener("input", render);
     form.addEventListener("change", render);
+    for (const slot of form.querySelectorAll<HTMLElement>(
+      "[data-about-image-slot]",
+    )) {
+      const select = slot.querySelector<HTMLSelectElement>(
+          "[data-about-image-select]",
+        ),
+        thumbnail = slot.querySelector<HTMLImageElement>(
+          "[data-about-thumbnail]",
+        ),
+        error = slot.querySelector<HTMLElement>("[data-about-image-error]");
+      if (!select || !thumbnail || !error) continue;
+      thumbnail.addEventListener("load", () => {
+        error.hidden = true;
+      });
+      thumbnail.addEventListener("error", () => {
+        error.hidden = false;
+      });
+      select.addEventListener("change", () => {
+        error.hidden = true;
+        thumbnail.src = select.value;
+      });
+    }
     const preview = async (locale: "ja" | "en") => {
       read();
       const response = await fetch("/editor/api/about-preview/create", {
@@ -224,6 +248,13 @@ const capabilityGroups = [
       status.textContent = response.ok
         ? `Published ${result.commit}`
         : result.error;
+    });
+    window.addEventListener("beforeunload", (event) => {
+      read();
+      if (isAboutEditorDraftDirty(baseline, draft)) {
+        event.preventDefault();
+        (event as unknown as { returnValue: string }).returnValue = "";
+      }
     });
     render();
   }

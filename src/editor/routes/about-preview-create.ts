@@ -6,6 +6,7 @@ import {
   AboutPreviewError,
   createAboutPreviewModel,
 } from "../about-preview.ts";
+import { validateAboutDraftAssets } from "../about-assets.ts";
 const unlockedPOST: APIRoute = async ({ request }) => {
   try {
     const input = (await request.json()) as {
@@ -14,6 +15,11 @@ const unlockedPOST: APIRoute = async ({ request }) => {
     };
     if (!input.draft)
       throw new AboutPreviewError("Draft required", "invalid-request");
+    if (!(await validateAboutDraftAssets(input.draft)).valid)
+      throw new AboutPreviewError(
+        "About preview requires valid image assets",
+        "preview-blocked",
+      );
     const model = createAboutPreviewModel(input.draft, input.locale ?? "ja"),
       token = aboutPreviewStore.create(model);
     return Response.json({

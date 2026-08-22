@@ -48,4 +48,22 @@ test("About hours form uses canonical weekday checkboxes and no derived fields",
   assert.match(form, /data-editor-section=\{`\$\{locale\}-content`\}/);
   assert.match(form, /data-editor-section=\{`\$\{locale\}-metadata`\}/);
   assert.match(form, /SEO description · Optional/);
+  assert.match(form, /data-about-image-slot="hero"/);
+  assert.match(form, /data-about-thumbnail/);
+  assert.match(form, /name="hero_src"\s+data-about-image-select/);
+  assert.equal(
+    (form.match(/data-about-image-slot=\{`gallery-/g) ?? []).length,
+    1,
+  );
+  assert.match(form, /name=\{`ja_gallery_\$\{index\}_alt`\}/);
+  assert.match(form, /name=\{`en_gallery_\$\{index\}_alt`\}/);
+  assert.doesNotMatch(form, /Gallery \{index \+ 1\} alt/);
+  assert.match(form, /<h2>Media<\/h2>/);
+  assert.match(form, /<h2>Hours<\/h2>/);
+  assert.match(form, /<h2>Contact<\/h2>/);
+  assert.match(form, /name="email"\s+type="email"/);
+  assert.match(form, /name="map_url"\s+type="url"/);
+  assert.match(form, /name="instagram_url"\s+type="url"/);
+  assert.match(workspace, /window\.addEventListener\("beforeunload"/);
+  assert.match(workspace, /thumbnail\.src = select\.value/);
 });

@@ -1,6 +1,9 @@
 ---
 import type { AboutEditorDraftState } from "../../editor/about-draft-state.ts";
-const { draft } = Astro.props as { draft: AboutEditorDraftState };
+const { draft, imageAssets } = Astro.props as {
+  draft: AboutEditorDraftState;
+  imageAssets: string[];
+};
 if (
   draft.shared.state !== "editable" ||
   draft.locales.ja.state !== "editable" ||
@@ -8,29 +11,103 @@ if (
 )
   throw new Error("About draft sources unavailable");
 const shared = draft.shared.value;
+const ja = draft.locales.ja.value;
+const en = draft.locales.en.value;
 ---
 
 <form class="editor-draft-form" data-about-draft-form>
-  <section class="editor-entry-section">
-    <header><h2>Shared</h2></header><div
-      class="editor-entry-section__content editor-field-grid"
-    >
-      <label
-        ><span>Hero source</span><input
-          name="hero_src"
-          value={shared.images.hero.src}
-        /></label
-      >
+  <section class="editor-entry-section" data-editor-section="shared-media">
+    <header>
+      <div><p class="editor-eyebrow">Shared</p><h2>Media</h2></div>
+    </header>
+    <div class="editor-entry-section__content editor-about-media">
+      <article class="editor-about-image-slot" data-about-image-slot="hero">
+        <h3>Hero</h3>
+        <img
+          class="editor-about-thumbnail"
+          src={shared.images.hero.src}
+          alt=""
+          data-about-thumbnail
+        />
+        <p class="editor-about-image-error" data-about-image-error hidden>
+          Image unavailable
+        </p>
+        <label
+          ><span>Shared image</span><select
+            name="hero_src"
+            data-about-image-select
+          >
+            {
+              imageAssets.map((src) => (
+                <option value={src} selected={src === shared.images.hero.src}>
+                  {src}
+                </option>
+              ))
+            }
+          </select></label
+        >
+        <p class="editor-field-help">
+          Decorative hero image. Stored in Shared content.
+        </p>
+      </article>
       {
         shared.images.gallery.map((image, index) => (
-          <label>
-            <>
-              <span>Gallery {index + 1} source</span>
-              <input name={`gallery_${index}_src`} value={image.src} />
-            </>
-          </label>
+          <article
+            class="editor-about-image-slot"
+            data-about-image-slot={`gallery-${index + 1}`}
+          >
+            <h3>Gallery {index + 1}</h3>
+            <img
+              class="editor-about-thumbnail"
+              src={image.src}
+              alt=""
+              data-about-thumbnail
+            />
+            <p class="editor-about-image-error" data-about-image-error hidden>
+              Image unavailable
+            </p>
+            <div class="editor-field-grid">
+              <label class="editor-field-wide">
+                <>
+                  <span>Shared image</span>
+                  <select name={`gallery_${index}_src`} data-about-image-select>
+                    {imageAssets.map((src) => (
+                      <option value={src} selected={src === image.src}>
+                        {src}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              </label>
+              <label>
+                <>
+                  <span>JA alt</span>
+                  <input
+                    name={`ja_gallery_${index}_alt`}
+                    value={ja.images.gallery[index].alt}
+                  />
+                </>
+              </label>
+              <label>
+                <>
+                  <span>EN alt</span>
+                  <input
+                    name={`en_gallery_${index}_alt`}
+                    value={en.images.gallery[index].alt}
+                  />
+                </>
+              </label>
+            </div>
+          </article>
         ))
       }
+    </div>
+  </section>
+  <section class="editor-entry-section" data-editor-section="shared-hours">
+    <header>
+      <div><p class="editor-eyebrow">Shared</p><h2>Hours</h2></div>
+    </header>
+    <div class="editor-entry-section__content editor-field-grid">
       <label
         ><span>Hours status</span><select name="hours_status"
           ><option value="pending" selected={shared.hours.status === "pending"}
@@ -92,24 +169,38 @@ const shared = draft.shared.value;
           /></label
         >
       </fieldset>
+    </div>
+  </section>
+  <section class="editor-entry-section" data-editor-section="shared-contact">
+    <header>
+      <div><p class="editor-eyebrow">Shared</p><h2>Contact</h2></div>
+    </header>
+    <div class="editor-entry-section__content editor-field-grid">
       <label
         ><span>Email · Optional</span><input
           name="email"
+          type="email"
           value={shared.contact?.email ?? ""}
         /></label
       >
       <label
         ><span>Map URL · Optional</span><input
           name="map_url"
+          type="url"
           value={shared.contact?.map_url ?? ""}
         /></label
       >
       <label
         ><span>Instagram URL · Optional</span><input
           name="instagram_url"
+          type="url"
           value={shared.contact?.instagram_url ?? ""}
         /></label
       >
+      <p class="editor-field-help editor-field-wide">
+        URLs must be complete http:// or https:// links. Instagram expects the
+        full profile URL.
+      </p>
     </div>
   </section>
   {
@@ -163,15 +254,6 @@ const shared = draft.shared.value;
                     />
                   </>
                 </label>
-                {value.images.gallery.map((image, index) => (
-                  <label>
-                    <span>Gallery {index + 1} alt</span>
-                    <input
-                      name={`${locale}_gallery_${index}_alt`}
-                      value={image.alt}
-                    />
-                  </label>
-                ))}
                 <label class="editor-field-wide">
                   <>
                     <span>Statement · Markdown</span>
