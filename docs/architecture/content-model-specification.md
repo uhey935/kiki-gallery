@@ -335,13 +335,13 @@ Rules:
 
 Shared:
 
-| Field        | Type                | Required |
-| ------------ | ------------------- | -------- |
-| `date`       | `YYYY-MM-DD` String | Yes      |
-| `categories` | Enum[]              | Yes      |
-| `hero`       | Journal Hero        | Yes      |
-| `author`     | Contributor ID      | No       |
-| `credits`    | Credit[]            | No       |
+| Field      | Type                | Required |
+| ---------- | ------------------- | -------- |
+| `date`     | `YYYY-MM-DD` String | Yes      |
+| `category` | Enum                | Yes      |
+| `hero`     | Journal Hero        | Yes      |
+| `author`   | Contributor ID      | No       |
+| `credits`  | Credit[]            | No       |
 
 Localized:
 
@@ -361,7 +361,7 @@ Allowed categories:
 Rules:
 
 - `date` は Required の有効な `YYYY-MM-DD` 文字列。
-- `categories` は Required で1件以上、`summary` は Required。
+- `category` は Required の単一 enum、`summary` は Required。
 - `author` / `credits` は両方 Optional で、同時指定は禁止する。
 - Credit は Required の `role` と、`person` または `member` の一方を持つ。両方の同時指定は禁止する。
 - `hero_caption` の画像クレジットを Contributor Credits へ移さない。

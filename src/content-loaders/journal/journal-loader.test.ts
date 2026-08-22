@@ -18,9 +18,29 @@ import {
   JournalAdapterFailure,
   synchronizeJournalStore,
 } from "./astro-loader.ts";
-import { journalSchema } from "./schema.ts";
+import { journalSchema, journalSharedSchema } from "./schema.ts";
 
 const fixtures = path.resolve("src/content-loaders/journal/fixtures");
+
+test("current category schema accepts only one required canonical enum", () => {
+  const base = {
+    date: "2026-08-22",
+    hero: { image: "/images/journal/category.jpg" },
+    visibility: "public",
+  };
+  for (const category of ["interview", "essay", "report"])
+    assert.equal(
+      journalSharedSchema.safeParse({ ...base, category }).success,
+      true,
+    );
+  for (const invalid of [
+    base,
+    { ...base, category: "unknown" },
+    { ...base, category: ["interview"] },
+    { ...base, categories: ["interview"] },
+  ])
+    assert.equal(journalSharedSchema.safeParse(invalid).success, false);
+});
 
 async function temporaryExactUnit(t: TestContext) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "journal-topology-"));
@@ -173,7 +193,7 @@ test("repository accepts only exact, safe three-file Journal units", async (t) =
 test("repository and canonical Astro schema accept the same integrated entries", async () => {
   const shared = {
     date: "2026-01-31",
-    categories: ["interview"],
+    category: "interview",
     hero: { image: "/images/journal/parity.jpg" },
     author: "valid-author",
     visibility: "public",

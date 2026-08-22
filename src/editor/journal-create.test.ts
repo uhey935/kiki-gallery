@@ -10,6 +10,7 @@ import {
   JournalCreateError,
   type JournalCreateFileSystem,
 } from "./journal-create.ts";
+import { validateJournalEditorDraft } from "./journal-draft-state.ts";
 
 function validDraft(contentId = "new-entry") {
   const draft = createNewJournalDraft(contentId);
@@ -17,7 +18,7 @@ function validDraft(contentId = "new-entry") {
   draft.shared.value = {
     visibility: "hidden",
     date: "2026-08-08",
-    categories: ["essay"],
+    category: "essay",
     hero: { image: "/images/journal/example.jpg" },
   };
   for (const [locale, title] of [
@@ -35,6 +36,15 @@ function validDraft(contentId = "new-entry") {
   }
   return draft;
 }
+
+test("new Journal starts hidden with no category selected", () => {
+  const draft = createNewJournalDraft("new-entry");
+  assert.equal(draft.shared.state, "editable");
+  if (draft.shared.state !== "editable") return;
+  assert.equal(draft.shared.value.visibility, "hidden");
+  assert.equal(draft.shared.value.category, "");
+  assert.equal(validateJournalEditorDraft(draft).capabilities.save, false);
+});
 
 async function withRoot(run: (root: string) => Promise<void>) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "journal-create-"));

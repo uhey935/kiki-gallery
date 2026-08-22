@@ -150,7 +150,7 @@ test("dirty fields preserve shared and locale draft responsibilities", () => {
       state: "editable",
       value: {
         date: "2026-01-01",
-        categories: ["essay"],
+        category: "essay",
         hero: { image: "/a.jpg" },
         visibility: "public",
       },

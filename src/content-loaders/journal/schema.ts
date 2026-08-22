@@ -12,6 +12,8 @@ const slugSchema = z
 
 const nonEmptyStringSchema = z.string().min(1);
 
+export const journalCategorySchema = z.enum(JOURNAL_CATEGORIES);
+
 export const journalDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Must use YYYY-MM-DD format.")
@@ -66,7 +68,7 @@ const creditSchema = z
 export const journalSharedSchema = z
   .object({
     date: journalDateSchema,
-    categories: z.array(z.enum(JOURNAL_CATEGORIES)).min(1),
+    category: journalCategorySchema,
     hero: journalHeroSchema,
     author: slugSchema.optional(),
     credits: z.array(creditSchema).optional(),
@@ -98,5 +100,6 @@ export const journalSchema = journalSharedSchema.safeExtend({
 });
 
 export type JournalShared = z.infer<typeof journalSharedSchema>;
+export type JournalCategory = z.infer<typeof journalCategorySchema>;
 export type JournalLocalized = z.infer<typeof journalLocalizedSchema>;
 export type JournalEntryData = z.infer<typeof journalSchema>;

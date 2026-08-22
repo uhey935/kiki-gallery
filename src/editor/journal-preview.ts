@@ -5,6 +5,7 @@ import type {
   JournalLocalized,
   JournalShared,
 } from "../content-loaders/journal/schema.ts";
+import { journalSharedSchema } from "../content-loaders/journal/schema.ts";
 import {
   type JournalEditorDraftState,
   validateJournalEditorDraft,
@@ -63,7 +64,7 @@ export function createJournalPreviewModel(
   return {
     contentId: draft.contentId,
     locale,
-    shared: structuredClone(draft.shared.value),
+    shared: structuredClone(journalSharedSchema.parse(draft.shared.value)),
     localized: structuredClone(localizedData),
     body,
   };

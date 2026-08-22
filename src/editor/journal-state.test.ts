@@ -64,6 +64,10 @@ test("resolves one read-only workspace state by Content ID", async () => {
   assert.deepEqual(entry.issues, []);
   assert.equal(entry.capabilities.preview.ja, true);
   assert.equal(entry.capabilities.publish, true);
+  if (entry.shared.state === "valid") {
+    assert.equal(entry.shared.value.category, "interview");
+    assert.equal(entry.shared.value.visibility, "public");
+  }
 });
 
 test("rejects invalid and unknown workspace Content IDs explicitly", async () => {
@@ -233,6 +237,15 @@ test("serializer preserves TODO tokens and keeps locale output isolated", async 
   assert.doesNotMatch(files["en.md"], /JA only/);
 });
 
+test("serializer writes singular category and never writes legacy categories", async () => {
+  const draft = createJournalEditorDraft(
+    await readJournalEditorEntry("valid-public", fixtures),
+  );
+  const shared = serializeJournalEditorDraft(draft)["index.yaml"];
+  assert.match(shared, /^category: interview$/m);
+  assert.doesNotMatch(shared, /^categories:/m);
+});
+
 test("serializer rejects unavailable three-file sources explicitly", async () => {
   const entry = await readJournalEditorEntry("missing-en", fixtures);
 
@@ -265,8 +278,11 @@ test("save writes one canonical three-file unit and rereads a clean baseline", a
     const entry = await readJournalEditorEntry("valid-public", root);
     const initial = createJournalEditorDraft(entry);
     const edited = updateJournalEditorDraft(initial, (draft) => {
-      if (draft.shared.state === "editable")
+      if (draft.shared.state === "editable") {
         draft.shared.value.author = "editor";
+        draft.shared.value.category = "report";
+        draft.shared.value.visibility = "hidden";
+      }
       if (draft.locales.ja.state === "editable")
         draft.locales.ja.value.title = "保存済み";
       if (draft.locales.en.state === "editable")
@@ -281,6 +297,10 @@ test("save writes one canonical three-file unit and rereads a clean baseline", a
         await readJournalEditorEntry("valid-public", root),
       ),
     );
+    if (saved.shared.state === "editable") {
+      assert.equal(saved.shared.value.category, "report");
+      assert.equal(saved.shared.value.visibility, "hidden");
+    }
     const expected = serializeJournalEditorDraft(edited);
     for (const fileName of ["index.yaml", "ja.md", "en.md"] as const) {
       assert.equal(

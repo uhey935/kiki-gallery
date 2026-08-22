@@ -38,7 +38,7 @@ async function fixture() {
   await fs.mkdir(path.join(repository, "public/images"), { recursive: true });
   await fs.writeFile(
     path.join(unit, "index.yaml"),
-    "date: 2026-08-09\ncategories:\n  - interview\nhero:\n  image: /images/journal/delete-me.jpg\n  hero_caption: Fixture\nauthor: fixture-author\nvisibility: public\n",
+    "date: 2026-08-09\ncategory: interview\nhero:\n  image: /images/journal/delete-me.jpg\n  hero_caption: Fixture\nauthor: fixture-author\nvisibility: public\n",
   );
   for (const locale of ["ja", "en"])
     await fs.writeFile(

@@ -3,14 +3,12 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import { loadJournalUnit } from "../content-loaders/journal/repository.ts";
-import type {
-  JournalLocalized,
-  JournalShared,
-} from "../content-loaders/journal/schema.ts";
+import type { JournalLocalized } from "../content-loaders/journal/schema.ts";
 import { isContentId } from "./content-id.ts";
 import type { JournalEditorDraftState } from "./journal-draft-state.ts";
 import {
   createJournalEditorDraft,
+  type JournalEditorSharedDraft,
   validateJournalEditorDraft,
 } from "./journal-draft-state.ts";
 import { serializeJournalEditorDraft } from "./journal-serializer.ts";
@@ -48,10 +46,10 @@ export type JournalCreateFileSystem = Pick<
 export function createNewJournalDraft(
   contentId: string,
 ): JournalEditorDraftState {
-  const shared: JournalShared = {
+  const shared: JournalEditorSharedDraft = {
     visibility: "hidden",
     date: "",
-    categories: [],
+    category: "",
     hero: { image: "" },
   };
   const localized = (): JournalLocalized & { body: string } => ({

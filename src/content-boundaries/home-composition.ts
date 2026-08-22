@@ -118,7 +118,7 @@ export async function createHomePresentationModel(
               href: route.href,
               image: entry.data.hero.image,
               alt: entry.data.hero_alt,
-              type: entry.data.categories?.[0],
+              type: entry.data.category,
               title: entry.data.title,
             }
           : undefined;

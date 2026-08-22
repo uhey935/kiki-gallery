@@ -5,8 +5,10 @@ import type {
   JournalLocalized,
   JournalShared,
 } from "../content-loaders/journal/schema.ts";
+import { journalSharedSchema } from "../content-loaders/journal/schema.ts";
 import type {
   JournalEditorDraftSource,
+  JournalEditorSharedDraft,
   JournalEditorDraftState,
 } from "./journal-draft-state.ts";
 
@@ -33,11 +35,12 @@ function editableValue<T>(
   return source.value;
 }
 
-function orderedShared(shared: JournalShared): JournalShared {
+function orderedShared(draft: JournalEditorSharedDraft): JournalShared {
+  const shared = journalSharedSchema.parse(draft);
   return {
     visibility: shared.visibility,
     date: shared.date,
-    categories: shared.categories,
+    category: shared.category,
     hero: {
       image: shared.hero.image,
       ...(shared.hero.hero_caption === undefined

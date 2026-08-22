@@ -160,11 +160,8 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         const [scope, key, nested] = field.name.split(".");
         if (scope === "shared" && next.shared.state === "editable") {
           const shared = next.shared.value;
-          if (key === "categories")
-            shared.categories = field.value
-              .split(",")
-              .map((value) => value.trim())
-              .filter(Boolean) as typeof shared.categories;
+          if (key === "category")
+            shared.category = field.value as typeof shared.category;
           else if (key === "hero" && nested)
             shared.hero[nested as "image" | "hero_caption"] =
               field.value || (undefined as never);

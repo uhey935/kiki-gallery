@@ -40,13 +40,17 @@ const { locale, source } = Astro.props;
             data-editor-field={`${locale}.summary`}
           >
             <span>
-              Summary <small class="editor-field-badge">Required</small>
+              Journal excerpt <small class="editor-field-badge">Required</small>
             </span>
             <textarea
               name={`${locale}.summary`}
               rows="3"
               set:text={source.value.summary}
             />
+            <small>
+              Shown when this Journal is included in News; also used as the
+              Journal detail page description.
+            </small>
           </label>
           <label
             class="editor-field-wide"

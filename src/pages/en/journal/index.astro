@@ -21,7 +21,7 @@ const items = journal.map((item) => ({
   title: item.data.title,
   date: item.data.date ? new Date(item.data.date) : null,
   summary: item.data.summary,
-  categories: item.data.categories ?? [],
+  category: item.data.category,
   hero: item.data.hero,
   hero_alt: item.data.hero_alt,
 }));
@@ -42,9 +42,7 @@ const restItems = items.slice(5);
                 <img src={hero.hero.image} alt={hero.hero_alt} />
               </div>
               <div class="card-meta journal-meta">
-                {hero.categories[0] && (
-                  <p class="journal-category">{hero.categories[0]}</p>
-                )}
+                <p class="journal-category">{hero.category}</p>
                 <h2 class="journal-title">{hero.title}</h2>
                 {hero.date && (
                   <time class="journal-date" datetime={hero.date.toISOString()}>
@@ -64,9 +62,7 @@ const restItems = items.slice(5);
                 <img src={item.hero.image} alt={item.hero_alt} />
               </div>
               <div class="card-meta journal-meta">
-                {item.categories[0] && (
-                  <p class="journal-category">{item.categories[0]}</p>
-                )}
+                <p class="journal-category">{item.category}</p>
                 <h2 class="journal-card-title">{item.title}</h2>
                 {item.date && (
                   <time class="journal-date" datetime={item.date.toISOString()}>
@@ -89,9 +85,7 @@ const restItems = items.slice(5);
                   <img src={item.hero.image} alt={item.hero_alt} />
                 </div>
                 <div class="card-meta journal-meta">
-                  {item.categories[0] && (
-                    <p class="journal-category">{item.categories[0]}</p>
-                  )}
+                  <p class="journal-category">{item.category}</p>
                   <h2 class="journal-card-title">{item.title}</h2>
                   {item.date && (
                     <time

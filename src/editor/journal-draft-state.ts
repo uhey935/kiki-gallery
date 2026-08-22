@@ -8,6 +8,7 @@ import type {
 import {
   journalLocalizedSchema,
   journalSharedSchema,
+  type JournalCategory,
   type JournalLocalized,
   type JournalShared,
 } from "../content-loaders/journal/schema.ts";
@@ -17,9 +18,13 @@ export type JournalEditorDraftSource<T> =
   | { state: "editable"; value: T }
   | { state: "unavailable"; sourceState: "invalid" | "missing" };
 
+export type JournalEditorSharedDraft = Omit<JournalShared, "category"> & {
+  category: JournalCategory | "";
+};
+
 export type JournalEditorDraftState = {
   contentId: string;
-  shared: JournalEditorDraftSource<JournalShared>;
+  shared: JournalEditorDraftSource<JournalEditorSharedDraft>;
   locales: Record<
     Locale,
     JournalEditorDraftSource<JournalLocalized & { body: string }>
