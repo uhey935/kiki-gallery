@@ -34,5 +34,18 @@ test("About hours form uses canonical weekday checkboxes and no derived fields",
   assert.match(workspace, /data\.getAll\("open_days"\)/);
   assert.doesNotMatch(form, /closed_days|timezone/);
   assert.doesNotMatch(workspace, /closed_days|timezone/);
+  assert.equal((form.match(/Localized content/g) ?? []).length, 1);
+  assert.equal((form.match(/Localized metadata/g) ?? []).length, 1);
+  assert.equal((form.match(/SEO metadata/g) ?? []).length, 1);
+  assert.equal(
+    (form.match(/name=\{`\$\{locale\}_seo_title`\}/g) ?? []).length,
+    1,
+  );
+  assert.equal(
+    (form.match(/name=\{`\$\{locale\}_description`\}/g) ?? []).length,
+    1,
+  );
+  assert.match(form, /data-editor-section=\{`\$\{locale\}-content`\}/);
+  assert.match(form, /data-editor-section=\{`\$\{locale\}-metadata`\}/);
   assert.match(form, /SEO description · Optional/);
 });

@@ -15,7 +15,11 @@ import {
   aboutDirtyScopes,
   validateAboutEditorDraft,
 } from "./about-draft-state.ts";
-import { createAboutPreviewModel, AboutPreviewError } from "./about-preview.ts";
+import {
+  AboutPreviewStore,
+  createAboutPreviewModel,
+  AboutPreviewError,
+} from "./about-preview.ts";
 import { readAboutEditorEntry } from "./about-state.ts";
 import { serializeAboutEditorDraft } from "./about-serializer.ts";
 
@@ -170,4 +174,42 @@ test("serializer owns exactly shared src/hours/contact and localized alt/body", 
   assert.doesNotMatch(files["index.yaml"], /timezone|closed_days/);
   assert.doesNotMatch(files["ja.md"], /src:/);
   assert.match(files["ja.md"], /確認中/);
+});
+
+test("SEO UI fields retain the localized seo_title and description contract", async () => {
+  const draft = createAboutEditorDraft(
+    await readAboutEditorEntry(path.dirname(canonical)),
+  );
+  if (
+    draft.locales.ja.state !== "editable" ||
+    draft.locales.en.state !== "editable"
+  )
+    assert.fail("localized About sources must be editable");
+  draft.locales.ja.value.seo_title = "JA SEO title";
+  draft.locales.ja.value.description = "JA SEO description";
+  draft.locales.en.value.seo_title = "EN SEO title";
+  draft.locales.en.value.description = "EN SEO description";
+
+  const files = serializeAboutEditorDraft(draft);
+  assert.match(files["ja.md"], /seo_title: JA SEO title/);
+  assert.match(files["ja.md"], /description: JA SEO description/);
+  assert.match(files["en.md"], /seo_title: EN SEO title/);
+  assert.match(files["en.md"], /description: EN SEO description/);
+  assert.doesNotMatch(files["index.yaml"], /seo_title|description/);
+});
+
+test("preview tokens accept only their exact locale", async () => {
+  const draft = createAboutEditorDraft(
+    await readAboutEditorEntry(path.dirname(canonical)),
+  );
+  const model = createAboutPreviewModel(draft, "ja");
+  const store = new AboutPreviewStore();
+  const token = store.create(model);
+
+  assert.equal(store.read(token, "ja").locale, "ja");
+  assert.throws(
+    () => store.read(token, "en"),
+    (error: unknown) =>
+      error instanceof AboutPreviewError && error.code === "preview-not-found",
+  );
 });

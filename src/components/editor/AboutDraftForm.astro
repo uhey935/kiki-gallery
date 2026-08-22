@@ -118,82 +118,104 @@ const shared = draft.shared.value;
       if (source.state !== "editable") return null;
       const value = source.value;
       return (
-        <section class="editor-entry-section" data-locale={locale}>
-          <>
+        <>
+          <section
+            class="editor-entry-section"
+            data-locale={locale}
+            data-editor-section={`${locale}-content`}
+          >
+            <>
+              <header>
+                <>
+                  <p class="editor-eyebrow">
+                    {locale.toUpperCase()} · Localized content
+                  </p>
+                  <h2>{locale === "ja" ? "Japanese" : "English"}</h2>
+                </>
+              </header>
+              <div class="editor-entry-section__content editor-field-grid">
+                <label>
+                  <>
+                    <span>Content status</span>
+                    <select name={`${locale}_content_status`}>
+                      <>
+                        <option
+                          selected={value.content_status === "placeholder"}
+                        >
+                          placeholder
+                        </option>
+                        <option selected={value.content_status === "review"}>
+                          review
+                        </option>
+                        <option selected={value.content_status === "approved"}>
+                          approved
+                        </option>
+                      </>
+                    </select>
+                  </>
+                </label>
+                <label class="editor-field-wide">
+                  <>
+                    <span>Address</span>
+                    <textarea
+                      name={`${locale}_address`}
+                      set:text={value.address}
+                    />
+                  </>
+                </label>
+                {value.images.gallery.map((image, index) => (
+                  <label>
+                    <span>Gallery {index + 1} alt</span>
+                    <input
+                      name={`${locale}_gallery_${index}_alt`}
+                      value={image.alt}
+                    />
+                  </label>
+                ))}
+                <label class="editor-field-wide">
+                  <>
+                    <span>Statement · Markdown</span>
+                    <textarea
+                      rows="10"
+                      name={`${locale}_body`}
+                      set:text={value.body}
+                    />
+                  </>
+                </label>
+              </div>
+            </>
+          </section>
+          <section
+            class="editor-entry-section"
+            data-locale={locale}
+            data-editor-section={`${locale}-metadata`}
+          >
             <header>
-              <>
-                <p class="editor-eyebrow">{locale.toUpperCase()}</p>
-                <h2>{locale === "ja" ? "Japanese" : "English"}</h2>
-              </>
+              <div>
+                <p class="editor-eyebrow">
+                  {locale.toUpperCase()} · Localized metadata
+                </p>
+                <h2>SEO metadata</h2>
+              </div>
             </header>
             <div class="editor-entry-section__content editor-field-grid">
               <label>
-                <>
-                  <span>Content status</span>
-                  <select name={`${locale}_content_status`}>
-                    <>
-                      <option selected={value.content_status === "placeholder"}>
-                        placeholder
-                      </option>
-                      <option selected={value.content_status === "review"}>
-                        review
-                      </option>
-                      <option selected={value.content_status === "approved"}>
-                        approved
-                      </option>
-                    </>
-                  </select>
-                </>
-              </label>
-              <label class="editor-field-wide">
-                <>
-                  <span>Address</span>
-                  <textarea
-                    name={`${locale}_address`}
-                    set:text={value.address}
-                  />
-                </>
-              </label>
-              {value.images.gallery.map((image, index) => (
-                <label>
-                  <span>Gallery {index + 1} alt</span>
-                  <input
-                    name={`${locale}_gallery_${index}_alt`}
-                    value={image.alt}
-                  />
-                </label>
-              ))}
-              <label>
-                <>
-                  <span>SEO title · Optional</span>
-                  <input
-                    name={`${locale}_seo_title`}
-                    value={value.seo_title ?? ""}
-                  />
-                </>
+                <span>SEO title · Optional</span>
+                <input
+                  name={`${locale}_seo_title`}
+                  value={value.seo_title ?? ""}
+                />
               </label>
               <label>
-                <>
-                  <span>SEO description · Optional</span>
-                  <textarea
-                    name={`${locale}_description`}
-                    set:text={value.description ?? ""}
-                  />
-                </>
-              </label>
-              <label class="editor-field-wide">
-                <>
-                  <span>Statement · Markdown</span>
-                  <textarea
-                    rows="10"
-                    name={`${locale}_body`}
-                    set:text={value.body}
-                  />
-                </>
+                <span>SEO description · Optional</span>
+                <textarea
+                  name={`${locale}_description`}
+                  set:text={value.description ?? ""}
+                />
               </label>
             </div>
-          </>
-        </section>
+          </section>
+        </>
       );
     })
   }

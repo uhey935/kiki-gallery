@@ -4,13 +4,13 @@ import AboutView from "../../components/AboutView.astro";
 import Layout from "../../layouts/Layout.astro";
 import { aboutPreviewStore, AboutPreviewError } from "../about-preview.ts";
 import "../../styles/about.css";
-const { token, contentId } = Astro.params;
+const { token, locale } = Astro.params;
 let preview;
 let previewError;
 try {
-  if (!token || !contentId)
+  if (!token || (locale !== "ja" && locale !== "en"))
     throw new AboutPreviewError("Invalid preview URL", "preview-not-found");
-  preview = aboutPreviewStore.read(token, contentId);
+  preview = aboutPreviewStore.read(token, locale);
 } catch (error) {
   Astro.response.status =
     error instanceof AboutPreviewError && error.code === "preview-expired"
@@ -28,6 +28,10 @@ const statement = preview
     <Layout
       title={`${preview.seoTitle ?? "About"} · Draft Preview`}
       description={preview.description}
+      locale={preview.locale}
+      robots="noindex,nofollow"
+      canonical={false}
+      social={false}
     >
       <p class="editor-preview-notice">
         Draft preview · {preview.contentStatus} · not formal Production approval

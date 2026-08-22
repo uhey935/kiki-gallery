@@ -26,7 +26,7 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
-            pattern: "/editor/preview/about/[token]/[contentId]",
+            pattern: "/editor/preview/about/[token]/[locale]",
             entrypoint: "./src/editor/routes/about-preview.astro",
             prerender: false,
           });

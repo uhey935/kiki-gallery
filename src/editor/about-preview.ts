@@ -69,7 +69,7 @@ export class AboutPreviewStore {
     });
     return token;
   }
-  read(token: string, localeOrId: string) {
+  read(token: string, locale: AboutLocale) {
     const record = this.records.get(token);
     if (!record)
       throw new AboutPreviewError(
@@ -80,7 +80,7 @@ export class AboutPreviewStore {
       this.records.delete(token);
       throw new AboutPreviewError("About preview expired", "preview-expired");
     }
-    if (localeOrId !== record.model.locale && localeOrId !== "about")
+    if (locale !== record.model.locale)
       throw new AboutPreviewError(
         "About preview mismatch",
         "preview-not-found",
