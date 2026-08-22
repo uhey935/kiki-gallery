@@ -43,6 +43,12 @@ test("new Journal starts hidden with no category selected", () => {
   if (draft.shared.state !== "editable") return;
   assert.equal(draft.shared.value.visibility, "hidden");
   assert.equal(draft.shared.value.category, "");
+  for (const locale of ["ja", "en"] as const) {
+    const localized = draft.locales[locale];
+    if (localized.state !== "editable") assert.fail(`${locale} unavailable`);
+    assert.equal(localized.value.seo_title, undefined);
+    assert.equal(localized.value.description, undefined);
+  }
   assert.equal(validateJournalEditorDraft(draft).capabilities.save, false);
 });
 
@@ -71,6 +77,14 @@ test("create atomically materializes and rereads one three-file unit", async () 
     );
     assert.doesNotMatch(shared, /^author:/m);
     assert.doesNotMatch(shared, /^credits:/m);
+    for (const locale of ["ja", "en"] as const) {
+      const localized = await fs.readFile(
+        path.join(root, "new-entry", `${locale}.md`),
+        "utf8",
+      );
+      assert.doesNotMatch(localized, /^seo_title:/m);
+      assert.doesNotMatch(localized, /^description:/m);
+    }
     assert.deepEqual(
       (await fs.readdir(root)).filter((name) =>
         name.startsWith(".journal-create-"),

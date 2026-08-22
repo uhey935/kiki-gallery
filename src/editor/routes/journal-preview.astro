@@ -6,6 +6,7 @@ import { JournalPreviewError, journalPreviewStore } from "../journal-preview";
 import Layout from "../../layouts/Layout.astro";
 import JournalDetailPresentation from "../../components/JournalDetailPresentation.astro";
 import { createJournalDetailPresentationModel } from "../../components/journal-detail-presentation";
+import { createJournalMetadataModel } from "../../components/journal-metadata";
 
 const { token, locale } = Astro.params;
 let preview;
@@ -35,13 +36,16 @@ const model = preview
       date: preview.shared.date,
     })
   : undefined;
+const metadata = preview
+  ? createJournalMetadataModel(preview.localized)
+  : undefined;
 ---
 
 {
-  preview && rendered && model ? (
+  preview && rendered && model && metadata ? (
     <Layout
-      title={preview.localized.title}
-      description={preview.localized.summary}
+      title={metadata.title}
+      description={metadata.description}
       locale={preview.locale}
       robots="noindex,nofollow"
       canonical={false}

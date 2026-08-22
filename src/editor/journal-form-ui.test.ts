@@ -25,4 +25,10 @@ test("Journal form uses category and visibility selects with excerpt guidance", 
   assert.doesNotMatch(form, />\s*Author\s*</);
   assert.match(locale, /Journal excerpt/);
   assert.match(locale, /Shown when this Journal is included in News/);
+  assert.match(form, /Localized metadata/);
+  assert.match(form, /<h2>Metadata<\/h2>/);
+  assert.match(form, /name=\{`\$\{locale\}\.seo_title`\}/);
+  assert.match(form, /name=\{`\$\{locale\}\.description`\}/);
+  assert.match(form, /Leave SEO title blank to use the Journal Title/);
+  assert.match(form, /blank to use the Journal excerpt/);
 });

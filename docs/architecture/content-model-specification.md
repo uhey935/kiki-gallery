@@ -348,6 +348,8 @@ Localized:
 | `title`       | String   | Yes      |
 | `summary`     | String   | Yes      |
 | `hero_alt`    | String   | Yes      |
+| `seo_title`   | String   | No       |
+| `description` | String   | No       |
 | Markdown body | Markdown | No       |
 
 Allowed categories:
@@ -360,6 +362,7 @@ Rules:
 
 - `date` は Required の有効な `YYYY-MM-DD` 文字列。
 - `category` は Required の単一 enum、`summary` は Required。
+- Production metadata は `seo_title ?? title`、`description ?? summary` をlocaleごとに使用し、OGP imageにはshared hero imageを使用する。
 - `hero_caption` の画像クレジットは hero 固有fieldとして保持する。
 - Current runtime は attribution field を持たない。Historical v1 migration contract は dated artifact に隔離する。
 

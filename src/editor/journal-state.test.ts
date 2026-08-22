@@ -237,6 +237,50 @@ test("serializer preserves TODO tokens and keeps locale output isolated", async 
   assert.doesNotMatch(files["en.md"], /JA only/);
 });
 
+test("localized metadata overrides save, reread, and omit cleared values", async () => {
+  await withTemporaryJournal(async (root) => {
+    const initial = createJournalEditorDraft(
+      await readJournalEditorEntry("valid-public", root),
+    );
+    const edited = updateJournalEditorDraft(initial, (draft) => {
+      if (draft.locales.ja.state === "editable") {
+        draft.locales.ja.value.seo_title = "JA SEO title";
+        draft.locales.ja.value.description = "JA SEO description";
+      }
+      if (draft.locales.en.state === "editable") {
+        draft.locales.en.value.seo_title = "EN SEO title";
+        draft.locales.en.value.description = "EN SEO description";
+      }
+    });
+    const saved = await saveJournalEditorDraft(edited, initial, root);
+
+    for (const locale of ["ja", "en"] as const) {
+      const source = saved.locales[locale];
+      if (source.state !== "editable") assert.fail(`${locale} unavailable`);
+      assert.equal(source.value.seo_title, `${locale.toUpperCase()} SEO title`);
+      assert.equal(
+        source.value.description,
+        `${locale.toUpperCase()} SEO description`,
+      );
+    }
+
+    const cleared = updateJournalEditorDraft(saved, (draft) => {
+      for (const locale of ["ja", "en"] as const) {
+        const source = draft.locales[locale];
+        if (source.state !== "editable") assert.fail(`${locale} unavailable`);
+        source.value.seo_title = undefined;
+        source.value.description = undefined;
+      }
+    });
+    assert.equal(validateJournalEditorDraft(cleared).capabilities.save, true);
+    const serialized = serializeJournalEditorDraft(cleared);
+    for (const locale of ["ja", "en"] as const) {
+      assert.doesNotMatch(serialized[`${locale}.md`], /^seo_title:/m);
+      assert.doesNotMatch(serialized[`${locale}.md`], /^description:/m);
+    }
+  });
+});
+
 test("serializer writes singular category and never writes legacy categories", async () => {
   const draft = createJournalEditorDraft(
     await readJournalEditorEntry("valid-public", fixtures),

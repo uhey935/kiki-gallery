@@ -118,8 +118,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       for (const section of form.querySelectorAll<HTMLElement>(
         "[data-editor-section]",
       )) {
+        const sectionName = section.dataset.editorSection;
         const dirty = [...dirtyFields].some((field) =>
-          field.startsWith(`${section.dataset.editorSection}.`),
+          sectionName === "metadata"
+            ? /^(?:ja|en)\.(?:seo_title|description)$/.test(field)
+            : field.startsWith(`${sectionName}.`),
         );
         section.classList.toggle("is-modified", dirty);
         const indicator = section.querySelector<HTMLElement>(
@@ -444,7 +447,12 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           (scope === "ja" || scope === "en") &&
           next.locales[scope].state === "editable"
         ) {
-          Object.assign(next.locales[scope].value, { [key]: field.value });
+          Object.assign(next.locales[scope].value, {
+            [key]:
+              key === "seo_title" || key === "description"
+                ? field.value || undefined
+                : field.value,
+          });
         }
       });
       statusMessage = null;

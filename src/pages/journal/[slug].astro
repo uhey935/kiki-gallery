@@ -5,6 +5,7 @@ import { journalRouteRegistry } from "../../content-boundaries/journal";
 import { getJournalProductionFacade } from "../../content-boundaries/journal-production";
 import JournalDetailPresentation from "../../components/JournalDetailPresentation.astro";
 import { createJournalDetailPresentationModel } from "../../components/journal-detail-presentation";
+import { createJournalMetadataModel } from "../../components/journal-metadata";
 
 /* =========================
    getStaticPaths
@@ -38,11 +39,12 @@ const model = createJournalDetailPresentationModel({
   title: item.data.title,
   date: item.data.date,
 });
+const metadata = createJournalMetadataModel(item.data);
 ---
 
 <Layout
-  title={item.data.title}
-  description={item.data.summary}
+  title={metadata.title}
+  description={metadata.description}
   image={item.data.hero.image}
   locale="ja"
 >

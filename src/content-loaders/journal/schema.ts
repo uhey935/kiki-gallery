@@ -49,6 +49,8 @@ export const journalLocalizedSchema = z
     title: nonEmptyStringSchema,
     summary: nonEmptyStringSchema,
     hero_alt: nonEmptyStringSchema,
+    seo_title: nonEmptyStringSchema.optional(),
+    description: nonEmptyStringSchema.optional(),
   })
   .strict();
 

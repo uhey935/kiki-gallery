@@ -4,6 +4,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { createJournalDetailPresentationModel } from "../components/journal-detail-presentation.ts";
+import { createJournalMetadataModel } from "../components/journal-metadata.ts";
 import { createJournalEditorDraft } from "../editor/journal-draft-state.ts";
 import { createJournalPreviewModel } from "../editor/journal-preview.ts";
 import { readJournalEditorEntry } from "../editor/journal-state.ts";
@@ -67,6 +68,37 @@ test("unsaved JA and EN Preview drafts project through the shared detail model",
   }
 });
 
+test("Journal metadata overrides use the same fallback policy for JA and EN", () => {
+  for (const locale of ["ja", "en"] as const) {
+    const title = `${locale.toUpperCase()} Journal title`;
+    const summary = `${locale.toUpperCase()} Journal excerpt`;
+    const seoTitle = `${locale.toUpperCase()} SEO title`;
+    const description = `${locale.toUpperCase()} SEO description`;
+
+    assert.deepEqual(createJournalMetadataModel({ title, summary }), {
+      title,
+      description: summary,
+    });
+    assert.deepEqual(
+      createJournalMetadataModel({ title, summary, seo_title: seoTitle }),
+      { title: seoTitle, description: summary },
+    );
+    assert.deepEqual(
+      createJournalMetadataModel({ title, summary, description }),
+      { title, description },
+    );
+    assert.deepEqual(
+      createJournalMetadataModel({
+        title,
+        summary,
+        seo_title: seoTitle,
+        description,
+      }),
+      { title: seoTitle, description },
+    );
+  }
+});
+
 test("public JA, public EN, and Preview use one Journal presentation component", async () => {
   const [component, ja, en, preview] = await Promise.all([
     fs.readFile(
@@ -90,19 +122,27 @@ test("public JA, public EN, and Preview use one Journal presentation component",
 });
 
 test("Journal public metadata is locale-symmetric and Preview metadata is isolated", async () => {
-  const [ja, en, preview] = await Promise.all([
+  const [ja, en, preview, layout] = await Promise.all([
     fs.readFile(path.join(root, "pages/journal/[slug].astro"), "utf8"),
     fs.readFile(path.join(root, "pages/en/journal/[slug].astro"), "utf8"),
     fs.readFile(path.join(root, "editor/routes/journal-preview.astro"), "utf8"),
+    fs.readFile(path.join(root, "layouts/Layout.astro"), "utf8"),
   ]);
 
   for (const route of [ja, en]) {
-    assert.match(route, /title=\{item\.data\.title\}/);
-    assert.match(route, /description=\{item\.data\.summary\}/);
+    assert.match(route, /createJournalMetadataModel\(item\.data\)/);
+    assert.match(route, /title=\{metadata\.title\}/);
+    assert.match(route, /description=\{metadata\.description\}/);
     assert.match(route, /image=\{item\.data\.hero\.image\}/);
   }
+  assert.match(layout, /property="og:title" content=\{title/);
+  assert.match(layout, /property="og:description"/);
+  assert.match(layout, /content=\{description/);
+  assert.match(layout, /property="og:image" content=\{ogImageUrl\}/);
   assert.match(preview, /robots="noindex,nofollow"/);
   assert.match(preview, /canonical=\{false\}/);
   assert.match(preview, /social=\{false\}/);
-  assert.match(preview, /description=\{preview\.localized\.summary\}/);
+  assert.match(preview, /createJournalMetadataModel\(preview\.localized\)/);
+  assert.match(preview, /title=\{metadata\.title\}/);
+  assert.match(preview, /description=\{metadata\.description\}/);
 });

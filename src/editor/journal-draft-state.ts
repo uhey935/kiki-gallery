@@ -188,7 +188,7 @@ export function validateJournalEditorDraft(
       continue;
     }
     for (const [fieldPath, candidate] of Object.entries(source.value)) {
-      if (candidate.includes("__TODO_")) {
+      if (typeof candidate === "string" && candidate.includes("__TODO_")) {
         issues.push({
           ruleId: "content.placeholder.unresolved",
           severity: "error",

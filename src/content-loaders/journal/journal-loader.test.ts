@@ -18,7 +18,11 @@ import {
   JournalAdapterFailure,
   synchronizeJournalStore,
 } from "./astro-loader.ts";
-import { journalSchema, journalSharedSchema } from "./schema.ts";
+import {
+  journalLocalizedSchema,
+  journalSchema,
+  journalSharedSchema,
+} from "./schema.ts";
 
 const fixtures = path.resolve("src/content-loaders/journal/fixtures");
 
@@ -40,6 +44,32 @@ test("current category schema accepts only one required canonical enum", () => {
     { ...base, categories: ["interview"] },
   ])
     assert.equal(journalSharedSchema.safeParse(invalid).success, false);
+});
+
+test("localized Journal metadata overrides are optional non-empty fields", () => {
+  const base = {
+    title: "Journal title",
+    summary: "Journal excerpt",
+    hero_alt: "Journal hero",
+  };
+  for (const localized of [
+    base,
+    { ...base, seo_title: "SEO title" },
+    { ...base, description: "SEO description" },
+    {
+      ...base,
+      seo_title: "SEO title",
+      description: "SEO description",
+    },
+  ])
+    assert.equal(journalLocalizedSchema.safeParse(localized).success, true);
+
+  for (const localized of [
+    { ...base, seo_title: "" },
+    { ...base, description: "" },
+    { ...base, unknown_metadata: "value" },
+  ])
+    assert.equal(journalLocalizedSchema.safeParse(localized).success, false);
 });
 
 async function temporaryExactUnit(t: TestContext) {

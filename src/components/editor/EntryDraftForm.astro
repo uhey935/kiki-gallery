@@ -116,4 +116,58 @@ const { draft } = Astro.props;
   </section>
   <LocaleDraftSection locale="ja" source={draft.locales.ja} />
   <LocaleDraftSection locale="en" source={draft.locales.en} />
+  <section class="editor-entry-section" data-editor-section="metadata">
+    <header>
+      <div>
+        <p class="editor-eyebrow">Localized metadata</p><h2>Metadata</h2>
+      </div>
+    </header>
+    <div class="editor-entry-section__content">
+      <p class="editor-field-help">
+        Leave SEO title blank to use the Journal Title. Leave SEO description
+        blank to use the Journal excerpt.
+      </p>
+      <div class="editor-field-grid">
+        {
+          (["ja", "en"] as const).map((locale) => {
+            const source = draft.locales[locale];
+            return source.state === "editable" ? (
+              <>
+                <label data-editor-field={`${locale}.seo_title`}>
+                  <span>
+                    {locale.toUpperCase()} SEO title{" "}
+                    <small class="editor-field-badge editor-field-badge--optional">
+                      Optional
+                    </small>
+                  </span>
+                  <input
+                    name={`${locale}.seo_title`}
+                    value={source.value.seo_title ?? ""}
+                  />
+                </label>
+                <label
+                  class="editor-field-wide"
+                  data-editor-field={`${locale}.description`}
+                >
+                  <span>
+                    {locale.toUpperCase()} SEO description{" "}
+                    <small class="editor-field-badge editor-field-badge--optional">
+                      Optional
+                    </small>
+                  </span>
+                  <textarea
+                    name={`${locale}.description`}
+                    rows="3"
+                    set:text={source.value.description ?? ""}
+                  />
+                </label>
+              </>
+            ) : (
+              <p>{locale.toUpperCase()} source unavailable.</p>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
 </form>

@@ -58,6 +58,8 @@ function serializeLocale(
     title: localized.title,
     summary: localized.summary,
     hero_alt: localized.hero_alt,
+    ...(localized.seo_title ? { seo_title: localized.seo_title } : {}),
+    ...(localized.description ? { description: localized.description } : {}),
   };
   return `---\n${stringify(frontmatter, { lineWidth: 0 })}---\n${body}`;
 }
