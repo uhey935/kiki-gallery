@@ -122,7 +122,7 @@ Other adapter exceptions are wrapped as `JournalAdapterFailure`, retaining Conte
 
 ## Surface policy
 
-All four production surfaces require the requested locale, `visibility: public`, and no applicable error Issue. Hidden or locale-blocked entries are omitted from static Detail paths and from Index, Home Stories, and News integration. The facade is the single production selection boundary; consumers retain presentation-only mapping, grouping, and limits.
+All four production surfaces require the requested locale, `visibility: public`, and no applicable error Issue. Draft or locale-blocked entries are omitted from static Detail paths and from Index, Home Stories, and News integration. The current canonical visibility contract is `public | draft`; the facade is the single production selection boundary, while consumers retain presentation-only mapping, grouping, and limits.
 
 ## Prototype cleanup and verification baseline
 

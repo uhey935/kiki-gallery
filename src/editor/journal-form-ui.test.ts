@@ -19,7 +19,10 @@ test("Journal form uses category and visibility selects with excerpt guidance", 
   assert.doesNotMatch(form, /name="shared\.categories"/);
   assert.match(form, /Site visibility/);
   assert.match(form, /<select name="shared\.visibility">/);
-  assert.match(form, /Hidden: not available on public Journal routes/);
+  assert.match(form, /<option[\s\S]*?value="draft"[\s\S]*?>[\s\S]*?Draft/);
+  assert.match(form, /<option[\s\S]*?value="public"[\s\S]*?>[\s\S]*?Public/);
+  assert.doesNotMatch(form, /value="hidden"/);
+  assert.match(form, /Draft: not available on public Journal routes/);
   assert.match(form, /Publish sends saved changes/);
   assert.doesNotMatch(form, /name="shared\.author"/);
   assert.doesNotMatch(form, />\s*Author\s*</);

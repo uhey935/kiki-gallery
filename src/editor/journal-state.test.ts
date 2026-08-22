@@ -38,7 +38,7 @@ test("read-only Journal Editor State keeps every three-file repository unit", as
   assert.equal(state.entries.length, 5);
   assert.deepEqual(state.entries.map((entry) => entry.contentId).sort(), [
     "broken-shared",
-    "hidden",
+    "draft",
     "missing-en",
     "placeholder-en",
     "valid-public",
@@ -68,6 +68,23 @@ test("resolves one read-only workspace state by Content ID", async () => {
     assert.equal(entry.shared.value.category, "interview");
     assert.equal(entry.shared.value.visibility, "public");
   }
+});
+
+test("draft workspace can toggle to public as a dirty, valid draft", async () => {
+  const initial = createJournalEditorDraft(
+    await readJournalEditorEntry("draft", fixtures),
+  );
+  assert.equal(
+    initial.shared.state === "editable" && initial.shared.value.visibility,
+    "draft",
+  );
+  const edited = updateJournalEditorDraft(initial, (draft) => {
+    if (draft.shared.state === "editable")
+      draft.shared.value.visibility = "public";
+  });
+  assert.equal(isJournalEditorDraftDirty(initial, edited), true);
+  assert.equal(validateJournalEditorDraft(edited).capabilities.save, true);
+  assert.equal(validateJournalEditorDraft(edited).capabilities.publish, true);
 });
 
 test("rejects invalid and unknown workspace Content IDs explicitly", async () => {
@@ -326,13 +343,23 @@ test("save writes one canonical three-file unit and rereads a clean baseline", a
     const edited = updateJournalEditorDraft(initial, (draft) => {
       if (draft.shared.state === "editable") {
         draft.shared.value.category = "report";
-        draft.shared.value.visibility = "hidden";
+        draft.shared.value.visibility = "draft";
       }
       if (draft.locales.ja.state === "editable")
         draft.locales.ja.value.title = "保存済み";
       if (draft.locales.en.state === "editable")
         draft.locales.en.value.title = "Saved";
     });
+    assert.equal(isJournalEditorDraftDirty(initial, edited), true);
+    assert.equal(validateJournalEditorDraft(edited).capabilities.save, true);
+    assert.equal(
+      createJournalPreviewModel(edited, "ja").shared.visibility,
+      "draft",
+    );
+    assert.equal(
+      createJournalPreviewModel(edited, "en").shared.visibility,
+      "draft",
+    );
 
     const saved = await saveJournalEditorDraft(edited, initial, root);
     assert.equal(isJournalEditorDraftDirty(saved, saved), false);
@@ -344,7 +371,7 @@ test("save writes one canonical three-file unit and rereads a clean baseline", a
     );
     if (saved.shared.state === "editable") {
       assert.equal(saved.shared.value.category, "report");
-      assert.equal(saved.shared.value.visibility, "hidden");
+      assert.equal(saved.shared.value.visibility, "draft");
     }
     const expected = serializeJournalEditorDraft(edited);
     for (const fileName of ["index.yaml", "ja.md", "en.md"] as const) {

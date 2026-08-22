@@ -61,10 +61,10 @@ const { draft } = Astro.props;
               </span>
               <select name="shared.visibility">
                 <option
-                  value="hidden"
-                  selected={draft.shared.value.visibility === "hidden"}
+                  value="draft"
+                  selected={draft.shared.value.visibility === "draft"}
                 >
-                  Hidden
+                  Draft
                 </option>
                 <option
                   value="public"
@@ -74,7 +74,7 @@ const { draft } = Astro.props;
                 </option>
               </select>
               <small>
-                Hidden: not available on public Journal routes or listing
+                Draft: not available on public Journal routes or listing
                 surfaces. Public: listed and publicly reachable. Site visibility
                 controls site availability; Publish sends saved changes to the
                 repository and remote.

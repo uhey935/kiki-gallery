@@ -2,7 +2,7 @@
 
 Version: v1.2
 Status: Approved
-Last Updated: 2026-08-18
+Last Updated: 2026-08-22
 
 ---
 
@@ -26,7 +26,7 @@ Collection
 - Presentation、Route Helper、Map key、および Content Reference の解決は `entry.data.contentId`、または Repository／Editor 境界で同じ規則から導出した Content ID を基準にする。
 - URL と Route は locale、collection、および Content ID から生成する Derived data とする。
 - `slug` や Content ID を frontmatter へ重複保存しない。
-- `visibility` の canonical field は Decisions 029–031 で責務と Journal matrix のみを承認済みとする。現行 strict Schema、migration、Site Content Service、および全 affected consumer を同じ実装 slice で変更するまでは保存 model へ追加しない。
+- Journalの`visibility`はcanonical Shared fieldであり、current runtime contractは`public | draft`とする。これはcontent visibilityであり、EditorのSave／Publish lifecycleとは独立する。
 
 保存構造と Astro Store の変換境界、Entry ID の生成規則、および Query／Route の責務は Loader Architecture Specification v1.0 に従う。
 
@@ -335,11 +335,12 @@ Rules:
 
 Shared:
 
-| Field      | Type                | Required |
-| ---------- | ------------------- | -------- |
-| `date`     | `YYYY-MM-DD` String | Yes      |
-| `category` | Enum                | Yes      |
-| `hero`     | Journal Hero        | Yes      |
+| Field        | Type                   | Required |
+| ------------ | ---------------------- | -------- |
+| `date`       | `YYYY-MM-DD` String    | Yes      |
+| `category`   | Enum                   | Yes      |
+| `visibility` | `public \| draft` Enum | Yes      |
+| `hero`       | Journal Hero           | Yes      |
 
 Localized:
 
@@ -362,6 +363,7 @@ Rules:
 
 - `date` は Required の有効な `YYYY-MM-DD` 文字列。
 - `category` は Required の単一 enum、`summary` は Required。
+- `public`はJournal Detail、Index、Home Stories、News integrationの対象とし、`draft`はこれらpublic surfaceから除外する。どちらもEditorでPreview、Save、Publishできる。
 - Production metadata は `seo_title ?? title`、`description ?? summary` をlocaleごとに使用し、OGP imageにはshared hero imageを使用する。
 - `hero_caption` の画像クレジットは hero 固有fieldとして保持する。
 - Current runtime は attribution field を持たない。Historical v1 migration contract は dated artifact に隔離する。

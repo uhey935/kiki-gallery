@@ -5,7 +5,7 @@ import type {
 } from "../content-services/journal-read-model.ts";
 
 export type JournalLocale = "ja" | "en";
-export type JournalVisibility = "public" | "hidden";
+export type JournalVisibility = "public" | "draft";
 
 export type JournalIndexData = {
   contentId: string;
@@ -31,8 +31,8 @@ export type JournalProductionFacade<T extends JournalIndexEntry> = {
 
 export type JournalRenderDecision<T extends JournalIndexEntry> =
   | { kind: "render"; entry: T }
-  | { kind: "exclude"; reason: "hidden" | "not-renderable" }
-  | { kind: "unavailable"; reason: "hidden" };
+  | { kind: "exclude"; reason: "draft" | "not-renderable" }
+  | { kind: "unavailable"; reason: "draft" };
 
 export type JournalContentReference = {
   collection: "journal";
@@ -114,10 +114,10 @@ function decideJournalSurface<T extends JournalIndexEntry>(
   if (!isJournalRenderable(entry, issues)) {
     return { kind: "exclude", reason: "not-renderable" };
   }
-  if (entry.data.visibility === "hidden") {
+  if (entry.data.visibility === "draft") {
     return surface === "detail"
-      ? { kind: "unavailable", reason: "hidden" }
-      : { kind: "exclude", reason: "hidden" };
+      ? { kind: "unavailable", reason: "draft" }
+      : { kind: "exclude", reason: "draft" };
   }
   return { kind: "render", entry };
 }

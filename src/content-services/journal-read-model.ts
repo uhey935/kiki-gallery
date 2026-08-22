@@ -7,7 +7,7 @@ export type JournalReadModelEntry = {
   data: {
     contentId: string;
     locale: "ja" | "en";
-    visibility: "public" | "hidden";
+    visibility: "public" | "draft";
     date: string;
   };
 };

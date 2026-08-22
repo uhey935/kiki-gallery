@@ -16,7 +16,7 @@ const production = <
     data: {
       contentId: string;
       locale: "ja" | "en";
-      visibility: "public" | "hidden";
+      visibility: "public" | "draft";
       date: string;
     };
   },
@@ -110,7 +110,7 @@ test("production query consumes native canonical locale entries", () => {
   );
 });
 
-test("Journal Index excludes hidden and non-renderable locale states", () => {
+test("Journal Index excludes draft and non-renderable locale states", () => {
   const entries = [
     {
       data: {
@@ -122,9 +122,9 @@ test("Journal Index excludes hidden and non-renderable locale states", () => {
     },
     {
       data: {
-        contentId: "hidden",
+        contentId: "draft",
         locale: "ja" as const,
-        visibility: "hidden" as const,
+        visibility: "draft" as const,
         date: "2026-03-01",
       },
     },
@@ -169,11 +169,11 @@ test("Journal Detail enumerates only public renderable JA Content IDs", () => {
       },
     },
     {
-      id: "opaque-store-key-for-hidden",
+      id: "opaque-store-key-for-draft",
       data: {
-        contentId: "hidden-entry",
+        contentId: "draft-entry",
         locale: "ja" as const,
-        visibility: "hidden" as const,
+        visibility: "draft" as const,
         date: "2026-03-01",
       },
     },
@@ -228,9 +228,9 @@ test("Home Stories selects public renderable JA entries in stable query order", 
     },
     {
       data: {
-        contentId: "hidden",
+        contentId: "draft",
         locale: "ja" as const,
-        visibility: "hidden" as const,
+        visibility: "draft" as const,
         date: "2026-05-01",
       },
     },
@@ -263,7 +263,7 @@ test("Home Stories selects public renderable JA entries in stable query order", 
   );
 });
 
-test("News integration excludes hidden, EN, and unrenderable Journal entries", () => {
+test("News integration excludes draft, EN, and unrenderable Journal entries", () => {
   const entries = [
     {
       data: {
@@ -275,9 +275,9 @@ test("News integration excludes hidden, EN, and unrenderable Journal entries", (
     },
     {
       data: {
-        contentId: "hidden",
+        contentId: "draft",
         locale: "ja" as const,
-        visibility: "hidden" as const,
+        visibility: "draft" as const,
         date: "2026-05-01",
       },
     },

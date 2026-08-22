@@ -16,7 +16,7 @@ function validDraft(contentId = "new-entry") {
   const draft = createNewJournalDraft(contentId);
   if (draft.shared.state !== "editable") assert.fail("shared unavailable");
   draft.shared.value = {
-    visibility: "hidden",
+    visibility: "draft",
     date: "2026-08-08",
     category: "essay",
     hero: { image: "/images/journal/example.jpg" },
@@ -37,11 +37,11 @@ function validDraft(contentId = "new-entry") {
   return draft;
 }
 
-test("new Journal starts hidden with no category selected", () => {
+test("new Journal starts draft with no category selected", () => {
   const draft = createNewJournalDraft("new-entry");
   assert.equal(draft.shared.state, "editable");
   if (draft.shared.state !== "editable") return;
-  assert.equal(draft.shared.value.visibility, "hidden");
+  assert.equal(draft.shared.value.visibility, "draft");
   assert.equal(draft.shared.value.category, "");
   for (const locale of ["ja", "en"] as const) {
     const localized = draft.locales[locale];

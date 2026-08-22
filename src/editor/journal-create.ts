@@ -47,7 +47,7 @@ export function createNewJournalDraft(
   contentId: string,
 ): JournalEditorDraftState {
   const shared: JournalEditorSharedDraft = {
-    visibility: "hidden",
+    visibility: "draft",
     date: "",
     category: "",
     hero: { image: "" },

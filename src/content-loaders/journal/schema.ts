@@ -40,7 +40,7 @@ export const journalSharedSchema = z
     date: journalDateSchema,
     category: journalCategorySchema,
     hero: journalHeroSchema,
-    visibility: z.enum(["public", "hidden"]),
+    visibility: z.enum(["public", "draft"]),
   })
   .strict();
 

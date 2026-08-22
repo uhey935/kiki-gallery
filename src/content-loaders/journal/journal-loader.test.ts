@@ -46,6 +46,25 @@ test("current category schema accepts only one required canonical enum", () => {
     assert.equal(journalSharedSchema.safeParse(invalid).success, false);
 });
 
+test("current visibility schema accepts public or draft and rejects legacy values", () => {
+  const base = {
+    date: "2026-08-22",
+    category: "essay",
+    hero: { image: "/images/journal/visibility.jpg" },
+  };
+  for (const visibility of ["public", "draft"])
+    assert.equal(
+      journalSharedSchema.safeParse({ ...base, visibility }).success,
+      true,
+    );
+  for (const candidate of [
+    base,
+    { ...base, visibility: "hidden" },
+    { ...base, visibility: "unknown" },
+  ])
+    assert.equal(journalSharedSchema.safeParse(candidate).success, false);
+});
+
 test("localized Journal metadata overrides are optional non-empty fields", () => {
   const base = {
     title: "Journal title",
@@ -330,7 +349,7 @@ test("query adapter filters locales, finds by Content ID, and sorts stably", asy
   const ja = queryJournalEntries(entries, "ja");
   assert.deepEqual(
     ja.map((entry) => entry.data.contentId),
-    ["valid-public", "hidden", "missing-en", "placeholder-en"],
+    ["valid-public", "draft", "missing-en", "placeholder-en"],
   );
   const tied = ja.slice(0, 2).map((entry, index) => ({
     ...entry,
@@ -379,7 +398,7 @@ test("Production facade transports repository issues to all four Journal surface
   assert.equal(
     production
       .forDetail("ja")
-      .some((entry) => entry.data.contentId === "hidden"),
+      .some((entry) => entry.data.contentId === "draft"),
     false,
   );
 });

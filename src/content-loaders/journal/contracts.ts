@@ -10,7 +10,7 @@ export type {
 } from "./schema.ts";
 
 export type Locale = "ja" | "en";
-export type Visibility = "public" | "hidden";
+export type Visibility = "public" | "draft";
 
 export type ContentIssue = {
   ruleId: string;
