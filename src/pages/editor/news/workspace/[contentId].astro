@@ -80,6 +80,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     renderFlatValidationPanel,
     worksWorkspaceUxState,
   } from "../../../../editor/ux";
+  import {
+    commitEditorFormBaseline,
+    restoreEditorDraftBaseline,
+    restoreEditorFormBaseline,
+  } from "../../../../editor/cancel";
   const raw =
     document.querySelector<HTMLScriptElement>(
       "#news-editor-draft",
@@ -88,6 +93,8 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     "[data-news-draft-form]",
   );
   const save = document.querySelector<HTMLButtonElement>("[data-save-news]");
+  const cancel =
+    document.querySelector<HTMLButtonElement>("[data-cancel-news]");
   const previews = Array.from(
     document.querySelectorAll<HTMLButtonElement>("[data-preview-news]"),
   );
@@ -97,7 +104,15 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   const status = document.querySelector<HTMLElement>(
     "[data-news-action-status]",
   );
-  if (raw && form && save && previews.length === 2 && publish && status) {
+  if (
+    raw &&
+    form &&
+    save &&
+    cancel &&
+    previews.length === 2 &&
+    publish &&
+    status
+  ) {
     let baseline = JSON.parse(raw) as NewsEditorDraftState;
     let draft = structuredClone(baseline);
     let pending: "save" | "preview" | "publish" | null = null;
@@ -152,6 +167,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       });
       const locked = pending !== null || recoveryRequired || deleteLocked;
       save.disabled = locked || !dirty || !capabilities.save;
+      cancel.disabled = locked || !dirty;
       for (const locale of ["ja", "en"] as const) {
         const preview = previews.find(
           (candidate) => candidate.dataset.previewNews === locale,
@@ -214,6 +230,12 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       statusMessage = null;
       render();
     });
+    cancel.addEventListener("click", () => {
+      restoreEditorFormBaseline(form);
+      draft = restoreEditorDraftBaseline(baseline);
+      statusMessage = "Changes canceled · saved draft restored";
+      render();
+    });
     save.addEventListener("click", async () => {
       pending = "save";
       render();
@@ -224,6 +246,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         );
         baseline = result.draft;
         draft = structuredClone(baseline);
+        commitEditorFormBaseline(form);
         savedSincePublish = true;
         statusMessage = "Saved · unpublished changes ready to publish";
       } catch (error) {

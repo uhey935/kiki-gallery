@@ -114,6 +114,11 @@ const capabilityGroups = [
     validateHomeEditorDraft,
     type HomeEditorDraftState,
   } from "../../../../editor/home-draft-state.ts";
+  import {
+    commitEditorFormBaseline,
+    restoreEditorDraftBaseline,
+    restoreEditorFormBaseline,
+  } from "../../../../editor/cancel";
   const raw =
     document.querySelector<HTMLScriptElement>(
       "#home-editor-draft",
@@ -122,6 +127,8 @@ const capabilityGroups = [
     "[data-home-draft-form]",
   );
   const save = document.querySelector<HTMLButtonElement>("[data-save-home]");
+  const cancel =
+    document.querySelector<HTMLButtonElement>("[data-cancel-home]");
   const publish = document.querySelector<HTMLButtonElement>(
     "[data-publish-home]",
   );
@@ -147,7 +154,16 @@ const capabilityGroups = [
     document.querySelector<HTMLScriptElement>("#home-en-external-blockers")
       ?.textContent ?? "[]",
   ) as string[];
-  if (raw && form && save && publish && previewJa && previewEn && status) {
+  if (
+    raw &&
+    form &&
+    save &&
+    cancel &&
+    publish &&
+    previewJa &&
+    previewEn &&
+    status
+  ) {
     let baseline = JSON.parse(raw) as HomeEditorDraftState;
     let draft = structuredClone(baseline);
     const optional = (v: FormDataEntryValue | null) =>
@@ -217,6 +233,7 @@ const capabilityGroups = [
       const dirty = isHomeEditorDraftDirty(baseline, draft);
       const scopes = homeDirtyScopes(baseline, draft);
       save.disabled = !dirty || !validation.capabilities.save;
+      cancel.disabled = !dirty;
       publish.disabled = dirty || !validation.capabilities.publish;
       previewJa.disabled = !validation.capabilities.preview.ja;
       previewEn.disabled = !validation.capabilities.preview.en;
@@ -251,6 +268,11 @@ const capabilityGroups = [
       read();
       render();
     });
+    cancel.addEventListener("click", () => {
+      restoreEditorFormBaseline(form);
+      draft = restoreEditorDraftBaseline(baseline);
+      render();
+    });
     const preview = async (locale: "ja" | "en") => {
       read();
       const response = await fetch("/editor/api/home-preview/create", {
@@ -281,6 +303,7 @@ const capabilityGroups = [
       }
       baseline = result.draft;
       draft = structuredClone(baseline);
+      commitEditorFormBaseline(form);
       render();
     });
     publish.addEventListener("click", async () => {

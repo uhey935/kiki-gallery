@@ -99,6 +99,11 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
     isEditorSaveShortcut,
     worksWorkspaceUxState,
   } from "../../../../editor/ux";
+  import {
+    commitEditorFormBaseline,
+    restoreEditorDraftBaseline,
+    restoreEditorFormBaseline,
+  } from "../../../../editor/cancel";
   const raw = document.querySelector<HTMLScriptElement>(
     "#works-editor-draft",
   )?.textContent;
@@ -110,6 +115,9 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
       "#works-asset-draft",
     )?.textContent;
   const button = document.querySelector<HTMLButtonElement>("[data-save-works]");
+  const cancelButton = document.querySelector<HTMLButtonElement>(
+    "[data-cancel-works]",
+  );
   const previewButton = document.querySelector<HTMLButtonElement>(
     "[data-preview-works]",
   );
@@ -136,6 +144,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
     rawAssetDraft &&
     form &&
     button &&
+    cancelButton &&
     previewButton &&
     publishButton &&
     assetList &&
@@ -265,6 +274,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
       const operationLocked =
         pending !== null || recoveryRequired || deleteLocked;
       button.disabled = operationLocked || !dirty || !capabilities.save;
+      cancelButton.disabled = operationLocked || !dirty;
       previewButton.disabled = operationLocked || !capabilities.preview;
       publishButton.disabled =
         operationLocked || dirty || !capabilities.publish;
@@ -409,6 +419,16 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
       render();
     });
     assetFile.addEventListener("change", render);
+    cancelButton.addEventListener("click", () => {
+      restoreEditorFormBaseline(form);
+      draft = restoreEditorDraftBaseline(baseline);
+      assetDraft = restoreEditorDraftBaseline(assetBaseline);
+      assetFile.value = "";
+      statusMessage = "Changes canceled · saved draft restored";
+      if (assetStatus) assetStatus.textContent = "Saved asset state restored.";
+      renderAssets();
+      render();
+    });
     uploadButton.addEventListener("click", async () => {
       const files = [...(assetFile.files ?? [])];
       if (pending || files.length === 0) return;
@@ -605,6 +625,7 @@ const serializedAssetDraft = JSON.stringify(assetDraft).replaceAll(
         }
         baseline = result.draft;
         draft = result.draft;
+        commitEditorFormBaseline(form);
         if (result.publishManifest) {
           const assets = new Map(
             publishManifest?.assets.map((asset) => [asset.src, asset]) ?? [],

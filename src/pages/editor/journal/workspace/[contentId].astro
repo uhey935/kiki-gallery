@@ -72,6 +72,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     journalIssueFieldName,
     journalIssueLocation,
   } from "../../../../editor/ux";
+  import {
+    commitEditorFormBaseline,
+    restoreEditorDraftBaseline,
+    restoreEditorFormBaseline,
+  } from "../../../../editor/cancel";
 
   const serialized = document.querySelector<HTMLScriptElement>(
     "#journal-editor-draft",
@@ -85,6 +90,9 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   const validation = document.querySelector<HTMLElement>(".editor-validation");
   const saveButton = document.querySelector<HTMLButtonElement>(
     "[data-save-journal]",
+  );
+  const cancelButton = document.querySelector<HTMLButtonElement>(
+    "[data-cancel-journal]",
   );
   const publishButton = document.querySelector<HTMLButtonElement>(
     "[data-publish-journal]",
@@ -199,6 +207,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       if (saveButton)
         saveButton.disabled =
           operationLocked || !dirty || !result.capabilities.save;
+      if (cancelButton) cancelButton.disabled = operationLocked || !dirty;
       setActionReason(
         "save",
         recoveryRequired
@@ -332,6 +341,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         }
         initial = result.draft;
         current = result.draft;
+        commitEditorFormBaseline(form);
         statusMessage = "Saved to canonical files";
       } catch (error) {
         if (
@@ -361,6 +371,16 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       }
     };
     saveButton?.addEventListener("click", save);
+    cancelButton?.addEventListener("click", () => {
+      restoreEditorFormBaseline(form);
+      current = restoreEditorDraftBaseline(initial);
+      statusMessage = "Changes canceled · saved draft restored";
+      for (const textarea of form.querySelectorAll<HTMLTextAreaElement>(
+        "textarea",
+      ))
+        resizeTextarea(textarea);
+      renderActions();
+    });
     publishButton?.addEventListener("click", async () => {
       const dirty = isJournalEditorDraftDirty(initial, current);
       if (

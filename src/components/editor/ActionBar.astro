@@ -55,6 +55,9 @@ const flatStatusAttributes = {
 const flatPreviewAttributes = { ["data-preview-" + flatCollection]: true };
 const flatSaveAttributes = { ["data-save-" + flatCollection]: true };
 const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
+const cancelAttributes = {
+  ["data-cancel-" + (mode === "journal" ? "journal" : flatCollection)]: true,
+};
 ---
 
 <footer class="editor-action-bar" aria-label="Editor actions">
@@ -79,6 +82,17 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
               : "No Editor State loaded"}
         </span>
         <div class="editor-action-bar__actions">
+          <div class="editor-action" data-action="cancel">
+            <button
+              class="editor-button editor-button--secondary"
+              type="button"
+              {...cancelAttributes}
+              disabled={!loaded || !dirty}
+            >
+              Cancel
+            </button>
+            <small data-action-reason />
+          </div>
           <div class="editor-action" data-action="preview">
             <button
               class="editor-button editor-button--secondary"
@@ -135,6 +149,17 @@ const flatPublishAttributes = { ["data-publish-" + flatCollection]: true };
               : "No Editor State loaded"}
         </span>
         <div class="editor-action-bar__actions">
+          <div class="editor-action" data-action="cancel">
+            <button
+              class="editor-button editor-button--secondary"
+              type="button"
+              {...cancelAttributes}
+              disabled={!loaded || !dirty}
+            >
+              Cancel
+            </button>
+            <small data-action-reason />
+          </div>
           <div class="editor-action" data-action="preview-ja">
             <button
               class="editor-button editor-button--secondary"

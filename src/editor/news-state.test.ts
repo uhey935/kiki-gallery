@@ -71,6 +71,22 @@ test("reads canonical News and preserves clean serialization", async () => {
     await rm(root, { recursive: true });
   }
 });
+test("Draft validation accepts omitted optional localized fields", async () => {
+  const root = await fixture();
+  try {
+    await writeThreeFileNews(root, {
+      ja: `---\ntitle: 三ファイルニュース\n---\n`,
+      en: `---\ntitle: Three-file News\n---\n`,
+    });
+    const draft = createNewsEditorDraft(
+      await readNewsEditorEntry("test-news", root),
+    );
+    assert.ok(draft);
+    assert.equal(validateNewsEditorDraft(draft).capabilities.save, true);
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
 test("reads only the canonical three-file News entry", async () => {
   const root = await fixture();
   try {

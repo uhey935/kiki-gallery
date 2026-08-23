@@ -93,11 +93,17 @@ const capabilityGroups = [
     validateAboutEditorDraft,
     type AboutEditorDraftState,
   } from "../../../../editor/about-draft-state.ts";
+  import {
+    commitEditorFormBaseline,
+    restoreEditorDraftBaseline,
+    restoreEditorFormBaseline,
+  } from "../../../../editor/cancel";
   const raw = document.querySelector<HTMLScriptElement>(
       "#about-editor-draft",
     )?.textContent,
     form = document.querySelector<HTMLFormElement>("[data-about-draft-form]"),
     save = document.querySelector<HTMLButtonElement>("[data-save-about]"),
+    cancel = document.querySelector<HTMLButtonElement>("[data-cancel-about]"),
     publish = document.querySelector<HTMLButtonElement>("[data-publish-about]"),
     previewJa = document.querySelector<HTMLButtonElement>(
       '[data-preview-about="ja"]',
@@ -106,9 +112,18 @@ const capabilityGroups = [
       '[data-preview-about="en"]',
     ),
     status = document.querySelector<HTMLElement>("[data-about-action-status]");
-  if (raw && form && save && publish && previewJa && previewEn && status) {
+  if (
+    raw &&
+    form &&
+    save &&
+    cancel &&
+    publish &&
+    previewJa &&
+    previewEn &&
+    status
+  ) {
     let baseline = JSON.parse(raw) as AboutEditorDraftState,
-      draft = structuredClone(baseline);
+      draft = restoreEditorDraftBaseline(baseline);
     const optional = (v: FormDataEntryValue | null) =>
       String(v ?? "").trim() || undefined;
     const read = () => {
@@ -163,6 +178,7 @@ const capabilityGroups = [
         dirty = isAboutEditorDraftDirty(baseline, draft),
         scopes = aboutDirtyScopes(baseline, draft);
       save.disabled = !dirty || !v.capabilities.save;
+      cancel.disabled = !dirty;
       publish.disabled = dirty || !v.capabilities.publish;
       previewJa.disabled = !v.capabilities.preview.ja;
       previewEn.disabled = !v.capabilities.preview.en;
@@ -179,6 +195,15 @@ const capabilityGroups = [
     };
     form.addEventListener("input", render);
     form.addEventListener("change", render);
+    cancel.addEventListener("click", () => {
+      restoreEditorFormBaseline(form);
+      draft = restoreEditorDraftBaseline(baseline);
+      for (const select of form.querySelectorAll<HTMLSelectElement>(
+        "[data-about-image-select]",
+      ))
+        select.dispatchEvent(new Event("change"));
+      render();
+    });
     for (const slot of form.querySelectorAll<HTMLElement>(
       "[data-about-image-slot]",
     )) {
@@ -231,6 +256,7 @@ const capabilityGroups = [
       }
       baseline = result.draft;
       draft = structuredClone(baseline);
+      commitEditorFormBaseline(form);
       render();
     });
     publish.addEventListener("click", async () => {

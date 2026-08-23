@@ -185,7 +185,7 @@ export function validateNewsEditorDraft(draft: NewsEditorDraftState) {
       continue;
     }
     for (const [fieldPath, candidate] of Object.entries(draftSource.value))
-      if (candidate.includes("__TODO_"))
+      if (typeof candidate === "string" && candidate.includes("__TODO_"))
         issues.push({
           ruleId: "content.placeholder.unresolved",
           severity: "error",
