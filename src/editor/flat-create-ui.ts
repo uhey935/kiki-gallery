@@ -24,6 +24,11 @@ type Draft =
   | ArtistsEditorDraftState
   | ExhibitionsEditorDraftState
   | NewsEditorDraftState;
+type ArtistsCreateHeroCandidate = {
+  token: string;
+  sha256: string;
+  format: "avif" | "jpg" | "png" | "webp";
+};
 
 const optional = (value: string) => value.trim() || undefined;
 const lines = (value: string) =>
@@ -236,6 +241,64 @@ export function startFlatCreateUi(collection: Collection) {
   let pending = false;
   let inputError: string | undefined;
   let statusMessage: string | undefined;
+  const createWorkspaceId = collection === "artists" ? crypto.randomUUID() : "";
+  let artistsHero: ArtistsCreateHeroCandidate | undefined;
+  const heroRoot = document.querySelector<HTMLElement>(
+    "[data-artists-create-hero]",
+  );
+  const heroPath = heroRoot?.querySelector<HTMLInputElement>(
+    "[data-artists-create-hero-path]",
+  );
+  const heroDrop = heroRoot?.querySelector<HTMLElement>(
+    "[data-artists-create-hero-drop]",
+  );
+  const heroCurrent = heroRoot?.querySelector<HTMLElement>(
+    "[data-artists-create-hero-current]",
+  );
+  const heroFile = heroRoot?.querySelector<HTMLInputElement>(
+    "[data-artists-create-hero-file]",
+  );
+  const heroThumbnail = heroRoot?.querySelector<HTMLImageElement>(
+    "[data-artists-create-hero-thumbnail]",
+  );
+  const heroCanonicalPath = heroRoot?.querySelector<HTMLElement>(
+    "[data-artists-create-hero-canonical-path]",
+  );
+  const heroStatus = heroRoot?.querySelector<HTMLElement>(
+    "[data-artists-create-hero-status]",
+  );
+  const ownerContentId = () => `create-${createWorkspaceId}`;
+  const heroPreviewUrl = (token: string) =>
+    `/editor/api/artists-hero-preview/${encodeURIComponent(ownerContentId())}/${encodeURIComponent(createWorkspaceId)}/${encodeURIComponent(token)}`;
+  const releaseHero = async (candidate = artistsHero, keepalive = false) => {
+    if (!candidate) return;
+    await fetch("/editor/api/artists-hero/release", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        token: candidate.token,
+        contentId: ownerContentId(),
+        workspaceId: createWorkspaceId,
+      }),
+      keepalive,
+    }).catch(() => undefined);
+  };
+  const syncHero = () => {
+    if (!heroPath || !heroDrop || !heroCurrent) return;
+    const validId = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(contentId.value);
+    const proposed =
+      artistsHero && validId
+        ? `/images/artists/${contentId.value}.${artistsHero.format}`
+        : "";
+    heroPath.value = proposed;
+    heroDrop.hidden = Boolean(artistsHero);
+    heroCurrent.hidden = !artistsHero;
+    if (heroCanonicalPath)
+      heroCanonicalPath.textContent =
+        proposed || "Enter a valid Content ID to determine the canonical path";
+    if (heroThumbnail && artistsHero)
+      heroThumbnail.src = heroPreviewUrl(artistsHero.token);
+  };
   const validate = (value: Draft) =>
     ({
       works: validateWorksEditorDraft,
@@ -293,6 +356,7 @@ export function startFlatCreateUi(collection: Collection) {
   };
   const read = () => {
     try {
+      if (collection === "artists") syncHero();
       draft = readDraft(collection, form, draft);
       inputError = undefined;
       statusMessage = undefined;
@@ -302,15 +366,99 @@ export function startFlatCreateUi(collection: Collection) {
     }
     render();
   };
+  const uploadArtistsHero = async (file: File) => {
+    if (!heroStatus) return;
+    heroStatus.textContent = "Validating and staging image…";
+    const body = new FormData();
+    body.set("file", file);
+    body.set("createWorkspaceId", createWorkspaceId);
+    try {
+      const response = await fetch("/editor/api/artists-hero/create-upload", {
+        method: "POST",
+        body,
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error ?? "Hero upload failed");
+      const previous = artistsHero;
+      artistsHero = {
+        token: result.asset.token,
+        sha256: result.asset.sha256,
+        format: result.asset.format,
+      };
+      if (previous) await releaseHero(previous);
+      syncHero();
+      read();
+      heroStatus.textContent = "Temporary image staged · First Save to confirm";
+    } catch (error) {
+      heroStatus.textContent =
+        error instanceof Error ? error.message : "Hero upload failed";
+    } finally {
+      if (heroFile) heroFile.value = "";
+    }
+  };
+  if (collection === "artists" && heroRoot && heroFile && heroDrop) {
+    heroRoot
+      .querySelector("[data-artists-create-hero-select]")
+      ?.addEventListener("click", () => heroFile.click());
+    heroRoot
+      .querySelector("[data-artists-create-hero-replace]")
+      ?.addEventListener("click", () => heroFile.click());
+    heroFile.addEventListener("change", () => {
+      const file = heroFile.files?.[0];
+      if (file) void uploadArtistsHero(file);
+    });
+    heroDrop.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      heroDrop.classList.add("is-dragging");
+    });
+    heroDrop.addEventListener("dragleave", () =>
+      heroDrop.classList.remove("is-dragging"),
+    );
+    heroDrop.addEventListener("drop", (event) => {
+      event.preventDefault();
+      heroDrop.classList.remove("is-dragging");
+      const file = event.dataTransfer?.files[0];
+      if (file) void uploadArtistsHero(file);
+    });
+    heroRoot
+      .querySelector("[data-artists-create-hero-remove]")
+      ?.addEventListener("click", () => {
+        const previous = artistsHero;
+        artistsHero = undefined;
+        syncHero();
+        read();
+        void releaseHero(previous);
+        if (heroStatus) heroStatus.textContent = "Temporary Hero removed";
+      });
+    window.addEventListener(
+      "pagehide",
+      () => void releaseHero(artistsHero, true),
+    );
+  }
   document.addEventListener("input", read);
   document.addEventListener("change", read);
-  const request = async (url: string) => {
+  const request = async (url: string, forPreview = false) => {
+    let requestDraft = draft;
+    if (collection === "artists" && artistsHero && forPreview) {
+      requestDraft = structuredClone(draft);
+      (requestDraft as ArtistsEditorDraftState).data.hero.image =
+        heroPreviewUrl(artistsHero.token);
+    }
+    const requestBody =
+      collection === "artists" && !forPreview
+        ? {
+            draft: requestDraft,
+            hero: artistsHero
+              ? { ...artistsHero, createWorkspaceId }
+              : undefined,
+          }
+        : collection === "exhibitions"
+          ? { draft: requestDraft, locale: "ja" }
+          : { draft: requestDraft };
     const response = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(
-        collection === "exhibitions" ? { draft, locale: "ja" } : { draft },
-      ),
+      body: JSON.stringify(requestBody),
     });
     const result = await response.json();
     if (!response.ok)
@@ -324,7 +472,10 @@ export function startFlatCreateUi(collection: Collection) {
     pending = true;
     render("Preparing Draft Preview…");
     try {
-      const result = await request(`/editor/api/${collection}-preview/create`);
+      const result = await request(
+        `/editor/api/${collection}-preview/create`,
+        true,
+      );
       if (!result.url) throw new Error("Preview URL missing");
       if (popup) popup.location.href = result.url;
       else window.open(result.url, "_blank", "noopener,noreferrer");

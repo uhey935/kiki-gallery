@@ -58,7 +58,14 @@ test("Artists operator flow validates, previews, saves, and publishes", async ({
   const biography = "Browser acceptance preview biography.";
   await page.goto("/editor/artists/create/");
 
-  await page.locator('input[name="contentId"]').fill(contentId);
+  await expect(
+    page.locator('input[name="hero.image"][type="text"]'),
+  ).toHaveCount(0);
+  await expect(page.locator("[data-artists-create-hero-drop]")).toBeVisible();
+  await expect(page.locator("[data-artists-create-hero-select]")).toBeVisible();
+  await page
+    .locator('input[name="contentId"]')
+    .fill("browser-acceptance-artist-a");
   await page.locator('input[name="name"]').fill("Browser Acceptance Artist");
   await page.locator('input[name="display_name"]').fill("ブラウザ受入作家");
   await page.locator('input[name="medium_label"]').fill("陶芸");
@@ -69,9 +76,6 @@ test("Artists operator flow validates, previews, saves, and publishes", async ({
     .fill("Test-only Artist created by the isolated browser fixture.");
   await page.locator('textarea[name="biography"]').fill(biography);
   await page
-    .locator('input[name="hero.image"]')
-    .fill("/images/artists/alana-wilson.png");
-  await page
     .locator('textarea[name="hero_alt"]')
     .fill("Browser acceptance Artist fixture");
   const layout = page.locator('textarea[name="works_layout"]');
@@ -80,6 +84,49 @@ test("Artists operator flow validates, previews, saves, and publishes", async ({
   await expect(page.locator("[data-create-preview]")).toBeDisabled();
 
   await layout.fill("[]");
+  await expect(page.locator("[data-create-save]")).toBeDisabled();
+
+  const uploadPromise = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/editor/api/artists-hero/create-upload") &&
+      response.request().method() === "POST",
+  );
+  await page
+    .locator("[data-artists-create-hero-file]")
+    .setInputFiles(path.resolve("public/images/artists/reiko-kinoshita.png"));
+  expect((await uploadPromise).ok()).toBe(true);
+  await expect(
+    page.locator("[data-artists-create-hero-thumbnail]"),
+  ).toBeVisible();
+  await expect(
+    page.locator("[data-artists-create-hero-canonical-path]"),
+  ).toHaveText("/images/artists/browser-acceptance-artist-a.png");
+  await expect(page.locator("[data-artists-create-hero-remove]")).toBeVisible();
+
+  const releasePromise = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/editor/api/artists-hero/release") &&
+      response.request().method() === "POST",
+  );
+  await page.locator("[data-artists-create-hero-remove]").click();
+  expect((await releasePromise).ok()).toBe(true);
+  await expect(page.locator("[data-artists-create-hero-drop]")).toBeVisible();
+  await expect(page.locator("[data-create-save]")).toBeDisabled();
+
+  const replacementUpload = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/editor/api/artists-hero/create-upload") &&
+      response.request().method() === "POST",
+  );
+  await page
+    .locator("[data-artists-create-hero-file]")
+    .setInputFiles(path.resolve("public/images/artists/reiko-kinoshita.png"));
+  expect((await replacementUpload).ok()).toBe(true);
+
+  await page.locator('input[name="contentId"]').fill(contentId);
+  await expect(
+    page.locator("[data-artists-create-hero-canonical-path]"),
+  ).toHaveText(`/images/artists/${contentId}.png`);
   await expect(page.locator("[data-create-save]")).toBeEnabled();
 
   const preview = await openPreview(
@@ -94,6 +141,9 @@ test("Artists operator flow validates, previews, saves, and publishes", async ({
   await page.waitForLoadState("networkidle");
   await expect(page.locator('textarea[name="biography"]')).toHaveValue(
     biography,
+  );
+  await expect(page.locator("[data-artists-hero-canonical-path]")).toHaveText(
+    `/images/artists/${contentId}.png`,
   );
   await expect(page.locator("[data-publish-artists]")).toBeEnabled();
   await publish(

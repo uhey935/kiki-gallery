@@ -31,10 +31,25 @@ const en =
         <textarea name="medium">{data.medium.join("\n")}</textarea>
       </label>
       {create ? (
-        <label class="editor-field-wide" data-editor-field="hero.image">
-          <span>Image path <small class="editor-field-badge">Required</small></span>
-          <input name="hero.image" value={data.hero.image} />
-        </label>
+        <section class="editor-field-wide editor-hero-asset" data-editor-field="hero.image" data-artists-create-hero>
+          <header><span>Hero image <small class="editor-field-badge">Required</small></span></header>
+          <input type="hidden" name="hero.image" value="" data-artists-create-hero-path />
+          <div class="editor-hero-drop" data-artists-create-hero-drop>
+            <p>Drag & drop a JPEG, PNG, WebP, or AVIF image here</p>
+            <button type="button" data-artists-create-hero-select>Select from desktop</button>
+          </div>
+          <div data-artists-create-hero-current hidden>
+            <img alt="" data-artists-create-hero-thumbnail />
+            <p><strong>New image · temporary / unsaved</strong></p>
+            <code data-artists-create-hero-canonical-path></code>
+            <div class="editor-asset-actions">
+              <button type="button" data-artists-create-hero-replace>Replace</button>
+              <button type="button" data-artists-create-hero-remove>Remove</button>
+            </div>
+          </div>
+          <input type="file" accept="image/avif,image/jpeg,image/png,image/webp" data-artists-create-hero-file hidden />
+          <p data-artists-create-hero-status role="status" aria-live="polite"></p>
+        </section>
       ) : <section class="editor-field-wide editor-hero-asset" data-editor-field="hero.image" data-artists-hero>
         <header><span>Hero image <small class="editor-field-badge">Required</small></span></header>
         <input type="hidden" name="hero.image" value={data.hero.image} data-artists-hero-path />

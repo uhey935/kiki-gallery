@@ -162,6 +162,12 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
+            pattern: "/editor/api/artists-hero/create-upload",
+            entrypoint:
+              "./src/editor/routes/artists-create-hero-asset-upload.ts",
+            prerender: false,
+          });
+          injectRoute({
             pattern: "/editor/api/artists-hero/release",
             entrypoint: "./src/editor/routes/artists-hero-asset-release.ts",
             prerender: false,
