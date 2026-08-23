@@ -209,96 +209,118 @@ const en = draft.locales.en.value;
       if (source.state !== "editable") return null;
       const value = source.value;
       return (
-        <>
-          <section
-            class="editor-entry-section"
-            data-locale={locale}
-            data-editor-section={`${locale}-content`}
-          >
-            <>
-              <header>
-                <>
-                  <p class="editor-eyebrow">
-                    {locale.toUpperCase()} · Localized content
-                  </p>
-                  <h2>{locale === "ja" ? "Japanese" : "English"}</h2>
-                </>
-              </header>
-              <div class="editor-entry-section__content editor-field-grid">
-                <label>
-                  <>
-                    <span>Content status</span>
-                    <select name={`${locale}_content_status`}>
-                      <>
-                        <option
-                          selected={value.content_status === "placeholder"}
-                        >
-                          placeholder
-                        </option>
-                        <option selected={value.content_status === "review"}>
-                          review
-                        </option>
-                        <option selected={value.content_status === "approved"}>
-                          approved
-                        </option>
-                      </>
-                    </select>
-                  </>
-                </label>
-                <label class="editor-field-wide">
-                  <>
-                    <span>Address</span>
-                    <textarea
-                      name={`${locale}_address`}
-                      set:text={value.address}
-                    />
-                  </>
-                </label>
-                <label class="editor-field-wide">
-                  <>
-                    <span>Statement · Markdown</span>
-                    <textarea
-                      rows="10"
-                      name={`${locale}_body`}
-                      set:text={value.body}
-                    />
-                  </>
-                </label>
-              </div>
-            </>
-          </section>
-          <section
-            class="editor-entry-section"
-            data-locale={locale}
-            data-editor-section={`${locale}-metadata`}
-          >
+        <section
+          class="editor-entry-section"
+          data-locale={locale}
+          data-editor-section={`${locale}-content`}
+        >
+          <>
             <header>
-              <div>
+              <>
                 <p class="editor-eyebrow">
-                  {locale.toUpperCase()} · Localized metadata
+                  {locale.toUpperCase()} · Localized content
                 </p>
-                <h2>SEO metadata</h2>
-              </div>
+                <h2>{locale === "ja" ? "Japanese" : "English"}</h2>
+              </>
             </header>
             <div class="editor-entry-section__content editor-field-grid">
               <label>
-                <span>SEO title · Optional</span>
-                <input
-                  name={`${locale}_seo_title`}
-                  value={value.seo_title ?? ""}
-                />
+                <>
+                  <span>Content status</span>
+                  <select name={`${locale}_content_status`}>
+                    <>
+                      <option selected={value.content_status === "placeholder"}>
+                        placeholder
+                      </option>
+                      <option selected={value.content_status === "review"}>
+                        review
+                      </option>
+                      <option selected={value.content_status === "approved"}>
+                        approved
+                      </option>
+                    </>
+                  </select>
+                </>
               </label>
-              <label>
-                <span>SEO description · Optional</span>
-                <textarea
-                  name={`${locale}_description`}
-                  set:text={value.description ?? ""}
-                />
+              <label class="editor-field-wide">
+                <>
+                  <span>Address</span>
+                  <textarea
+                    name={`${locale}_address`}
+                    set:text={value.address}
+                  />
+                </>
+              </label>
+              <label class="editor-field-wide">
+                <>
+                  <span>Statement · Markdown</span>
+                  <textarea
+                    rows="10"
+                    name={`${locale}_body`}
+                    set:text={value.body}
+                  />
+                </>
               </label>
             </div>
-          </section>
-        </>
+          </>
+        </section>
       );
     })
   }
+  <section class="editor-entry-section" data-editor-section="metadata">
+    <header>
+      <div>
+        <p class="editor-eyebrow">Localized metadata</p><h2>Metadata</h2>
+      </div>
+    </header>
+    <div class="editor-entry-section__content editor-about-metadata">
+      <p class="editor-field-help">
+        Leave fields blank to use the existing About metadata fallback.
+      </p>
+      {
+        (["ja", "en"] as const).map((locale) => {
+          const source = draft.locales[locale];
+          if (source.state !== "editable") return null;
+          return (
+            <div
+              class="editor-about-metadata-group"
+              data-editor-metadata-locale={locale}
+            >
+              <h3>{locale === "ja" ? "Japanese" : "English"}</h3>
+              <div class="editor-field-grid">
+                <label data-editor-field={`${locale}.seo_title`}>
+                  <span>
+                    SEO title{" "}
+                    <small class="editor-field-badge editor-field-badge--optional">
+                      Optional
+                    </small>
+                  </span>
+                  <input
+                    name={`${locale}_seo_title`}
+                    value={source.value.seo_title ?? ""}
+                  />
+                </label>
+                <label
+                  class="editor-field-wide"
+                  data-editor-field={`${locale}.description`}
+                >
+                  <span>
+                    SEO description{" "}
+                    <small class="editor-field-badge editor-field-badge--optional">
+                      Optional
+                    </small>
+                  </span>
+                  <textarea
+                    name={`${locale}_description`}
+                    rows="3"
+                    set:text={source.value.description ?? ""}
+                  />
+                </label>
+              </div>
+            </div>
+          );
+        })
+      }
+    </div>
+  </section>
 </form>

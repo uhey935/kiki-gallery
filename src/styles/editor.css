@@ -415,6 +415,14 @@ button {
   color: #65706a !important;
   font-size: 0.72rem;
 }
+.editor-about-metadata-group {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #e2e6e1;
+}
+.editor-about-metadata-group h3 {
+  margin: 0 0 12px;
+}
 .editor-field-meaning {
   margin-bottom: 24px;
   padding: 12px 14px;

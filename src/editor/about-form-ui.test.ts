@@ -36,7 +36,7 @@ test("About hours form uses canonical weekday checkboxes and no derived fields",
   assert.doesNotMatch(workspace, /closed_days|timezone/);
   assert.equal((form.match(/Localized content/g) ?? []).length, 1);
   assert.equal((form.match(/Localized metadata/g) ?? []).length, 1);
-  assert.equal((form.match(/SEO metadata/g) ?? []).length, 1);
+  assert.equal((form.match(/<h2>Metadata<\/h2>/g) ?? []).length, 1);
   assert.equal(
     (form.match(/name=\{`\$\{locale\}_seo_title`\}/g) ?? []).length,
     1,
@@ -46,8 +46,19 @@ test("About hours form uses canonical weekday checkboxes and no derived fields",
     1,
   );
   assert.match(form, /data-editor-section=\{`\$\{locale\}-content`\}/);
-  assert.match(form, /data-editor-section=\{`\$\{locale\}-metadata`\}/);
-  assert.match(form, /SEO description · Optional/);
+  assert.doesNotMatch(form, /data-editor-section=\{`\$\{locale\}-metadata`\}/);
+  assert.match(form, /data-editor-section="metadata"/);
+  assert.match(form, /data-editor-metadata-locale=\{locale\}/);
+  assert.match(form, /locale === "ja" \? "Japanese" : "English"/);
+  const contentStart = form.indexOf(
+    "data-editor-section={`${locale}-content`}",
+  );
+  const metadataStart = form.indexOf('data-editor-section="metadata"');
+  assert.ok(contentStart >= 0 && metadataStart > contentStart);
+  const contentSource = form.slice(contentStart, metadataStart);
+  assert.doesNotMatch(contentSource, /seo_title|_description/);
+  assert.match(form.slice(metadataStart), /SEO title/);
+  assert.match(form.slice(metadataStart), /SEO description/);
   assert.match(form, /data-about-image-slot="hero"/);
   assert.match(form, /data-about-thumbnail/);
   assert.match(form, /name="hero_src"\s+data-about-image-select/);
