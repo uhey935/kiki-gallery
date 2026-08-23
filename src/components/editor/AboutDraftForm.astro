@@ -216,12 +216,12 @@ const en = draft.locales.en.value;
         >
           <>
             <header>
-              <>
+              <div>
                 <p class="editor-eyebrow">
-                  {locale.toUpperCase()} · Localized content
+                  {locale === "ja" ? "Japanese locale" : "English locale"}
                 </p>
-                <h2>{locale === "ja" ? "Japanese" : "English"}</h2>
-              </>
+                <h2>{locale.toUpperCase()} content</h2>
+              </div>
             </header>
             <div class="editor-entry-section__content editor-field-grid">
               <label>
@@ -273,24 +273,19 @@ const en = draft.locales.en.value;
         <p class="editor-eyebrow">Localized metadata</p><h2>Metadata</h2>
       </div>
     </header>
-    <div class="editor-entry-section__content editor-about-metadata">
+    <div class="editor-entry-section__content">
       <p class="editor-field-help">
         Leave fields blank to use the existing About metadata fallback.
       </p>
-      {
-        (["ja", "en"] as const).map((locale) => {
-          const source = draft.locales[locale];
-          if (source.state !== "editable") return null;
-          return (
-            <div
-              class="editor-about-metadata-group"
-              data-editor-metadata-locale={locale}
-            >
-              <h3>{locale === "ja" ? "Japanese" : "English"}</h3>
-              <div class="editor-field-grid">
+      <div class="editor-field-grid">
+        {
+          (["ja", "en"] as const).map((locale) => {
+            const source = draft.locales[locale];
+            return source.state === "editable" ? (
+              <>
                 <label data-editor-field={`${locale}.seo_title`}>
                   <span>
-                    SEO title{" "}
+                    {locale.toUpperCase()} SEO title{" "}
                     <small class="editor-field-badge editor-field-badge--optional">
                       Optional
                     </small>
@@ -305,7 +300,7 @@ const en = draft.locales.en.value;
                   data-editor-field={`${locale}.description`}
                 >
                   <span>
-                    SEO description{" "}
+                    {locale.toUpperCase()} description{" "}
                     <small class="editor-field-badge editor-field-badge--optional">
                       Optional
                     </small>
@@ -316,11 +311,13 @@ const en = draft.locales.en.value;
                     set:text={source.value.description ?? ""}
                   />
                 </label>
-              </div>
-            </div>
-          );
-        })
-      }
+              </>
+            ) : (
+              <p>{locale.toUpperCase()} source unavailable.</p>
+            );
+          })
+        }
+      </div>
     </div>
   </section>
 </form>

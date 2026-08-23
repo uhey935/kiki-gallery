@@ -34,7 +34,6 @@ test("About hours form uses canonical weekday checkboxes and no derived fields",
   assert.match(workspace, /data\.getAll\("open_days"\)/);
   assert.doesNotMatch(form, /closed_days|timezone/);
   assert.doesNotMatch(workspace, /closed_days|timezone/);
-  assert.equal((form.match(/Localized content/g) ?? []).length, 1);
   assert.equal((form.match(/Localized metadata/g) ?? []).length, 1);
   assert.equal((form.match(/<h2>Metadata<\/h2>/g) ?? []).length, 1);
   assert.equal(
@@ -48,8 +47,11 @@ test("About hours form uses canonical weekday checkboxes and no derived fields",
   assert.match(form, /data-editor-section=\{`\$\{locale\}-content`\}/);
   assert.doesNotMatch(form, /data-editor-section=\{`\$\{locale\}-metadata`\}/);
   assert.match(form, /data-editor-section="metadata"/);
-  assert.match(form, /data-editor-metadata-locale=\{locale\}/);
-  assert.match(form, /locale === "ja" \? "Japanese" : "English"/);
+  assert.doesNotMatch(form, /editor-about-metadata-group/);
+  assert.doesNotMatch(form, /data-editor-metadata-locale/);
+  assert.match(form, /"Japanese locale" : "English locale"/);
+  assert.match(form, /\{locale\.toUpperCase\(\)\} content/);
+  assert.match(form, /\(\["ja", "en"\] as const\)\.map/);
   const contentStart = form.indexOf(
     "data-editor-section={`${locale}-content`}",
   );
@@ -57,8 +59,18 @@ test("About hours form uses canonical weekday checkboxes and no derived fields",
   assert.ok(contentStart >= 0 && metadataStart > contentStart);
   const contentSource = form.slice(contentStart, metadataStart);
   assert.doesNotMatch(contentSource, /seo_title|_description/);
-  assert.match(form.slice(metadataStart), /SEO title/);
-  assert.match(form.slice(metadataStart), /SEO description/);
+  const metadataSource = form.slice(metadataStart);
+  assert.doesNotMatch(metadataSource, /Japanese locale|English locale/);
+  assert.doesNotMatch(metadataSource, /<h3>/);
+  assert.match(metadataSource, /\{locale\.toUpperCase\(\)\} SEO title/);
+  assert.match(metadataSource, /\{locale\.toUpperCase\(\)\} description/);
+  assert.ok(
+    metadataSource.indexOf("seo_title") < metadataSource.indexOf("description"),
+  );
+  assert.match(
+    metadataSource,
+    /name=\{`\$\{locale\}_seo_title`\}[\s\S]*name=\{`\$\{locale\}_description`\}/,
+  );
   assert.match(form, /data-about-image-slot="hero"/);
   assert.match(form, /data-about-thumbnail/);
   assert.match(form, /name="hero_src"\s+data-about-image-select/);
