@@ -86,6 +86,10 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     restoreEditorDraftBaseline,
     restoreEditorFormBaseline,
   } from "../../../../editor/cancel";
+  import type {
+    ArtistsHeroAssetDraft,
+    ArtistsHeroAssetMetadata,
+  } from "../../../../editor/artists-hero-assets";
   const raw = document.querySelector<HTMLScriptElement>(
     "#artists-editor-draft",
   )?.textContent;
@@ -122,6 +126,101 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     let recoveryRequired = false;
     let inputInvalid = false;
     let deleteLocked = false;
+    const workspaceId = crypto.randomUUID();
+    const temporaryArtistsHeroPreviewUrl = (
+      contentId: string,
+      workspace: string,
+      token: string,
+    ) =>
+      `/editor/api/artists-hero-preview/${encodeURIComponent(contentId)}/${encodeURIComponent(workspace)}/${encodeURIComponent(token)}`;
+    let heroAsset: ArtistsHeroAssetDraft = {
+      kind: "existing",
+      src: baseline.data.hero.image,
+    };
+    let pendingHeroCandidate: ArtistsHeroAssetMetadata | null = null;
+    const hero = document.querySelector<HTMLElement>("[data-artists-hero]")!;
+    const heroPath = hero.querySelector<HTMLInputElement>("[data-artists-hero-path]")!;
+    const heroCurrent = hero.querySelector<HTMLElement>("[data-artists-hero-current]")!;
+    const heroDrop = hero.querySelector<HTMLElement>("[data-artists-hero-drop]")!;
+    const heroFile = hero.querySelector<HTMLInputElement>("[data-artists-hero-file]")!;
+    const heroThumbnail = hero.querySelector<HTMLImageElement>("[data-artists-hero-thumbnail]")!;
+    const heroState = hero.querySelector<HTMLElement>("[data-artists-hero-state]")!;
+    const heroCanonicalPath = hero.querySelector<HTMLElement>("[data-artists-hero-canonical-path]")!;
+    const heroConfirm = hero.querySelector<HTMLElement>("[data-artists-hero-confirm]")!;
+    const heroNew = hero.querySelector<HTMLImageElement>("[data-artists-hero-new]")!;
+    const heroStatus = hero.querySelector<HTMLElement>("[data-artists-hero-status]")!;
+    const releaseHero = async (candidate: ArtistsHeroAssetMetadata | ArtistsHeroAssetDraft | null) => {
+      if (!candidate || !("token" in candidate)) return;
+      await fetch("/editor/api/artists-hero/release", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token: candidate.token, contentId: draft.contentId, workspaceId }),
+      }).catch(() => undefined);
+    };
+    const showHero = () => {
+      const empty = heroAsset.kind === "empty";
+      heroCurrent.hidden = empty;
+      heroDrop.hidden = !empty;
+      heroConfirm.hidden = pendingHeroCandidate === null;
+      if (heroAsset.kind === "temporary") {
+        heroThumbnail.src = temporaryArtistsHeroPreviewUrl(draft.contentId, workspaceId, heroAsset.token);
+        heroState.textContent = heroAsset.replaces ? "Replacement pending · temporary / unsaved" : "New image · temporary / unsaved";
+        heroCanonicalPath.textContent = heroAsset.proposedSrc;
+      } else if (heroAsset.kind === "existing") {
+        heroThumbnail.src = heroAsset.src;
+        heroState.textContent = "Canonical · saved";
+        heroCanonicalPath.textContent = heroAsset.src;
+      }
+    };
+    const applyTemporary = (asset: ArtistsHeroAssetMetadata) => {
+      heroAsset = {
+        kind: "temporary",
+        token: asset.token,
+        workspaceId,
+        proposedSrc: asset.proposedSrc,
+        sha256: asset.sha256,
+        ...(asset.replaces ? { replaces: asset.replaces } : {}),
+      };
+      heroPath.value = asset.proposedSrc;
+      read();
+      showHero();
+      render();
+    };
+    const uploadHero = async (file: File) => {
+      heroStatus.textContent = "Validating and staging image…";
+      const body = new FormData();
+      body.set("file", file);
+      body.set("workspaceId", workspaceId);
+      try {
+        const response = await fetch(`/editor/api/artists-hero/upload/${encodeURIComponent(draft.contentId)}`, { method: "POST", body });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+        if (result.state === "reuse") {
+          await releaseHero(heroAsset);
+          await releaseHero(pendingHeroCandidate);
+          pendingHeroCandidate = null;
+          heroAsset = { kind: "existing", src: result.src };
+          heroPath.value = result.src;
+          read(); showHero(); render();
+          heroStatus.textContent = "Identical canonical image reused";
+        } else if (result.state === "replace-confirmation") {
+          await releaseHero(pendingHeroCandidate);
+          pendingHeroCandidate = result.asset;
+          heroNew.src = temporaryArtistsHeroPreviewUrl(draft.contentId, workspaceId, result.asset.token);
+          showHero();
+          render();
+          heroStatus.textContent = "Confirm replacement. Canonical image is unchanged.";
+        } else {
+          await releaseHero(heroAsset);
+          await releaseHero(pendingHeroCandidate);
+          pendingHeroCandidate = null;
+          applyTemporary(result.asset);
+          heroStatus.textContent = "Temporary image staged · Save to confirm";
+        }
+      } catch (error) {
+        heroStatus.textContent = error instanceof Error ? error.message : "Hero upload failed";
+      } finally { heroFile.value = ""; }
+    };
     const setActionReason = (action: string, reason: string) => {
       const container = document.querySelector<HTMLElement>(
         '[data-action="' + action + '"]',
@@ -197,7 +296,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       }
     };
     const render = () => {
-      const dirty = isArtistsEditorDraftDirty(baseline, draft) || inputInvalid;
+      const dirty = isArtistsEditorDraftDirty(baseline, draft) || inputInvalid || heroAsset.kind === "temporary" || pendingHeroCandidate !== null;
       const validation = validateArtistsEditorDraft(draft);
       if (inputInvalid) {
         validation.issues = [
@@ -234,7 +333,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           control instanceof HTMLSelectElement
         )
           control.disabled = deleteLocked;
-      save.disabled = locked || !dirty || !capabilities.save;
+      save.disabled =
+        locked ||
+        !dirty ||
+        !capabilities.save ||
+        pendingHeroCandidate !== null;
       cancel.disabled = locked || !dirty;
       for (const preview of previews) {
         const locale = preview.dataset.previewArtists as "ja" | "en";
@@ -289,11 +392,44 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       statusMessage = null;
       render();
     });
+    hero.querySelector("[data-artists-hero-select]")?.addEventListener("click", () => heroFile.click());
+    hero.querySelector("[data-artists-hero-replace]")?.addEventListener("click", () => heroFile.click());
+    heroFile.addEventListener("change", () => { const file = heroFile.files?.[0]; if (file) void uploadHero(file); });
+    heroDrop.addEventListener("dragover", (event) => { event.preventDefault(); heroDrop.classList.add("is-dragging"); });
+    heroDrop.addEventListener("dragleave", () => heroDrop.classList.remove("is-dragging"));
+    heroDrop.addEventListener("drop", (event) => {
+      event.preventDefault(); heroDrop.classList.remove("is-dragging");
+      const file = event.dataTransfer?.files[0]; if (file) void uploadHero(file);
+    });
+    hero.querySelector("[data-artists-hero-remove]")?.addEventListener("click", () => {
+      void releaseHero(heroAsset);
+      heroAsset = { kind: "empty", previousSrc: baseline.data.hero.image };
+      heroPath.value = ""; read(); showHero(); render();
+      heroStatus.textContent = "Hero reference removed from draft · select an image or Cancel";
+    });
+    hero.querySelector("[data-artists-hero-reject]")?.addEventListener("click", () => {
+      void releaseHero(pendingHeroCandidate); pendingHeroCandidate = null; showHero();
+      heroStatus.textContent = "Replacement canceled · canonical image unchanged";
+      render();
+    });
+    hero.querySelector("[data-artists-hero-accept]")?.addEventListener("click", () => {
+      if (!pendingHeroCandidate) return;
+      const candidate = pendingHeroCandidate; pendingHeroCandidate = null;
+      void releaseHero(heroAsset); applyTemporary(candidate);
+      heroStatus.textContent = "Replacement staged · canonical image remains unchanged until Save";
+    });
     cancel.addEventListener("click", () => {
+      void releaseHero(heroAsset);
+      void releaseHero(pendingHeroCandidate);
+      pendingHeroCandidate = null;
       restoreEditorFormBaseline(form);
       draft = restoreEditorDraftBaseline(baseline);
+      heroAsset = { kind: "existing", src: baseline.data.hero.image };
+      heroPath.value = baseline.data.hero.image;
       inputInvalid = false;
       statusMessage = "Changes canceled · saved draft restored";
+      heroStatus.textContent = "Temporary Hero changes canceled";
+      showHero();
       render();
     });
     save.addEventListener("click", async () => {
@@ -302,10 +438,12 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       try {
         const result = await request(
           `/editor/api/artists/${encodeURIComponent(draft.contentId)}`,
-          { draft, baseline },
+          { draft, baseline, hero: heroAsset },
         );
         baseline = result.draft;
         draft = structuredClone(baseline);
+        heroAsset = { kind: "existing", src: baseline.data.hero.image };
+        pendingHeroCandidate = null;
         commitEditorFormBaseline(form);
         savedSincePublish = true;
         statusMessage = "Saved · unpublished changes ready to publish";
@@ -323,8 +461,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         pending = "preview";
         render();
         try {
+          const previewDraft = structuredClone(draft);
+          if (heroAsset.kind === "temporary")
+            previewDraft.data.hero.image = temporaryArtistsHeroPreviewUrl(draft.contentId, workspaceId, heroAsset.token);
           const result = await request("/editor/api/artists-preview/create", {
-            draft,
+            draft: previewDraft,
             locale,
           });
           window.open(result.url, "_blank", "noopener,noreferrer");
@@ -392,6 +533,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     });
     read();
     baseline = structuredClone(draft);
+    showHero();
     render();
   }
 </script>

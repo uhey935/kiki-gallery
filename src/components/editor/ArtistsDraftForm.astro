@@ -1,6 +1,6 @@
 ---
 import type { ArtistsEditorDraftState } from "../../editor/artists-draft-state";
-const { draft } = Astro.props as { draft: ArtistsEditorDraftState };
+const { draft, create = false } = Astro.props as { draft: ArtistsEditorDraftState; create?: boolean };
 const { data } = draft;
 const en =
   draft.locales.en.state === "editable" ? draft.locales.en.value : undefined;
@@ -15,10 +15,6 @@ const en =
     <header>
       <div><p class="editor-eyebrow">Shared fields</p><h2>Shared</h2></div>
     </header>
-    <p>
-      Asset upload and replacement are outside this milestone. Edit the
-      canonical public path only.
-    </p>
     <div class="editor-entry-section__content editor-field-grid">
       <label data-editor-field="name">
         <span
@@ -34,12 +30,40 @@ const en =
         </span>
         <textarea name="medium">{data.medium.join("\n")}</textarea>
       </label>
-      <label class="editor-field-wide" data-editor-field="hero.image">
-        <span>
-          Image path <small class="editor-field-badge">Required</small>
-        </span>
-        <input name="hero.image" value={data.hero.image} />
-      </label>
+      {create ? (
+        <label class="editor-field-wide" data-editor-field="hero.image">
+          <span>Image path <small class="editor-field-badge">Required</small></span>
+          <input name="hero.image" value={data.hero.image} />
+        </label>
+      ) : <section class="editor-field-wide editor-hero-asset" data-editor-field="hero.image" data-artists-hero>
+        <header><span>Hero image <small class="editor-field-badge">Required</small></span></header>
+        <input type="hidden" name="hero.image" value={data.hero.image} data-artists-hero-path />
+        <div data-artists-hero-current>
+          <img src={data.hero.image} alt="" data-artists-hero-thumbnail />
+          <p><strong data-artists-hero-state>Canonical · saved</strong></p>
+          <code data-artists-hero-canonical-path>{data.hero.image}</code>
+          <div class="editor-asset-actions">
+            <button type="button" data-artists-hero-replace>Replace</button>
+            <button type="button" data-artists-hero-remove>Remove</button>
+          </div>
+        </div>
+        <div class="editor-hero-drop" data-artists-hero-drop hidden>
+          <p>Drag & drop a JPEG, PNG, WebP, or AVIF image here</p>
+          <button type="button" data-artists-hero-select>Select from desktop</button>
+        </div>
+        <input type="file" accept="image/avif,image/jpeg,image/png,image/webp" data-artists-hero-file hidden />
+        <section data-artists-hero-confirm hidden>
+          <h3>Replace existing image?</h3>
+          <p>The canonical filename already exists with different bytes. It will remain unchanged until Save.</p>
+          <div class="editor-hero-compare">
+            <figure><img src={data.hero.image} alt="" data-artists-hero-old /><figcaption>Existing</figcaption></figure>
+            <figure><img alt="" data-artists-hero-new /><figcaption>New · temporary</figcaption></figure>
+          </div>
+          <button type="button" data-artists-hero-reject>Cancel</button>
+          <button type="button" data-artists-hero-accept>Replace</button>
+        </section>
+        <p data-artists-hero-status role="status" aria-live="polite"></p>
+      </section>}
     </div>
   </section>
   <section class="editor-entry-section">
@@ -202,3 +226,13 @@ const en =
     </div>
   </section>
 </form>
+
+<style>
+  .editor-hero-asset { border: 1px solid #d8d8d8; padding: 1rem; }
+  .editor-hero-asset img { display: block; width: min(220px, 100%); aspect-ratio: 4 / 3; object-fit: cover; background: #eee; }
+  .editor-hero-drop { border: 1px dashed #999; padding: 1.5rem; text-align: center; }
+  .editor-hero-drop.is-dragging { border-color: #111; background: #f4f4f4; }
+  .editor-hero-compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .editor-hero-compare figure { margin: 0; }
+  [data-artists-hero-canonical-path] { overflow-wrap: anywhere; }
+</style>

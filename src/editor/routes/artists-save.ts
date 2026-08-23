@@ -1,12 +1,14 @@
 import type { APIRoute } from "astro";
 import { contentWriterRoute } from "./content-writer-route.ts";
 import type { ArtistsEditorDraftState } from "../artists-draft-state.ts";
-import { saveArtistsEditorDraft, ArtistsSaveError } from "../artists-save.ts";
+import type { ArtistsHeroAssetDraft } from "../artists-hero-assets.ts";
+import { saveArtistsEditorDraftWithHero, ArtistsSaveError } from "../artists-save.ts";
 const unlockedPOST: APIRoute = async ({ params, request }) => {
   try {
     const body = (await request.json()) as {
       draft?: ArtistsEditorDraftState;
       baseline?: ArtistsEditorDraftState;
+      hero?: ArtistsHeroAssetDraft;
     };
     if (
       !params.contentId ||
@@ -17,7 +19,11 @@ const unlockedPOST: APIRoute = async ({ params, request }) => {
     )
       return Response.json({ error: "Content ID mismatch" }, { status: 400 });
     return Response.json({
-      draft: await saveArtistsEditorDraft(body.draft, body.baseline),
+      draft: await saveArtistsEditorDraftWithHero(
+        body.draft,
+        body.baseline,
+        body.hero ?? { kind: "existing", src: body.draft.data.hero.image },
+      ),
     });
   } catch (error) {
     return Response.json(
