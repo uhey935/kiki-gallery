@@ -18,4 +18,6 @@ export const artistsDeleteFailureGuidance = (code?: string) =>
       "Finish or manually reconcile the existing lifecycle operation; the lock will not be stolen.",
     "rollback-failed":
       "Stop all Editor mutation and recover from the recorded operation bytes.",
+    "pending-hero-publish-evidence":
+      "Publish the saved Artist Hero asset before requesting Delete.",
   })[code ?? ""] ?? "Review the reported safety failure before retrying.";

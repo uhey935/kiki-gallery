@@ -3,7 +3,11 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { loadArtistUnit } from "../content-loaders/artists/repository.ts";
 import { isContentId } from "./content-id.ts";
-import { createArtistsEditorDraft, validateArtistsEditorDraft, type ArtistsEditorDraftState } from "./artists-draft-state.ts";
+import {
+  createArtistsEditorDraft,
+  validateArtistsEditorDraft,
+  type ArtistsEditorDraftState,
+} from "./artists-draft-state.ts";
 import { serializeArtistsEditorDraft } from "./artists-serializer.ts";
 import {
   readArtistsEditorEntry,
@@ -15,6 +19,8 @@ import {
   temporaryArtistsHeroAssetStore,
   type TemporaryArtistsHeroAssetStore,
 } from "./artists-hero-assets.ts";
+import { createArtistsHeroPublishEvidence } from "./artists-hero-publish-evidence.ts";
+import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
 
 const names = ["index.yaml", "ja.md", "en.md"] as const;
 const canonicalRoot = path.resolve("src/content/artists");
@@ -61,12 +67,20 @@ export async function createArtistsThreeFileEntryWithHero(
     store?: TemporaryArtistsHeroAssetStore;
     fileSystem?: ArtistsCreateFileSystem;
     reread?: ArtistsCreateReader;
+    repositoryRoot?: string;
+    evidenceStore?: HeroAssetPublishEvidenceStore;
   } = {},
 ) {
   const root = path.resolve(options.root ?? canonicalRoot);
   const assetRoot = path.resolve(options.assetRoot ?? "public/images/artists");
   const io = options.fileSystem ?? fs;
   const store = options.store ?? (await temporaryArtistsHeroAssetStore);
+  const repositoryRoot = path.resolve(
+    options.repositoryRoot ??
+      (options.root ? path.dirname(path.resolve(options.root)) : "."),
+  );
+  const evidenceStore =
+    options.evidenceStore ?? new HeroAssetPublishEvidenceStore(repositoryRoot);
   if (
     !isContentId(draft.contentId) ||
     !validateArtistsEditorDraft(draft).capabilities.save
@@ -76,6 +90,11 @@ export async function createArtistsThreeFileEntryWithHero(
       "invalid-draft",
     );
   const destination = await absent(draft.contentId, root, io);
+  if (await evidenceStore.read("artists", draft.contentId))
+    throw new ArtistsCreateError(
+      "Unresolved Hero Publish evidence already owns this Content ID",
+      "content-id-collision",
+    );
   let temporary;
   try {
     temporary = await store.read(
@@ -146,14 +165,44 @@ export async function createArtistsThreeFileEntryWithHero(
       io,
       options.reread,
     );
-    await store
-      .release(
+    try {
+      await evidenceStore.write(
+        await createArtistsHeroPublishEvidence({
+          repositoryRoot,
+          contentId: draft.contentId,
+          src: finalSrc,
+          declaredMime: temporary.metadata.mime,
+          operation: "hero-asset-create",
+          contentRoot: root,
+          assetRoot,
+        }),
+      );
+      await store.release(
         hero.token,
         `create-${hero.createWorkspaceId}`,
         hero.createWorkspaceId,
-      )
-      .catch(() => undefined);
-    return saved;
+      );
+      return saved;
+    } catch (error) {
+      const failures: unknown[] = [];
+      await io
+        .rm(destination, { recursive: true, force: false })
+        .catch((failure) => failures.push(failure));
+      await evidenceStore
+        .delete("artists", draft.contentId)
+        .catch((failure) => failures.push(failure));
+      if (failures.length)
+        throw new ArtistsCreateError(
+          "Failed to roll back Artist Create after Publish evidence failure",
+          "artists-create-rollback-failed",
+          { cause: new AggregateError([error, ...failures]) },
+        );
+      throw new ArtistsCreateError(
+        "Failed to create Artist Hero Publish evidence",
+        "create-failed",
+        { cause: error },
+      );
+    }
   }
 
   const output = serializeArtistsEditorDraft(draft);
@@ -220,13 +269,22 @@ export async function createArtistsThreeFileEntryWithHero(
         "Created Artist failed final verification",
         "canonical-mismatch",
       );
-    await store
-      .release(
-        hero.token,
-        `create-${hero.createWorkspaceId}`,
-        hero.createWorkspaceId,
-      )
-      .catch(() => undefined);
+    await evidenceStore.write(
+      await createArtistsHeroPublishEvidence({
+        repositoryRoot,
+        contentId: draft.contentId,
+        src: finalSrc,
+        declaredMime: temporary.metadata.mime,
+        operation: "hero-asset-create",
+        contentRoot: root,
+        assetRoot,
+      }),
+    );
+    await store.release(
+      hero.token,
+      `create-${hero.createWorkspaceId}`,
+      hero.createWorkspaceId,
+    );
     return saved;
   } catch (error) {
     const failures: unknown[] = [];
@@ -238,6 +296,9 @@ export async function createArtistsThreeFileEntryWithHero(
       await io
         .rm(target, { force: false })
         .catch((failure) => failures.push(failure));
+    await evidenceStore
+      .delete("artists", draft.contentId)
+      .catch((failure) => failures.push(failure));
     if (failures.length) {
       rollbackFailed = true;
       throw new ArtistsCreateError(
@@ -272,40 +333,107 @@ export type ArtistsCreateReader = (
 ) => Promise<ArtistsEditorEntryState | undefined>;
 
 async function absent(id: string, root: string, io: ArtistsCreateFileSystem) {
-  if (!isContentId(id)) throw new ArtistsCreateError("Invalid Artist Content ID", "invalid-content-id");
+  if (!isContentId(id))
+    throw new ArtistsCreateError(
+      "Invalid Artist Content ID",
+      "invalid-content-id",
+    );
   const resolved = path.resolve(root);
   const stat = await io.lstat(resolved).catch(() => undefined);
-  if (!stat?.isDirectory() || stat.isSymbolicLink()) throw new ArtistsCreateError("Unsafe Artists root", "unsafe-artists-root");
+  if (!stat?.isDirectory() || stat.isSymbolicLink())
+    throw new ArtistsCreateError("Unsafe Artists root", "unsafe-artists-root");
   const destination = path.resolve(resolved, id);
-  if (path.dirname(destination) !== resolved) throw new ArtistsCreateError("Invalid Artist Content ID", "invalid-content-id");
-  if ((await io.readdir(resolved)).some((name) => name.toLowerCase() === id.toLowerCase() || name.toLowerCase() === `${id}.md`.toLowerCase())) throw new ArtistsCreateError("Artist Content ID already exists", "content-id-collision");
+  if (path.dirname(destination) !== resolved)
+    throw new ArtistsCreateError(
+      "Invalid Artist Content ID",
+      "invalid-content-id",
+    );
+  if (
+    (await io.readdir(resolved)).some(
+      (name) =>
+        name.toLowerCase() === id.toLowerCase() ||
+        name.toLowerCase() === `${id}.md`.toLowerCase(),
+    )
+  )
+    throw new ArtistsCreateError(
+      "Artist Content ID already exists",
+      "content-id-collision",
+    );
   return destination;
 }
 
-export async function createArtistsThreeFileEntry(draft: ArtistsEditorDraftState, root = canonicalRoot, io: ArtistsCreateFileSystem = fs, reread: ArtistsCreateReader = readArtistsEditorEntry) {
-  if (!validateArtistsEditorDraft(draft).capabilities.save) throw new ArtistsCreateError("Artist draft has blocking issues", "invalid-draft");
+export async function createArtistsThreeFileEntry(
+  draft: ArtistsEditorDraftState,
+  root = canonicalRoot,
+  io: ArtistsCreateFileSystem = fs,
+  reread: ArtistsCreateReader = readArtistsEditorEntry,
+) {
+  if (!validateArtistsEditorDraft(draft).capabilities.save)
+    throw new ArtistsCreateError(
+      "Artist draft has blocking issues",
+      "invalid-draft",
+    );
   const destination = await absent(draft.contentId, root, io);
   const output = serializeArtistsEditorDraft(draft);
-  const stageRoot = path.join(path.resolve(root), `.artists-create-${randomUUID()}`);
+  const stageRoot = path.join(
+    path.resolve(root),
+    `.artists-create-${randomUUID()}`,
+  );
   const stage = path.join(stageRoot, draft.contentId);
   let committed = false;
   try {
-    await io.mkdir(stageRoot); await io.mkdir(stage);
-    for (const name of names) await io.writeFile(path.join(stage, name), output[name], { encoding: "utf8", flag: "wx" });
+    await io.mkdir(stageRoot);
+    await io.mkdir(stage);
+    for (const name of names)
+      await io.writeFile(path.join(stage, name), output[name], {
+        encoding: "utf8",
+        flag: "wx",
+      });
     const unit = await loadArtistUnit(stage);
-    if (unit.identity.state !== "valid" || unit.locales.ja.state !== "valid" || unit.locales.en.state !== "valid") throw new ArtistsCreateError("Serialized Artist failed validation", "canonical-mismatch");
+    if (
+      unit.identity.state !== "valid" ||
+      unit.locales.ja.state !== "valid" ||
+      unit.locales.en.state !== "valid"
+    )
+      throw new ArtistsCreateError(
+        "Serialized Artist failed validation",
+        "canonical-mismatch",
+      );
     await absent(draft.contentId, root, io);
-    await io.rename(stage, destination); committed = true;
+    await io.rename(stage, destination);
+    committed = true;
     const entry = await reread(draft.contentId, root);
     const saved = entry ? createArtistsEditorDraft(entry) : undefined;
-    if (!saved) throw new ArtistsCreateError("Created Artist failed reread", "canonical-mismatch");
+    if (!saved)
+      throw new ArtistsCreateError(
+        "Created Artist failed reread",
+        "canonical-mismatch",
+      );
     return saved;
   } catch (error) {
-    if (committed) try {
-      for (const name of names) if ((await io.readFile(path.join(destination, name), "utf8")) !== output[name]) throw new Error("created bytes changed");
-      await io.rm(destination, { recursive: true, force: false });
-    } catch (rollback) { throw new ArtistsCreateError("Failed to roll back Artist Create", "artists-create-rollback-failed", { cause: new AggregateError([error, rollback]) }); }
+    if (committed)
+      try {
+        for (const name of names)
+          if (
+            (await io.readFile(path.join(destination, name), "utf8")) !==
+            output[name]
+          )
+            throw new Error("created bytes changed");
+        await io.rm(destination, { recursive: true, force: false });
+      } catch (rollback) {
+        throw new ArtistsCreateError(
+          "Failed to roll back Artist Create",
+          "artists-create-rollback-failed",
+          { cause: new AggregateError([error, rollback]) },
+        );
+      }
     if (error instanceof ArtistsCreateError) throw error;
-    throw new ArtistsCreateError("Failed to create Artist", "create-failed", { cause: error });
-  } finally { await io.rm(stageRoot, { recursive: true, force: true }).catch(() => undefined); }
+    throw new ArtistsCreateError("Failed to create Artist", "create-failed", {
+      cause: error,
+    });
+  } finally {
+    await io
+      .rm(stageRoot, { recursive: true, force: true })
+      .catch(() => undefined);
+  }
 }

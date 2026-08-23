@@ -171,11 +171,17 @@ const reviewCodes = new Set([
   "source-unavailable",
   "unresolved-references",
   "lock-conflict",
+  "publish-evidence-missing",
+  "publish-evidence-corrupt",
+  "publish-evidence-mismatch",
+  "pending-hero-publish-evidence",
 ]);
 
 const reuploadCodes = new Set(["asset-temp-not-found", "asset-temp-expired"]);
 const manualRecoveryCodes = new Set([
   "asset-save-rollback-failed",
+  "artists-save-rollback-failed",
+  "artists-create-rollback-failed",
   "journal-create-rollback-failed",
   "collection-create-rollback-failed",
   "journal-save-rollback-failed",

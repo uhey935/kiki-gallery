@@ -14,6 +14,7 @@ import {
   findNewsReferenceSpan,
   NewsReferenceStructureError,
 } from "./news-reference-update.ts";
+import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
 
 const execFile = promisify(execFileCallback);
 const CONTENT_COLLECTIONS = [
@@ -72,6 +73,7 @@ export class ArtistsRenameError extends Error {
     | "prospective-validation-failed"
     | "plan-stale"
     | "lifecycle-lock-conflict"
+    | "pending-hero-publish-evidence"
     | "unsafe-repository"
     | "rename-failed-rolled-back"
     | "manual-recovery-required";
@@ -207,12 +209,18 @@ async function validateProspectiveTypedGraph(
     new Set(
       inventory
         .map(({ file }) => relative(repositoryRoot, file))
-        .filter(
-          (file) => collection === "artists" || collection === "news"
-            ? file.startsWith(`src/content/${collection}/`) && file.endsWith("/index.yaml")
-            : path.posix.dirname(file) === `src/content/${collection}` && file.endsWith(".md"),
+        .filter((file) =>
+          collection === "artists" || collection === "news"
+            ? file.startsWith(`src/content/${collection}/`) &&
+              file.endsWith("/index.yaml")
+            : path.posix.dirname(file) === `src/content/${collection}` &&
+              file.endsWith(".md"),
         )
-        .map((file) => collection === "artists" || collection === "news" ? path.posix.basename(path.posix.dirname(file)) : path.basename(file, ".md")),
+        .map((file) =>
+          collection === "artists" || collection === "news"
+            ? path.posix.basename(path.posix.dirname(file))
+            : path.basename(file, ".md"),
+        ),
     );
   const artistIds = ids("artists");
   artistIds.delete(oldId);
@@ -314,14 +322,21 @@ function typedReferenceEdits(
   const raw = item.bytes.toString("utf8");
   const frontmatter = /^---(\r?\n)([\s\S]*?)\1---(?:\1|$)/.exec(raw);
   if (
-    (!file.startsWith("src/content/works/") &&
-      !file.startsWith("src/content/exhibitions/"))
+    !file.startsWith("src/content/works/") &&
+    !file.startsWith("src/content/exhibitions/")
   )
     return [];
-  if (file.startsWith("src/content/exhibitions/") && !file.endsWith("/index.yaml")) return [];
-  if (file.startsWith("src/content/works/") && !file.endsWith("/index.yaml")) return [];
+  if (
+    file.startsWith("src/content/exhibitions/") &&
+    !file.endsWith("/index.yaml")
+  )
+    return [];
+  if (file.startsWith("src/content/works/") && !file.endsWith("/index.yaml"))
+    return [];
   const body = file.endsWith("/index.yaml") ? raw : frontmatter![2];
-  const bodyStart = file.endsWith("/index.yaml") ? 0 : frontmatter!.index + 3 + frontmatter![1].length;
+  const bodyStart = file.endsWith("/index.yaml")
+    ? 0
+    : frontmatter!.index + 3 + frontmatter![1].length;
   if (file.startsWith("src/content/works/")) {
     const expression =
       /^(\s*artist\s*:\s*)(["']?)([^\s#"']+)(\2)(\s*(?:#.*)?)$/gm;
@@ -465,12 +480,12 @@ async function buildPlan(input: {
       "Artist source is missing or unsafe.",
       "source-unavailable",
     );
-  const destinationName = input.destinationContentId.toLocaleLowerCase(
-    "en-US",
-  );
+  const destinationName = input.destinationContentId.toLocaleLowerCase("en-US");
   if (
-    (await fs.readdir(artistsRoot)).some(
-      (name) => [destinationName, `${destinationName}.md`].includes(name.toLocaleLowerCase("en-US")),
+    (await fs.readdir(artistsRoot)).some((name) =>
+      [destinationName, `${destinationName}.md`].includes(
+        name.toLocaleLowerCase("en-US"),
+      ),
     )
   )
     throw new ArtistsRenameError(
@@ -544,14 +559,35 @@ async function buildPlan(input: {
         "reference-graph-incomplete",
       );
   }
-  const sourceFiles = await Promise.all(["index.yaml", "ja.md", "en.md"].map(async (name) => {
-    const file = path.join(source, name); const stat = await fs.lstat(file).catch(() => undefined);
-    if (!stat?.isFile() || stat.isSymbolicLink()) throw new ArtistsRenameError("Artist unit inventory is unsafe.", "source-unavailable");
-    const bytes = await fs.readFile(file); return { file: relative(repositoryRoot, file), hash: sha256(bytes), size: bytes.length };
-  }));
-  if ((await fs.readdir(source)).length !== sourceFiles.length) throw new ArtistsRenameError("Artist unit inventory is unsafe.", "source-unavailable");
+  const sourceFiles = await Promise.all(
+    ["index.yaml", "ja.md", "en.md"].map(async (name) => {
+      const file = path.join(source, name);
+      const stat = await fs.lstat(file).catch(() => undefined);
+      if (!stat?.isFile() || stat.isSymbolicLink())
+        throw new ArtistsRenameError(
+          "Artist unit inventory is unsafe.",
+          "source-unavailable",
+        );
+      const bytes = await fs.readFile(file);
+      return {
+        file: relative(repositoryRoot, file),
+        hash: sha256(bytes),
+        size: bytes.length,
+      };
+    }),
+  );
+  if ((await fs.readdir(source)).length !== sourceFiles.length)
+    throw new ArtistsRenameError(
+      "Artist unit inventory is unsafe.",
+      "source-unavailable",
+    );
   const sourceFile = sourceFiles[0];
-  const newFiles = sourceFiles.map(({ file }) => file.replace(`/${input.sourceContentId}/`, `/${input.destinationContentId}/`));
+  const newFiles = sourceFiles.map(({ file }) =>
+    file.replace(
+      `/${input.sourceContentId}/`,
+      `/${input.destinationContentId}/`,
+    ),
+  );
   const touchedPaths = [
     ...sourceFiles.map(({ file }) => file),
     ...newFiles,
@@ -605,8 +641,19 @@ export async function planArtistsRename(input: {
       "Source and new Artist IDs must be different lowercase hyphenated IDs.",
       "invalid-content-id",
     );
+  const repositoryRoot = path.resolve(input.repositoryRoot ?? ".");
+  if (
+    await new HeroAssetPublishEvidenceStore(repositoryRoot).read(
+      "artists",
+      input.sourceContentId,
+    )
+  )
+    throw new ArtistsRenameError(
+      "Publish the pending Artist Hero asset before Rename.",
+      "pending-hero-publish-evidence",
+    );
   return buildPlan({
-    repositoryRoot: path.resolve(input.repositoryRoot ?? "."),
+    repositoryRoot,
     sourceContentId: input.sourceContentId,
     destinationContentId: input.destinationContentId,
     operationId: randomUUID(),
@@ -636,6 +683,16 @@ export async function executeArtistsRename(
     throw new ArtistsRenameError(
       "Rename plan identity is invalid.",
       "plan-stale",
+    );
+  if (
+    await new HeroAssetPublishEvidenceStore(repositoryRoot).read(
+      "artists",
+      reviewedPlan.sourceContentId,
+    )
+  )
+    throw new ArtistsRenameError(
+      "Publish the pending Artist Hero asset before Rename.",
+      "pending-hero-publish-evidence",
     );
   const stateRoot = await ensureStateDirectory(repositoryRoot, ".kiki-editor");
   const lifecycle = await ensureStateDirectory(stateRoot, "content-lifecycle");
@@ -674,7 +731,13 @@ export async function executeArtistsRename(
       destinationContentId: reviewedPlan.destinationContentId,
       operationId: reviewedPlan.operationId,
       createdAt: reviewedPlan.createdAt,
-    }).catch((error) => { throw new ArtistsRenameError("Canonical graph changed; review a new plan.", "plan-stale", { cause: error }); });
+    }).catch((error) => {
+      throw new ArtistsRenameError(
+        "Canonical graph changed; review a new plan.",
+        "plan-stale",
+        { cause: error },
+      );
+    });
     if (comparableHash(reviewedPlan) !== comparableHash(rebuilt))
       throw new ArtistsRenameError(
         "Canonical content, references, destination, or Git identity changed; review a new plan.",
@@ -693,7 +756,9 @@ export async function executeArtistsRename(
     > = {};
     for (const file of reviewedPlan.touchedPaths.filter(
       (file) =>
-        !file.startsWith(`src/content/artists/${reviewedPlan.destinationContentId}/`),
+        !file.startsWith(
+          `src/content/artists/${reviewedPlan.destinationContentId}/`,
+        ),
     )) {
       const absolute = path.join(repositoryRoot, file);
       const stat = await fs.lstat(absolute);
@@ -711,8 +776,15 @@ export async function executeArtistsRename(
     }
     for (const source of reviewedPlan.sourceFiles) {
       const bytes = Buffer.from(preimages[source.file].bytes, "base64");
-      const destination = source.file.replace(`/${reviewedPlan.sourceContentId}/`, `/${reviewedPlan.destinationContentId}/`);
-      prospective[destination] = { hash: sha256(bytes), mode: preimages[source.file].mode, bytes: bytes.toString("base64") };
+      const destination = source.file.replace(
+        `/${reviewedPlan.sourceContentId}/`,
+        `/${reviewedPlan.destinationContentId}/`,
+      );
+      prospective[destination] = {
+        hash: sha256(bytes),
+        mode: preimages[source.file].mode,
+        bytes: bytes.toString("base64"),
+      };
     }
     for (const file of new Set(
       reviewedPlan.referenceEdits.map((edit) => edit.file),
@@ -762,7 +834,9 @@ export async function executeArtistsRename(
     await writeRecord();
     // The complete inventory was validated while rebuilding the plan; validate every
     // prospective reference and the renamed source before the first canonical move.
-    for (const source of reviewedPlan.sourceFiles) if (preimages[source.file].hash !== source.hash) throw new ArtistsRenameError("Source preimage mismatch.", "plan-stale");
+    for (const source of reviewedPlan.sourceFiles)
+      if (preimages[source.file].hash !== source.hash)
+        throw new ArtistsRenameError("Source preimage mismatch.", "plan-stale");
     for (const edit of reviewedPlan.referenceEdits)
       if (prospective[edit.file].hash !== edit.resultingHash)
         throw new ArtistsRenameError(
@@ -770,7 +844,12 @@ export async function executeArtistsRename(
           "prospective-validation-failed",
         );
     mutationStarted = true;
-    await fs.mkdir(path.join(repositoryRoot, `src/content/artists/${reviewedPlan.destinationContentId}`));
+    await fs.mkdir(
+      path.join(
+        repositoryRoot,
+        `src/content/artists/${reviewedPlan.destinationContentId}`,
+      ),
+    );
     for (const file of Object.keys(preimages).sort()) {
       const recovery = path.join(recoveryRoot, file.replaceAll("/", "__"));
       await fs.rename(path.join(repositoryRoot, file), recovery);
@@ -784,7 +863,12 @@ export async function executeArtistsRename(
       (record.completedSteps as string[]).push(`install:${file}`);
       await writeRecord();
     }
-    await fs.rmdir(path.join(repositoryRoot, `src/content/artists/${reviewedPlan.sourceContentId}`));
+    await fs.rmdir(
+      path.join(
+        repositoryRoot,
+        `src/content/artists/${reviewedPlan.sourceContentId}`,
+      ),
+    );
     const installedInventory = await walkCanonical(repositoryRoot);
     const installedGraph = sha256(
       installedInventory
@@ -797,7 +881,12 @@ export async function executeArtistsRename(
     if (
       !installedGraph ||
       (await fs
-        .lstat(path.join(repositoryRoot, `src/content/artists/${reviewedPlan.sourceContentId}`))
+        .lstat(
+          path.join(
+            repositoryRoot,
+            `src/content/artists/${reviewedPlan.sourceContentId}`,
+          ),
+        )
         .catch(() => undefined))
     )
       throw new ArtistsRenameError(
@@ -859,8 +948,21 @@ export async function executeArtistsRename(
             await fs.unlink(installed);
           }
         }
-        await fs.rmdir(path.join(repositoryRoot, `src/content/artists/${reviewedPlan.destinationContentId}`)).catch(() => undefined);
-        await fs.mkdir(path.join(repositoryRoot, `src/content/artists/${reviewedPlan.sourceContentId}`), { recursive: true });
+        await fs
+          .rmdir(
+            path.join(
+              repositoryRoot,
+              `src/content/artists/${reviewedPlan.destinationContentId}`,
+            ),
+          )
+          .catch(() => undefined);
+        await fs.mkdir(
+          path.join(
+            repositoryRoot,
+            `src/content/artists/${reviewedPlan.sourceContentId}`,
+          ),
+          { recursive: true },
+        );
         for (const [file, expected] of Object.entries(preimages).reverse()) {
           const destination = path.join(repositoryRoot, file);
           if (await fs.lstat(destination).catch(() => undefined))

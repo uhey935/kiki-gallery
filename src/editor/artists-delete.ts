@@ -25,6 +25,7 @@ import {
   releaseContentLifecycleLock,
 } from "./content-lifecycle-lock.ts";
 import { isContentId } from "./content-id.ts";
+import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
 
 const execFile = promisify(execFileCallback);
 const POLICY_COMMIT = "fe2d6fe2c1c5ff5ce1bf255af8207bfa43681971";
@@ -64,7 +65,8 @@ export class ArtistsDeleteError extends Error {
     | "rollback-failed"
     | "unsafe-repository"
     | "delete-failed"
-    | "publish-failed";
+    | "publish-failed"
+    | "pending-hero-publish-evidence";
   constructor(
     message: string,
     code: ArtistsDeleteError["code"],
@@ -131,12 +133,30 @@ async function artistsInventory(repositoryRoot: string, contentId: string) {
       "source-unavailable",
     );
   const names = await fs.readdir(directory, { withFileTypes: true });
-  if (names.length !== 3 || names.some((item) => item.isSymbolicLink() || !item.isFile() || !["index.yaml", "ja.md", "en.md"].includes(item.name)))
-    throw new ArtistsDeleteError("Artists unit inventory is unsafe.", "source-unavailable");
-  return Promise.all(["index.yaml", "ja.md", "en.md"].map(async (name) => {
-    const file = path.join(directory, name); const bytes = await fs.readFile(file);
-    return { path: relative(repositoryRoot, file), sha256: sha256(bytes), byteSize: bytes.byteLength };
-  }));
+  if (
+    names.length !== 3 ||
+    names.some(
+      (item) =>
+        item.isSymbolicLink() ||
+        !item.isFile() ||
+        !["index.yaml", "ja.md", "en.md"].includes(item.name),
+    )
+  )
+    throw new ArtistsDeleteError(
+      "Artists unit inventory is unsafe.",
+      "source-unavailable",
+    );
+  return Promise.all(
+    ["index.yaml", "ja.md", "en.md"].map(async (name) => {
+      const file = path.join(directory, name);
+      const bytes = await fs.readFile(file);
+      return {
+        path: relative(repositoryRoot, file),
+        sha256: sha256(bytes),
+        byteSize: bytes.byteLength,
+      };
+    }),
+  );
 }
 
 async function assertNoIncomingReferences(
@@ -295,6 +315,16 @@ export async function planArtistsDelete(input: {
       "Invalid Artists Content ID.",
       "invalid-content-id",
     );
+  if (
+    await new HeroAssetPublishEvidenceStore(repositoryRoot).read(
+      "artists",
+      input.contentId,
+    )
+  )
+    throw new ArtistsDeleteError(
+      "Publish the pending Artist Hero asset before Delete.",
+      "pending-hero-publish-evidence",
+    );
   if (!input.backupRoot?.trim())
     throw new ArtistsDeleteError(
       "Select a verified pre-delete backup generation before review.",
@@ -382,6 +412,16 @@ export async function executeArtistsDelete(
 ) {
   repositoryRoot = path.resolve(repositoryRoot);
   assertPlanIdentity(reviewedPlan);
+  if (
+    await new HeroAssetPublishEvidenceStore(repositoryRoot).read(
+      "artists",
+      reviewedPlan.contentId,
+    )
+  )
+    throw new ArtistsDeleteError(
+      "Publish the pending Artist Hero asset before Delete.",
+      "pending-hero-publish-evidence",
+    );
   let rebuilt: ArtistsDeletePlan;
   try {
     rebuilt = await planArtistsDelete({
@@ -439,7 +479,9 @@ export async function executeArtistsDelete(
     "src/content/artists",
     reviewedPlan.contentId,
   );
-  const recoveryFile = path.dirname(path.join(repositoryRoot, reviewedPlan.recoveryPaths[0]));
+  const recoveryFile = path.dirname(
+    path.join(repositoryRoot, reviewedPlan.recoveryPaths[0]),
+  );
   let moved = false;
   try {
     await assertContentLifecycleLock(repositoryRoot, lock.identity);
@@ -579,7 +621,12 @@ export async function publishArtistsDelete(
       "state-mismatch",
     );
   if (
-    files.some((file) => !["index.yaml", "ja.md", "en.md"].map((name) => `src/content/artists/${record.contentId}/${name}`).includes(file))
+    files.some(
+      (file) =>
+        !["index.yaml", "ja.md", "en.md"]
+          .map((name) => `src/content/artists/${record.contentId}/${name}`)
+          .includes(file),
+    )
   )
     throw new ArtistsDeleteError(
       "Delete evidence escaped the Artists unit.",

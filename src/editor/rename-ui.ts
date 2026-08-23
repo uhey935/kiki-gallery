@@ -14,7 +14,9 @@ export type BrowserRenamePlan = {
   repositoryBranch: string;
   oldRoutes: string[];
   newRoutes: string[];
-  sourceFiles?: Record<string, string> | Array<{ file: string; hash: string; size: number }>;
+  sourceFiles?:
+    | Record<string, string>
+    | Array<{ file: string; hash: string; size: number }>;
   sourceFile?: string | { file: string; hash: string; size: number };
   referenceEdits?: Array<{ file: string; oldValue: string; newValue: string }>;
   planHash: string;
@@ -63,6 +65,8 @@ const renameGuidance: Record<string, string> = {
     "Finish or abandon pending Works asset changes before requesting a Rename plan.",
   "unpublished-asset-manifest":
     "Publish or explicitly reconcile the saved asset manifest before Rename.",
+  "pending-hero-publish-evidence":
+    "Publish the saved Artist Hero asset before requesting a Rename plan.",
 };
 
 export function renameFailureGuidance(code?: string): string {
