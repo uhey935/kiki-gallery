@@ -22,6 +22,7 @@ import {
   releaseContentLifecycleLock,
 } from "./content-lifecycle-lock.ts";
 import { isContentId } from "./content-id.ts";
+import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
 
 const execFile = promisify(execFileCallback);
 const POLICY_COMMIT = "fe2d6fe2c1c5ff5ce1bf255af8207bfa43681971";
@@ -56,6 +57,7 @@ export class ExhibitionsDeleteError extends Error {
     | "incoming-reference"
     | "parser-uncertainty"
     | "plan-stale"
+    | "pending-hero-publish-evidence"
     | "state-mismatch"
     | "lock-conflict"
     | "rollback-failed"
@@ -229,6 +231,8 @@ export async function planExhibitionsDelete(input: {
       "Invalid Exhibitions Content ID.",
       "invalid-content-id",
     );
+  if (await new HeroAssetPublishEvidenceStore(repositoryRoot).read("exhibitions", input.contentId))
+    throw new ExhibitionsDeleteError("Publish the pending Exhibition Hero asset before Delete.", "pending-hero-publish-evidence");
   if (!input.backupRoot?.trim())
     throw new ExhibitionsDeleteError(
       "Select a verified pre-delete backup generation before review.",
@@ -318,6 +322,8 @@ export async function executeExhibitionsDelete(
 ) {
   repositoryRoot = path.resolve(repositoryRoot);
   assertPlanIdentity(reviewedPlan);
+  if (await new HeroAssetPublishEvidenceStore(repositoryRoot).read("exhibitions", reviewedPlan.contentId))
+    throw new ExhibitionsDeleteError("Publish the pending Exhibition Hero asset before Delete.", "pending-hero-publish-evidence");
   let rebuilt: ExhibitionsDeletePlan;
   try {
     rebuilt = await planExhibitionsDelete({

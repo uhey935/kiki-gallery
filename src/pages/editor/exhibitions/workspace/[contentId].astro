@@ -83,6 +83,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     type ExhibitionsEditorDraftState,
   } from "../../../../editor/exhibitions-draft-state";
   import type { ExhibitionWeekday } from "../../../../content-loaders/exhibitions/schema";
+  import type { ExhibitionsHeroAssetDraft } from "../../../../editor/exhibitions-hero-assets";
   import {
     editorFailureGuidance,
     isEditorSaveShortcut,
@@ -133,6 +134,45 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     let statusMessage: string | null = null;
     let recoveryRequired = false;
     let deleteLocked = false;
+    const workspaceId = crypto.randomUUID();
+    const hero = form.querySelector<HTMLElement>("[data-exhibitions-hero]")!;
+    const heroPath = hero.querySelector<HTMLInputElement>("[data-exhibitions-hero-path]")!;
+    const heroCurrent = hero.querySelector<HTMLElement>("[data-exhibitions-hero-current]")!;
+    const heroDrop = hero.querySelector<HTMLElement>("[data-exhibitions-hero-drop]")!;
+    const heroFile = hero.querySelector<HTMLInputElement>("[data-exhibitions-hero-file]")!;
+    const heroThumbnail = hero.querySelector<HTMLImageElement>("[data-exhibitions-hero-thumbnail]")!;
+    const heroState = hero.querySelector<HTMLElement>("[data-exhibitions-hero-state]")!;
+    const heroCanonicalPath = hero.querySelector<HTMLElement>("[data-exhibitions-hero-canonical-path]")!;
+    const heroConfirm = hero.querySelector<HTMLElement>("[data-exhibitions-hero-confirm]")!;
+    const heroNew = hero.querySelector<HTMLImageElement>("[data-exhibitions-hero-new]")!;
+    const heroStatus = hero.querySelector<HTMLElement>("[data-exhibitions-hero-status]")!;
+    let heroAsset: ExhibitionsHeroAssetDraft = { kind: "existing", src: draft.shared.state === "editable" ? draft.shared.value.hero.image : "" };
+    let pendingHeroCandidate: Extract<ExhibitionsHeroAssetDraft, { kind: "temporary" }> | null = null;
+    const previewUrl = (token: string) => `/editor/api/exhibitions-hero-preview/${encodeURIComponent(draft.contentId)}/${encodeURIComponent(workspaceId)}/${encodeURIComponent(token)}`;
+    const releaseHero = async (asset: ExhibitionsHeroAssetDraft | null) => {
+      if (asset?.kind !== "temporary") return;
+      await fetch("/editor/api/exhibitions-hero/release", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: asset.token, contentId: draft.contentId, workspaceId }), keepalive: true }).catch(() => undefined);
+    };
+    const renderHero = () => {
+      heroConfirm.hidden = pendingHeroCandidate === null;
+      heroDrop.hidden = heroAsset.kind !== "empty";
+      heroCurrent.hidden = heroAsset.kind === "empty";
+      if (heroAsset.kind === "existing") { heroThumbnail.src = heroAsset.src; heroPath.value = heroAsset.src; heroCanonicalPath.textContent = heroAsset.src; heroState.textContent = "Canonical · saved"; }
+      else if (heroAsset.kind === "temporary") { heroThumbnail.src = previewUrl(heroAsset.token); heroPath.value = heroAsset.proposedSrc; heroCanonicalPath.textContent = heroAsset.proposedSrc; heroState.textContent = heroAsset.replaces ? "Replacement pending · temporary / unsaved" : "New image · temporary / unsaved"; }
+      else heroPath.value = "";
+    };
+    const uploadHero = async (file: File) => {
+      pending = "save"; heroStatus.textContent = "Uploading…"; render();
+      try {
+        const body = new FormData(); body.append("file", file); body.append("workspaceId", workspaceId);
+        const response = await fetch(`/editor/api/exhibitions-hero/upload/${encodeURIComponent(draft.contentId)}`, { method: "POST", body });
+        const result = await response.json(); if (!response.ok) throw Object.assign(new Error(result.error), { code: result.code });
+        if (result.state === "reuse") { await releaseHero(heroAsset); await releaseHero(pendingHeroCandidate); pendingHeroCandidate = null; heroAsset = { kind: "existing", src: result.src }; heroStatus.textContent = "Canonical image reused"; }
+        else { const candidate = { kind: "temporary" as const, token: result.asset.token, workspaceId, proposedSrc: result.asset.proposedSrc, sha256: result.asset.sha256, ...(result.asset.replaces ? { replaces: result.asset.replaces } : {}) }; if (result.state === "replace-confirmation") { await releaseHero(pendingHeroCandidate); pendingHeroCandidate = candidate; heroNew.src = previewUrl(candidate.token); heroStatus.textContent = "Confirm replacement before saving"; } else { await releaseHero(heroAsset); await releaseHero(pendingHeroCandidate); pendingHeroCandidate = null; heroAsset = candidate; heroStatus.textContent = "Temporary image ready to save"; } }
+        pending = null; render(); read(); renderHero();
+      } catch (error) { const value = error as Error & { code?: string }; heroStatus.textContent = `${value.message} ${editorFailureGuidance(value.code).message}`; }
+      finally { pending = null; render(); heroFile.value = ""; }
+    };
     const setActionReason = (action: string, reason: string) => {
       const container = document.querySelector<HTMLElement>(
         '[data-action="' + action + '"]',
@@ -191,7 +231,12 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
               ? { closed_weekdays: closedWeekdays }
               : {}),
             hero: {
-              image: value("shared.hero.image"),
+              image:
+                heroAsset.kind === "existing"
+                  ? heroAsset.src
+                  : heroAsset.kind === "temporary"
+                    ? heroAsset.proposedSrc
+                    : "",
               orientation: value("shared.hero.orientation") as
                 "portrait" | "landscape",
               position: optional(value("shared.hero.position")) as never,
@@ -203,7 +248,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       };
     };
     const render = () => {
-      const dirty = isExhibitionsEditorDraftDirty(baseline, draft);
+      const dirty = isExhibitionsEditorDraftDirty(baseline, draft) || heroAsset.kind === "temporary" || pendingHeroCandidate !== null;
       const validation = validateExhibitionsEditorDraft(draft);
       const capabilities = validation.capabilities;
       renderFlatValidationPanel(form, {
@@ -217,7 +262,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         },
       });
       const locked = pending !== null || recoveryRequired || deleteLocked;
-      save.disabled = locked || !dirty || !capabilities.save;
+      save.disabled = locked || !dirty || !capabilities.save || pendingHeroCandidate !== null;
       cancel.disabled = locked || !dirty;
       for (const preview of previews) {
         const locale = preview.dataset.previewExhibitions as "ja" | "en";
@@ -278,9 +323,19 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       statusMessage = null;
       render();
     });
+    hero.querySelector("[data-exhibitions-hero-select]")?.addEventListener("click", () => heroFile.click());
+    hero.querySelector("[data-exhibitions-hero-replace]")?.addEventListener("click", () => heroFile.click());
+    heroFile.addEventListener("change", () => { const file = heroFile.files?.[0]; if (file) void uploadHero(file); });
+    hero.addEventListener("dragover", (event) => event.preventDefault());
+    hero.addEventListener("drop", (event) => { event.preventDefault(); const file = event.dataTransfer?.files[0]; if (file) void uploadHero(file); });
+    hero.querySelector("[data-exhibitions-hero-remove]")?.addEventListener("click", () => { void releaseHero(heroAsset); void releaseHero(pendingHeroCandidate); heroAsset = { kind: "empty", previousSrc: heroPath.value }; pendingHeroCandidate = null; renderHero(); read(); render(); });
+    hero.querySelector("[data-exhibitions-hero-reject]")?.addEventListener("click", () => { void releaseHero(pendingHeroCandidate); pendingHeroCandidate = null; renderHero(); render(); });
+    hero.querySelector("[data-exhibitions-hero-accept]")?.addEventListener("click", () => { if (!pendingHeroCandidate) return; void releaseHero(heroAsset); heroAsset = pendingHeroCandidate; pendingHeroCandidate = null; renderHero(); read(); render(); });
     cancel.addEventListener("click", () => {
+      void releaseHero(heroAsset); void releaseHero(pendingHeroCandidate); pendingHeroCandidate = null;
       restoreEditorFormBaseline(form);
       draft = restoreEditorDraftBaseline(baseline);
+      heroAsset = { kind: "existing", src: draft.shared.state === "editable" ? draft.shared.value.hero.image : "" }; renderHero();
       statusMessage = "Changes canceled · saved draft restored";
       render();
     });
@@ -290,10 +345,11 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       try {
         const result = await request(
           `/editor/api/exhibitions/${encodeURIComponent(draft.contentId)}`,
-          { draft, baseline },
+          { draft, baseline, hero: heroAsset },
         );
         baseline = result.draft;
         draft = structuredClone(baseline);
+        heroAsset = { kind: "existing", src: draft.shared.state === "editable" ? draft.shared.value.hero.image : "" }; pendingHeroCandidate = null; renderHero();
         commitEditorFormBaseline(form);
         savedSincePublish = true;
         statusMessage = "Saved · unpublished changes ready to publish";
@@ -313,7 +369,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         try {
           const result = await request(
             "/editor/api/exhibitions-preview/create",
-            { draft, locale },
+            { draft: (() => { const value = structuredClone(draft); if (heroAsset.kind === "temporary" && value.shared.state === "editable") value.shared.value.hero.image = previewUrl(heroAsset.token); return value; })(), locale },
           );
           window.open(result.url, "_blank", "noopener,noreferrer");
           statusMessage = `${locale.toUpperCase()} draft preview opened`;
@@ -382,8 +438,8 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         save.click();
       }
     });
-    read();
-    baseline = structuredClone(draft);
+    renderHero();
     render();
+    window.addEventListener("pagehide", () => { void releaseHero(heroAsset); void releaseHero(pendingHeroCandidate); });
   }
 </script>

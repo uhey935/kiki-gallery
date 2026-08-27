@@ -193,6 +193,27 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
+            pattern: "/editor/api/exhibitions-hero/upload/[contentId]",
+            entrypoint: "./src/editor/routes/exhibitions-hero-asset-upload.ts",
+            prerender: false,
+          });
+          injectRoute({
+            pattern: "/editor/api/exhibitions-hero/create-upload",
+            entrypoint:
+              "./src/editor/routes/exhibitions-create-hero-asset-upload.ts",
+            prerender: false,
+          });
+          injectRoute({
+            pattern: "/editor/api/exhibitions-hero/release",
+            entrypoint: "./src/editor/routes/exhibitions-hero-asset-release.ts",
+            prerender: false,
+          });
+          injectRoute({
+            pattern: "/editor/api/exhibitions-hero-preview/[contentId]/[workspaceId]/[token]",
+            entrypoint: "./src/editor/routes/exhibitions-hero-preview-asset.ts",
+            prerender: false,
+          });
+          injectRoute({
             pattern: "/editor/api/exhibitions-publish/[contentId]",
             entrypoint: "./src/editor/routes/exhibitions-publish.ts",
             prerender: false,

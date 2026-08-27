@@ -1,6 +1,6 @@
 ---
 import type { ExhibitionsEditorDraftState } from "../../editor/exhibitions-draft-state";
-const { draft } = Astro.props as { draft: ExhibitionsEditorDraftState };
+const { draft, create = false } = Astro.props as { draft: ExhibitionsEditorDraftState; create?: boolean };
 const shared = draft.shared.state === "editable" ? draft.shared.value : undefined;
 const localized = (locale: "ja" | "en") => draft.locales[locale].state === "editable" ? draft.locales[locale].value : undefined;
 const ja = localized("ja");
@@ -24,7 +24,22 @@ const en = localized("en");
         </div>
       </fieldset>
       <label><span>Display artists</span><select name="shared.display_artists"><option value="default" selected={shared.display_artists === undefined}>Default</option><option value="true" selected={shared.display_artists === true}>Yes</option><option value="false" selected={shared.display_artists === false}>No</option></select></label>
-      <label class="editor-field-wide"><span>Hero image <small class="editor-field-badge">Required</small></span><input name="shared.hero.image" value={shared.hero.image} /></label>
+      <section class="editor-field-wide editor-hero-asset" data-editor-field="shared.hero.image" data-exhibitions-hero data-create={String(create)}>
+        <header><span>Hero image <small class="editor-field-badge">Required</small></span></header>
+        <input type="hidden" name="shared.hero.image" value={create ? "" : shared.hero.image} data-exhibitions-hero-path />
+        <div data-exhibitions-hero-current hidden={create}>
+          <img src={create ? undefined : shared.hero.image} alt="" data-exhibitions-hero-thumbnail />
+          <p><strong data-exhibitions-hero-state>{create ? "New image · temporary / unsaved" : "Canonical · saved"}</strong></p>
+          <code data-exhibitions-hero-canonical-path>{create ? "" : shared.hero.image}</code>
+          <div class="editor-asset-actions"><button type="button" data-exhibitions-hero-replace>Replace</button><button type="button" data-exhibitions-hero-remove>Remove</button></div>
+        </div>
+        <div class="editor-hero-drop" data-exhibitions-hero-drop hidden={!create}>
+          <p>Drag & drop a JPEG, PNG, WebP, or AVIF image here</p><button type="button" data-exhibitions-hero-select>Select from desktop</button>
+        </div>
+        <input type="file" accept="image/avif,image/jpeg,image/png,image/webp" data-exhibitions-hero-file hidden />
+        <section data-exhibitions-hero-confirm hidden><h3>Replace existing image?</h3><p>The canonical filename already exists with different bytes. It will remain unchanged until Save.</p><div class="editor-hero-compare"><figure><img src={shared.hero.image} alt="" data-exhibitions-hero-old /><figcaption>Existing</figcaption></figure><figure><img alt="" data-exhibitions-hero-new /><figcaption>New · temporary</figcaption></figure></div><button type="button" data-exhibitions-hero-reject>Cancel</button><button type="button" data-exhibitions-hero-accept>Replace</button></section>
+        <p data-exhibitions-hero-status role="status" aria-live="polite"></p>
+      </section>
       <label><span>Orientation <small class="editor-field-badge">Required</small></span><select name="shared.hero.orientation"><option selected={shared.hero.orientation === "portrait"}>portrait</option><option selected={shared.hero.orientation === "landscape"}>landscape</option></select></label>
       <label><span>Position</span><input name="shared.hero.position" value={shared.hero.position ?? ""} /></label><label><span>Treatment</span><input name="shared.hero.treatment" value={shared.hero.treatment ?? ""} /></label>
     </div> : <p>Shared source unavailable.</p>}

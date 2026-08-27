@@ -3,7 +3,6 @@ import {
   type ArtistsEditorDraftState,
 } from "./artists-draft-state.ts";
 import {
-  normalizeExhibitionDateInput,
   validateExhibitionsEditorDraft,
   type ExhibitionsEditorDraftState,
 } from "./exhibitions-draft-state.ts";
@@ -24,7 +23,7 @@ type Draft =
   | ArtistsEditorDraftState
   | ExhibitionsEditorDraftState
   | NewsEditorDraftState;
-type ArtistsCreateHeroCandidate = {
+type CreateHeroCandidate = {
   token: string;
   sha256: string;
   format: "avif" | "jpg" | "png" | "webp";
@@ -140,7 +139,6 @@ function readDraft(
         title: value(`${locale}.title`),
         hero_alt: value(`${locale}.hero_alt`),
         body: value(`${locale}.body`),
-        summary: optional(value(`${locale}.summary`)),
         venue: optional(value(`${locale}.venue`)),
         attendance: optional(value(`${locale}.attendance`)),
         hero_caption: optional(value(`${locale}.hero_caption`)),
@@ -241,38 +239,39 @@ export function startFlatCreateUi(collection: Collection) {
   let pending = false;
   let inputError: string | undefined;
   let statusMessage: string | undefined;
-  const createWorkspaceId = collection === "artists" ? crypto.randomUUID() : "";
-  let artistsHero: ArtistsCreateHeroCandidate | undefined;
+  const heroCollection = collection === "artists" || collection === "exhibitions" ? collection : undefined;
+  const createWorkspaceId = heroCollection ? crypto.randomUUID() : "";
+  let artistsHero: CreateHeroCandidate | undefined;
   const heroRoot = document.querySelector<HTMLElement>(
-    "[data-artists-create-hero]",
+    collection === "artists" ? "[data-artists-create-hero]" : "[data-exhibitions-hero]",
   );
   const heroPath = heroRoot?.querySelector<HTMLInputElement>(
-    "[data-artists-create-hero-path]",
+    collection === "artists" ? "[data-artists-create-hero-path]" : "[data-exhibitions-hero-path]",
   );
   const heroDrop = heroRoot?.querySelector<HTMLElement>(
-    "[data-artists-create-hero-drop]",
+    collection === "artists" ? "[data-artists-create-hero-drop]" : "[data-exhibitions-hero-drop]",
   );
   const heroCurrent = heroRoot?.querySelector<HTMLElement>(
-    "[data-artists-create-hero-current]",
+    collection === "artists" ? "[data-artists-create-hero-current]" : "[data-exhibitions-hero-current]",
   );
   const heroFile = heroRoot?.querySelector<HTMLInputElement>(
-    "[data-artists-create-hero-file]",
+    collection === "artists" ? "[data-artists-create-hero-file]" : "[data-exhibitions-hero-file]",
   );
   const heroThumbnail = heroRoot?.querySelector<HTMLImageElement>(
-    "[data-artists-create-hero-thumbnail]",
+    collection === "artists" ? "[data-artists-create-hero-thumbnail]" : "[data-exhibitions-hero-thumbnail]",
   );
   const heroCanonicalPath = heroRoot?.querySelector<HTMLElement>(
-    "[data-artists-create-hero-canonical-path]",
+    collection === "artists" ? "[data-artists-create-hero-canonical-path]" : "[data-exhibitions-hero-canonical-path]",
   );
   const heroStatus = heroRoot?.querySelector<HTMLElement>(
-    "[data-artists-create-hero-status]",
+    collection === "artists" ? "[data-artists-create-hero-status]" : "[data-exhibitions-hero-status]",
   );
   const ownerContentId = () => `create-${createWorkspaceId}`;
   const heroPreviewUrl = (token: string) =>
-    `/editor/api/artists-hero-preview/${encodeURIComponent(ownerContentId())}/${encodeURIComponent(createWorkspaceId)}/${encodeURIComponent(token)}`;
+    `/editor/api/${heroCollection}-hero-preview/${encodeURIComponent(ownerContentId())}/${encodeURIComponent(createWorkspaceId)}/${encodeURIComponent(token)}`;
   const releaseHero = async (candidate = artistsHero, keepalive = false) => {
     if (!candidate) return;
-    await fetch("/editor/api/artists-hero/release", {
+    await fetch(`/editor/api/${heroCollection}-hero/release`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -288,7 +287,7 @@ export function startFlatCreateUi(collection: Collection) {
     const validId = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(contentId.value);
     const proposed =
       artistsHero && validId
-        ? `/images/artists/${contentId.value}.${artistsHero.format}`
+        ? `/images/${heroCollection}/${contentId.value}.${artistsHero.format}`
         : "";
     heroPath.value = proposed;
     heroDrop.hidden = Boolean(artistsHero);
@@ -356,7 +355,7 @@ export function startFlatCreateUi(collection: Collection) {
   };
   const read = () => {
     try {
-      if (collection === "artists") syncHero();
+      if (heroCollection) syncHero();
       draft = readDraft(collection, form, draft);
       inputError = undefined;
       statusMessage = undefined;
@@ -373,7 +372,7 @@ export function startFlatCreateUi(collection: Collection) {
     body.set("file", file);
     body.set("createWorkspaceId", createWorkspaceId);
     try {
-      const response = await fetch("/editor/api/artists-hero/create-upload", {
+      const response = await fetch(`/editor/api/${heroCollection}-hero/create-upload`, {
         method: "POST",
         body,
       });
@@ -396,12 +395,12 @@ export function startFlatCreateUi(collection: Collection) {
       if (heroFile) heroFile.value = "";
     }
   };
-  if (collection === "artists" && heroRoot && heroFile && heroDrop) {
+  if (heroCollection && heroRoot && heroFile && heroDrop) {
     heroRoot
-      .querySelector("[data-artists-create-hero-select]")
+      .querySelector(collection === "artists" ? "[data-artists-create-hero-select]" : "[data-exhibitions-hero-select]")
       ?.addEventListener("click", () => heroFile.click());
     heroRoot
-      .querySelector("[data-artists-create-hero-replace]")
+      .querySelector(collection === "artists" ? "[data-artists-create-hero-replace]" : "[data-exhibitions-hero-replace]")
       ?.addEventListener("click", () => heroFile.click());
     heroFile.addEventListener("change", () => {
       const file = heroFile.files?.[0];
@@ -421,7 +420,7 @@ export function startFlatCreateUi(collection: Collection) {
       if (file) void uploadArtistsHero(file);
     });
     heroRoot
-      .querySelector("[data-artists-create-hero-remove]")
+      .querySelector(collection === "artists" ? "[data-artists-create-hero-remove]" : "[data-exhibitions-hero-remove]")
       ?.addEventListener("click", () => {
         const previous = artistsHero;
         artistsHero = undefined;
@@ -439,13 +438,13 @@ export function startFlatCreateUi(collection: Collection) {
   document.addEventListener("change", read);
   const request = async (url: string, forPreview = false) => {
     let requestDraft = draft;
-    if (collection === "artists" && artistsHero && forPreview) {
+    if (heroCollection && artistsHero && forPreview) {
       requestDraft = structuredClone(draft);
-      (requestDraft as ArtistsEditorDraftState).data.hero.image =
-        heroPreviewUrl(artistsHero.token);
+      if (collection === "artists") (requestDraft as ArtistsEditorDraftState).data.hero.image = heroPreviewUrl(artistsHero.token);
+      else if ((requestDraft as ExhibitionsEditorDraftState).shared.state === "editable") (requestDraft as ExhibitionsEditorDraftState & { shared: { state: "editable"; value: { hero: { image: string } } } }).shared.value.hero.image = heroPreviewUrl(artistsHero.token);
     }
     const requestBody =
-      collection === "artists" && !forPreview
+      heroCollection && !forPreview
         ? {
             draft: requestDraft,
             hero: artistsHero

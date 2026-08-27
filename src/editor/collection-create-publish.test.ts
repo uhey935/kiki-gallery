@@ -133,17 +133,18 @@ test("first Save transitions every flat collection to Publish with its new untra
           }
         }
         const contentId = `browser-new-${collection}`;
-        if (collection === "artists") {
-          const heroSrc = (
-            sourceDraft as NonNullable<
-              ReturnType<typeof createArtistsEditorDraft>
-            >
-          ).data.hero.image;
+        if (collection === "artists" || collection === "exhibitions") {
+          const heroSrc = collection === "artists"
+            ? (sourceDraft as NonNullable<ReturnType<typeof createArtistsEditorDraft>>).data.hero.image
+            : (sourceDraft as NonNullable<ReturnType<typeof createExhibitionsEditorDraft>>).shared.state === "editable"
+              ? (sourceDraft as NonNullable<ReturnType<typeof createExhibitionsEditorDraft>> & { shared: { state: "editable"; value: { hero: { image: string } } } }).shared.value.hero.image
+              : "";
+          assert.ok(heroSrc);
           const asset = path.join(repository, `public${heroSrc}`);
           await fs.mkdir(path.dirname(asset), { recursive: true });
           await fs.copyFile(path.resolve(`public${heroSrc}`), asset);
           await git(repository, "add", "--", path.relative(repository, asset));
-          await git(repository, "commit", "-m", "Add existing Artist Hero");
+          await git(repository, "commit", "-m", `Add existing ${collection} Hero`);
           await git(repository, "push");
         }
         const saved = await create({ ...sourceDraft, contentId } as never, {

@@ -7,6 +7,7 @@ import { isContentId } from "./content-id.ts";
 import { loadExhibitionUnit } from "../content-loaders/exhibitions/repository.ts";
 import { findNewsReferenceSpan } from "./news-reference-update.ts";
 import { createExhibitionsEditorDraft } from "./exhibitions-draft-state.ts";
+import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
 const execFile = promisify(execFileCallback),
   names = ["en.md", "index.yaml", "ja.md"] as const,
   sha = (v: Uint8Array | string) =>
@@ -55,6 +56,7 @@ export class ExhibitionsRenameError extends Error {
     | "reference-rewrite-unsupported"
     | "prospective-validation-failed"
     | "plan-stale"
+    | "pending-hero-publish-evidence"
     | "lifecycle-lock-conflict"
     | "unsafe-repository"
     | "rename-failed-rolled-back"
@@ -252,8 +254,11 @@ export async function planExhibitionsRename(input: {
     input.sourceContentId === input.destinationContentId
   )
     throw new ExhibitionsRenameError("Invalid IDs", "invalid-content-id");
+  const repositoryRoot = path.resolve(input.repositoryRoot ?? ".");
+  if (await new HeroAssetPublishEvidenceStore(repositoryRoot).read("exhibitions", input.sourceContentId))
+    throw new ExhibitionsRenameError("Publish the pending Exhibition Hero asset before Rename.", "pending-hero-publish-evidence");
   return build(
-    input.repositoryRoot ?? ".",
+    repositoryRoot,
     input.sourceContentId,
     input.destinationContentId,
     randomUUID(),
@@ -265,10 +270,13 @@ export async function executeExhibitionsRename(
   repositoryRoot = path.resolve("."),
   hooks?: { afterSourceMove?: () => Promise<void> },
 ) {
+  repositoryRoot = path.resolve(repositoryRoot);
   const copy = { ...plan } as any;
   delete copy.planHash;
   if (hashPlan(copy) !== plan.planHash)
     throw new ExhibitionsRenameError("Plan identity invalid", "plan-stale");
+  if (await new HeroAssetPublishEvidenceStore(repositoryRoot).read("exhibitions", plan.sourceContentId))
+    throw new ExhibitionsRenameError("Publish the pending Exhibition Hero asset before Rename.", "pending-hero-publish-evidence");
   const fresh = await build(
     repositoryRoot,
     plan.sourceContentId,

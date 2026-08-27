@@ -256,6 +256,7 @@ test("Exhibitions operator flow validates, previews, saves, and publishes", asyn
   page,
   context,
 }) => {
+  test.setTimeout(60_000);
   const contentId = "browser-acceptance-exhibition";
   const createTitle = "Browser Acceptance Exhibition Draft";
   await page.goto("/editor/exhibitions/create/");
@@ -263,7 +264,7 @@ test("Exhibitions operator flow validates, previews, saves, and publishes", asyn
   await page.locator('input[name="contentId"]').fill(contentId);
   await page
     .locator('textarea[name="shared.artists"]')
-    .fill("browser-acceptance-artist");
+    .fill("reiko-kinoshita");
   await page.locator('input[name="shared.start_date"]').fill("2026-08-09");
   await page.locator('input[name="shared.end_date"]').fill("2026-08-10");
   await page.locator('input[name="shared.opening_hours.opens"]').fill("13:00");
@@ -276,22 +277,26 @@ test("Exhibitions operator flow validates, previews, saves, and publishes", asyn
   await page
     .locator('textarea[name="ja.body"]')
     .fill("Test-only Exhibition created by the isolated browser fixture.");
-  await page
-    .locator('input[name="shared.hero.image"]')
-    .fill("/images/exhibitions/alana-wilson-2024-04.png");
+  await expect(page.locator('input[name="shared.hero.image"][type="text"]')).toHaveCount(0);
+  await expect(page.locator("[data-exhibitions-hero-drop]")).toBeVisible();
   await page
     .locator('select[name="shared.hero.orientation"]')
     .selectOption("portrait");
   await page
     .locator('textarea[name="ja.hero_alt"]')
     .fill("Browser acceptance Exhibition fixture");
-  const hero = page.locator('input[name="shared.hero.image"]');
-  const originalHero = await hero.inputValue();
-  await hero.fill("");
+  const heroUpload = page.waitForResponse((response) => response.url().endsWith("/editor/api/exhibitions-hero/create-upload") && response.request().method() === "POST");
+  await page.locator("[data-exhibitions-hero-file]").setInputFiles(path.resolve("public/images/exhibitions/group-exhibition-2026-03.webp"));
+  expect((await heroUpload).ok()).toBe(true);
+  await expect(page.locator("[data-exhibitions-hero-canonical-path]")).toHaveText(`/images/exhibitions/${contentId}.webp`);
+  const release = page.waitForResponse((response) => response.url().endsWith("/editor/api/exhibitions-hero/release") && response.request().method() === "POST");
+  await page.locator("[data-exhibitions-hero-remove]").click();
+  expect((await release).ok()).toBe(true);
   await expect(page.locator("[data-create-save]")).toBeDisabled();
   await expect(page.locator("[data-create-preview]")).toBeDisabled();
-
-  await hero.fill(originalHero);
+  const replacement = page.waitForResponse((response) => response.url().endsWith("/editor/api/exhibitions-hero/create-upload") && response.request().method() === "POST");
+  await page.locator("[data-exhibitions-hero-file]").setInputFiles(path.resolve("public/images/exhibitions/group-exhibition-2026-03.webp"));
+  expect((await replacement).ok()).toBe(true);
   await expect(page.locator("[data-create-save]")).toBeEnabled();
 
   const preview = await openPreview(
