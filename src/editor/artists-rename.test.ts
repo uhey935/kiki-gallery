@@ -13,6 +13,7 @@ import {
   planArtistsRename,
 } from "./artists-rename.ts";
 import { materializeLegacyArtistsFixture } from "./test-flat-artists-fixture.ts";
+import { planArtistsDelete, ArtistsDeleteError } from "./artists-delete.ts";
 
 const execFile = promisify(execFileCallback);
 async function git(root: string, ...args: string[]) {
@@ -284,11 +285,93 @@ test("Publish stages only old/new Artist paths and exact evidence reference edit
     );
     assert.equal(
       await git(repository, "status", "--short"),
-      "?? .kiki-editor/\n?? unrelated.txt",
+      "?? unrelated.txt",
     );
     assert.equal(
       await git(remote, "rev-parse", "refs/heads/main"),
       result.commit,
     );
+  });
+});
+
+test("an unpublished Artist Rename blocks reverse, chained Rename, and Delete", async () => {
+  await withRepository(async (repository) => {
+    const first = await planArtistsRename({
+      repositoryRoot: repository,
+      sourceContentId: "reiko-kinoshita",
+      destinationContentId: "reiko-renamed",
+    });
+    const renamed = await executeArtistsRename(first, repository);
+    for (const destinationContentId of ["reiko-kinoshita", "reiko-twice-renamed"])
+      await assert.rejects(
+        planArtistsRename({
+          repositoryRoot: repository,
+          sourceContentId: "reiko-renamed",
+          destinationContentId,
+        }),
+        (error: unknown) =>
+          error instanceof ArtistsRenameError && error.code === "pending-rename-evidence",
+      );
+    await assert.rejects(
+      planArtistsDelete({
+        repositoryRoot: repository,
+        contentId: "reiko-renamed",
+        backupRoot: path.join(repository, "missing-backup"),
+      }),
+      (error: unknown) =>
+        error instanceof ArtistsDeleteError && error.code === "pending-rename-evidence",
+    );
+    assert.ok(
+      await fs.lstat(
+        path.join(repository, `.kiki-editor/content-lifecycle/operations/${renamed.operationId}/operation.json`),
+      ),
+    );
+    assert.equal(
+      await fs.lstat(path.join(repository, "src/content/artists/reiko-kinoshita")).catch(() => undefined),
+      undefined,
+    );
+  });
+});
+
+test("Artist Rename records a failed push commit and retries only that commit before cleanup", async () => {
+  await withRepository(async (repository, remote) => {
+    const plan = await planArtistsRename({
+      repositoryRoot: repository,
+      sourceContentId: "reiko-kinoshita",
+      destinationContentId: "reiko-renamed",
+    });
+    const renamed = await executeArtistsRename(plan, repository);
+    const unavailable = `${remote}.unavailable`;
+    await fs.rename(remote, unavailable);
+    const failed = await publishSavedArtistsEntry(
+      renamed.draft,
+      structuredClone(renamed.draft),
+      false,
+      repository,
+      path.join(repository, "src/content/artists"),
+    );
+    assert.equal(failed.state, "committed-push-failed");
+    const operation = path.join(
+      repository,
+      `.kiki-editor/content-lifecycle/operations/${renamed.operationId}`,
+    );
+    const evidence = JSON.parse(await fs.readFile(path.join(operation, "operation.json"), "utf8"));
+    assert.equal(evidence.state, "committed-push-failed");
+    assert.equal(evidence.publication.commit, failed.commit);
+    assert.ok((await fs.readdir(path.join(operation, "recovery"))).length > 0);
+    await fs.rename(unavailable, remote);
+    const before = await git(repository, "rev-list", "--count", "HEAD");
+    const published = await publishSavedArtistsEntry(
+      renamed.draft,
+      structuredClone(renamed.draft),
+      false,
+      repository,
+      path.join(repository, "src/content/artists"),
+    );
+    assert.equal(published.state, "published");
+    assert.equal(published.commit, failed.commit);
+    assert.equal(await git(repository, "rev-list", "--count", "HEAD"), before);
+    assert.equal(await fs.lstat(operation).catch(() => undefined), undefined);
+    assert.equal(await git(remote, "rev-parse", "refs/heads/main"), failed.commit);
   });
 });

@@ -16,11 +16,19 @@ import {
   type WorksAssetPublishManifestEntry,
 } from "./works-asset-publish-manifest.ts";
 import { WORKS_ASSET_POLICY } from "./works-asset-policy.ts";
+import {
+  abandonRenamePublicationIntent,
+  bindRenamePublicationCommit,
+  finalizePublishedRename,
+  prepareRenamePublication,
+  publishRecordedRenameCommit,
+  type LocatedRenameEvidence,
+} from "./content-rename-evidence-lifecycle.ts";
 
 const execFile = promisify(execFileCallback);
 
 export type WorksPublishResult =
-  | { state: "published"; commit: string; branch: string; remote: string }
+  | { state: "published"; commit: string; branch: string; remote: string; cleanupError?: string }
   | {
       state: "committed-push-failed";
       commit: string;
@@ -36,6 +44,7 @@ export type WorksPublishInspection = {
   diff: string;
   commitMessage: string;
   files: string[];
+  locatedRenameEvidence?: LocatedRenameEvidence;
 };
 
 export type WorksRenamePublishEvidence = {
@@ -81,7 +90,7 @@ async function renamePublishPaths(
     };
   };
   if (
-    record.state !== "completed" ||
+    !["completed", "committed-push-failed"].includes(record.state ?? "") ||
     record.operation !== "works-rename" ||
     record.plan?.planHash !== evidence.planHash ||
     record.plan.destinationContentId !== contentId ||
@@ -91,7 +100,15 @@ async function renamePublishPaths(
       "Rename Publish evidence does not match this workspace",
       "unsafe-repository",
     );
-  return record.plan;
+  return {
+    plan: record.plan,
+    located: {
+      operationId: evidence.operationId,
+      directory: path.dirname(file),
+      file,
+      record,
+    } as LocatedRenameEvidence,
+  };
 }
 
 export class WorksPublishError extends Error {
@@ -289,11 +306,12 @@ export async function inspectWorksPublish(
         ({ file }) => file,
       )
     : [];
-  const renamePlan = await renamePublishPaths(
+  const renameResult = await renamePublishPaths(
     repositoryRoot,
     contentId,
     renameEvidence,
   );
+  const renamePlan = renameResult?.plan;
   const allowed = renamePlan
     ? renamePlan.publishPaths!
     : [...contentFiles, ...assetFiles];
@@ -317,6 +335,7 @@ export async function inspectWorksPublish(
     diff: await git(["diff", "--", ...contentFiles]),
     commitMessage: worksPublishCommitMessage(contentId),
     files,
+    locatedRenameEvidence: renameResult?.located,
   };
 }
 
@@ -358,6 +377,29 @@ export async function publishSavedWorksEntry(
     );
 
   const git = createGit(repositoryRoot);
+  const retryContext = await repositoryContext(git, repositoryRoot);
+  const retryEvidence = await renamePublishPaths(repositoryRoot, draft.contentId, renameEvidence);
+  if (retryEvidence && ["committed-push-failed", "push-outcome-uncertain"].includes(retryEvidence.located.record.state)) {
+    if ((await git(["diff", "--cached", "--name-only", "-z"])).length)
+      throw new WorksPublishError("Rename push retry requires a clean index", "unsafe-repository");
+    try {
+      const commit = await publishRecordedRenameCommit(
+        retryEvidence.located,
+        repositoryRoot,
+        retryContext.branch,
+        `${retryContext.remote}/${retryContext.branch}`,
+        async (recorded, branch) => { await git(["push", retryContext.remote, `${recorded}:${branch}`]); },
+        async (recorded, branch) => {
+          await git(["fetch", "--no-tags", retryContext.remote, `refs/heads/${branch}`]);
+          return git(["merge-base", "--is-ancestor", recorded, "FETCH_HEAD"]).then(() => true, () => false);
+        },
+      );
+      const cleanup = await finalizePublishedRename(retryEvidence.located);
+      return { state: "published", commit, branch: retryContext.branch, remote: retryContext.remote, ...(!cleanup.cleaned ? { cleanupError: cleanup.error } : {}) };
+    } catch (error) {
+      throw new WorksPublishError("Rename push recovery failed", "unsafe-repository", { cause: error });
+    }
+  }
   const verifiedAssets = manifest
     ? await verifyManifestAssets(manifest, draft.contentId, repositoryRoot)
     : [];
@@ -400,11 +442,12 @@ export async function publishSavedWorksEntry(
           "canonical-mismatch",
         );
     }
-    const renamePlan = await renamePublishPaths(
+    const renameResult = await renamePublishPaths(
       repositoryRoot,
       draft.contentId,
       renameEvidence,
     );
+    const renamePlan = renameResult?.plan;
     if (renamePlan) {
       for (const source of renamePlan.sourceFiles ?? []) {
         const oldStatus = await git([
@@ -460,8 +503,16 @@ export async function publishSavedWorksEntry(
           );
       }
     }
+    if (inspection.locatedRenameEvidence)
+      await prepareRenamePublication(
+        inspection.locatedRenameEvidence,
+        inspection.branch,
+        `${inspection.remote}/${inspection.branch}`,
+      );
     await git(["commit", "-m", inspection.commitMessage]);
   } catch (error) {
+    if (inspection.locatedRenameEvidence)
+      await abandonRenamePublicationIntent(inspection.locatedRenameEvidence).catch(() => undefined);
     await git(["reset", "--", ...inspection.files]).catch(() => undefined);
     if (error instanceof WorksPublishError) throw error;
     throw new WorksPublishError(
@@ -473,15 +524,27 @@ export async function publishSavedWorksEntry(
     );
   }
   const commit = await git(["rev-parse", "HEAD"]);
-  try {
-    await git(["push", inspection.remote, `HEAD:${inspection.branch}`]);
-    return {
-      state: "published",
+  if (inspection.locatedRenameEvidence)
+    await bindRenamePublicationCommit(
+      inspection.locatedRenameEvidence,
       commit,
-      branch: inspection.branch,
-      remote: inspection.remote,
-    };
+      inspection.branch,
+      `${inspection.remote}/${inspection.branch}`,
+    );
+  try {
+    if (inspection.locatedRenameEvidence)
+      await publishRecordedRenameCommit(
+        inspection.locatedRenameEvidence,
+        repositoryRoot,
+        inspection.branch,
+        `${inspection.remote}/${inspection.branch}`,
+        async (recorded, branch) => { await git(["push", inspection.remote, `${recorded}:${branch}`]); },
+        async () => false,
+      );
+    else await git(["push", inspection.remote, `HEAD:${inspection.branch}`]);
   } catch (error) {
+    if (inspection.locatedRenameEvidence && inspection.locatedRenameEvidence.record.state !== "committed-push-failed")
+      throw new WorksPublishError("Rename push outcome requires manual recovery", "unsafe-repository", { cause: error });
     return {
       state: "committed-push-failed",
       commit,
@@ -490,4 +553,9 @@ export async function publishSavedWorksEntry(
       error: error instanceof Error ? error.message : "Git push failed",
     };
   }
+  if (inspection.locatedRenameEvidence) {
+    const cleanup = await finalizePublishedRename(inspection.locatedRenameEvidence);
+    return { state: "published", commit, branch: inspection.branch, remote: inspection.remote, ...(!cleanup.cleaned ? { cleanupError: cleanup.error } : {}) };
+  }
+  return { state: "published", commit, branch: inspection.branch, remote: inspection.remote };
 }

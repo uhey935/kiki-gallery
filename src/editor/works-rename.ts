@@ -19,6 +19,7 @@ import {
   releaseWorksAssetRepositoryLock,
   type RepositoryLock,
 } from "./works-asset-repository-lock.ts";
+import { assertNoActiveRenameEvidence } from "./content-rename-evidence-lifecycle.ts";
 
 const execFile = promisify(execFileCallback);
 const COLLECTIONS = [
@@ -95,7 +96,8 @@ export class WorksRenameError extends Error {
     | "lifecycle-lock-conflict"
     | "unsafe-repository"
     | "rename-failed-rolled-back"
-    | "manual-recovery-required";
+    | "manual-recovery-required"
+    | "pending-rename-evidence";
   constructor(
     message: string,
     code: WorksRenameError["code"],
@@ -677,8 +679,14 @@ export async function planWorksRename(input: {
       "Publish or reconcile the unpublished asset manifest before Rename.",
       "unpublished-asset-manifest",
     );
+  const repositoryRoot = path.resolve(input.repositoryRoot ?? ".");
+  try {
+    await assertNoActiveRenameEvidence(repositoryRoot, "works", input.sourceContentId);
+  } catch (error) {
+    throw new WorksRenameError("Publish the active Work Rename before renaming again.", "pending-rename-evidence", { cause: error });
+  }
   return buildPlan({
-    repositoryRoot: path.resolve(input.repositoryRoot ?? "."),
+    repositoryRoot,
     sourceContentId: input.sourceContentId,
     destinationContentId: input.destinationContentId,
     operationId: randomUUID(),
@@ -709,6 +717,11 @@ export async function executeWorksRename(
       "Rename plan identity is invalid.",
       "plan-stale",
     );
+  try {
+    await assertNoActiveRenameEvidence(repositoryRoot, "works", reviewed.sourceContentId);
+  } catch (error) {
+    throw new WorksRenameError("Publish the active Work Rename before renaming again.", "pending-rename-evidence", { cause: error });
+  }
   const state = await ensureDirectory(repositoryRoot, ".kiki-editor");
   const lifecycle = await ensureDirectory(state, "content-lifecycle");
   const operations = await ensureDirectory(lifecycle, "operations");

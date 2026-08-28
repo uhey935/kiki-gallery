@@ -8,6 +8,7 @@ import { loadExhibitionUnit } from "../content-loaders/exhibitions/repository.ts
 import { findNewsReferenceSpan } from "./news-reference-update.ts";
 import { createExhibitionsEditorDraft } from "./exhibitions-draft-state.ts";
 import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
+import { assertNoActiveRenameEvidence } from "./content-rename-evidence-lifecycle.ts";
 const execFile = promisify(execFileCallback),
   names = ["en.md", "index.yaml", "ja.md"] as const,
   sha = (v: Uint8Array | string) =>
@@ -57,6 +58,7 @@ export class ExhibitionsRenameError extends Error {
     | "prospective-validation-failed"
     | "plan-stale"
     | "pending-hero-publish-evidence"
+    | "pending-rename-evidence"
     | "lifecycle-lock-conflict"
     | "unsafe-repository"
     | "rename-failed-rolled-back"
@@ -255,6 +257,8 @@ export async function planExhibitionsRename(input: {
   )
     throw new ExhibitionsRenameError("Invalid IDs", "invalid-content-id");
   const repositoryRoot = path.resolve(input.repositoryRoot ?? ".");
+  try { await assertNoActiveRenameEvidence(repositoryRoot, "exhibitions", input.sourceContentId); }
+  catch (error) { throw new ExhibitionsRenameError("Publish the active Exhibition Rename before renaming again.", "pending-rename-evidence", { cause: error }); }
   if (await new HeroAssetPublishEvidenceStore(repositoryRoot).read("exhibitions", input.sourceContentId))
     throw new ExhibitionsRenameError("Publish the pending Exhibition Hero asset before Rename.", "pending-hero-publish-evidence");
   return build(
@@ -277,6 +281,8 @@ export async function executeExhibitionsRename(
     throw new ExhibitionsRenameError("Plan identity invalid", "plan-stale");
   if (await new HeroAssetPublishEvidenceStore(repositoryRoot).read("exhibitions", plan.sourceContentId))
     throw new ExhibitionsRenameError("Publish the pending Exhibition Hero asset before Rename.", "pending-hero-publish-evidence");
+  try { await assertNoActiveRenameEvidence(repositoryRoot, "exhibitions", plan.sourceContentId); }
+  catch (error) { throw new ExhibitionsRenameError("Publish the active Exhibition Rename before renaming again.", "pending-rename-evidence", { cause: error }); }
   const fresh = await build(
     repositoryRoot,
     plan.sourceContentId,

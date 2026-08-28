@@ -26,6 +26,7 @@ import {
 } from "./content-lifecycle-lock.ts";
 import { isContentId } from "./content-id.ts";
 import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
+import { assertNoActiveRenameEvidence } from "./content-rename-evidence-lifecycle.ts";
 
 const execFile = promisify(execFileCallback);
 const POLICY_COMMIT = "fe2d6fe2c1c5ff5ce1bf255af8207bfa43681971";
@@ -66,7 +67,8 @@ export class ArtistsDeleteError extends Error {
     | "unsafe-repository"
     | "delete-failed"
     | "publish-failed"
-    | "pending-hero-publish-evidence";
+    | "pending-hero-publish-evidence"
+    | "pending-rename-evidence";
   constructor(
     message: string,
     code: ArtistsDeleteError["code"],
@@ -315,6 +317,11 @@ export async function planArtistsDelete(input: {
       "Invalid Artists Content ID.",
       "invalid-content-id",
     );
+  try {
+    await assertNoActiveRenameEvidence(repositoryRoot, "artists", input.contentId);
+  } catch (error) {
+    throw new ArtistsDeleteError("Publish the active Artist Rename before Delete.", "pending-rename-evidence", { cause: error });
+  }
   if (
     await new HeroAssetPublishEvidenceStore(repositoryRoot).read(
       "artists",
@@ -410,6 +417,11 @@ export async function executeArtistsDelete(
     beforeRollback?: () => Promise<void>;
   },
 ) {
+  try {
+    await assertNoActiveRenameEvidence(repositoryRoot, "artists", reviewedPlan.contentId);
+  } catch (error) {
+    throw new ArtistsDeleteError("Publish the active Artist Rename before Delete.", "pending-rename-evidence", { cause: error });
+  }
   repositoryRoot = path.resolve(repositoryRoot);
   assertPlanIdentity(reviewedPlan);
   if (

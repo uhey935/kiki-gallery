@@ -24,6 +24,7 @@ import { acquireWorksDeleteLocks } from "./content-lifecycle-lock.ts";
 import { assertContentLifecycleLock } from "./content-lifecycle-lock.ts";
 import { assertWorksAssetRepositoryLock } from "./works-asset-repository-lock.ts";
 import { isContentId } from "./content-id.ts";
+import { assertNoActiveRenameEvidence } from "./content-rename-evidence-lifecycle.ts";
 
 const execFile = promisify(execFileCallback);
 const POLICY_COMMIT = "fe2d6fe2c1c5ff5ce1bf255af8207bfa43681971";
@@ -87,7 +88,8 @@ export class WorksDeleteError extends Error {
     | "rollback-failed"
     | "unsafe-repository"
     | "delete-failed"
-    | "publish-failed";
+    | "publish-failed"
+    | "pending-rename-evidence";
   constructor(
     message: string,
     code: WorksDeleteError["code"],
@@ -478,11 +480,17 @@ export async function planWorksDelete(input: {
   pendingAssetState?: boolean;
   unpublishedAssetCount?: number;
 }) {
+  const repositoryRoot = path.resolve(input.repositoryRoot ?? ".");
   if (!isContentId(input.contentId))
     throw new WorksDeleteError(
       "Invalid Works Content ID.",
       "invalid-content-id",
     );
+  try {
+    await assertNoActiveRenameEvidence(repositoryRoot, "works", input.contentId);
+  } catch (error) {
+    throw new WorksDeleteError("Publish the active Work Rename before Delete.", "pending-rename-evidence", { cause: error });
+  }
   if (!input.backupRoot?.trim())
     throw new WorksDeleteError(
       "Select a verified pre-delete backup generation before review.",
@@ -499,7 +507,7 @@ export async function planWorksDelete(input: {
       "unpublished-asset-manifest",
     );
   return buildPlan({
-    repositoryRoot: path.resolve(input.repositoryRoot ?? "."),
+    repositoryRoot,
     contentId: input.contentId,
     backupRoot: path.resolve(input.backupRoot),
     operationId: randomUUID(),
@@ -542,6 +550,11 @@ export async function executeWorksDelete(
     beforeRollback?: () => Promise<void>;
   },
 ) {
+  try {
+    await assertNoActiveRenameEvidence(repositoryRoot, "works", reviewed.contentId);
+  } catch (error) {
+    throw new WorksDeleteError("Publish the active Work Rename before Delete.", "pending-rename-evidence", { cause: error });
+  }
   repositoryRoot = path.resolve(repositoryRoot);
   const body = { ...reviewed } as Partial<WorksDeletePlan>;
   delete body.planHash;

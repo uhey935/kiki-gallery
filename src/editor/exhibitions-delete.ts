@@ -23,6 +23,7 @@ import {
 } from "./content-lifecycle-lock.ts";
 import { isContentId } from "./content-id.ts";
 import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
+import { assertNoActiveRenameEvidence } from "./content-rename-evidence-lifecycle.ts";
 
 const execFile = promisify(execFileCallback);
 const POLICY_COMMIT = "fe2d6fe2c1c5ff5ce1bf255af8207bfa43681971";
@@ -58,6 +59,7 @@ export class ExhibitionsDeleteError extends Error {
     | "parser-uncertainty"
     | "plan-stale"
     | "pending-hero-publish-evidence"
+    | "pending-rename-evidence"
     | "state-mismatch"
     | "lock-conflict"
     | "rollback-failed"
@@ -231,6 +233,8 @@ export async function planExhibitionsDelete(input: {
       "Invalid Exhibitions Content ID.",
       "invalid-content-id",
     );
+  try { await assertNoActiveRenameEvidence(repositoryRoot, "exhibitions", input.contentId); }
+  catch (error) { throw new ExhibitionsDeleteError("Publish the active Exhibition Rename before Delete.", "pending-rename-evidence", { cause: error }); }
   if (await new HeroAssetPublishEvidenceStore(repositoryRoot).read("exhibitions", input.contentId))
     throw new ExhibitionsDeleteError("Publish the pending Exhibition Hero asset before Delete.", "pending-hero-publish-evidence");
   if (!input.backupRoot?.trim())
@@ -320,6 +324,8 @@ export async function executeExhibitionsDelete(
     beforeRollback?: () => Promise<void>;
   },
 ) {
+  try { await assertNoActiveRenameEvidence(repositoryRoot, "exhibitions", reviewedPlan.contentId); }
+  catch (error) { throw new ExhibitionsDeleteError("Publish the active Exhibition Rename before Delete.", "pending-rename-evidence", { cause: error }); }
   repositoryRoot = path.resolve(repositoryRoot);
   assertPlanIdentity(reviewedPlan);
   if (await new HeroAssetPublishEvidenceStore(repositoryRoot).read("exhibitions", reviewedPlan.contentId))

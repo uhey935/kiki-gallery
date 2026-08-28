@@ -21,10 +21,19 @@ import {
   heroPublishSha256,
   type HeroAssetPublishEvidenceV1,
 } from "./hero-asset-publish-evidence.ts";
+import {
+  abandonRenamePublicationIntent,
+  bindRenamePublicationCommit,
+  finalizePublishedRename,
+  findRenameEvidence,
+  prepareRenamePublication,
+  publishRecordedRenameCommit,
+  type LocatedRenameEvidence,
+} from "./content-rename-evidence-lifecycle.ts";
 const execFile = promisify(execFileCallback);
 type Git = (args: string[]) => Promise<string>;
 export type ExhibitionsPublishResult =
-  | { state: "published"; commit: string; branch: string; remote: string }
+  | { state: "published"; commit: string; branch: string; remote: string; cleanupError?: string }
   | {
       state: "committed-push-failed";
       commit: string;
@@ -100,9 +109,10 @@ async function context(git: Git, expectedRoot: string) {
   }
 }
 type RenameEvidence = {
-  state: "completed";
+  state: "completed" | "committed-push-failed";
   plan: {
     operation: "exhibitions-rename";
+    operationId: string;
     destinationContentId: string;
     repositoryBranch: string;
     repositoryUpstream: string;
@@ -111,6 +121,7 @@ type RenameEvidence = {
   };
   preimages: Record<string, { hash: string; bytes: string }>;
   prospective: Record<string, { hash: string; bytes: string }>;
+  publication?: { commit: string; branch: string; upstream: string };
 };
 const hash = (bytes: Uint8Array) =>
   createHash("sha256").update(bytes).digest("hex");
@@ -232,50 +243,11 @@ async function completedRenameEvidence(
   repositoryRoot: string,
   contentId: string,
 ) {
-  const operations = path.join(
-    repositoryRoot,
-    ".kiki-editor/content-lifecycle/operations",
-  );
-  const entries = await fs
-    .readdir(operations, { withFileTypes: true })
-    .catch(() => []);
-  const matches: RenameEvidence[] = [];
-  for (const entry of entries) {
-    if (!entry.isDirectory() || entry.isSymbolicLink()) continue;
-    const file = path.join(operations, entry.name, "operation.json");
-    const stat = await fs.lstat(file).catch(() => undefined);
-    if (!stat?.isFile() || stat.isSymbolicLink()) continue;
-    let evidence: RenameEvidence;
-    try {
-      evidence = JSON.parse(await fs.readFile(file, "utf8")) as RenameEvidence;
-    } catch (error) {
-      throw new ExhibitionsPublishError(
-        `Rename evidence is unreadable: ${path.relative(repositoryRoot, file)}`,
-        "publish-set-mismatch",
-        { cause: error },
-      );
-    }
-    if (
-      evidence.state === "completed" &&
-      evidence.plan?.operation === "exhibitions-rename" &&
-      evidence.plan.destinationContentId === contentId
-    ) {
-      const sourceStillInHead = await execFile(
-        "git",
-        ["cat-file", "-e", `HEAD:${evidence.plan.sourceFile.file}`],
-        { cwd: repositoryRoot },
-      )
-        .then(() => true)
-        .catch(() => false);
-      if (sourceStillInHead) matches.push(evidence);
-    }
+  try {
+    return await findRenameEvidence(repositoryRoot, "exhibitions", contentId);
+  } catch (error) {
+    throw new ExhibitionsPublishError("Exhibition Rename evidence is invalid or ambiguous", "publish-set-mismatch", { cause: error });
   }
-  if (matches.length > 1)
-    throw new ExhibitionsPublishError(
-      "Multiple pending Rename records match this Exhibition.",
-      "publish-set-mismatch",
-    );
-  return matches[0];
 }
 export async function inspectExhibitionsPublish(
   contentId: string,
@@ -312,10 +284,11 @@ export async function inspectExhibitionsPublish(
         "unsafe-repository",
       );
   }
-  const renameEvidence = await completedRenameEvidence(
+  const locatedRenameEvidence = await completedRenameEvidence(
     repositoryRoot,
     contentId,
   );
+  const renameEvidence = locatedRenameEvidence?.record as unknown as RenameEvidence | undefined;
   if (renameEvidence && heroEvidence)
     throw new ExhibitionsPublishError(
       "Rename Publish cannot consume pending Hero asset evidence",
@@ -382,6 +355,7 @@ export async function inspectExhibitionsPublish(
     file,
     files,
     evidence: renameEvidence,
+    locatedRenameEvidence,
     commitMessage: exhibitionsPublishCommitMessage(contentId),
   };
 }
@@ -409,6 +383,30 @@ export async function publishSavedExhibitionsEntry(
       "canonical-mismatch",
     );
   const git = createGit(repositoryRoot);
+  const repositoryContext = await context(git, repositoryRoot);
+  const renameEvidence = await completedRenameEvidence(repositoryRoot, draft.contentId);
+  if (["committed-push-failed", "push-outcome-uncertain"].includes(renameEvidence?.record.state ?? "")) {
+    if ((await git(["diff", "--cached", "--name-only", "-z"])).length)
+      throw new ExhibitionsPublishError("Rename push retry requires a clean index", "publish-evidence-mismatch");
+    try {
+      const commit = await publishRecordedRenameCommit(
+        renameEvidence,
+        repositoryRoot,
+        repositoryContext.branch,
+        `${repositoryContext.remote}/${repositoryContext.branch}`,
+        async (recorded, branch) => { await git(["push", repositoryContext.remote, `${recorded}:${branch}`]); },
+        async (recorded, branch) => {
+          await git(["fetch", "--no-tags", repositoryContext.remote, `refs/heads/${branch}`]);
+          return git(["merge-base", "--is-ancestor", recorded, "FETCH_HEAD"]).then(() => true, () => false);
+        },
+      );
+      const cleanup = await finalizePublishedRename(renameEvidence);
+      return { state: "published", commit, branch: repositoryContext.branch, remote: repositoryContext.remote, ...(!cleanup.cleaned ? { cleanupError: cleanup.error } : {}) };
+    } catch (error) {
+      if (error instanceof ExhibitionsPublishError) throw error;
+      throw new ExhibitionsPublishError("Rename push recovery failed", "publish-evidence-mismatch", { cause: error });
+    }
+  }
   let publishEvidence: HeroAssetPublishEvidenceV1 | undefined;
   try {
     publishEvidence = await evidenceStore.read("exhibitions", draft.contentId);
@@ -516,8 +514,18 @@ export async function publishSavedExhibitionsEntry(
             );
         }
     }
+    if (inspection.locatedRenameEvidence)
+      await prepareRenamePublication(
+        inspection.locatedRenameEvidence as LocatedRenameEvidence,
+        inspection.branch,
+        `${inspection.remote}/${inspection.branch}`,
+      );
     await git(["commit", "-m", inspection.commitMessage]);
   } catch (error) {
+    if (inspection.locatedRenameEvidence)
+      await abandonRenamePublicationIntent(
+        inspection.locatedRenameEvidence as LocatedRenameEvidence,
+      ).catch(() => undefined);
     await git(["reset", "--", ...inspection.files]).catch(() => undefined);
     if (error instanceof ExhibitionsPublishError) throw error;
     throw new ExhibitionsPublishError("Failed to commit Exhibition", "publish-failed", {
@@ -525,16 +533,27 @@ export async function publishSavedExhibitionsEntry(
     });
   }
   const commit = await git(["rev-parse", "HEAD"]);
-  try {
-    await git(["push", inspection.remote, `HEAD:${inspection.branch}`]);
-    if (publishEvidence) await evidenceStore.delete("exhibitions", draft.contentId);
-    return {
-      state: "published",
+  if (inspection.locatedRenameEvidence)
+    await bindRenamePublicationCommit(
+      inspection.locatedRenameEvidence as LocatedRenameEvidence,
       commit,
-      branch: inspection.branch,
-      remote: inspection.remote,
-    };
+      inspection.branch,
+      `${inspection.remote}/${inspection.branch}`,
+    );
+  try {
+    if (inspection.locatedRenameEvidence)
+      await publishRecordedRenameCommit(
+        inspection.locatedRenameEvidence as LocatedRenameEvidence,
+        repositoryRoot,
+        inspection.branch,
+        `${inspection.remote}/${inspection.branch}`,
+        async (recorded, branch) => { await git(["push", inspection.remote, `${recorded}:${branch}`]); },
+        async () => false,
+      );
+    else await git(["push", inspection.remote, `HEAD:${inspection.branch}`]);
   } catch (error) {
+    if (inspection.locatedRenameEvidence && inspection.locatedRenameEvidence.record.state !== "committed-push-failed")
+      throw new ExhibitionsPublishError("Rename push outcome requires manual recovery", "publish-evidence-mismatch", { cause: error });
     if (publishEvidence?.state === "pending")
       await evidenceStore.write({
         ...publishEvidence,
@@ -549,4 +568,10 @@ export async function publishSavedExhibitionsEntry(
       error: error instanceof Error ? error.message : "Git push failed",
     };
   }
+  if (publishEvidence) await evidenceStore.delete("exhibitions", draft.contentId);
+  if (inspection.locatedRenameEvidence) {
+    const cleanup = await finalizePublishedRename(inspection.locatedRenameEvidence as LocatedRenameEvidence);
+    return { state: "published", commit, branch: inspection.branch, remote: inspection.remote, ...(!cleanup.cleaned ? { cleanupError: cleanup.error } : {}) };
+  }
+  return { state: "published", commit, branch: inspection.branch, remote: inspection.remote };
 }

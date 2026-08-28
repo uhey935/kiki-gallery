@@ -15,6 +15,7 @@ import {
   NewsReferenceStructureError,
 } from "./news-reference-update.ts";
 import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
+import { assertNoActiveRenameEvidence } from "./content-rename-evidence-lifecycle.ts";
 
 const execFile = promisify(execFileCallback);
 const CONTENT_COLLECTIONS = [
@@ -74,6 +75,7 @@ export class ArtistsRenameError extends Error {
     | "plan-stale"
     | "lifecycle-lock-conflict"
     | "pending-hero-publish-evidence"
+    | "pending-rename-evidence"
     | "unsafe-repository"
     | "rename-failed-rolled-back"
     | "manual-recovery-required";
@@ -642,6 +644,11 @@ export async function planArtistsRename(input: {
       "invalid-content-id",
     );
   const repositoryRoot = path.resolve(input.repositoryRoot ?? ".");
+  try {
+    await assertNoActiveRenameEvidence(repositoryRoot, "artists", input.sourceContentId);
+  } catch (error) {
+    throw new ArtistsRenameError("Publish the active Artist Rename before renaming again.", "pending-rename-evidence", { cause: error });
+  }
   if (
     await new HeroAssetPublishEvidenceStore(repositoryRoot).read(
       "artists",
@@ -694,6 +701,11 @@ export async function executeArtistsRename(
       "Publish the pending Artist Hero asset before Rename.",
       "pending-hero-publish-evidence",
     );
+  try {
+    await assertNoActiveRenameEvidence(repositoryRoot, "artists", reviewedPlan.sourceContentId);
+  } catch (error) {
+    throw new ArtistsRenameError("Publish the active Artist Rename before renaming again.", "pending-rename-evidence", { cause: error });
+  }
   const stateRoot = await ensureStateDirectory(repositoryRoot, ".kiki-editor");
   const lifecycle = await ensureStateDirectory(stateRoot, "content-lifecycle");
   const operations = await ensureStateDirectory(lifecycle, "operations");
