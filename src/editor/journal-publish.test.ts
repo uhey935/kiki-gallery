@@ -46,6 +46,18 @@ async function withRepository(
         recursive: true,
       },
     );
+    await fs.mkdir(path.join(repository, "public/images/journal"), {
+      recursive: true,
+    });
+    await fs.copyFile(
+      path.resolve(
+        "public/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+      ),
+      path.join(
+        repository,
+        "public/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+      ),
+    );
     await fs.writeFile(path.join(repository, "unrelated.txt"), "initial\n");
     await git(repository, "init", "-b", "main");
     await git(repository, "config", "user.name", "Editor Test");
@@ -68,6 +80,42 @@ async function savedDraft(repository: string) {
       path.join(repository, "src/content/journal"),
     ),
   );
+}
+
+async function renameValidPublic(repository: string) {
+  await fs.rename(
+    path.join(repository, "src/content/journal/valid-public"),
+    path.join(repository, "src/content/journal/renamed-public"),
+  );
+  return createJournalEditorDraft(
+    await readJournalEditorEntry(
+      "renamed-public",
+      path.join(repository, "src/content/journal"),
+    ),
+  );
+}
+
+async function assertRenamePublishRejectedWithoutGitMutation(
+  repository: string,
+  remote: string,
+) {
+  const beforeHead = await git(repository, "rev-parse", "HEAD");
+  const beforeRemote = await git(remote, "rev-parse", "refs/heads/main");
+  const draft = await renameValidPublic(repository);
+  await assert.rejects(
+    publishSavedJournalEntry(
+      draft,
+      false,
+      repository,
+      path.join(repository, "src/content/journal"),
+    ),
+    (error: unknown) =>
+      error instanceof JournalPublishError &&
+      error.code === "unsafe-repository",
+  );
+  assert.equal(await git(repository, "rev-parse", "HEAD"), beforeHead);
+  assert.equal(await git(remote, "rev-parse", "refs/heads/main"), beforeRemote);
+  assert.equal(await git(repository, "diff", "--cached", "--name-only"), "");
 }
 
 test("publish stages, commits, and pushes only the canonical three-file unit", async () => {
@@ -197,6 +245,57 @@ test("publish includes the exact old deletions and new files after Rename", asyn
       ),
       /index\.yaml/,
     );
+  });
+});
+
+test("no-evidence Rename Publish rejects a modified Hero before staging", async () => {
+  await withRepository(async (repository, remote) => {
+    await fs.appendFile(
+      path.join(
+        repository,
+        "public/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+      ),
+      "modified",
+    );
+    await assertRenamePublishRejectedWithoutGitMutation(repository, remote);
+  });
+});
+
+test("no-evidence Rename Publish rejects an untracked Hero before staging", async () => {
+  await withRepository(async (repository, remote) => {
+    const asset =
+      "public/images/journal/interview-keisuke-matsuda-2026-02-1.jpg";
+    const bytes = await fs.readFile(path.join(repository, asset));
+    await fs.rm(path.join(repository, asset));
+    await git(repository, "add", "-A", "--", asset);
+    await git(repository, "commit", "-m", "Remove tracked Hero fixture");
+    await git(repository, "push", "origin", "main");
+    await fs.writeFile(path.join(repository, asset), bytes);
+    await assertRenamePublishRejectedWithoutGitMutation(repository, remote);
+  });
+});
+
+test("no-evidence Rename Publish rejects a missing Hero before staging", async () => {
+  await withRepository(async (repository, remote) => {
+    await fs.rm(
+      path.join(
+        repository,
+        "public/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+      ),
+    );
+    await assertRenamePublishRejectedWithoutGitMutation(repository, remote);
+  });
+});
+
+test("no-evidence Rename Publish rejects an unsafe Hero before staging", async () => {
+  await withRepository(async (repository, remote) => {
+    const asset = path.join(
+      repository,
+      "public/images/journal/interview-keisuke-matsuda-2026-02-1.jpg",
+    );
+    await fs.rm(asset);
+    await fs.symlink(path.join(repository, "unrelated.txt"), asset);
+    await assertRenamePublishRejectedWithoutGitMutation(repository, remote);
   });
 });
 

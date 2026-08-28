@@ -234,6 +234,27 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
+            pattern: "/editor/api/journal-hero/upload/[contentId]",
+            entrypoint: "./src/editor/routes/journal-hero-asset-upload.ts",
+            prerender: false,
+          });
+          injectRoute({
+            pattern: "/editor/api/journal-hero/create-upload",
+            entrypoint:
+              "./src/editor/routes/journal-create-hero-asset-upload.ts",
+            prerender: false,
+          });
+          injectRoute({
+            pattern: "/editor/api/journal-hero/release",
+            entrypoint: "./src/editor/routes/journal-hero-asset-release.ts",
+            prerender: false,
+          });
+          injectRoute({
+            pattern: "/editor/api/journal-hero-preview/[contentId]/[workspaceId]/[token]",
+            entrypoint: "./src/editor/routes/journal-hero-preview-asset.ts",
+            prerender: false,
+          });
+          injectRoute({
             pattern: "/editor/api/works-preview/create",
             entrypoint: "./src/editor/routes/works-preview-create.ts",
             prerender: false,

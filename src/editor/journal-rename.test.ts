@@ -11,6 +11,7 @@ import {
   JournalRenameError,
   planJournalRename,
 } from "./journal-rename.ts";
+import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
 
 const git = promisify(execFile);
 const fixture = path.resolve(
@@ -72,6 +73,104 @@ test("reviewed Rename moves one exact three-file unit and keeps assets untouched
         .then((value) => value.includes("public/images")),
       false,
     );
+  });
+});
+
+test("Rename execute revalidates pending Hero evidence after review", async () => {
+  await withRepository(async (repository) => {
+    const plan = await planJournalRename({
+      repositoryRoot: repository,
+      sourceContentId: "old-entry",
+      destinationContentId: "new-entry",
+    });
+    await new HeroAssetPublishEvidenceStore(repository).write({
+      version: 1,
+      state: "pending",
+      operation: "hero-asset-save",
+      collection: "journal",
+      contentId: "old-entry",
+      content: [{ path: "src/content/journal/old-entry/index.yaml", sha256: "a".repeat(64), byteSize: 1 }],
+      assets: [{ src: "/images/journal/old-entry.png", path: "public/images/journal/old-entry.png", sha256: "b".repeat(64), byteSize: 1, format: "png", mime: "image/png", width: 1, height: 1 }],
+      createdAt: new Date().toISOString(),
+    });
+    await assert.rejects(
+      executeJournalRename(plan, repository),
+      (error: unknown) => error instanceof JournalRenameError,
+    );
+    assert.ok(await fs.lstat(path.join(repository, "src/content/journal/old-entry")));
+  });
+});
+
+test("Rename plan rejects corrupt Hero evidence", async () => {
+  await withRepository(async (repository) => {
+    const evidence = path.join(
+      repository,
+      ".kiki-editor/publish-evidence/hero-assets/journal/old-entry.v1.json",
+    );
+    await fs.mkdir(path.dirname(evidence), { recursive: true });
+    await fs.writeFile(evidence, "{not-json\n");
+    await assert.rejects(
+      planJournalRename({
+        repositoryRoot: repository,
+        sourceContentId: "old-entry",
+        destinationContentId: "new-entry",
+      }),
+      (error: Error & { code?: string }) =>
+        error.code === "publish-evidence-corrupt",
+    );
+  });
+});
+
+test("Rename execute rejects unsafe Hero evidence introduced after review", async () => {
+  await withRepository(async (repository) => {
+    const plan = await planJournalRename({
+      repositoryRoot: repository,
+      sourceContentId: "old-entry",
+      destinationContentId: "new-entry",
+    });
+    const evidence = path.join(
+      repository,
+      ".kiki-editor/publish-evidence/hero-assets/journal/old-entry.v1.json",
+    );
+    await fs.mkdir(path.dirname(evidence), { recursive: true });
+    await fs.symlink(path.join(repository, "src/content/journal/old-entry/index.yaml"), evidence);
+    await assert.rejects(
+      executeJournalRename(plan, repository),
+      (error: Error & { code?: string }) =>
+        error.code === "publish-evidence-unsafe",
+    );
+    assert.ok(
+      await fs.lstat(path.join(repository, "src/content/journal/old-entry")),
+    );
+  });
+});
+
+test("consumed Hero evidence and unrelated corrupt evidence do not block Rename", async () => {
+  await withRepository(async (repository) => {
+    const store = new HeroAssetPublishEvidenceStore(repository);
+    await store.write({
+      version: 1,
+      state: "pending",
+      operation: "hero-asset-save",
+      collection: "journal",
+      contentId: "old-entry",
+      content: [{ path: "src/content/journal/old-entry/index.yaml", sha256: "a".repeat(64), byteSize: 1 }],
+      assets: [{ src: "/images/journal/old-entry.png", path: "public/images/journal/old-entry.png", sha256: "b".repeat(64), byteSize: 1, format: "png", mime: "image/png", width: 1, height: 1 }],
+      createdAt: new Date().toISOString(),
+    });
+    await store.delete("journal", "old-entry");
+    const unrelated = path.join(
+      repository,
+      ".kiki-editor/publish-evidence/hero-assets/exhibitions/old-entry.v1.json",
+    );
+    await fs.mkdir(path.dirname(unrelated), { recursive: true });
+    await fs.writeFile(unrelated, "{not-json\n");
+    const plan = await planJournalRename({
+      repositoryRoot: repository,
+      sourceContentId: "old-entry",
+      destinationContentId: "new-entry",
+    });
+    assert.equal(plan.operation, "journal-rename");
   });
 });
 
@@ -159,19 +258,18 @@ test("Rename blocks recognized incoming route references", async () => {
 
 test("Rename rejects a symlinked Editor state root before mutation", async () => {
   await withRepository(async (repository) => {
-    const outside = await fs.mkdtemp(path.join(os.tmpdir(), "rename-state-"));
-    await fs.symlink(outside, path.join(repository, ".kiki-editor"));
     const plan = await planJournalRename({
       repositoryRoot: repository,
       sourceContentId: "old-entry",
       destinationContentId: "new-entry",
     });
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), "rename-state-"));
+    await fs.symlink(outside, path.join(repository, ".kiki-editor"));
     try {
       await assert.rejects(
         executeJournalRename(plan, repository),
-        (error: unknown) =>
-          error instanceof JournalRenameError &&
-          error.code === "unsafe-repository",
+        (error: Error & { code?: string }) =>
+          error.code === "publish-evidence-unsafe",
       );
     } finally {
       await fs.rm(outside, { recursive: true, force: true });

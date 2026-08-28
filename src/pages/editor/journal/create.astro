@@ -30,7 +30,9 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           placeholder="lowercase-hyphenated-id"
         />
       </label>
-      <div id="journal-create-fields"><EntryDraftForm draft={draft} /></div>
+      <div id="journal-create-fields">
+        <EntryDraftForm draft={draft} create />
+      </div>
     </main>
     <aside class="editor-panel editor-validation">
       <p class="editor-eyebrow">Create boundary</p>
@@ -61,6 +63,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     type JournalEditorDraftState,
   } from "../../../editor/journal-draft-state";
   import { editorFailureGuidance } from "../../../editor/ux";
+  import type { JournalHeroAssetMetadata } from "../../../editor/journal-hero-assets";
 
   const raw = document.querySelector<HTMLScriptElement>(
     "#journal-create-draft",
@@ -77,6 +80,9 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
   const publishButton = document.querySelector<HTMLButtonElement>(
     "[data-publish-journal]",
   );
+  const cancelButton = document.querySelector<HTMLButtonElement>(
+    "[data-cancel-journal]",
+  );
   const previewButtons = Array.from(
     document.querySelectorAll<HTMLButtonElement>("[data-preview-journal]"),
   );
@@ -89,6 +95,42 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     const initial = JSON.parse(raw) as JournalEditorDraftState;
     let current = initial;
     let pending = false;
+    const createWorkspaceId = crypto.randomUUID();
+    const ownerContentId = `create-${createWorkspaceId}`;
+    const hero = form.querySelector<HTMLElement>("[data-journal-hero]")!;
+    const heroPath = hero.querySelector<HTMLInputElement>("[data-journal-hero-path]")!;
+    const heroCurrent = hero.querySelector<HTMLElement>("[data-journal-hero-current]")!;
+    const heroDrop = hero.querySelector<HTMLElement>("[data-journal-hero-drop]")!;
+    const heroFile = hero.querySelector<HTMLInputElement>("[data-journal-hero-file]")!;
+    const heroThumbnail = hero.querySelector<HTMLImageElement>("[data-journal-hero-thumbnail]")!;
+    const heroCanonicalPath = hero.querySelector<HTMLElement>("[data-journal-hero-canonical-path]")!;
+    const heroStatus = hero.querySelector<HTMLElement>("[data-journal-hero-status]")!;
+    let heroAsset: JournalHeroAssetMetadata | undefined;
+    const previewUrl = (token: string) =>
+      `/editor/api/journal-hero-preview/${encodeURIComponent(ownerContentId)}/${encodeURIComponent(createWorkspaceId)}/${encodeURIComponent(token)}`;
+    const releaseHero = async (asset = heroAsset, keepalive = false) => {
+      if (!asset) return;
+      await fetch("/editor/api/journal-hero/release", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token: asset.token, contentId: ownerContentId, workspaceId: createWorkspaceId }),
+        keepalive,
+      }).catch(() => undefined);
+    };
+    const syncHero = () => {
+      const validId = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(current.contentId);
+      const target = heroAsset && validId
+        ? `/images/journal/${current.contentId}.${heroAsset.format}`
+        : "";
+      heroPath.value = target;
+      if (current.shared.state === "editable") current.shared.value.hero.image = target;
+      heroDrop.hidden = Boolean(heroAsset);
+      heroCurrent.hidden = !heroAsset;
+      if (heroAsset) {
+        heroThumbnail.src = previewUrl(heroAsset.token);
+        heroCanonicalPath.textContent = target;
+      }
+    };
 
     const setReason = (action: string, message: string) => {
       const container = document.querySelector<HTMLElement>(
@@ -151,6 +193,58 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       );
     };
 
+    const uploadHero = async (file: File) => {
+      if (pending) return;
+      pending = true;
+      render("Validating and staging Hero…");
+      try {
+        const data = new FormData();
+        data.append("file", file);
+        data.append("createWorkspaceId", createWorkspaceId);
+        const response = await fetch("/editor/api/journal-hero/create-upload", {
+          method: "POST",
+          body: data,
+        });
+        const result = await response.json();
+        if (!response.ok)
+          throw Object.assign(new Error(result.error ?? "Hero upload failed"), {
+            code: result.code,
+          });
+        const previous = heroAsset;
+        heroAsset = result.asset;
+        if (previous) await releaseHero(previous);
+        syncHero();
+        heroStatus.textContent = "Temporary Hero ready · target follows Content ID";
+      } catch (error) {
+        const failure = error as Error & { code?: string };
+        heroStatus.textContent = `${failure.message} ${editorFailureGuidance(failure.code).message ?? "Try again."}`;
+      } finally {
+        pending = false;
+        heroFile.value = "";
+        render();
+      }
+    };
+    hero.querySelector("[data-journal-hero-select]")?.addEventListener("click", () => heroFile.click());
+    hero.querySelector("[data-journal-hero-replace]")?.addEventListener("click", () => heroFile.click());
+    heroFile.addEventListener("change", () => {
+      const file = heroFile.files?.[0];
+      if (file) void uploadHero(file);
+    });
+    hero.addEventListener("dragover", (event) => event.preventDefault());
+    hero.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const file = event.dataTransfer?.files[0];
+      if (file) void uploadHero(file);
+    });
+    hero.querySelector("[data-journal-hero-remove]")?.addEventListener("click", () => {
+      const previous = heroAsset;
+      heroAsset = undefined;
+      syncHero();
+      if (previous) void releaseHero(previous);
+      heroStatus.textContent = "Hero removed · select a replacement before First Save";
+      render();
+    });
+
     const updateField = (field: HTMLInputElement | HTMLTextAreaElement) => {
       current = updateJournalEditorDraft(current, (next) => {
         if (field.name === "contentId") {
@@ -178,6 +272,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
                 : field.value,
           });
       });
+      if (field.name === "contentId") syncHero();
       render();
     };
     document.addEventListener("input", (event) => {
@@ -204,7 +299,15 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           const response = await fetch("/editor/api/journal-preview/create", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ draft: current, locale }),
+            body: JSON.stringify({
+              draft: (() => {
+                const value = structuredClone(current);
+                if (heroAsset && value.shared.state === "editable")
+                  value.shared.value.hero.image = previewUrl(heroAsset.token);
+                return value;
+              })(),
+              locale,
+            }),
           });
           const result = (await response.json()) as {
             url?: string;
@@ -239,7 +342,19 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
         const response = await fetch("/editor/api/journal-create", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ draft: current }),
+          body: JSON.stringify({
+            draft: current,
+            ...(heroAsset
+              ? {
+                  hero: {
+                    token: heroAsset.token,
+                    createWorkspaceId,
+                    sha256: heroAsset.sha256,
+                    format: heroAsset.format,
+                  },
+                }
+              : {}),
+          }),
         });
         const result = (await response.json()) as {
           workspaceUrl?: string;
@@ -265,6 +380,12 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       event.preventDefault();
       (event as unknown as { returnValue: string }).returnValue = "";
     });
+    cancelButton?.addEventListener("click", () => {
+      void releaseHero(heroAsset);
+      window.location.assign("/editor/journal/workspace/");
+    });
+    window.addEventListener("pagehide", () => void releaseHero(heroAsset, true));
+    syncHero();
     render();
   }
 </script>

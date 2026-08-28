@@ -23,6 +23,7 @@ import {
 } from "./content-lifecycle-lock.ts";
 import { isContentId } from "./content-id.ts";
 import { readNewsEditorEntry } from "./news-state.ts";
+import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
 
 const execFile = promisify(execFileCallback);
 const FILES = ["index.yaml", "ja.md", "en.md"] as const;
@@ -269,6 +270,16 @@ export async function planJournalDelete(input: {
   backupRoot: string;
 }): Promise<JournalDeletePlan> {
   const repositoryRoot = path.resolve(input.repositoryRoot ?? ".");
+  if (
+    await new HeroAssetPublishEvidenceStore(repositoryRoot).read(
+      "journal",
+      input.contentId,
+    )
+  )
+    throw new JournalDeleteError(
+      "Publish the pending Journal Hero asset before Delete.",
+      "state-mismatch",
+    );
   if (!isContentId(input.contentId))
     throw new JournalDeleteError(
       "Invalid Journal Content ID.",

@@ -8,6 +8,7 @@ import { loadJournalUnit } from "../content-loaders/journal/repository.ts";
 import { isContentId } from "./content-id.ts";
 import { createJournalEditorDraft } from "./journal-draft-state.ts";
 import { readJournalEditorEntry } from "./journal-state.ts";
+import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
 
 const execFile = promisify(execFileCallback);
 const fileNames = ["index.yaml", "ja.md", "en.md"] as const;
@@ -218,6 +219,14 @@ export async function planJournalRename(input: {
   destinationContentId: string;
 }): Promise<JournalRenamePlan> {
   const repositoryRoot = path.resolve(input.repositoryRoot ?? ".");
+  const heroEvidence = await new HeroAssetPublishEvidenceStore(
+    repositoryRoot,
+  ).read("journal", input.sourceContentId);
+  if (heroEvidence)
+    throw new JournalRenameError(
+      "Publish the pending Journal Hero asset before Rename.",
+      "canonical-mismatch",
+    );
   if (
     !isContentId(input.sourceContentId) ||
     !isContentId(input.destinationContentId) ||

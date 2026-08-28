@@ -4,8 +4,9 @@ import LocaleDraftSection from "./LocaleDraftSection.astro";
 
 interface Props {
   draft: JournalEditorDraftState;
+  create?: boolean;
 }
-const { draft } = Astro.props;
+const { draft, create = false } = Astro.props;
 ---
 
 <form class="editor-draft-form" data-editor-draft-form>
@@ -80,15 +81,76 @@ const { draft } = Astro.props;
                 repository and remote.
               </small>
             </label>
-            <label data-editor-field="shared.hero.image">
+            <section
+              class="editor-field-wide editor-hero-asset"
+              data-editor-field="shared.hero.image"
+              data-journal-hero
+            >
               <span>
                 Hero image <small class="editor-field-badge">Required</small>
               </span>
               <input
+                type="hidden"
                 name="shared.hero.image"
                 value={draft.shared.value.hero.image}
+                data-journal-hero-path
               />
-            </label>
+              <div data-journal-hero-current hidden={create}>
+                <img
+                  src={draft.shared.value.hero.image || undefined}
+                  alt=""
+                  data-journal-hero-thumbnail
+                />
+                <p><strong data-journal-hero-state>Canonical · saved</strong></p>
+                <code data-journal-hero-canonical-path>
+                  {draft.shared.value.hero.image}
+                </code>
+                <div class="editor-asset-actions">
+                  <button type="button" data-journal-hero-replace>
+                    Replace
+                  </button>
+                  <button type="button" data-journal-hero-remove>
+                    Remove
+                  </button>
+                </div>
+              </div>
+              <div
+                class="editor-hero-drop"
+                data-journal-hero-drop
+                hidden={!create}
+              >
+                <p>Drag & drop a JPEG, PNG, WebP, or AVIF image here</p>
+                <button type="button" data-journal-hero-select>
+                  Select from desktop
+                </button>
+              </div>
+              <input
+                type="file"
+                accept="image/avif,image/jpeg,image/png,image/webp"
+                data-journal-hero-file
+                hidden
+              />
+              <section data-journal-hero-confirm hidden>
+                <h3>Replace existing image?</h3>
+                <p>
+                  The canonical filename already exists with different bytes.
+                  It will remain unchanged until Save.
+                </p>
+                <div class="editor-hero-compare">
+                  <figure>
+                    <img src={draft.shared.value.hero.image} alt="" />
+                    <figcaption>Existing</figcaption>
+                  </figure>
+                  <figure>
+                    <img alt="" data-journal-hero-new />
+                    <figcaption>New · temporary</figcaption>
+                  </figure>
+                </div>
+                <button type="button" data-journal-hero-reject>Cancel</button>
+                <button type="button" data-journal-hero-accept>Replace</button>
+              </section>
+              <p data-journal-hero-status role="status" aria-live="polite"></p>
+            </section>
             <label
               class="editor-field-wide"
               data-editor-field="shared.hero.hero_caption"

@@ -17,6 +17,7 @@ import {
   planJournalDelete,
   publishJournalDelete,
 } from "./journal-delete.ts";
+import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
 
 const execFile = promisify(execFileCallback);
 const hash = (bytes: Uint8Array) =>
@@ -25,6 +26,31 @@ const git = (root: string, args: string[]) =>
   execFile("git", args, { cwd: root, encoding: "utf8" }).then(({ stdout }) =>
     stdout.trim(),
   );
+
+test("Delete execute revalidates pending Hero evidence after review", async () => {
+  const value = await fixture();
+  try {
+    const plan = await planJournalDelete({
+      repositoryRoot: value.repository,
+      contentId: "delete-me",
+      backupRoot: value.backup,
+    });
+    await new HeroAssetPublishEvidenceStore(value.repository).write({
+      version: 1,
+      state: "pending",
+      operation: "hero-asset-save",
+      collection: "journal",
+      contentId: "delete-me",
+      content: [{ path: "src/content/journal/delete-me/index.yaml", sha256: "a".repeat(64), byteSize: 1 }],
+      assets: [{ src: "/images/journal/delete-me.png", path: "public/images/journal/delete-me.png", sha256: "b".repeat(64), byteSize: 1, format: "png", mime: "image/png", width: 1, height: 1 }],
+      createdAt: new Date().toISOString(),
+    });
+    await assert.rejects(executeJournalDelete(plan, value.repository));
+    assert.ok(await fs.lstat(value.unit));
+  } finally {
+    await fs.rm(value.parent, { recursive: true, force: true });
+  }
+});
 
 async function fixture() {
   const parent = await fs.mkdtemp(path.join(os.tmpdir(), "journal-delete-"));
