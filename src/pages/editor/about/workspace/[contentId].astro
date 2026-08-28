@@ -78,7 +78,12 @@ const capabilityGroups = [
     preview={entry.capabilities.preview}
     save={true}
     publish={true}
-  /></EditorLayout
+  /><button
+    class="editor-button editor-button--secondary"
+    type="button"
+    data-retry-about
+    hidden>Retry About push</button
+  ></EditorLayout
 >
 <script
   type="application/json"
@@ -105,6 +110,7 @@ const capabilityGroups = [
     save = document.querySelector<HTMLButtonElement>("[data-save-about]"),
     cancel = document.querySelector<HTMLButtonElement>("[data-cancel-about]"),
     publish = document.querySelector<HTMLButtonElement>("[data-publish-about]"),
+    retry = document.querySelector<HTMLButtonElement>("[data-retry-about]"),
     previewJa = document.querySelector<HTMLButtonElement>(
       '[data-preview-about="ja"]',
     ),
@@ -118,12 +124,14 @@ const capabilityGroups = [
     save &&
     cancel &&
     publish &&
+    retry &&
     previewJa &&
     previewEn &&
     status
   ) {
     let baseline = JSON.parse(raw) as AboutEditorDraftState,
-      draft = restoreEditorDraftBaseline(baseline);
+      draft = restoreEditorDraftBaseline(baseline),
+      recoveryActive = false;
     const optional = (v: FormDataEntryValue | null) =>
       String(v ?? "").trim() || undefined;
     const read = () => {
@@ -179,7 +187,7 @@ const capabilityGroups = [
         scopes = aboutDirtyScopes(baseline, draft);
       save.disabled = !dirty || !v.capabilities.save;
       cancel.disabled = !dirty;
-      publish.disabled = dirty || !v.capabilities.publish;
+      publish.disabled = recoveryActive || dirty || !v.capabilities.publish;
       previewJa.disabled = !v.capabilities.preview.ja;
       previewEn.disabled = !v.capabilities.preview.en;
       status.textContent = dirty
@@ -265,16 +273,65 @@ const capabilityGroups = [
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
+            action: "publish",
             draft,
             baseline,
             dirty: isAboutEditorDraftDirty(baseline, draft),
           }),
         }),
         result = await response.json();
-      status.textContent = response.ok
-        ? `Published ${result.commit}`
-        : result.error;
+      if (!response.ok) {
+        status.textContent = result.error;
+        retry.hidden = result.code !== "publish-evidence-active";
+      } else if (result.state === "published") {
+        recoveryActive = false;
+        status.textContent = `Published ${result.commit}`;
+        retry.hidden = true;
+      } else {
+        status.textContent =
+          result.state === "committed-push-failed"
+            ? `Commit succeeded (${result.commit}); push failed; publication incomplete`
+            : `Push succeeded but recovery cleanup failed (${result.commit})`;
+        retry.hidden = false;
+      }
     });
+    retry.addEventListener("click", async () => {
+      const response = await fetch("/editor/api/about-publish", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "retry" }),
+        }),
+        result = await response.json();
+      if (response.ok && result.state === "published") {
+        recoveryActive = false;
+        status.textContent = `Published ${result.commit}`;
+        retry.hidden = true;
+        render();
+        status.textContent = `Published ${result.commit}`;
+      } else {
+        status.textContent = response.ok
+          ? `Retry blocked: ${result.error ?? result.state}`
+          : `Retry blocked: ${result.error}`;
+        retry.hidden = false;
+      }
+    });
+    void fetch("/editor/api/about-publish")
+      .then(async (response) => ({ response, result: await response.json() }))
+      .then(({ response, result }) => {
+        if (result.active) {
+          recoveryActive = true;
+          retry.hidden = false;
+          render();
+          status.textContent = response.ok
+            ? "About publication recovery is active · retry push"
+            : `About publication recovery is blocked: ${result.error}`;
+        }
+      })
+      .catch(() => {
+        recoveryActive = true;
+        render();
+        status.textContent = "Unable to inspect About publication recovery";
+      });
     window.addEventListener("beforeunload", (event) => {
       read();
       if (isAboutEditorDraftDirty(baseline, draft)) {
