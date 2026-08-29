@@ -4,6 +4,7 @@ import AboutView from "../../components/AboutView.astro";
 import Layout from "../../layouts/Layout.astro";
 import { aboutPreviewStore, AboutPreviewError } from "../about-preview.ts";
 import "../../styles/about.css";
+Astro.response.headers.set("Cache-Control", "private, no-store");
 const { token, locale } = Astro.params;
 let preview;
 let previewError;

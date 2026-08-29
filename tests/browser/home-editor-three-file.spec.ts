@@ -76,10 +76,35 @@ test("Home three-file workspace previews both locales, saves, and publishes", as
       ),
     )
     .toBe(true);
+  await page.reload();
+  await expect(page.getByLabel("About intro · Required").first()).toHaveValue(
+    "Browser JA fixture copy",
+  );
+  const publishResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/editor/api/home-publish") &&
+      response.request().method() === "POST",
+  );
   await page.getByRole("button", { name: "Publish" }).click();
+  const publishResponse = await publishResponsePromise;
+  expect(publishResponse.ok()).toBe(true);
+  expect((await publishResponse.json()).state).toBe("published");
   await expect(page.locator("[data-home-action-status]")).toContainText(
     "Published",
   );
+  await expect
+    .poll(async () => {
+      const response = await page.request.get("/", {
+        headers: { "cache-control": "no-cache" },
+      });
+      return {
+        containsPublishedCopy: (await response.text()).includes(
+          "Browser JA fixture copy",
+        ),
+        status: response.status(),
+      };
+    })
+    .toEqual({ containsPublishedCopy: true, status: 200 });
 
   expect((await readdir(unit)).sort()).toEqual([
     "en.md",

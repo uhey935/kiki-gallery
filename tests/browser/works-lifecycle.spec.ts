@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const repository = process.env.KIKI_BROWSER_REPOSITORY!;
 const id = "browser-works-lifecycle";
@@ -10,6 +10,27 @@ const png = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
   "base64",
 );
+
+async function openStableWorkspace(
+  page: Page,
+  contentId: string,
+  expectedTitle: string,
+) {
+  await expect
+    .poll(async () => {
+      try {
+        const response = await page.goto(
+          `/editor/works/workspace/${contentId}/`,
+          { waitUntil: "networkidle" },
+        );
+        if (!response?.ok()) return undefined;
+        return await page.locator('input[name="title"]').inputValue();
+      } catch {
+        return undefined;
+      }
+    })
+    .toBe(expectedTitle);
+}
 
 test("Works three-file lifecycle acceptance", async ({ page, context }) => {
   test.setTimeout(300_000);
@@ -36,14 +57,33 @@ test("Works three-file lifecycle acceptance", async ({ page, context }) => {
   const unit = path.join(repository, "src/content/works", id);
   expect((await fs.readdir(unit)).sort()).toEqual(["en.md", "index.yaml", "ja.md"]);
   expect(await fs.readFile(path.join(unit, "en.md"), "utf8")).toContain("__TODO_WORK_TITLE__");
+  await expect
+    .poll(async () => {
+      const response = await page.request.get(`/works/${id}/`, {
+        headers: { "cache-control": "no-cache" },
+      });
+      return {
+        containsCreatedTitle: (await response.text()).includes(
+          "Lifecycle Work",
+        ),
+        status: response.status(),
+      };
+    })
+    .toEqual({ containsCreatedTitle: true, status: 200 });
+  await openStableWorkspace(page, id, "Lifecycle Work");
   await expect(page.locator("[data-publish-works]")).toBeEnabled();
-  const createPublish = page.waitForResponse((response) =>
-    response.url().includes(`/editor/api/works-publish/${id}`) &&
-    response.request().method() === "POST",
+  const createPublish = page.waitForResponse(
+    (response) =>
+      response.url().includes(`/editor/api/works-publish/${id}`) &&
+      response.request().method() === "POST",
   );
   await page.locator("[data-publish-works]").click();
-  expect((await createPublish).ok()).toBe(true);
-  await expect(page.locator("[data-works-action-status]")).toContainText("Saved · publish available");
+  const createPublishResponse = await createPublish;
+  expect(createPublishResponse.ok()).toBe(true);
+  expect((await createPublishResponse.json()).state).toBe("published");
+  await expect(page.locator("[data-works-action-status]")).toContainText(
+    "Published",
+  );
 
   await page.locator('input[name="title"]').fill("Lifecycle Work Edited");
   await expect(page.locator("[data-save-works]")).toBeEnabled();
@@ -54,6 +94,20 @@ test("Works three-file lifecycle acceptance", async ({ page, context }) => {
   await editPreview.close();
   await page.locator("[data-save-works]").click();
   await expect(page.locator("[data-works-action-status]")).toContainText("Saved");
+  await expect
+    .poll(async () => {
+      const response = await page.request.get(`/works/${id}/`, {
+        headers: { "cache-control": "no-cache" },
+      });
+      return {
+        containsEditedTitle: (await response.text()).includes(
+          "Lifecycle Work Edited",
+        ),
+        status: response.status(),
+      };
+    })
+    .toEqual({ containsEditedTitle: true, status: 200 });
+  await openStableWorkspace(page, id, "Lifecycle Work Edited");
   const editPublish = page.waitForResponse((response) =>
     response.url().includes(`/editor/api/works-publish/${id}`) &&
     response.request().method() === "POST",
@@ -78,7 +132,7 @@ test("Works three-file lifecycle acceptance", async ({ page, context }) => {
 
   // Canonical content commits trigger Astro's content watcher. Reload at this
   // explicit boundary so a delayed HMR navigation cannot interrupt Rename.
-  await page.reload();
+  await openStableWorkspace(page, id, "Lifecycle Work Edited");
   await expect(page.getByRole("heading", { name: "Lifecycle Work Edited" })).toBeVisible();
 
   const renameDestination = page.locator("[data-rename-destination]");
@@ -100,6 +154,23 @@ test("Works three-file lifecycle acceptance", async ({ page, context }) => {
   const renamedUnit = path.join(repository, "src/content/works", renamed);
   await expect.poll(async () => fs.access(unit).then(() => false, () => true)).toBe(true);
   expect((await fs.readdir(renamedUnit)).sort()).toEqual(["en.md", "index.yaml", "ja.md"]);
+  await expect
+    .poll(async () => {
+      const response = await page.request.get(`/works/${renamed}/`, {
+        headers: { "cache-control": "no-cache" },
+      });
+      return {
+        containsRenamedTitle: (await response.text()).includes(
+          "Lifecycle Work Edited",
+        ),
+        status: response.status(),
+      };
+    })
+    .toEqual({ containsRenamedTitle: true, status: 200 });
+  await openStableWorkspace(page, renamed, "Lifecycle Work Edited");
+  await expect(
+    page.getByRole("heading", { name: "Lifecycle Work Edited" }),
+  ).toBeVisible();
   const renamePublish = page.waitForResponse((response) =>
     response.url().includes(`/editor/api/works-publish/${renamed}`) &&
     response.request().method() === "POST",

@@ -94,11 +94,6 @@ try {
     await mkdir(path.dirname(destination), { recursive: true });
     await cp(path.join(sourceRoot, relative), destination, { recursive: true });
   }
-  run("git", ["init", "--bare", remoteRoot]);
-  run("git", ["remote", "set-url", "origin", remoteRoot], {
-    cwd: repositoryRoot,
-  });
-  run("git", ["push", "-u", "origin", "main"], { cwd: repositoryRoot });
   const normalizedFixtureFiles = await closeBrowserFixtureReferenceGraph(
     path.join(repositoryRoot, "src/content"),
   );
@@ -108,6 +103,11 @@ try {
       cwd: repositoryRoot,
     });
   }
+  run("git", ["init", "--bare", remoteRoot]);
+  run("git", ["remote", "set-url", "origin", remoteRoot], {
+    cwd: repositoryRoot,
+  });
+  run("git", ["push", "-u", "origin", "main"], { cwd: repositoryRoot });
   await symlink(
     path.join(sourceRoot, "node_modules"),
     path.join(repositoryRoot, "node_modules"),

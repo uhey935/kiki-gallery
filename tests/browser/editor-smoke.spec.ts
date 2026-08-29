@@ -22,8 +22,16 @@ function isExpectedBrowserConsoleError(message: {
     message.text.includes("Failed to load resource") &&
     message.text.includes("409 (Conflict)") &&
     diagnostic.includes(`/editor/api/news/${renamedId}`);
+  const isDeletedWorkspaceWatcherRefresh =
+    message.text.includes("Failed to load resource") &&
+    message.text.includes("404 (Not Found)") &&
+    diagnostic.includes(`/editor/news/workspace/${renamedId}/`);
 
-  return isOutdatedOptimizedDependency || isIntentionalFailClosedConflict;
+  return (
+    isOutdatedOptimizedDependency ||
+    isIntentionalFailClosedConflict ||
+    isDeletedWorkspaceWatcherRefresh
+  );
 }
 
 function isExpectedBrowserPageError(message: string): boolean {
@@ -90,6 +98,21 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   await expect(page.locator("[data-news-action-status]")).toContainText(
     "Saved · publish available",
   );
+  await expect
+    .poll(async () => {
+      const response = await page.request.get("/news/", {
+        headers: { "cache-control": "no-cache" },
+      });
+      return {
+        containsCreatedFixture: (await response.text()).includes(
+          "Browser foundation news",
+        ),
+        status: response.status(),
+      };
+    })
+    .toEqual({ containsCreatedFixture: true, status: 200 });
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(page.locator("[data-publish-news]")).toBeEnabled();
   const initialPublishResponse = page.waitForResponse(
     (response) =>
       response.url().endsWith(`/editor/api/news-publish/${contentId}`) &&
@@ -98,7 +121,7 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   await page.locator("[data-publish-news]").click();
   expect((await initialPublishResponse).ok()).toBe(true);
   await expect(page.locator("[data-news-action-status]")).toContainText(
-    "Saved · publish available",
+    "Published",
   );
   await expect(page.locator("[data-publish-news]")).toBeEnabled();
 
@@ -108,6 +131,21 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   await page.locator("[data-rename-confirm]").check();
   await page.locator("[data-rename-execute]").click();
   await page.waitForURL(`**/editor/news/workspace/${renamedId}/`);
+  await expect
+    .poll(async () => {
+      const response = await page.request.get("/news/", {
+        headers: { "cache-control": "no-cache" },
+      });
+      return {
+        containsRenamedFixture: (await response.text()).includes(
+          "Browser foundation news",
+        ),
+        status: response.status(),
+      };
+    })
+    .toEqual({ containsRenamedFixture: true, status: 200 });
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(page.locator("[data-publish-news]")).toBeEnabled();
   const renamedPublishResponse = page.waitForResponse(
     (response) =>
       response.url().endsWith(`/editor/api/news-publish/${renamedId}`) &&
@@ -116,7 +154,7 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   await page.locator("[data-publish-news]").click();
   expect((await renamedPublishResponse).ok()).toBe(true);
   await expect(page.locator("[data-news-action-status]")).toContainText(
-    "Saved · publish available",
+    "Published",
   );
   await expect(page.locator("[data-publish-news]")).toBeEnabled();
 
@@ -191,5 +229,32 @@ test("launch, lifecycle smoke flow, and fail-closed gates", async ({
   );
   await page.locator("[data-delete-publish]").click();
   await page.waitForURL("**/editor/news/workspace/");
+  await expect
+    .poll(
+      async () => {
+        const newsResponse = await page.request.get("/news/", {
+          headers: { "cache-control": "no-cache" },
+        });
+        const homeResponse = await page.request.get("/", {
+          headers: { "cache-control": "no-cache" },
+        });
+        return {
+          homeStatus: homeResponse.status(),
+          newsContainsDeletedFixture: (await newsResponse.text()).includes(
+            "Browser foundation news",
+          ),
+          newsStatus: newsResponse.status(),
+        };
+      },
+      {
+        message:
+          "News content graph should drop the deleted fixture before the destructive test completes",
+      },
+    )
+    .toEqual({
+      homeStatus: 200,
+      newsContainsDeletedFixture: false,
+      newsStatus: 200,
+    });
   expect(browserErrors).toEqual([]);
 });

@@ -7,6 +7,56 @@ const repository = process.env.KIKI_BROWSER_REPOSITORY!;
 const hash = (bytes: Buffer) =>
   createHash("sha256").update(bytes).digest("hex");
 
+test("About JA/EN Preview responses are no-store without changing public or other Preview cache behavior", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/editor/about/workspace/about/");
+  const previews = await page.evaluate(async () => {
+    const draft = JSON.parse(
+      document.querySelector("#about-editor-draft")!.textContent!,
+    );
+    draft.locales.ja.value.body = "JA no-store preview contract";
+    draft.locales.en.value.body = "EN no-store preview contract";
+    const previews = [];
+    for (const locale of ["ja", "en"] as const) {
+      const created = await fetch("/editor/api/about-preview/create", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ draft, locale }),
+      });
+      previews.push({
+        locale,
+        status: created.status,
+        ...(await created.json()),
+      });
+    }
+    return previews;
+  });
+
+  for (const preview of previews) {
+    expect(preview.status).toBe(200);
+    const response = await request.get(preview.url);
+    expect(response.status()).toBe(200);
+    expect(response.headers()["cache-control"]).toBe("private, no-store");
+    expect(await response.text()).toContain(
+      `${preview.locale.toUpperCase()} no-store preview contract`,
+    );
+  }
+
+  for (const path of ["/about/", "/en/about/"]) {
+    const response = await request.get(path);
+    expect(response.ok()).toBe(true);
+    expect(response.headers()["cache-control"] ?? "").not.toContain("no-store");
+  }
+
+  const unrelatedPreview = await request.get(
+    "/editor/preview/news/invalid-token/invalid-content",
+  );
+  expect(unrelatedPreview.status()).toBe(404);
+  expect(unrelatedPreview.headers()["cache-control"]).toBeUndefined();
+});
+
 test("About singleton selects validated media, pairs locale alts, previews, saves, and publishes", async ({
   page,
   context,
@@ -92,7 +142,19 @@ test("About singleton selects validated media, pairs locale alts, previews, save
   await expect(page.locator("[data-about-action-status]")).toContainText(
     "Saved",
   );
+  await page.reload();
+  await expect(page.getByLabel("Statement · Markdown").first()).toHaveValue(
+    "KiKi Gallery ブラウザー確認用レビュー文。",
+  );
+  const publishResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/editor/api/about-publish") &&
+      response.request().method() === "POST",
+  );
   await page.getByRole("button", { name: "Publish" }).click();
+  const publishResponse = await publishResponsePromise;
+  expect(publishResponse.ok()).toBe(true);
+  expect((await publishResponse.json()).state).toBe("published");
   await expect(page.locator("[data-about-action-status]")).toContainText(
     "Published",
   );
