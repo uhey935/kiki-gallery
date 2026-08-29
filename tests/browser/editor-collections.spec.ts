@@ -206,6 +206,7 @@ test("Artists JA and EN previews render shared visible Hero and localized Works"
         publicHero.evaluate((image: HTMLImageElement) => image.naturalWidth),
       )
       .toBeGreaterThan(0);
+    await page.locator(".artists-bio-image").scrollIntoViewIfNeeded();
     await expect(page.locator(".artists-bio-image")).toHaveCSS("opacity", "1");
   }
 
@@ -233,6 +234,7 @@ test("Artists JA and EN previews render shared visible Hero and localized Works"
         hero.evaluate((image: HTMLImageElement) => image.naturalWidth),
       )
       .toBeGreaterThan(0);
+    await preview.locator(".artists-bio-image").scrollIntoViewIfNeeded();
     await expect(preview.locator(".artists-bio-image")).toHaveCSS(
       "opacity",
       "1",
