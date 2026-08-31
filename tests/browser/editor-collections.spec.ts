@@ -561,9 +561,7 @@ test("Home exposes only the singleton edit flow and publishes it", async ({
   page,
   context,
 }) => {
-  await page.goto("/editor/");
-  await page.getByRole("link", { name: /Home/ }).click();
-  await page.waitForURL("**/editor/home/workspace/home/");
+  await openCollectionWorkspace(page, "home");
   await expect(page.getByRole("heading", { name: "Home" })).toBeVisible();
   await expect(
     page.getByRole("link", { name: /Create|Rename|Delete/ }),
@@ -572,25 +570,27 @@ test("Home exposes only the singleton edit flow and publishes it", async ({
     page.getByRole("button", { name: /Create|Rename|Delete/ }),
   ).toHaveCount(0);
 
-  const sectionTitle = page.locator('input[name="section_0_title"]');
-  const originalSectionTitle = await sectionTitle.inputValue();
-  await sectionTitle.fill("");
+  const aboutIntro = page.getByLabel("About intro · Required").first();
+  const originalAboutIntro = await aboutIntro.inputValue();
+  await aboutIntro.fill("");
   await expect(page.locator("[data-save-home]")).toBeDisabled();
-  await expect(page.locator("[data-preview-home]")).toBeDisabled();
+  await expect(page.locator('[data-preview-home="ja"]')).toBeDisabled();
 
-  const updatedTitle = `${originalSectionTitle} browser acceptance`;
-  await sectionTitle.fill(updatedTitle);
+  const updatedAboutIntro = `${originalAboutIntro} browser acceptance`;
+  await aboutIntro.fill(updatedAboutIntro);
   await expect(page.locator("[data-save-home]")).toBeEnabled();
   const preview = await openPreview(
     context,
-    page.locator("[data-preview-home]"),
+    page.locator('[data-preview-home="ja"]'),
   );
-  await expect(preview.getByText(updatedTitle, { exact: true })).toBeVisible();
+  await expect(preview.locator(".home-sections__description")).toContainText(
+    updatedAboutIntro,
+  );
   await preview.close();
 
   await page.locator("[data-save-home]").click();
   await expect(page.locator("[data-home-action-status]")).toContainText(
-    "Saved · unpublished changes ready to publish",
+    "Saved · ready",
   );
   await publish(
     page,
@@ -598,4 +598,17 @@ test("Home exposes only the singleton edit flow and publishes it", async ({
     /\/editor\/api\/home-publish$/,
     "[data-home-action-status]",
   );
+  await expect
+    .poll(async () => {
+      const response = await page.request.get("/", {
+        headers: { "cache-control": "no-cache" },
+      });
+      return {
+        containsPublishedCopy: (await response.text()).includes(
+          updatedAboutIntro,
+        ),
+        status: response.status(),
+      };
+    })
+    .toEqual({ containsPublishedCopy: true, status: 200 });
 });
