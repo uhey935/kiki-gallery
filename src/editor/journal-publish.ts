@@ -115,10 +115,7 @@ async function verifyHeroEvidence(
   return asset;
 }
 
-async function assertHeadIdenticalHero(
-  src: string,
-  repositoryRoot: string,
-) {
+async function assertHeadIdenticalHero(src: string, repositoryRoot: string) {
   const resolved = resolveJournalHeroAssetPath(repositoryRoot, src);
   const stat = await fs.lstat(resolved.absolute).catch(() => undefined);
   if (!stat?.isFile() || stat.isSymbolicLink())
@@ -301,9 +298,9 @@ export async function inspectJournalPublish(
       "Resolve the pending Journal Hero publication before publishing Rename",
       "unsafe-repository",
     );
-  if (heroEvidence) await verifyHeroEvidence(heroEvidence, contentId, repositoryRoot);
-  else if (heroSrc)
-    await assertHeadIdenticalHero(heroSrc, repositoryRoot);
+  if (heroEvidence)
+    await verifyHeroEvidence(heroEvidence, contentId, repositoryRoot);
+  else if (heroSrc) await assertHeadIdenticalHero(heroSrc, repositoryRoot);
   const allowedFiles = [
     ...files,
     ...(heroEvidence?.state === "pending"
@@ -321,11 +318,19 @@ export async function inspectJournalPublish(
       );
     }
   }
-  const trackedChanges = (await git(["diff", "--name-only", "--", ...allowedFiles]))
+  const trackedChanges = (
+    await git(["diff", "--name-only", "--", ...allowedFiles])
+  )
     .split("\n")
     .filter(Boolean);
   const untracked = (
-    await git(["ls-files", "--others", "--exclude-standard", "--", ...allowedFiles])
+    await git([
+      "ls-files",
+      "--others",
+      "--exclude-standard",
+      "--",
+      ...allowedFiles,
+    ])
   )
     .split("\n")
     .filter(Boolean);
@@ -431,7 +436,7 @@ export async function publishSavedJournalEntry(
   const allFiles = inspection.files;
   const expectedFiles = await Promise.all(
     allFiles.map((file) =>
-      fs.readFile(path.join(repositoryRoot, file), "utf8").catch((error) => {
+      fs.readFile(path.join(repositoryRoot, file)).catch((error) => {
         if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
         throw error;
       }),
@@ -445,9 +450,7 @@ export async function publishSavedJournalEntry(
       .split("\n")
       .filter(Boolean)
       .sort();
-    if (
-      JSON.stringify(staged) !== JSON.stringify([...allFiles].sort())
-    ) {
+    if (JSON.stringify(staged) !== JSON.stringify([...allFiles].sort())) {
       throw new JournalPublishError(
         `Staged files escaped the Journal publish boundary: expected ${[...allFiles].sort().join(",")}; got ${staged.join(",")}`,
         "unsafe-repository",
@@ -465,9 +468,13 @@ export async function publishSavedJournalEntry(
       const { stdout: stagedContent } = await execFile(
         "git",
         ["show", `:${file}`],
-        { cwd: repositoryRoot, encoding: "utf8" },
+        {
+          cwd: repositoryRoot,
+          encoding: "buffer",
+          maxBuffer: WORKS_ASSET_POLICY.maxBytes + 1024,
+        },
       );
-      if (stagedContent !== expectedFiles[index]) {
+      if (!Buffer.from(stagedContent).equals(expectedFiles[index])) {
         throw new JournalPublishError(
           "Canonical Journal files changed while Publish was staging them",
           "canonical-mismatch",
