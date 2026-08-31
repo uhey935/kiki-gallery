@@ -11,6 +11,7 @@ import {
 } from "./journal-draft-state.ts";
 import { readJournalEditorEntry } from "./journal-state.ts";
 import { inspectJournalHeroCandidate } from "./journal-hero-assets.ts";
+import { assertJournalMutationAdmitted } from "./journal-manual-recovery.ts";
 import {
   journalContentPaths,
   resolveJournalHeroAssetPath,
@@ -361,6 +362,7 @@ export async function publishSavedJournalEntry(
   journalRoot = path.join(repositoryRoot, "src/content/journal"),
   evidenceStore = new HeroAssetPublishEvidenceStore(repositoryRoot),
 ): Promise<JournalPublishResult> {
+  await assertJournalMutationAdmitted(draft.contentId, journalRoot);
   if (dirty)
     throw new JournalPublishError(
       "Save the draft before publishing",

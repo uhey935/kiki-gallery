@@ -4,6 +4,10 @@ import { contentWriterRoute } from "./content-writer-route.ts";
 import type { JournalEditorDraftState } from "../journal-draft-state.ts";
 import type { JournalHeroAssetDraft } from "../journal-hero-assets.ts";
 import {
+  JournalManualRecoveryError,
+  journalManualRecoveryResponse,
+} from "../journal-manual-recovery.ts";
+import {
   JournalSaveError,
   saveJournalEditorDraftWithHero,
 } from "../journal-save.ts";
@@ -41,6 +45,8 @@ const unlockedPOST: APIRoute = async ({ params, request }) => {
     );
     return Response.json({ draft: savedDraft });
   } catch (error) {
+    if (error instanceof JournalManualRecoveryError)
+      return journalManualRecoveryResponse(error);
     const status =
       error instanceof SyntaxError ||
       (error instanceof JournalSaveError && error.code !== "save-failed")

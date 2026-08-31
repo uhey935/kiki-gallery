@@ -7,6 +7,7 @@ import { promisify } from "node:util";
 import { loadJournalUnit } from "../content-loaders/journal/repository.ts";
 import { isContentId } from "./content-id.ts";
 import { createJournalEditorDraft } from "./journal-draft-state.ts";
+import { assertJournalMutationAdmitted } from "./journal-manual-recovery.ts";
 import { readJournalEditorEntry } from "./journal-state.ts";
 import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
 
@@ -262,6 +263,10 @@ export async function executeJournalRename(
   repositoryRoot = path.resolve("."),
 ) {
   repositoryRoot = path.resolve(repositoryRoot);
+  await assertJournalMutationAdmitted(
+    reviewedPlan.sourceContentId,
+    path.join(repositoryRoot, "src/content/journal"),
+  );
   const suppliedBody = { ...reviewedPlan };
   delete (suppliedBody as Partial<JournalRenamePlan>).planHash;
   if (

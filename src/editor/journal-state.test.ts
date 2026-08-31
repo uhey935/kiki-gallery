@@ -25,6 +25,11 @@ import {
   type JournalSaveFileSystem,
 } from "./journal-save.ts";
 import {
+  assertJournalMutationAdmitted,
+  detectJournalManualRecovery,
+  JournalManualRecoveryError,
+} from "./journal-manual-recovery.ts";
+import {
   createJournalPreviewModel,
   JournalPreviewError,
   JournalPreviewStore,
@@ -487,6 +492,15 @@ test("a rollback failure requires manual recovery", async () => {
       (error: unknown) =>
         error instanceof JournalSaveError &&
         error.code === "journal-save-rollback-failed",
+    );
+    const recovery = await detectJournalManualRecovery("valid-public", root);
+    assert.equal(recovery?.contentId, "valid-public");
+    assert.match(recovery?.recoveryReference ?? "", /^src\/content\/journal\//);
+    await assert.rejects(
+      assertJournalMutationAdmitted("valid-public", root),
+      (error: unknown) =>
+        error instanceof JournalManualRecoveryError &&
+        error.code === "journal-manual-recovery-required",
     );
   });
 });

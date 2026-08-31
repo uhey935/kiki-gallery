@@ -6,6 +6,10 @@ import {
   planJournalRename,
   type JournalRenamePlan,
 } from "../journal-rename.ts";
+import {
+  JournalManualRecoveryError,
+  journalManualRecoveryResponse,
+} from "../journal-manual-recovery.ts";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -41,6 +45,8 @@ export const POST: APIRoute = async ({ request }) => {
       { status: 400 },
     );
   } catch (error) {
+    if (error instanceof JournalManualRecoveryError)
+      return journalManualRecoveryResponse(error);
     return Response.json(
       {
         error: error instanceof Error ? error.message : "Journal Rename failed",

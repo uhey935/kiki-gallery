@@ -194,6 +194,11 @@ test("expired temporary assets tell the operator to upload again", () => {
 });
 
 test("rollback failure tells the operator to stop before another operation", () => {
+  assert.deepEqual(editorFailureGuidance("journal-manual-recovery-required"), {
+    action: "review",
+    message:
+      "Stop editing and request manual recovery before trying another operation.",
+  });
   assert.deepEqual(editorFailureGuidance("asset-save-rollback-failed"), {
     action: "review",
     message:

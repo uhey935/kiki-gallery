@@ -3,6 +3,10 @@ import { contentWriterRoute } from "./content-writer-route.ts";
 
 import type { JournalEditorDraftState } from "../journal-draft-state.ts";
 import {
+  JournalManualRecoveryError,
+  journalManualRecoveryResponse,
+} from "../journal-manual-recovery.ts";
+import {
   JournalPublishError,
   publishSavedJournalEntry,
 } from "../journal-publish.ts";
@@ -28,6 +32,8 @@ const unlockedPOST: APIRoute = async ({ params, request }) => {
       await publishSavedJournalEntry(body.draft, body.dirty),
     );
   } catch (error) {
+    if (error instanceof JournalManualRecoveryError)
+      return journalManualRecoveryResponse(error);
     const status =
       error instanceof SyntaxError || error instanceof JournalPublishError
         ? 400

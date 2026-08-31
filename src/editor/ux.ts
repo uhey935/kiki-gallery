@@ -179,6 +179,7 @@ const reviewCodes = new Set([
 
 const reuploadCodes = new Set(["asset-temp-not-found", "asset-temp-expired"]);
 const manualRecoveryCodes = new Set([
+  "journal-manual-recovery-required",
   "asset-save-rollback-failed",
   "artists-save-rollback-failed",
   "artists-create-rollback-failed",

@@ -22,6 +22,7 @@ import {
   releaseContentLifecycleLock,
 } from "./content-lifecycle-lock.ts";
 import { isContentId } from "./content-id.ts";
+import { assertJournalMutationAdmitted } from "./journal-manual-recovery.ts";
 import { readNewsEditorEntry } from "./news-state.ts";
 import { HeroAssetPublishEvidenceStore } from "./hero-asset-publish-evidence.ts";
 
@@ -371,6 +372,10 @@ export async function executeJournalDelete(
   },
 ) {
   repositoryRoot = path.resolve(repositoryRoot);
+  await assertJournalMutationAdmitted(
+    reviewedPlan.contentId,
+    path.join(repositoryRoot, "src/content/journal"),
+  );
   assertPlanIdentity(reviewedPlan);
   let rebuilt: JournalDeletePlan;
   try {

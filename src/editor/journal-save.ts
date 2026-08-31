@@ -24,6 +24,7 @@ import {
   journalContentEvidence,
   createJournalHeroPublishEvidence,
 } from "./journal-hero-publish-evidence.ts";
+import { assertJournalMutationAdmitted } from "./journal-manual-recovery.ts";
 import {
   HeroAssetPublishEvidenceStore,
   type HeroAssetPublishEvidenceV1,
@@ -33,9 +34,20 @@ const files = ["index.yaml", "ja.md", "en.md"] as const;
 const canonicalRoot = path.resolve("src/content/journal");
 const heroSrc = (draft: JournalEditorDraftState) =>
   draft.shared.state === "editable" ? draft.shared.value.hero.image : "";
-const canonicalFiles = (entry: Awaited<ReturnType<typeof readJournalEditorEntry>>) => {
-  if (entry.shared.state !== "valid" || entry.locales.ja.state !== "valid" || entry.locales.en.state !== "valid") return undefined;
-  return { "index.yaml": entry.shared.raw, "ja.md": entry.locales.ja.raw, "en.md": entry.locales.en.raw };
+const canonicalFiles = (
+  entry: Awaited<ReturnType<typeof readJournalEditorEntry>>,
+) => {
+  if (
+    entry.shared.state !== "valid" ||
+    entry.locales.ja.state !== "valid" ||
+    entry.locales.en.state !== "valid"
+  )
+    return undefined;
+  return {
+    "index.yaml": entry.shared.raw,
+    "ja.md": entry.locales.ja.raw,
+    "en.md": entry.locales.en.raw,
+  };
 };
 export class JournalSaveError extends Error {
   readonly code:
@@ -170,6 +182,7 @@ export async function saveJournalEditorDraft(
   root = canonicalRoot,
   fileSystem: JournalSaveFileSystem = fs,
 ) {
+  await assertJournalMutationAdmitted(draft.contentId, root);
   if (!isContentId(draft.contentId))
     throw new JournalSaveError(
       "Invalid Journal Content ID",
@@ -227,6 +240,10 @@ export async function saveJournalEditorDraftWithHero(
     evidenceStore?: HeroAssetPublishEvidenceStore;
   } = {},
 ) {
+  await assertJournalMutationAdmitted(
+    draft.contentId,
+    path.resolve(options.root ?? canonicalRoot),
+  );
   const repositoryRoot = path.resolve(
     options.repositoryRoot ??
       (options.root ? path.dirname(path.resolve(options.root)) : "."),
@@ -235,11 +252,7 @@ export async function saveJournalEditorDraftWithHero(
     options.evidenceStore ?? new HeroAssetPublishEvidenceStore(repositoryRoot);
   if (hero.kind !== "temporary") {
     const baselineHero = heroSrc(baseline);
-    if (
-      hero.kind !== "existing" ||
-      !hero.src ||
-      heroSrc(draft) !== hero.src
-    )
+    if (hero.kind !== "existing" || !hero.src || heroSrc(draft) !== hero.src)
       throw new JournalSaveError(
         "Journal Hero requires a validated replacement before Save",
         "invalid-draft",
@@ -252,17 +265,21 @@ export async function saveJournalEditorDraftWithHero(
       );
       const format = match?.[1] as "avif" | "jpg" | "png" | "webp" | undefined;
       const mime = format
-        ? ({
-            avif: "image/avif",
-            jpg: "image/jpeg",
-            png: "image/png",
-            webp: "image/webp",
-          } as const)[format]
+        ? (
+            {
+              avif: "image/avif",
+              jpg: "image/jpeg",
+              png: "image/png",
+              webp: "image/webp",
+            } as const
+          )[format]
         : undefined;
       const assetRoot = path.resolve(
         options.assetRoot ?? "public/images/journal",
       );
-      const target = format ? path.join(assetRoot, `${draft.contentId}.${format}`) : "";
+      const target = format
+        ? path.join(assetRoot, `${draft.contentId}.${format}`)
+        : "";
       const stat = target
         ? await (options.fileSystem ?? fs).lstat(target).catch(() => undefined)
         : undefined;
