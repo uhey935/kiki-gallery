@@ -32,12 +32,13 @@ entry remains Editor-only until first Save. Choose a lowercase hyphenated
 Content ID and complete the collection-owned required fields. First Save fails
 closed if the ID, a case-fold equivalent, or target path exists. Journal then
 creates `index.yaml`, `ja.md`, and `en.md` as one validated unit. Works does the
-same while preserving Shared/JA/EN ownership; each remaining flat collection
-creates its existing-format Markdown source through exclusive staging and a
-canonical reread. The normal saved workspace opens afterward.
-Publish remains separate and includes only the exact new untracked source (and
-only an already-authorized Works saved-asset manifest). Create itself never
-uploads, moves, or infers ownership of assets.
+same while preserving Shared/JA/EN ownership; Artists, Exhibitions, and News
+also create their collection-owned exact three-file unit through exclusive
+staging and a canonical reread. The normal saved workspace opens afterward.
+Publish remains separate and includes only the exact new untracked source plus
+any asset authorized by the completed Save's durable Publish evidence. Journal,
+Artists, and Exhibitions support managed Hero upload during Create; Works Create
+uses an existing canonical image reference, and News has no asset operation.
 
 Home is the canonical exact-three-file singleton
 `src/content/home/home/{index.yaml,ja.md,en.md}` and has no Create, Rename, or
@@ -75,14 +76,18 @@ runs mutation routes against this checkout's canonical content or assets.
 The foundation suite covers Dashboard and collection navigation, News Create,
 Draft Preview, First Save, ordinary Publish, Rename and its separate Publish,
 Delete with verified backup and its separate Publish, validation gating, the
-shared lifecycle lock, and browser console errors. It is intentionally serial.
+shared lifecycle lock, and browser console errors. It also covers Home
+concurrent-tab stale-baseline rejection for both Save and Publish, plus the
+Journal terminal manual-recovery UI and a fresh browser session's server-side
+mutation rejection from durable recovery evidence. It is intentionally serial.
 
 For future CI, use Node 22.12 or newer, install dependencies and Chromium, then
 run the same command. Preserve the one-worker setting and do not point the suite
 at a maintained clone. Deferred cases include every collection/locale
-permutation, native Works upload/Replace, injected rollback and push failures,
-manual-recovery terminal UI, concurrent tabs, token expiry, accessibility, and
-visual regression. Focused service tests remain authoritative for unsafe races.
+permutation, a full native Works replacement through Save and Publish, injected
+rollback and push failures, Preview token expiry in the browser, accessibility,
+and visual regression. Focused service tests remain authoritative for unsafe
+races and failure injection.
 
 ## Publish and recovery
 
@@ -108,17 +113,44 @@ no unrelated staged files, a saved baseline, and publishable validation.
 - `committed-push-failed`: the commit exists locally. Stop using that workspace,
   record the commit shown by the UI, inspect branch/upstream state, and push the
   existing commit manually. Do not Save or Publish again from the stale page.
-- `journal-create-rollback-failed`, `collection-create-rollback-failed`,
-  `journal-save-rollback-failed`, or
-  `asset-save-rollback-failed`: stop all Editor mutation. Preserve the working
-  tree and `.kiki-editor` evidence, compare the selected canonical files/assets
-  with Git and the recorded baseline, restore a consistent unit manually, then
-  reload.
+- Create rollback codes are `journal-create-rollback-failed`,
+  `works-create-rollback-failed`, `artists-create-rollback-failed`,
+  `exhibitions-create-rollback-failed`, `news-create-rollback-failed`, and the
+  shared flat-collection code `collection-create-rollback-failed`.
+- Save rollback codes are `journal-save-rollback-failed`,
+  `asset-save-rollback-failed`, `artists-save-rollback-failed`,
+  `exhibitions-save-rollback-failed`, `news-save-rollback-failed`,
+  `home-save-rollback-failed`, and `about-save-rollback-failed`.
+  For any Create or Save rollback code, stop all Editor mutation. Preserve the
+  working tree and `.kiki-editor` evidence, compare the selected canonical
+  files/assets with Git and the recorded baseline, restore a consistent unit
+  manually, then reload.
 - `journal-rename-rollback-failed`: stop all Editor mutation and preserve
   `.kiki-editor/content-lifecycle/operations/` plus the repository lock. Compare
   both old and new Journal paths with the recorded hashes before recovery.
 - `news-rename-rollback-failed`: use the same stop-and-preserve procedure for
   the recorded old/new News paths and exact source hash.
+
+### Journal terminal manual recovery
+
+A `journal-save-rollback-failed` response is the initial failure: automatic
+rollback could not prove that the canonical Journal unit was restored. The
+failed transaction leaves durable recovery evidence beside that Journal unit.
+Preserve the complete evidence and stop Editor mutation.
+
+While that evidence remains, later Save, Publish, Rename, and Delete requests
+for the affected Journal are rejected server-side with
+`journal-manual-recovery-required`. A freshly opened workspace performs a
+read-only recovery-status request, enters a terminal/read-only state, displays
+the recovery reference, and directs the operator to preserve the evidence and
+follow this manual procedure. The durable server guard remains authoritative
+even if browser session state is absent or stale.
+
+Editor v1.x intentionally provides no explicit recovery, evidence clear,
+automatic retry, or restore action. Reconcile the canonical three-file unit,
+Git state, transaction directories, and recorded preimages outside the Editor.
+Do not delete evidence merely to make the recovery-status request return to
+normal. An Editor recovery/clear workflow is deferred beyond v1.x.
 
 Never discard or overwrite recovery evidence merely to clear a lock.
 
@@ -221,10 +253,12 @@ collection list. Home is a singleton and never exposes Create.
    action separately. Publish includes the newly untracked canonical file(s)
    and stages no unrelated path.
 
-Works Create accepts an existing canonical image reference only. Asset upload,
-replacement, admission, and promotion behavior is unchanged and remains an
-existing-workspace operation. Artists and Exhibitions similarly reference
-existing asset paths; News has no asset operation.
+Works Create accepts an existing canonical image reference only; its managed
+upload and replacement flow remains an existing-workspace operation. Artists
+and Exhibitions Create instead require and support managed Hero upload. The
+temporary Hero is owner-bound and validated, First Save materializes it with
+the canonical content and durable Publish evidence, and Publish remains a
+separate action. News has no asset operation.
 
 Cancel before First Save by leaving the page. No canonical content, asset,
 commit, or Production route is created.
