@@ -41,6 +41,39 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     </main>
     <ValidationPanel entry={entry} />
   </div>
+  <section
+    class="editor-panel"
+    data-journal-recovery-guidance
+    aria-labelledby="journal-recovery-heading"
+    hidden
+  >
+    <div class="editor-panel__heading">
+      <div>
+        <p class="editor-eyebrow">Operator action required</p>
+        <h2 id="journal-recovery-heading">Manual recovery required</h2>
+      </div>
+      <span class="editor-status editor-status--blocked"
+        >Operations stopped</span
+      >
+    </div>
+    <p>
+      Automatic recovery did not complete. Do not Save, Publish, Rename, or
+      Delete this Journal. Do not delete or change the recovery evidence;
+      preserve it for manual recovery.
+    </p>
+    <p data-journal-recovery-reference-row hidden>
+      Recovery reference: <code data-journal-recovery-reference></code>
+    </p>
+    <p>
+      Follow the authoritative repository procedure:
+      <a
+        href="https://github.com/uhey935/kiki-gallery/blob/main/docs/operations/editor-v1-operations.md"
+        target="_blank"
+        rel="noreferrer">Editor operations and recovery guidance</a
+      > (<code>docs/operations/editor-v1-operations.md</code>). The Editor will
+      not modify or clear this evidence.
+    </p>
+  </section>
   <RenamePanel collection="journal" contentId={entry.contentId} />
   <JournalDeletePanel contentId={entry.contentId} />
   <ActionBar
@@ -107,6 +140,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
     let current = initial;
     let pending: "preview-ja" | "preview-en" | "save" | "publish" | null = null;
     let recoveryRequired = false;
+    let recoveryStatusPending = true;
     let deleteLocked = false;
     let statusMessage: string | null = null;
     const recoveryStorageKey = `kiki-editor:manual-recovery:journal:${initial.contentId}`;
@@ -115,6 +149,23 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       recoveryRequired = true;
       statusMessage = storedRecovery;
     }
+    const recoveryGuidance = document.querySelector<HTMLElement>(
+      "[data-journal-recovery-guidance]",
+    );
+    const recoveryReference = document.querySelector<HTMLElement>(
+      "[data-journal-recovery-reference]",
+    );
+    const recoveryReferenceRow = document.querySelector<HTMLElement>(
+      "[data-journal-recovery-reference-row]",
+    );
+    const showRecoveryGuidance = (reference?: string) => {
+      if (recoveryGuidance) recoveryGuidance.hidden = false;
+      if (reference && recoveryReference && recoveryReferenceRow) {
+        recoveryReference.textContent = reference;
+        recoveryReferenceRow.hidden = false;
+      }
+    };
+    if (storedRecovery) showRecoveryGuidance();
     const hero = form.querySelector<HTMLElement>("[data-journal-hero]")!;
     const heroPath = hero.querySelector<HTMLInputElement>(
       "[data-journal-hero-path]",
@@ -251,7 +302,8 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       const result = validateJournalEditorDraft(current);
       const dirty = isJournalEditorDraftDirty(initial, current);
       const busy = pending !== null;
-      const operationLocked = busy || recoveryRequired || deleteLocked;
+      const operationLocked =
+        busy || recoveryStatusPending || recoveryRequired || deleteLocked;
       for (const control of form.querySelectorAll<
         | HTMLInputElement
         | HTMLTextAreaElement
@@ -262,12 +314,14 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       if (actionStatus) {
         actionStatus.textContent = recoveryRequired
           ? (statusMessage ?? "Operations stopped · manual recovery required")
-          : (statusMessage ??
-            (dirty
-              ? "Unsaved changes"
-              : result.capabilities.publish
-                ? "Saved · publish available"
-                : "Saved · Publish blocked by validation"));
+          : recoveryStatusPending
+            ? "Checking repository recovery status…"
+            : (statusMessage ??
+              (dirty
+                ? "Unsaved changes"
+                : result.capabilities.publish
+                  ? "Saved · publish available"
+                  : "Saved · Publish blocked by validation"));
         actionStatus.dataset.state = pending
           ? "pending"
           : dirty
@@ -335,6 +389,39 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       const response = error as Error & { code?: string };
       const guidance = editorFailureGuidance(response.code);
       return `${response.message || fallback} ${guidance.message}`;
+    };
+
+    const preloadRecoveryStatus = async () => {
+      try {
+        const response = await fetch(
+          `/editor/api/journal-recovery-status/${encodeURIComponent(initial.contentId)}`,
+          { headers: { accept: "application/json" } },
+        );
+        const result = (await response.json()) as {
+          state?: "normal" | "manual-recovery-required";
+          recoveryReference?: string;
+        };
+        if (
+          !response.ok ||
+          (result.state !== "normal" &&
+            result.state !== "manual-recovery-required") ||
+          (result.state === "manual-recovery-required" &&
+            typeof result.recoveryReference !== "string")
+        )
+          throw new Error("Invalid recovery status response");
+        if (result.state === "manual-recovery-required") {
+          recoveryRequired = true;
+          statusMessage = "Operations stopped · manual recovery required";
+          showRecoveryGuidance(result.recoveryReference);
+        } else if (!recoveryRequired) statusMessage = null;
+      } catch {
+        if (!recoveryRequired)
+          statusMessage =
+            "Recovery status could not be verified. Server mutation guards remain active.";
+      } finally {
+        recoveryStatusPending = false;
+        renderActions();
+      }
     };
 
     const uploadHero = async (file: File) => {
@@ -576,6 +663,7 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
           )
         ) {
           recoveryRequired = true;
+          showRecoveryGuidance();
           sessionStorage.setItem(
             recoveryStorageKey,
             failureMessage(error, "Journal save failed"),
@@ -801,6 +889,8 @@ const serializedDraft = JSON.stringify(draft).replaceAll("<", "\\u003c");
       void releaseHero(pendingHeroCandidate, true);
     });
     renderHero();
+    renderActions();
+    void preloadRecoveryStatus();
     document.addEventListener("keydown", (event) => {
       if (!isEditorSaveShortcut(event)) return;
       event.preventDefault();

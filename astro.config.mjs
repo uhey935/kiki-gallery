@@ -56,6 +56,11 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
+            pattern: "/editor/api/journal-recovery-status/[contentId]",
+            entrypoint: "./src/editor/routes/journal-recovery-status.ts",
+            prerender: false,
+          });
+          injectRoute({
             pattern: "/editor/api/journal-create",
             entrypoint: "./src/editor/routes/journal-create.ts",
             prerender: false,
@@ -173,7 +178,8 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
-            pattern: "/editor/api/artists-hero-preview/[contentId]/[workspaceId]/[token]",
+            pattern:
+              "/editor/api/artists-hero-preview/[contentId]/[workspaceId]/[token]",
             entrypoint: "./src/editor/routes/artists-hero-preview-asset.ts",
             prerender: false,
           });
@@ -209,7 +215,8 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
-            pattern: "/editor/api/exhibitions-hero-preview/[contentId]/[workspaceId]/[token]",
+            pattern:
+              "/editor/api/exhibitions-hero-preview/[contentId]/[workspaceId]/[token]",
             entrypoint: "./src/editor/routes/exhibitions-hero-preview-asset.ts",
             prerender: false,
           });
@@ -250,7 +257,8 @@ export default defineConfig({
             prerender: false,
           });
           injectRoute({
-            pattern: "/editor/api/journal-hero-preview/[contentId]/[workspaceId]/[token]",
+            pattern:
+              "/editor/api/journal-hero-preview/[contentId]/[workspaceId]/[token]",
             entrypoint: "./src/editor/routes/journal-hero-preview-asset.ts",
             prerender: false,
           });

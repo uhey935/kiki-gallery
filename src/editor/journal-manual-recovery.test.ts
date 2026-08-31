@@ -10,6 +10,7 @@ import {
   assertJournalMutationAdmitted,
   detectJournalManualRecovery,
   JournalManualRecoveryError,
+  readJournalManualRecoveryStatus,
 } from "./journal-manual-recovery.ts";
 import { publishSavedJournalEntry } from "./journal-publish.ts";
 import { executeJournalRename } from "./journal-rename.ts";
@@ -85,6 +86,33 @@ test("an exact but incomplete recovery pair still fails closed", async (t) => {
   await assert.rejects(
     assertJournalMutationAdmitted("affected", journalRoot),
     JournalManualRecoveryError,
+  );
+});
+
+test("Journal recovery status is minimal, path-safe, and read-only", async (t) => {
+  const { root, journalRoot } = await fixture();
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const before = await fs.readdir(path.join(journalRoot, "affected"));
+
+  assert.deepEqual(
+    await readJournalManualRecoveryStatus("affected", journalRoot),
+    { state: "normal" },
+  );
+  const recovery = await installRecoveryPair(journalRoot);
+  const status = await readJournalManualRecoveryStatus("affected", journalRoot);
+  assert.deepEqual(status, {
+    state: "manual-recovery-required",
+    recoveryReference: `src/content/journal/affected/${recovery.prefix}`,
+  });
+  assert.equal(JSON.stringify(status).includes(root), false);
+  assert.deepEqual(
+    (await fs.readdir(path.join(journalRoot, "affected"))).sort(),
+    [...before, `${recovery.prefix}-backup`, `${recovery.prefix}-stage`].sort(),
+  );
+  assert.deepEqual(await fs.readdir(recovery.stage), ["en.md"]);
+  assert.deepEqual(
+    (await fs.readdir(recovery.backup)).sort(),
+    [...files].sort(),
   );
 });
 

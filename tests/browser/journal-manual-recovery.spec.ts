@@ -171,14 +171,34 @@ test("durable Journal recovery evidence rejects a mutation from a new browser se
     ).toBeNull();
 
     const title = secondPage.locator('input[name="ja.title"]');
-    await title.fill(`${await title.inputValue()} blocked in new session`);
-    const responsePromise = secondPage.waitForResponse(
-      (response) =>
-        response.url().endsWith(`/editor/api/journal/${contentId}`) &&
-        response.request().method() === "POST",
+    await expect(secondPage.locator("[data-action-status]")).toContainText(
+      "manual recovery",
     );
-    await secondPage.locator("[data-save-journal]").click();
-    const response = await responsePromise;
+    await expect(
+      secondPage.locator("[data-journal-recovery-guidance]"),
+    ).toBeVisible();
+    await expect(
+      secondPage.locator("[data-journal-recovery-guidance]"),
+    ).toContainText("Do not delete or change the recovery evidence");
+    await expect(
+      secondPage.locator("[data-journal-recovery-reference]"),
+    ).toHaveText(`src/content/journal/${contentId}/${transaction}`);
+    await expect(title).toBeDisabled();
+    await expect(secondPage.locator("[data-save-journal]")).toBeDisabled();
+    await expect(secondPage.locator("[data-publish-journal]")).toBeDisabled();
+    await expect(
+      secondPage.locator("[data-rename-destination]"),
+    ).toBeDisabled();
+    await expect(secondPage.locator("[data-delete-backup]")).toBeDisabled();
+
+    const draft = await secondPage
+      .locator("#journal-editor-draft")
+      .textContent()
+      .then((value) => JSON.parse(value ?? "{}"));
+    const response = await secondContext.request.post(
+      `/editor/api/journal/${contentId}`,
+      { data: { draft, baseline: draft } },
+    );
     const result = (await response.json()) as {
       code?: string;
       recoveryReference?: string;

@@ -14,6 +14,13 @@ export type JournalManualRecoveryState = {
   evidenceIntegrity: "complete" | "incomplete-or-unsafe";
 };
 
+export type JournalManualRecoveryStatus =
+  | { state: "normal" }
+  | {
+      state: "manual-recovery-required";
+      recoveryReference: string;
+    };
+
 export class JournalManualRecoveryError extends Error {
   readonly code = "journal-manual-recovery-required";
   readonly recoveryReference: string;
@@ -115,6 +122,19 @@ export async function assertJournalMutationAdmitted(
 ) {
   const state = await detectJournalManualRecovery(contentId, journalRoot);
   if (state) throw new JournalManualRecoveryError(state);
+}
+
+export async function readJournalManualRecoveryStatus(
+  contentId: string,
+  journalRoot = path.resolve("src/content/journal"),
+): Promise<JournalManualRecoveryStatus> {
+  const state = await detectJournalManualRecovery(contentId, journalRoot);
+  return state
+    ? {
+        state: "manual-recovery-required",
+        recoveryReference: state.recoveryReference,
+      }
+    : { state: "normal" };
 }
 
 export function journalManualRecoveryResponse(
