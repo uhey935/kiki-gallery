@@ -28,9 +28,13 @@ const en = localized("en");
         <header><span>Hero image <small class="editor-field-badge">Required</small></span></header>
         <input type="hidden" name="shared.hero.image" value={create ? "" : shared.hero.image} data-exhibitions-hero-path />
         <div data-exhibitions-hero-current hidden={create}>
-          <img src={create ? undefined : shared.hero.image} alt="" data-exhibitions-hero-thumbnail />
-          <p><strong data-exhibitions-hero-state>{create ? "New image · temporary / unsaved" : "Canonical · saved"}</strong></p>
-          <code data-exhibitions-hero-canonical-path>{create ? "" : shared.hero.image}</code>
+          <div class="editor-hero-asset__preview">
+            <img src={create ? undefined : shared.hero.image} alt="" data-exhibitions-hero-thumbnail />
+          </div>
+          <div class="editor-hero-asset__details">
+            <p><strong data-exhibitions-hero-state>{create ? "New image · temporary / unsaved" : "Canonical · saved"}</strong></p>
+            <code data-exhibitions-hero-canonical-path>{create ? "" : shared.hero.image}</code>
+          </div>
           <div class="editor-asset-actions"><button type="button" data-exhibitions-hero-replace>Replace</button><button type="button" data-exhibitions-hero-remove>Remove</button></div>
         </div>
         <div class="editor-hero-drop" data-exhibitions-hero-drop hidden={!create}>
@@ -63,7 +67,24 @@ const en = localized("en");
 
 <style>
   .editor-hero-asset {
+    display: grid;
+    gap: 16px;
     min-width: 0;
+  }
+  [data-exhibitions-hero-current] {
+    display: grid;
+    gap: 16px;
+  }
+  .editor-hero-asset__details {
+    display: grid;
+    gap: 7px;
+  }
+  .editor-hero-asset__details p {
+    margin: 0;
+  }
+  .editor-hero-asset__preview {
+    padding-block: 20px;
+    background: #f1f3ef;
   }
   [data-exhibitions-hero-current] img,
   .editor-hero-compare img {
