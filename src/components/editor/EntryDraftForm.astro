@@ -96,15 +96,19 @@ const { draft, create = false } = Astro.props;
                 data-journal-hero-path
               />
               <div data-journal-hero-current hidden={create}>
-                <img
-                  src={draft.shared.value.hero.image || undefined}
-                  alt=""
-                  data-journal-hero-thumbnail
-                />
-                <p><strong data-journal-hero-state>Canonical · saved</strong></p>
-                <code data-journal-hero-canonical-path>
-                  {draft.shared.value.hero.image}
-                </code>
+                <div class="editor-hero-asset__preview">
+                  <img
+                    src={draft.shared.value.hero.image || undefined}
+                    alt=""
+                    data-journal-hero-thumbnail
+                  />
+                </div>
+                <div class="editor-hero-asset__details">
+                  <p><strong data-journal-hero-state>Canonical · saved</strong></p>
+                  <code data-journal-hero-canonical-path>
+                    {draft.shared.value.hero.image}
+                  </code>
+                </div>
                 <div class="editor-asset-actions">
                   <button type="button" data-journal-hero-replace>
                     Replace
@@ -233,3 +237,43 @@ const { draft, create = false } = Astro.props;
     </div>
   </section>
 </form>
+
+<style>
+  .editor-hero-asset {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+  }
+  [data-journal-hero-current] {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+  }
+  .editor-hero-asset__details {
+    display: grid;
+    gap: 7px;
+    min-width: 0;
+  }
+  .editor-hero-asset__details p {
+    margin: 0;
+  }
+  .editor-hero-asset__preview {
+    display: grid;
+    justify-items: center;
+    min-width: 0;
+    padding-block: 20px;
+    background: #f1f3ef;
+  }
+  [data-journal-hero-thumbnail] {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 360px;
+    object-fit: contain;
+    background: #f1f3ef;
+  }
+  [data-journal-hero-canonical-path] {
+    overflow-wrap: anywhere;
+  }
+</style>

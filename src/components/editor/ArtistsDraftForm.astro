@@ -39,9 +39,13 @@ const en =
             <button type="button" data-artists-create-hero-select>Select from desktop</button>
           </div>
           <div data-artists-create-hero-current hidden>
-            <img alt="" data-artists-create-hero-thumbnail />
-            <p><strong>New image · temporary / unsaved</strong></p>
-            <code data-artists-create-hero-canonical-path></code>
+            <div class="editor-hero-asset__preview">
+              <img alt="" data-artists-create-hero-thumbnail />
+            </div>
+            <div class="editor-hero-asset__details">
+              <p><strong>New image · temporary / unsaved</strong></p>
+              <code data-artists-create-hero-canonical-path></code>
+            </div>
             <div class="editor-asset-actions">
               <button type="button" data-artists-create-hero-replace>Replace</button>
               <button type="button" data-artists-create-hero-remove>Remove</button>
@@ -54,9 +58,13 @@ const en =
         <header><span>Hero image <small class="editor-field-badge">Required</small></span></header>
         <input type="hidden" name="hero.image" value={data.hero.image} data-artists-hero-path />
         <div data-artists-hero-current>
-          <img src={data.hero.image} alt="" data-artists-hero-thumbnail />
-          <p><strong data-artists-hero-state>Canonical · saved</strong></p>
-          <code data-artists-hero-canonical-path>{data.hero.image}</code>
+          <div class="editor-hero-asset__preview">
+            <img src={data.hero.image} alt="" data-artists-hero-thumbnail />
+          </div>
+          <div class="editor-hero-asset__details">
+            <p><strong data-artists-hero-state>Canonical · saved</strong></p>
+            <code data-artists-hero-canonical-path>{data.hero.image}</code>
+          </div>
           <div class="editor-asset-actions">
             <button type="button" data-artists-hero-replace>Replace</button>
             <button type="button" data-artists-hero-remove>Remove</button>
@@ -243,8 +251,12 @@ const en =
 </form>
 
 <style>
-  .editor-hero-asset { border: 1px solid #d8d8d8; padding: 1rem; }
-  .editor-hero-asset img { display: block; width: min(220px, 100%); aspect-ratio: 4 / 3; object-fit: cover; background: #eee; }
+  .editor-hero-asset { display: grid; gap: 16px; min-width: 0; border: 1px solid #d8d8d8; padding: 1rem; }
+  [data-artists-create-hero-current], [data-artists-hero-current] { display: grid; gap: 16px; }
+  .editor-hero-asset__details { display: grid; gap: 7px; }
+  .editor-hero-asset__details p { margin: 0; }
+  .editor-hero-asset__preview { display: grid; justify-items: center; padding-block: 20px; background: #f1f3ef; }
+  .editor-hero-asset img { display: block; width: 100%; max-width: 100%; height: auto; max-height: 360px; object-fit: contain; background: #f1f3ef; }
   .editor-hero-drop { border: 1px dashed #999; padding: 1.5rem; text-align: center; }
   .editor-hero-drop.is-dragging { border-color: #111; background: #f4f4f4; }
   .editor-hero-compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
