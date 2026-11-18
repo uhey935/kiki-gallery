@@ -1,12 +1,12 @@
 # Works Localization Architecture
 
-| Property        | Value                                                                                                  |
-| --------------- | ------------------------------------------------------------------------------------------------------ |
-| Status          | Implemented current authority                                                                           |
-| Date            | 2026-08-12                                                                                             |
-| Scope           | Works three-file localization, Production, Editor, routes, references, lifecycle safety, and migration |
-| Current runtime | Strict three-file localized repository and Works Production facade                                      |
-| Excluded        | Asset mutation and new product features                                                                  |
+| Property                    | Value                                                                                                                             |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Status                      | Implemented current authority                                                                                                     |
+| Date                        | 2026-08-12                                                                                                                        |
+| Scope                       | Works three-file localization, Production, Editor, routes, references, lifecycle safety, and migration                            |
+| Current runtime             | Strict three-file localized repository and Works Production facade                                                                |
+| Localization-phase boundary | Migration does not mutate asset bytes, paths, or lifecycle evidence; current Editor managed upload/replacement is specified below |
 
 This is the current implemented authority for Works localization. The reviewed
 migration, Production cutover, Editor three-file lifecycle, and isolated Works
@@ -14,7 +14,11 @@ browser acceptance are complete. The seven canonical directories and their 21
 files are authoritative; legacy flat sources are retained only inside frozen
 migration and recovery evidence.
 
-The corrected migration baseline has empty bodies for Reiko Kinoshita 01/02,
+The localization migration itself was content-only: it did not copy, move,
+rename, re-encode, promote, or otherwise mutate assets or lifecycle evidence.
+That migration boundary does not exclude the current Works Editor's managed
+asset workflows, which are governed by the Editor and transaction sections
+below. The corrected migration baseline has empty bodies for Reiko Kinoshita 01/02,
 the approved Yuka Mori alt, authoritative current image references/order, and
 byte-preserved JA size strings, including existing spacing differences.
 

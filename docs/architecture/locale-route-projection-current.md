@@ -35,22 +35,40 @@ asset, and 404 paths have no public identity.
 
 ## Availability and projection
 
-Projection requires the target route family to exist according to
-`public-route-families.ts`. Detail and formal singleton surfaces additionally
-require their existing target-locale Production capability. Index availability
-is never inferred from entry counts. The result is either an exact canonical
-counterpart URL or `unavailable`; there is no Home, source-locale, or first-entry
-fallback.
+Three conditions are distinct:
 
-Current intentional JA development routes for Home and About remain valid JA
-targets despite not being formally publishable. Their EN implementations exist
-behind one conditional static-path page, but targets still require formal
-capability before projection or generation. Privacy is static route existence
-only.
+1. **Route-family existence**: `public-route-families.ts` records whether a
+   public Astro page implementation exists for that surface and locale.
+2. **Locale capability**: the collection or singleton Production facade decides
+   whether the target-locale content is formally usable. Detail identities and
+   formal singleton targets require this capability, except for the explicit JA
+   Home/About development-projection fallback described below. An index does
+   not infer availability from entry counts.
+3. **Static path generation**: Astro emits the paths returned by each page's
+   `getStaticPaths` (or the concrete static page). A detail page implementation
+   can exist while a particular entry's path is omitted for lack of capability.
 
-All emitted public URLs use the trailing-slash convention. Journal's registry
-may format reserved future EN strings, but EN Journal remains unavailable until
-its page-family authority changes in the separate publication phase.
+Projection requires route-family existence and, where applicable, target-locale
+capability. It returns an exact canonical counterpart URL or `unavailable`;
+there is no unrelated root-Home, source-locale, or first-entry fallback.
+
+Home and About retain an explicit JA development-projection fallback when
+formal capability is not satisfied. When formal capability succeeds, the
+formal JA projection takes precedence. EN has no equivalent development
+fallback and requires formal capability for projection and static path
+generation.
+
+This describes locale counterpart projection. In page rendering, `/` requires
+formal JA Home capability; `/about/` uses the formal JA entry first and falls
+back to `developmentJa()` only when formal capability is not satisfied. EN
+Home and About static paths are emitted only for formal-capable entries.
+Privacy is static route existence only.
+
+All emitted public URLs use the trailing-slash convention. JA and EN Journal
+index and detail page families are implemented. The index route is generated
+independently of entry count; each detail path is generated only for entries
+returned by the Journal Production facade for that locale. The Journal registry
+formats the corresponding canonical JA/EN detail URLs.
 
 ## Header behavior
 
@@ -59,22 +77,20 @@ locale projection for the current logical identity. It renders a counterpart
 anchor and separator only when available; otherwise it retains only the current
 language indication. It never fabricates `/en/` or `/` as a locale fallback.
 
-Global navigation uses the same projector for the current locale. Existing EN
-Artists, Exhibitions, and News routes are linked. EN Home and About remain
-unlinked while formal capability is false; Journal and Privacy remain
-unimplemented. The logo uses the current
-locale Home when available and the existing JA Home otherwise. Shop remains an
-external non-localized destination. Works continues without a Header by design,
-while its route identity remains supported for future consumers.
+Global navigation uses the same projector for the current locale. The EN
+Artists, Exhibitions, News, and Journal index route families are implemented.
+EN Home and About are generated only when their formal singleton capability is
+true. Privacy has static JA and EN implementations but is not a global-nav
+item. The logo uses the current locale Home when available and the existing JA
+Home otherwise. Shop remains an external non-localized destination. Works
+continues without a Header by design, while its route identity remains
+supported for future consumers.
 
-## Current unavailable EN routes
+## Capability-gated EN routes
 
-- Home (implementation present; formal activation false)
-- Journal index and detail
-- About (implementation present; formal activation false)
-- Privacy
-
-Implementation availability is static architectural truth. Formal activation
-comes from the singleton Production facade. Projection requires both, so the
-mere presence of `src/pages/en/[...singleton].astro` cannot expose a Header
-link or build a route.
+Home and About have implementations in
+`src/pages/en/[...singleton].astro`, but that page emits each route only when
+the corresponding singleton Production facade returns formal capability.
+Journal detail similarly emits only capable EN entries. These gates do not
+change route-family existence. The Journal and Privacy EN page implementations
+are present; Privacy is a static page and does not depend on content capability.

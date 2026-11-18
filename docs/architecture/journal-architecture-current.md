@@ -38,19 +38,28 @@ filesystem -> Editor read state -> Draft -> Draft validation
 Production pages do not read the Journal collection directly. Journal Index, Detail, Home Stories, and News integration all use `getJournalProductionFacade()`. Journal route creation and known Journal route parsing use `journalRouteRegistry`; public identity is `contentId` plus locale, never Astro `entry.id`.
 
 The registry canonically formats detail URLs with a trailing slash:
-`/journal/{contentId}/` and the reserved future string
-`/en/journal/{contentId}/`. Parsing accepts either trailing-slash form. URL
-formatting is not route availability: the separate public route-family
-authority records that only the JA Journal index and detail page modules exist.
-`/en/journal/` and every EN Journal detail are currently unavailable, even if
-localized content later becomes renderable. EN Journal publication requires a
-separate phase that adds those page modules and changes that static authority.
+`/journal/{contentId}/` and `/en/journal/{contentId}/`. Parsing accepts either
+trailing-slash form. JA and EN Journal index and detail page modules exist, as
+recorded by the [public route-family authority](../../src/content-boundaries/public-route-families.ts).
+The index route is generated independently of entry count. Detail paths are
+generated only for entries returned by the Journal Production facade for the
+requested locale; route-family existence alone does not make every entry
+capable or generate its static path.
 
 The Editor imports the repository, canonical schemas, Issue contracts, and shared Capability evaluator directly. It does not import the Production facade, production read-model service, Astro collection adapter, or production consumers. Production modules do not import Editor modules. This dependency direction keeps editing and mutation outside the Production read boundary.
 
 ## Local Editor v1
 
 The Editor shell is statically generated under `/editor/`, with Journal collection and workspace pages. It reads canonical three-file units directly through the repository and creates a deep-cloned Draft. Draft validation reuses the canonical schemas and Capability evaluator; Issue facts remain distinct from Save, locale Preview, and Publish decisions.
+
+The current Journal Editor also supports Create, reviewed Rename, and reviewed
+content-only Delete, in addition to Load, Preview, Save, and Publish. Create
+installs a validated three-file unit; Rename and Delete use their reviewed
+plans, recovery evidence, and separate evidence-limited Publish actions.
+Delete requires a verified backup and remains no-cascade; its Publish commits
+locally without pushing. See [Editor v1 Operations](../operations/editor-v1-operations.md#content-delete)
+for the current operator contract. This lifecycle status does not relax the
+Save, Preview, Publish, or recovery conditions below.
 
 The Serializer is the only Draft-to-source conversion boundary. For every currently canonical Journal unit, unchanged read → Draft → serialize output is byte-for-byte identical across all three files.
 
@@ -148,6 +157,10 @@ The accepted production-equivalence baseline is 72 generated files. The final bu
 - `journal-read-only-prototype-findings-2026-08-06.md` records prototype evidence and the completed migration/finalization outcome.
 - `loader-architecture-specification-v1.0.md` remains the detailed target contract. Prototype-dependent implementation questions resolved by the current code are governed by this document.
 
-Editor v1 covers editing existing valid canonical Journal units. Creating, deleting, renaming, or moving Content Units; bulk Repository Index operations; collaborative locking; authentication; and production-hosted mutation remain outside scope.
+Journal Editor v1 supports the Content Unit lifecycle listed above. Bulk
+Repository Index operations, collaborative editing/locking, authentication,
+and production-hosted mutation remain outside scope. The earlier finalization
+and prototype records below document historical verification and scope; their
+dated implementation counts and observations are not a current test run.
 
 Collection-level reuse and the gate for the first Works Editor slice are governed by [Collection Framework Audit](./collection-framework-audit-2026-08-07.md). Journal's three-file shape, schemas, routes, serializer, production facade, and render model remain Journal-owned; shared extraction requires a second concrete consumer and must preserve this specification's production-equivalence baseline.
