@@ -1,5 +1,11 @@
 # Editor v1 Release Readiness — Phase 4
 
+> **Historical release-readiness record (2026-08-07):** The resolved issues,
+> scope, and verification results below describe the Phase 4 milestone. They
+> are retained as evidence and do not represent the current Editor contract or
+> full browser coverage. See [Editor v1 Operations](../operations/editor-v1-operations.md)
+> and the [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md).
+
 | Property | Value                                                                    |
 | -------- | ------------------------------------------------------------------------ |
 | Date     | 2026-08-07                                                               |

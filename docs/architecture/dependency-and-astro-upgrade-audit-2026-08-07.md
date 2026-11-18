@@ -1,5 +1,11 @@
 # Dependency & Astro Upgrade Audit — 2026-08-07
 
+> **Historical dependency snapshot (2026-08-07):** Runtime/package versions,
+> advisory counts, and upgrade decisions below are point-in-time audit results,
+> not current dependency recommendations. For current declarations, see
+> [`package.json`](../../package.json) and [`package-lock.json`](../../package-lock.json);
+> the Editor runtime requirement is documented in [Editor v1 Operations](../operations/editor-v1-operations.md).
+
 ## Scope and safety boundary
 
 This milestone updates dependencies without changing the Editor v1 content model,

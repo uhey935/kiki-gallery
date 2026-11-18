@@ -1,5 +1,12 @@
 # News Delete Implementation and Browser Acceptance
 
+> **Historical browser acceptance (2026-08-09; News Delete only):** The
+> lifecycle and browser results below are evidence from this collection's
+> acceptance milestone, not the current cross-collection contract or overall
+> browser coverage. See [News Three-file Write Layer Migration](./news-write-layer-migration-2026-08-10.md),
+> [Editor v1 Operations](../operations/editor-v1-operations.md), and the
+> [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md).
+
 ## Accepted boundary
 
 News Delete is the second collection-specific Delete slice. It consumes the finalized shared Delete prerequisites and the proven Journal lifecycle without changing Journal, Exhibitions, Artists, or Works Delete behavior. News is one canonical three-file unit (`index.yaml`, `ja.md`, and `en.md`) and has no public detail route; the reviewed server plan binds those exact files, repository identity, verified backup generation, closed reference graph, recovery destination, and retained-asset statement.

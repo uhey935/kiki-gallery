@@ -1,5 +1,12 @@
 # Journal Delete Implementation and Browser Acceptance
 
+> **Historical browser acceptance (2026-08-09; Journal Delete only):** The
+> deferred status of other collections records this acceptance milestone, not
+> their current Delete availability. This is isolated acceptance evidence, not
+> the current procedure or complete browser-coverage statement. See [Journal Architecture — Current](./journal-architecture-current.md),
+> [Editor v1 Operations](../operations/editor-v1-operations.md), and the
+> [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md).
+
 | Property | Value                                              |
 | -------- | -------------------------------------------------- |
 | Status   | Implemented and accepted for Journal only          |

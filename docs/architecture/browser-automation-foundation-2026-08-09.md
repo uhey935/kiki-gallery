@@ -1,5 +1,11 @@
 # Browser Automation Foundation and Regression Coverage
 
+> **Historical browser-foundation record (2026-08-09):** The environment-
+> blocked Chromium attempt and deferred cases below describe verification at
+> that milestone. They are not a statement of current browser-suite coverage;
+> see [Editor v1 Operations](../operations/editor-v1-operations.md) and the
+> [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md).
+
 | Property | Value                                                                      |
 | -------- | -------------------------------------------------------------------------- |
 | Date     | 2026-08-09                                                                 |

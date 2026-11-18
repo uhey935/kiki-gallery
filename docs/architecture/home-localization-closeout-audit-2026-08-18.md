@@ -1,5 +1,11 @@
 # Home Localization Closeout Audit
 
+> **Historical closeout audit (2026-08-18):** The JA temporary-copy state,
+> EN placeholder, and route availability below describe Home at this audit
+> point, not its current implementation state. See [Home Localization Architecture](./home-localization-architecture-2026-08-12.md),
+> [Editor v1 Operations](../operations/editor-v1-operations.md), and the
+> [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md).
+
 **Date:** 2026-08-18  
 **Decision:** Implementation complete; editorial and EN publication gates open
 

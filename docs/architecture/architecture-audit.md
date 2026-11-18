@@ -1,5 +1,11 @@
 # Architecture Audit for KiKi Gallery
 
+> **Historical draft audit (2026-07-30):** This document's “current
+> implementation” observations refer to the site at that date and predate the
+> later Editor and localization work. For current architecture, use the
+> [architecture reading order](./README.md#reading-order), [Editor v1 Operations](../operations/editor-v1-operations.md),
+> and the [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md).
+
 | Property | Value |
 | --- | --- |
 | Version | v1.0 |

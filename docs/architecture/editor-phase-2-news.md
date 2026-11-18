@@ -1,5 +1,11 @@
 # Phase 2 Editor — News audit and fifth Collection milestone
 
+> **Historical implementation record:** This document records the News Editor
+> fifth-collection milestone and its then-current flat-file contract. It is not
+> the current News topology or lifecycle authority. See [News Three-file Write Layer Migration](./news-write-layer-migration-2026-08-10.md),
+> [Editor v1 Operations](../operations/editor-v1-operations.md), and the
+> [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md).
+
 ## Production contract
 
 The production implementation, rather than remembered fields, is canonical. News is a flat Markdown announcement with required `date`, `news_type`, `title`, and `show_on_home`; `summary` and `link` are optional. Allowed types are `exhibition`, `artist`, and `general`. `link` is either an internal path or HTTP(S) URL. There is no `has_page`, image, asset transaction, body, or News Detail route.

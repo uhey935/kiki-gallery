@@ -1,5 +1,14 @@
 # Rename Dependency and Reference Audit
 
+> **Historical dependency audit (2026-08-08):** The status and path examples
+> below record the Rename dependency graph and implementations at that audit
+> point. Use current procedures and contracts in [Editor v1 Operations](../operations/editor-v1-operations.md)
+> and the [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md),
+> with the current [Works](./works-localization-architecture-2026-08-12.md),
+> [Journal](./journal-architecture-current.md), [Artists](./artists-architecture-current.md),
+> [Exhibitions](./exhibitions-localization-architecture-2026-08-12.md), and
+> [News](./news-write-layer-migration-2026-08-10.md) authorities.
+
 | Property | Value                                                                    |
 | -------- | ------------------------------------------------------------------------ |
 | Status   | Journal, News, Exhibitions, Artists, and Works complete                  |
