@@ -1,18 +1,42 @@
 # Editor v1 Operations
 
+Reconciled against baseline `19c22839b238127068005aeccf378403222db6b5`.
+
+## Supported targets and canonical units
+
+The seven registered Editor targets are Works, Journal, Exhibitions, Artists,
+News, Home, and About. Every canonical Content Unit is the exact three-file
+set `index.yaml`, `ja.md`, and `en.md`; the directory supplies the Content ID.
+
+| Targets                                    | Canonical directory                      | Operations                                                                        |
+| ------------------------------------------ | ---------------------------------------- | --------------------------------------------------------------------------------- |
+| Works, Journal, Exhibitions, Artists, News | `src/content/<collection>/<content-id>/` | Create, locale-aware Preview, Save, Publish, reviewed Rename, content-only Delete |
+| Home                                       | `src/content/home/home/`                 | Preview, Save, Publish; no Create/Rename/Delete                                   |
+| About                                      | `src/content/about/about/`               | Preview, Save, Publish; no Create/Rename/Delete                                   |
+
+Preview and mutation availability depend on each target's own validation. Save
+writes the selected canonical unit (and only assets authorized by its asset
+transaction), without staging or committing Git. Ordinary and Rename Publish
+create and push a commit for their validated path set. The dedicated Delete
+Publish creates a local commit only; it does not push. `.kiki-editor/` recovery
+and lifecycle evidence is never staged.
+
 ## Content Delete
 
 Journal Delete is available only from a saved Journal workspace and requires the absolute path of a complete verified backup generation containing the exact current three-file unit. Review the server plan, confirm it explicitly, execute, then use the separate Delete Publish action. Delete Publish commits but does not push.
 
 Do not remove incoming references, assets, locks, recovery bytes, or evidence as part of Delete. `backup-proof-stale`, `incoming-reference`, `parser-uncertainty`, `plan-stale`, `state-mismatch`, and `lock-conflict` require correction followed by a fresh plan. If `rollback-failed` is reported, stop all Editor mutation, preserve `.kiki-editor/content-lifecycle/repository.lock`, and inspect the operation record plus recovery directory. Never delete or steal the lock to retry.
 
-News Delete follows the same reviewed-plan and explicit-confirmation boundary for its one canonical Markdown file. It has no public detail route, retains all assets, and Delete Publish stages only the completed-evidence News deletion before returning to the News list.
+News Delete follows the same reviewed-plan and explicit-confirmation boundary for its exact three-file canonical unit. It has no public detail route, retains all assets, and Delete Publish stages only the completed-evidence News deletion before returning to the News list.
 
-Exhibitions Delete follows the same one-file lifecycle and includes its public detail route in the reviewed plan. Any supported Markdown route, known News `link`, malformed Exhibition route, or unresolved canonical reference blocks Delete. After completed recovery evidence is durable, the separate Delete Publish action commits only the Exhibition Markdown deletion and returns to the Exhibitions list. It never moves or stages the hero or any other asset.
+Exhibitions Delete follows the same three-file lifecycle and includes its public detail route in the reviewed plan. Any supported Markdown route, known News `link`, malformed Exhibition route, or unresolved canonical reference blocks Delete. After completed recovery evidence is durable, the separate Delete Publish action commits only the three Exhibition file deletions and returns to the Exhibitions list. It never moves or stages the hero or any other asset.
 
-Artists Delete follows the same one-file lifecycle and additionally closes typed `Works.artist` and `Exhibitions.artists[]` references plus known News links. It never cascades, rewrites references, or moves assets. Never infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
+Artists Delete follows the same three-file lifecycle and additionally closes typed `Works.artist` and `Exhibitions.artists[]` references plus known News links. Resolve those incoming or uncertain references before retrying. It never cascades, rewrites references, or moves assets. After success, use the separate Delete Publish action to commit only the three evidence-authorized Artist file deletions. On `manual-recovery-required`, stop all Editor mutation and preserve the lifecycle lock until the recorded bytes are reconciled. Never infer authorization from a missing file, stage `.kiki-editor/` or assets, or repair references automatically.
 
-Works Delete additionally requires the content lifecycle lock before the Asset Lifecycle repository lock. Release is asset first, content last. It moves and publishes only the selected three-file Works content unit; asset bytes, paths, and Asset Lifecycle v2 evidence remain unchanged.
+For Works-specific asset-state gates and execution, follow
+[Works content-only Delete](#works-content-only-delete). Lock release is asset
+first, content last. The operation preserves all asset bytes, paths, and Asset
+Lifecycle v2 evidence.
 
 ## Safe start
 
@@ -25,29 +49,44 @@ Works Delete additionally requires the content lifecycle lock before the Asset L
 5. Use Draft Preview before Save. Preview tokens expire, are bound to their
    Content ID and locale, and are local development state only.
 6. Save first, review the repository diff, then Publish. Publish stages only
-   the selected Content Unit and the exact saved Works asset manifest.
+   the selected Content Unit plus Works asset paths in the exact saved manifest or
+   Journal/Artists/Exhibitions Hero asset paths authorized by durable evidence.
+   About and Home Publish stage only their exact three canonical files.
 
-Create is supported for Journal, Works, Artists, Exhibitions, and News. A new
-entry remains Editor-only until first Save. Choose a lowercase hyphenated
-Content ID and complete the collection-owned required fields. First Save fails
-closed if the ID, a case-fold equivalent, or target path exists. Journal then
-creates `index.yaml`, `ja.md`, and `en.md` as one validated unit. Works does the
-same while preserving Shared/JA/EN ownership; Artists, Exhibitions, and News
-also create their collection-owned exact three-file unit through exclusive
-staging and a canonical reread. The normal saved workspace opens afterward.
-Publish remains separate and includes only the exact new untracked source plus
-any asset authorized by the completed Save's durable Publish evidence. Journal,
-Artists, and Exhibitions support managed Hero upload during Create; Works Create
-uses an existing canonical image reference, and News has no asset operation.
+For a new entry, follow the [Create operator flow](#create-operator-flow).
+First Save creates the validated exact-three-file unit through exclusive
+staging and a canonical reread, then opens the normal saved workspace. Publish
+is a separate action limited to that source and evidence-authorized assets.
 
 Home is the canonical exact-three-file singleton
 `src/content/home/home/{index.yaml,ja.md,en.md}` and has no Create, Rename, or
 Delete capability. Its workspace edits independent Shared, JA, and EN state;
-temporary JA may Preview, EN placeholder may not Preview, and Save/Publish
-preserve the exact three-file unit without granting formal Production
-capability. Saved workspaces expose reviewed Rename and content-only Delete for
+JA and EN Preview availability follows current validation, and Save/Publish
+preserve the exact three-file unit. Formal Production capability separately
+checks content, assets, and required locale destinations. Both JA and EN public
+route implementations exist at the audited baseline. The legacy Home path
+input UI remains a known pending UI task.
+
+Saved workspaces expose reviewed Rename and content-only Delete for
 Works, Journal, Exhibitions, Artists, and News. Rename may update only the
 typed references authorized by its reviewed plan; Delete never cascades.
+
+About is the exact-three-file singleton
+`src/content/about/about/{index.yaml,ja.md,en.md}`. Its Editor implements Load,
+Shared/JA/EN editing, locale-isolated Preview, atomic Save, validated image
+selection, and exact-path Git Publish. Image selection references validated
+existing JPEGs under `public/images/about`; it does not upload or replace image
+bytes. About has no Create, Rename, or Delete.
+
+About Save and Git Publish accept structurally valid pending/review/placeholder
+work. Preview requires the selected locale to be review or approved and to pass
+validation; a placeholder locale cannot Preview. Formal public capability is a
+separate gate requiring approved hours and localized content, valid assets,
+and an available route. At the audited baseline, hours and both content statuses
+are approved and `/about/` and `/en/about/` are implemented. The older
+architecture document's pending-hours/EN-placeholder snapshot is historical;
+future content in those states still requires approval before formal exposure.
+An Editor Save or Git Publish does not itself supply that approval.
 
 Command/Ctrl+S invokes Save when Save is available. While Save, Preview,
 Upload, or Publish is pending, the full form and every action are locked.
@@ -91,8 +130,13 @@ races and failure injection.
 
 ## Publish and recovery
 
-Publish requires a clean safe repository, attached branch, matching upstream,
-no unrelated staged files, a saved baseline, and publishable validation.
+Ordinary Publish requires a safe repository, attached branch, matching upstream,
+no unrelated staged files, a saved baseline, and collection-owned publishable
+validation. Unrelated working-tree changes are not authorization to stage them.
+Rename Publish consumes completed evidence for the exact old/new three-file
+units and authorized reference edits. Delete Publish instead requires completed
+recovery evidence, an empty index, matching repository identity, and the exact
+proven deleted-file set; it commits locally without pushing.
 
 - `canonical-mismatch`: stop and reload. Reconcile the external change before
   reapplying the draft.
@@ -100,12 +144,12 @@ no unrelated staged files, a saved baseline, and publishable validation.
   never remove or overwrite it merely to retry Create.
 - `unsafe-journal-root`: stop Create and inspect the canonical Journal root for
   a symlink, missing directory, or other unsafe filesystem substitution.
-- `unsafe-collection-root`: stop Create and inspect the named flat collection
+- `unsafe-collection-root`: stop Create and inspect the named collection
   root for a symlink, missing directory, or other unsafe substitution.
 - `source-unavailable`: stop Rename and inspect the complete Journal three-file
-  unit or schema-valid News file; do not remove files merely to retry.
+  unit or schema-valid News three-file unit; do not remove files merely to retry.
 - `unresolved-references`: review the reported incoming Journal route link.
-  This first slice does not rewrite references and has no force mode.
+  Journal Rename does not rewrite incoming route links and has no force mode.
 - `lock-conflict`: stop mutation and inspect both content-lifecycle and
   asset-lifecycle evidence. A stale or unverifiable lock is not stolen.
 - commit failure before a commit exists: preserve the working tree, inspect Git
@@ -116,7 +160,7 @@ no unrelated staged files, a saved baseline, and publishable validation.
 - Create rollback codes are `journal-create-rollback-failed`,
   `works-create-rollback-failed`, `artists-create-rollback-failed`,
   `exhibitions-create-rollback-failed`, `news-create-rollback-failed`, and the
-  shared flat-collection code `collection-create-rollback-failed`.
+  shared collection code `collection-create-rollback-failed`.
 - Save rollback codes are `journal-save-rollback-failed`,
   `asset-save-rollback-failed`, `artists-save-rollback-failed`,
   `exhibitions-save-rollback-failed`, `news-save-rollback-failed`,
@@ -223,21 +267,35 @@ hashes.
 
 ## Documentation reading order
 
-1. This operations guide.
-2. `docs/architecture/editor-final-completion-audit-2026-08-09.md`.
-3. The collection-specific Rename/Delete browser-acceptance records, ending
-   with `docs/architecture/works-delete-browser-acceptance-2026-08-09.md`.
-4. `docs/architecture/journal-architecture-current.md` for Journal.
-5. `docs/architecture/works-asset-manager-architecture-and-safety-specification.md`.
-6. The three Asset Lifecycle v2 milestone documents for quarantine and delete
-   details. Older prototype and migration documents are historical evidence.
-7. `docs/architecture/backup-and-recovery-architecture-2026-08-07.md` for
-   backup scope, verification, restore, and disaster recovery.
+1. This operations guide, then the [architecture index](../architecture/README.md).
+2. Current collection authorities: [Journal](../architecture/journal-architecture-current.md),
+   [Works](../architecture/works-localization-architecture-2026-08-12.md),
+   [Artists](../architecture/artists-architecture-current.md),
+   [Exhibitions](../architecture/exhibitions-localization-architecture-2026-08-12.md),
+   and [News write layer](../architecture/news-write-layer-migration-2026-08-10.md).
+3. [Home](../architecture/home-localization-architecture-2026-08-12.md) and
+   [About](../architecture/about-localization-architecture-2026-08-18.md) for
+   singleton structure. Their earlier provisional runtime snapshots are
+   superseded by the baseline implementation described above.
+4. [Locale Route Projection](../architecture/locale-route-projection-current.md),
+   checked against the implemented route-family table and Production facades.
+5. [Backup & Recovery](../architecture/backup-and-recovery-architecture-2026-08-07.md)
+   before recovery; Asset Lifecycle v2's
+   [first](../architecture/asset-lifecycle-v2-first-milestone.md),
+   [second](../architecture/asset-lifecycle-v2-second-milestone.md),
+   [reversible-cleanup](../architecture/asset-lifecycle-v2-reversible-cleanup.md),
+   and [physical-delete](../architecture/asset-lifecycle-v2-physical-delete-finalization.md)
+   milestones for independent asset-lifecycle operations.
+
+The [Editor Final Completion Audit](../architecture/editor-final-completion-audit-2026-08-09.md)
+and older flat-runtime Rename/Delete and Works Asset Manager records are
+historical evidence. Read them after current authorities; their old path/count
+examples and implementation-pending statements are not current instructions.
 
 # Create operator flow
 
 Works, Artists, Exhibitions, News, and Journal expose **Create** from their
-collection list. Home is a singleton and never exposes Create.
+collection list. Home and About are singletons and never expose Create.
 
 1. Open the collection and choose **Create**.
 2. Enter a lowercase, hyphenated Content ID and complete the collection's
@@ -255,7 +313,8 @@ collection list. Home is a singleton and never exposes Create.
 
 Works Create accepts an existing canonical image reference only; its managed
 upload and replacement flow remains an existing-workspace operation. Artists
-and Exhibitions Create instead require and support managed Hero upload. The
+and Exhibitions Create instead require and support managed Hero upload; Journal
+Create also supports managed Hero upload. The
 temporary Hero is owner-bound and validated, First Save materializes it with
 the canonical content and durable Publish evidence, and Publish remains a
 separate action. News has no asset operation.
@@ -263,9 +322,9 @@ separate action. News has no asset operation.
 Cancel before First Save by leaving the page. No canonical content, asset,
 commit, or Production route is created.
 
-## Journal and News Rename v1
+## Journal Rename
 
-Open a saved Journal or News workspace and use **Rename Content ID**. Save draft
+Open a saved Journal workspace and use **Rename Content ID**. Save draft
 changes first. Enter the new ID and choose **Review Rename plan**. Review the
 old/new identity, attached Git branch and HEAD, canonical file set, and route
 effect. Execution stays disabled until the operator confirms that exact plan.
@@ -279,7 +338,7 @@ and the canonical Markdown inventory contains no recognized incoming link to
 the old Journal route. Any uncertainty fails closed.
 
 After success, the Editor opens the new workspace and retains the existing
-Preview/Save semantics. Publish remains separate and must show the three old deletions plus
+Preview/Save semantics. Publish remains separate and must show the three old file deletions plus
 the three new files. It stages and verifies that exact rename set; unrelated
 working-tree changes remain untouched. Do not delete lifecycle evidence or a
 retained lock to make a retry possible.
@@ -288,13 +347,14 @@ retained lock to make a retry possible.
 
 News Rename uses the same reviewed browser flow backed by the localhost
 `POST /editor/api/news-rename` plan/execute API. Review its IDs, repository
-identity, source hash, and explicitly empty route sets before executing the
+identity, the source hash binding all three files, and explicitly empty route
+sets before executing the
 same plan. News has no detail route and is not a typed reference target, so the
-operation moves one schema-valid Markdown file without changing its bytes,
+operation moves the exact three-file News directory without changing its bytes,
 outgoing `link`, or assets.
 
 Success opens the new saved-unpublished workspace. Publish is separate and
-must show and stage the exact old deletion plus new addition. On a collision,
+must show and stage the exact three old file deletions plus three new files. On a collision,
 choose another ID; on canonical mismatch, review a fresh plan; on lock conflict,
 finish or recover the lifecycle operation. A rollback failure requires stopping
 all Editor mutation and inspecting the durable operation record while leaving
@@ -305,8 +365,8 @@ the lock intact.
 Exhibitions Rename uses `POST /editor/api/exhibitions-rename` and the same
 reviewed-plan confirmation gate. The plan inventories the complete canonical
 graph, identifies every exact News `link` to the old Exhibition route, and
-shows those required edits before execution. The Exhibition source is one flat
-Markdown file; that source and all listed News files are one logical
+shows those required edits before execution. The Exhibition source is its complete three-file
+unit; that unit and all listed News `index.yaml` reference files are one logical
 multi-file transaction. The dedicated rewriter changes only the proven link
 scalar bytes and preserves every other byte, including quote style, whitespace,
 line endings, body text, and asset paths.
@@ -320,17 +380,18 @@ manual recovery.
 
 Success transitions to the new saved-unpublished workspace. Preview and Save
 remain unchanged. Publish separately consumes the completed evidence and stages
-only the old Exhibition deletion, new Exhibition addition, and exact News edits
+only the old Exhibition three-file deletions, new three-file additions, and exact News edits
 listed by the reviewed plan. Any HEAD/canonical/evidence mismatch blocks
 staging. Delete, Production loaders, and asset ownership remain unchanged.
 
 ## Artists reference-aware Rename
 
 Artists Rename uses `POST /editor/api/artists-rename`. Its reviewed plan lists
-the old/new Artist paths plus every byte-preserving `Works.artist`,
+the old/new Artist three-file units plus every byte-preserving `Works.artist`,
 `Exhibitions.artists[]`, and recognized News-link edit. Execute requires the
 exact confirmed plan and opens the new Artist workspace. Publish stages only
-the completed evidence path set. Collision, graph, drift, symlink, lock,
+the completed evidence path set: old/new Artist unit files and the listed
+reference files. Collision, graph, drift, symlink, lock,
 rewrite, validation, and evidence mismatch failures have no force mode.
 
 ## Works reference-aware Rename
@@ -349,8 +410,8 @@ durable operation/recovery evidence first.
 
 Success changes the workspace URL to the new Work ID. Existing image URLs and
 bytes remain unchanged and Preview/Save continue normally. Publish immediately
-after Rename consumes the completed Rename evidence and stages only the old Work
-deletion, new byte-identical Work addition, and exact Artist/Exhibition edits.
+after Rename consumes the completed Rename evidence and stages only the three old Work
+file deletions, three new byte-identical files, and exact Artist/Exhibition edits.
 It must contain no asset or `.kiki-editor/` path. A later ordinary Save is a
 separate operation. Delete is available through the reviewed content-only
 workflow below.
@@ -369,10 +430,6 @@ retention clock changes. A possibly unreferenced asset is only a displayed
 consequence for a future independent ALv2 scan.
 
 After Delete, use its dedicated Publish button. It consumes completed recovery
-evidence and stages exactly the deleted Works directory path. If rollback or
+evidence and stages exactly the three deleted Works file paths proven by that evidence. If rollback or
 invariance proof fails, stop all Editor writes, preserve both locks and the
 operation evidence, and perform manual recovery before retrying.
-
-# Artists Delete
-
-Artists Delete requires a verified canonical backup generation, a reviewed no-cascade plan, and explicit confirmation. Resolve every incoming `Works.artist`, `Exhibitions.artists[]`, known News link, or uncertain reference before retrying. A successful execution retains every asset and creates recovery evidence; use the separate Delete Publish action to commit only the evidence-authorized Artist deletion. On `manual-recovery-required`, stop all Editor mutation and preserve the lifecycle lock until the recorded bytes are reconciled.

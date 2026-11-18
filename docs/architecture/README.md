@@ -16,7 +16,23 @@ no-fallback counterpart projection, and Header behavior.
 
 ## Reading Order
 
-The documents are designed to be read in the following order.
+Start with [Editor v1 Operations](../operations/editor-v1-operations.md), then
+read the collection-specific authorities below and the locale-route authority.
+Read Backup & Recovery and Asset Lifecycle v2 before recovery or asset-lifecycle
+operations. Dated completion, readiness, prototype, and flat-runtime acceptance
+records are historical evidence, not the authority for current topology.
+
+This index is reconciled against baseline
+`19c22839b238127068005aeccf378403222db6b5`. Some linked architecture documents
+still contain earlier runtime snapshots. For current behavior, resolve those
+snapshots against the implementation and contract tests; do not treat a former
+pending milestone as an unimplemented Editor feature.
+
+For Journal, read [Journal Architecture — Current](./journal-architecture-current.md)
+for read/Production boundaries and the operations guide for Editor workflows.
+For News, read [News Three-file Write Layer Migration](./news-write-layer-migration-2026-08-10.md)
+for canonical Save/Create/Publish/Rename/Delete ownership, then
+[News Delete Browser Acceptance](./news-delete-browser-acceptance-2026-08-09.md).
 
 For Artists, read [Artists Architecture — Current](./artists-architecture-current.md)
 first, then the immutable
@@ -44,94 +60,80 @@ evidence and are superseded for topology and lifecycle details.
 For Home localization, read
 [Home Localization Architecture](./home-localization-architecture-2026-08-12.md)
 as the current implemented authority. Home uses the exact three-file singleton,
-localized Production loader/facade, and Shared/JA/EN Editor lifecycle. JA is
-rendered through the explicit temporary-copy development projection and EN
-remains placeholder-blocked and absent. The earlier Editor Phase 2 Home document
+localized Production loader/facade, and Shared/JA/EN Editor lifecycle. At the audited baseline, JA and EN routes are implemented and use formal
+capability evaluation; the earlier temporary-copy/EN-placeholder snapshot is
+historical. The JA page retains its explicit development projection fallback. The earlier Editor Phase 2 Home document
 is historical flat-runtime evidence. The frozen Home migration manifest records
 source, three target hashes, asset invariance, and rollback evidence.
 
 For About localization, read
 [About Localization Architecture](./about-localization-architecture-2026-08-18.md)
-as the current structural and provisional runtime authority. It defines the exact three-file
-singleton, structured-hours approval boundary, localized Markdown/address/alts,
-capability-gated routes, Editor lifecycle, and semantic migration evidence. It
-JA review development projection, capability-gated formal routes, Editor
-lifecycle target, and semantic migration evidence. About canonical content now
-drives `/about/`; `/en/about/` remains absent. The foundation is connected to
-Production but not Editor. The manifest records completed provisional migration
-and development cutover while explicitly forbidding formal locale cutover.
+for singleton topology, structured-hours approval, localized ownership, and
+migration evidence. Its provisional runtime and Editor-unregistered statements
+are historical: Load, locale-isolated Preview, atomic three-file Save, and
+exact-path Git Publish are implemented. At the audited baseline, Shared hours
+and JA/EN content statuses are `approved`; `/about/` and `/en/about/` have public
+implementations. Formal capability still checks content approval, hours, assets,
+and route availability. Save/Publish do not grant approval. Future pending,
+review, or placeholder content must satisfy those gates separately.
 
-| Document                                                       | Purpose                                                                                                                                                               |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Artists Architecture — Current**                             | Current authority for the three-file topology, locale policy, Production facade, Editor lifecycle, references, and immutable migration evidence.                      |
-| **Locale Route Projection — Current**                          | Current authority for public route identity, module existence, capability-aware counterpart projection, canonical URLs, and Header navigation.                        |
-| **Works Localization Architecture — Current**                  | Current implemented authority for Works three-file localization, capability, Production/Editor lifecycle, asset safety, migration, recovery, and browser acceptance.  |
-| **Home Localization Architecture — Current**                   | Current implemented Home three-file Production and Editor authority; JA temporary-copy bridge and placeholder-blocked EN route absent.                                |
-| **About Localization Architecture — Provisional Current**      | Current structural/provisional runtime authority for the About three-file singleton and JA review projection; formal JA/EN capability and Editor remain pending.      |
-| **Browser Automation Foundation**                              | Defines the disposable-repository Playwright harness, representative lifecycle smoke coverage, local/CI operation, and deferred browser cases.                        |
-| **Editor Final Completion Audit**                              | Current authority for the completed Editor scope, final findings, verification, safety boundaries, and deferred work.                                                 |
-| **Works Delete Asset Lifecycle Semantics**                     | Finalizes content-only Works deletion, post-Delete ALv2 handoff, dual-lock coordination, unchanged assets/evidence, and asset-free Publish.                           |
-| **Works Delete Implementation and Browser Acceptance**         | Records implemented content-only Delete, cross-writer server locking, unchanged asset/lifecycle proof, one-path Publish, and browser acceptance.                      |
-| **Journal Delete Browser Acceptance**                          | Records exact-backup gating, no-cascade analysis, atomic three-file recovery, explicit confirmation, evidence-only Publish, and real-browser acceptance.              |
-| **News Delete Browser Acceptance**                             | Records exact-backup gating, fail-closed reference analysis, atomic single-file recovery, explicit confirmation, and evidence-only Publish.                           |
-| **Exhibitions Delete Browser Acceptance — Historical**         | Historical flat/single-file Delete acceptance evidence; superseded by the current Exhibitions three-file architecture and lifecycle.                                  |
-| **Delete Safety Prerequisites Finalization**                   | Finalizes verified backup proof, durable recovery evidence, Delete-only Publish paths, shared locking, reference parsing, and Works dual-lock order.                  |
-| **Delete Implementation Readiness Audit**                      | Reconciles Delete with finalized Create/Rename and Asset Lifecycle semantics; classifies every collection and records the remaining implementation gates.             |
-| **Works Rename Asset Lifecycle Semantics**                     | Approves unchanged asset paths/evidence, pending-manifest gating, dual-lock coordination, prospective validation, rollback, and asset-free Rename Publish.            |
-| **Works Rename Browser Acceptance Closure**                    | Records the implemented dual-lock transaction, typed Artist/Exhibition rewrites, unchanged assets, renamed workspace continuity, and exact Publish set.               |
-| **Exhibitions / Artists Rename Reference Update — Historical** | Historical flat/single-file Exhibitions and Artists Rename design evidence; current three-file authorities supersede its topology.                                    |
-| **Artists Rename Browser Acceptance Closure**                  | Records typed Works/Exhibitions/News rewrites, renamed-workspace continuity, fail-closed collision, and exact Publish evidence.                                       |
-| **Exhibitions Localization Architecture — Current**            | Current implemented authority for three-file topology, locale capabilities, facade/routes, Editor lifecycle, references, Works compatibility, and migration evidence. |
-| **Exhibitions Three-File Lifecycle Browser Acceptance**        | Current isolated browser evidence for three-file Create/Preview/Save/Publish, Rename path/reference integrity, exact Publish scope, and Delete backup refusal.        |
-| **Exhibitions Rename Browser Acceptance — Historical**         | Historical flat/single-file acceptance evidence retained for safety history; superseded by the current three-file lifecycle.                                          |
-| **Rename Dependency and Reference Audit**                      | Classifies collection Rename safety, the News expansion, and deferred reference/asset blockers.                                                                       |
-| **Create / Rename / Delete Architecture & Safety**             | Defines reviewed, conflict-safe, rollback-aware semantics for future content lifecycle operations without authorizing implementation.                                 |
-| **Retention Policy Finalization**                              | Approves retention floors, deletion authority, holds, evidence preservation, remote-storage requirements, and the separate implementation gate.                       |
-| **Backup & Recovery Architecture / Tooling**                   | Defines Git versus explicit-backup protection, integrity verification, exact restore, lock evidence, retention boundary, and disaster recovery.                       |
-| **Asset Lifecycle v2 — Physical Delete & Finalization**        | Defines per-asset explicit confirmation, quarantine retention, final locked re-audit, quarantine-only physical deletion, and durable final evidence.                  |
-| **Asset Lifecycle v2 — Reversible Cleanup**                    | Defines locked fresh re-audit, reversible quarantine/restore, crash recovery, and the continued no-delete boundary.                                                   |
-| **Asset Lifecycle v2 — Second Milestone**                      | Defines the durable candidate ledger, retention state, and continued no-delete boundary.                                                                              |
-| **Asset Lifecycle v2 — First Milestone**                       | Defines read-only orphan detection, deferred-cleanup evidence, and the no-delete boundary.                                                                            |
-| **Editor v1 Finalization Audit**                               | Declares the six-target Editor v1 boundary complete and records final cross-collection verification.                                                                  |
-| **Editor Platform Audit**                                      | Records the post-Works platform audit, resolved Journal recovery blockers, and retained shared boundaries.                                                            |
-| **Editor Phase 2 — Home**                                      | Records the singleton Home contract, nested media slice, and Phase 2 platform assessment.                                                                             |
-| **Editor Phase 2 — Artists**                                   | Records the fourth-collection production audit, minimal slice, relationship ownership, and platform reassessment.                                                     |
-| **Journal Architecture — Current**                             | Current authority for the implemented Journal read path and production boundaries.                                                                                    |
-| **Collection Framework Audit**                                 | Records the Works Editor v1 finalization audit and the proven Journal/Works boundaries.                                                                               |
-| **Works Asset Manager Specification**                          | Defines the Works asset source of truth, mutation transactions, Preview/Publish boundaries, and safety invariants.                                                    |
-| **Content Model Specification**                                | Defines the canonical content architecture and data model.                                                                                                            |
-| **Loader Architecture Specification**                          | Defines how Content Units are loaded and adapted for Astro while preserving validation boundaries.                                                                    |
-| **Workflow Architecture Audit**                                | Audits Editor save, rename, removal, and Git publish workflows before implementation.                                                                                 |
-| **Cross-Architecture Review**                                  | Sets the prototype gate across content, Editor, infrastructure, routing, migration, and consumers.                                                                    |
-| **Decisions 029–031**                                          | Fixes Issue/Capability, surface visibility, Route Registry, and the exact Journal prototype gate.                                                                     |
-| **CSS Style Guide**                                            | Defines the presentation architecture and CSS conventions.                                                                                                            |
-| **Architecture Audit**                                         | Evaluates the current implementation and identifies improvements.                                                                                                     |
-| **Architecture Review Report**                                 | Verifies architectural consistency before implementation.                                                                                                             |
+| Current entry point                                                                     | Responsibility                                                                                                                                                               |
+| --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Editor v1 Operations](../operations/editor-v1-operations.md)                           | Current seven-target Editor scope and Save/Rename/Delete/Publish operation boundaries.                                                                                       |
+| [Journal Architecture](./journal-architecture-current.md)                               | Journal read path and Production boundaries.                                                                                                                                 |
+| [Artists Architecture](./artists-architecture-current.md)                               | Artists three-file topology and lifecycle.                                                                                                                                   |
+| [Exhibitions Localization](./exhibitions-localization-architecture-2026-08-12.md)       | Exhibitions three-file topology and lifecycle.                                                                                                                               |
+| [Works Localization](./works-localization-architecture-2026-08-12.md)                   | Works three-file lifecycle and asset transactions.                                                                                                                           |
+| [News Write Layer](./news-write-layer-migration-2026-08-10.md)                          | News exact-three-file write/lifecycle boundary.                                                                                                                              |
+| [Home Localization](./home-localization-architecture-2026-08-12.md)                     | Home singleton structure; earlier provisional runtime snapshots are superseded as described above.                                                                           |
+| [About Localization](./about-localization-architecture-2026-08-18.md)                   | About singleton structure and approval boundary; earlier provisional runtime snapshots are superseded as described above.                                                    |
+| [Locale Route Projection](./locale-route-projection-current.md)                         | Route identity, route-family existence, capability-aware counterparts, canonical URLs, and Header behavior; use the implemented route-family table for current availability. |
+| [Backup & Recovery](./backup-and-recovery-architecture-2026-08-07.md)                   | Backup scope, verification, restore, lock evidence, and disaster recovery.                                                                                                   |
+| [Asset Lifecycle v2 Finalization](./asset-lifecycle-v2-physical-delete-finalization.md) | Final physical-delete boundary, composed with the earlier ledger and reversible-cleanup milestones.                                                                          |
+
+[Editor Final Completion Audit](./editor-final-completion-audit-2026-08-09.md),
+[Editor v1 Finalization](./editor-v1-finalization-2026-08-07.md), and earlier
+Rename/Delete readiness and flat-runtime acceptance records retain their
+historical decisions and test results. Read current collection authorities
+first; do not use historical file counts, paths, or deferred-feature statements
+as current operation instructions. Frozen migration manifests remain immutable
+evidence, not live inventories.
+
+## Implementation and verification references
+
+These references locate the contracts behind this index; they do not claim a
+new test run or replace the collection-specific validation rules.
+
+| Boundary                                         | Implementation / contract evidence                                                                                                                                                                                                                                |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Seven Editor targets; singleton Create exclusion | [Registry](../../src/editor/collection-registry.ts), [registry tests](../../src/editor/collection-registry.test.ts)                                                                                                                                               |
+| Exact three-file Save and recovery               | Collection-owned `*-save.ts` services and tests under `src/editor/`; [Works transaction tests](../../src/editor/works-transaction-core.test.ts), [About Save tests](../../src/editor/about-save.test.ts)                                                          |
+| Rename and content-only Delete                   | Collection-owned `*-rename.ts` / `*-delete.ts` services and tests; [shared Delete contracts](../../src/editor/delete-safety-contracts.ts), [News Rename tests](../../src/editor/news-rename.test.ts), [Works Delete tests](../../src/editor/works-delete.test.ts) |
+| About validation versus formal public capability | [Draft validation](../../src/editor/about-draft-state.ts), [state tests](../../src/editor/about-state.test.ts), [Production facade](../../src/content-boundaries/about-production.ts)                                                                             |
+| Public locale availability                       | [Route families](../../src/content-boundaries/public-route-families.ts), [EN singleton routes](../../src/pages/en/[...singleton].astro)                                                                                                                           |
+| Browser lifecycle and Cancel evidence            | [Browser specs](../../tests/browser/), [isolated runner](../../tests/browser/run-browser-tests.mjs); use `npm run editor:test:browser`                                                                                                                            |
 
 ---
 
 ## Documents
 
-### About Localization Architecture — Provisional Current
+### About Localization Architecture — Structure and Approval Boundary
 
 **about-localization-architecture-2026-08-18.md**
 
-Defines the implemented provisional About runtime: exact three-file
-singleton ownership, structured Shared hours, localized Markdown/address/image
-alts, no-fallback locale capability, route and Home/Header dependencies,
-singleton Editor operations, frozen assets, and semantic extraction evidence
-from the legacy Astro source. Production now consumes the JA review projection;
-Editor remains unregistered. Human-approved facts and copy gate formal JA/EN
-capability and EN route publication.
+Defines About's exact three-file ownership, structured hours, localized
+Markdown/address/image alts, locale capability, singleton Editor lifecycle, and
+semantic migration evidence. The document's original pending-hours,
+EN-placeholder, and unregistered-Editor snapshots predate the audited baseline.
+Editor Save and Git Publish are implemented; formal capability remains a
+separate content/asset/route check. Both locale routes are implemented.
 
-Public locale routing separates two authorities. The pure
-`src/content-boundaries/public-route-families.ts` table records whether a JA or
-EN Astro page family is implemented; collection and singleton facades continue
-to own content/formal capability. A public counterpart will require both where
-the surface is capability-gated. Currently EN Home, Journal, About, and Privacy
-page families are absent. Work detail page families exist for both locales and
-their standalone `WorkLayout` emits the correct locale metadata, but that layout
-intentionally does not introduce the site Header.
+The pure `src/content-boundaries/public-route-families.ts` table records
+implemented page families; collection/singleton facades own content capability.
+At the audited baseline every listed family has JA and EN implementations,
+including Home, Journal, About, and Privacy. Existence alone does not make every
+content entry publishable. Work detail uses standalone `WorkLayout` locale
+metadata without introducing the site Header.
 
 ### Home Localization Architecture — Current
 
@@ -140,9 +142,10 @@ intentionally does not introduce the site Header.
 Defines the implemented Home singleton Production architecture: exact
 three-file topology, strict Shared and localized ownership, decorative-media
 accessibility, locale capability and route projection, dynamic composition,
-and byte-evidenced migration. JA currently uses a temporary-copy development
-projection; EN publication remains capability-gated while the localized Editor
-lifecycle is implemented.
+and byte-evidenced migration. JA and EN public routes and the localized Editor lifecycle are implemented;
+Production capability also checks required assets and locale destinations. The
+JA development projection fallback remains distinct from formal capability.
+The legacy Home path input UI is a known pending UI task.
 
 ### Artists Architecture — Current
 
@@ -174,8 +177,9 @@ Migration tooling and tests remain retained recovery and audit evidence.
 Defines the implemented Exhibitions three-file Content Unit, canonical Content
 ID, strict shared/localized ownership, no-fallback locale capability, Production
 facade and routes, complete Editor lifecycle, News/Artist/Works reference
-contracts, intentional JA flat-Works compatibility, read-only legacy detection,
-and completed migration integrity.
+contracts, read-only legacy detection,
+and completed migration integrity. Its JA flat-Works compatibility discussion
+records an earlier migration stage; current Works topology is three-file.
 
 ### Exhibitions Migration Evidence
 
@@ -187,14 +191,15 @@ and rollback data. Its SHA-256 is
 `246edf641a799c4dc46624700653d0e50250168a729e33f0ca5933b458989725`.
 Migration tooling and tests remain retained recovery and audit evidence.
 
-### Editor Final Completion Audit
+### Editor Final Completion Audit — Historical
 
 **editor-final-completion-audit-2026-08-09.md**
 
 Audits all six collections and every supported mutation flow after Works
 Delete, reconciles the browser-acceptance record, verifies locking, recovery,
-Publish scope, dependency and Production boundaries, and records the canonical
-completion decision plus intentionally deferred future work.
+Publish scope, dependency and Production boundaries, and records the completion decision and deferred work at that milestone. It
+predates later localization, About integration, and final UI work; it is not the
+current seven-target scope or topology authority.
 
 ### Works Delete Asset Lifecycle Semantics — Historical
 
@@ -246,20 +251,20 @@ bytes, dual-lock refusal, renamed-workspace Preview/Save continuity, rollback,
 and evidence-limited Publish. Its topology is superseded by the current Works
 Localization Architecture and isolated full-lifecycle acceptance.
 
-### Exhibitions / Artists Rename Reference Update Architecture
+### Exhibitions / Artists Rename Reference Update Architecture — Historical
 
 **exhibitions-artists-rename-reference-update-architecture-2026-08-08.md**
 
-Defines the shared design boundary for Exhibitions and Artists Rename. The
+Defines the shared design boundary for Exhibitions and Artists Rename. It
 maps every typed incoming/outgoing reference and route dependency, defines the
 reviewed plan, canonical drift checks, byte-preserving reference rewrites,
 multi-file staged installation, byte-exact rollback, stable failures, and the
 exact Publish path set. Exhibitions and Artists implement this boundary, and
 Works implements its separately approved lifecycle-aware transaction. Delete
-and Production behavior remain deferred. All asset bytes and paths remain
+and Production deferrals in that record describe its historical scope. All asset bytes and paths remain
 outside the operation.
 
-### Exhibitions Rename Browser Acceptance Closure
+### Exhibitions Rename Browser Acceptance Closure — Historical
 
 **exhibitions-rename-browser-acceptance-2026-08-08.md**
 
@@ -275,12 +280,12 @@ Classifies collection-specific references, public route coupling, and asset
 semantics. It records the completed News/Exhibitions/Artists boundaries and the
 subsequently implemented Works Asset Lifecycle disposition.
 
-### Create / Rename / Delete Architecture & Safety
+### Create / Rename / Delete Architecture & Safety — Historical Design
 
 **create-rename-delete-architecture-and-safety-specification-2026-08-08.md**
 
 Approves the content-lifecycle contract in Create → Rename → Delete order and
-records the implemented Create boundary for Journal plus the four creatable
+records the then-implemented Create boundary for Journal plus four formerly
 flat collections, with Home explicitly singleton. It defines three-file Content Unit integrity, Content ID and route
 changes, typed reference updates, conservative asset ownership, optimistic
 conflicts, prospective validation, Save/Preview/Publish separation,
@@ -331,20 +336,20 @@ Defines the Editor-only durable candidate ledger, identity and observation evide
 
 Defines the first read-only orphan-detection slice, deterministic deferred-cleanup evidence, fail-closed reference completeness, and the explicit no-physical-delete boundary.
 
-### Editor v1 Finalization Audit
+### Editor v1 Finalization Audit — Historical
 
 **editor-v1-finalization-2026-08-07.md**
 
 Records the final Architecture, Workflow/UX, Production Safety, Validation, and
 Documentation audit across Works, Journal, Exhibitions, Artists, News, and Home;
-classifies the remaining work as post-v1 follow-up; and is the current authority
-for the Editor v1 completion decision.
+classifies the remaining work as post-v1 follow-up; and preserves the completion decision at that milestone. Current scope and
+operation instructions are in the operations guide and collection authorities.
 
-### Editor Phase 2 — Artists
+### Editor Phase 2 — Artists — Historical
 
 **editor-phase-2-artists.md**
 
-Records the canonical Artists schema and consumers, Work/Exhibition reference ownership, bounded Editor requirements, excluded asset and lifecycle operations, and the fourth-collection platform reassessment.
+Records the canonical Artists schema and consumers, Work/Exhibition reference ownership, bounded Editor requirements, excluded asset and lifecycle operations, and the historical fourth-collection platform reassessment.
 
 ### Collection Framework Audit
 
@@ -352,11 +357,13 @@ Records the canonical Artists schema and consumers, Work/Exhibition reference ow
 
 Classifies reusable Editor/platform behavior, deferred abstractions, and collection-owned contracts; preserves the implementation gates, records the authoritative A2/B2/C2 reassessment, and closes the Works Editor v1 finalization audit.
 
-### Works Asset Manager Architecture & Safety Specification
+### Works Asset Manager Architecture & Safety Specification — Historical
 
 **works-asset-manager-architecture-and-safety-specification.md**
 
-Defines the current Works asset inventory, canonical root and URL model, Draft-versus-filesystem mutation boundary, media admission rules, Save/Preview/Publish transaction semantics, orphan policy, stable failure taxonomy, test matrix, and the single approved first implementation slice. Asset mutation, storage migration, locale splitting, and New/Delete remain outside its current implementation scope.
+Records the original flat-runtime Works asset inventory, canonical root and URL model, Draft-versus-filesystem mutation boundary, media admission rules, Save/Preview/Publish transaction semantics, orphan policy, stable failure taxonomy, test matrix, and the single approved first implementation slice. Its excluded operations describe that earlier slice. Use Works Localization
+Architecture for current three-file Save, Create, Rename, Delete, and asset
+transactions.
 
 ### Journal Architecture — Current
 
@@ -432,7 +439,7 @@ Topics include:
 
 **workflow-architecture-audit.md**
 
-Audits the agreed Editor workflows against the current repository, Astro 6, Git semantics, the canonical specifications, and current Journal/News consumers.
+Historically audits the agreed Editor workflows against its repository baseline, Astro 6, Git semantics, the canonical specifications, and current Journal/News consumers.
 
 Topics include:
 
@@ -443,7 +450,7 @@ Topics include:
 - commit identity and push retry behavior
 - News-specific explicit-reference validation
 
-### Phase 2 News Editor
+### Phase 2 News Editor — Historical
 
 See [editor-phase-2-news.md](./editor-phase-2-news.md) for the production audit, fifth Collection vertical slice, and four-Collection validation-panel decision.
 
@@ -455,7 +462,7 @@ See [editor-phase-2-news.md](./editor-phase-2-news.md) for the production audit,
 
 **cross-architecture-review-2026-08-06.md**
 
-Reviews the complete target architecture against the repository baseline and current Astro 6 consumers. It classifies blockers, prototype validation items, implementation details, intentional deferrals, and low-severity CMS migration portability.
+Historically reviews the target architecture against its repository baseline and then-current Astro 6 consumers. It classifies blockers, prototype validation items, implementation details, intentional deferrals, and low-severity CMS migration portability.
 
 ---
 
@@ -525,6 +532,10 @@ These principles are shared across all architectural documents.
 ---
 
 ## Repository Structure
+
+The following is an illustrative selection of documentation paths, including
+historical records, not an exhaustive inventory of current repository files.
+Use the reading order above to select current authorities.
 
 ```text
 docs/

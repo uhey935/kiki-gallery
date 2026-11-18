@@ -1,7 +1,7 @@
 # KiKi Gallery
 
 Astro site and local-only content Editor for Works, Journal, Exhibitions,
-Artists, News, and Home.
+Artists, News, Home, and About.
 
 ## Requirements
 
@@ -11,7 +11,8 @@ Artists, News, and Home.
 - A clean branch with an upstream remote before using Publish
 
 Confirm the runtime with `node --version` before installing. The Editor writes
-canonical repository files and Publish creates and pushes a Git commit, so do
+canonical repository files. Ordinary and Rename Publish create and push a Git
+commit; the separate Delete Publish commits locally without pushing. Do
 not run it from a shared or unexpectedly dirty checkout.
 
 ## Setup and commands
@@ -43,18 +44,31 @@ npm ci --cache /tmp/kiki-gallery-npm-cache
 
 ## Editor operations
 
-The completed local Editor supports Preview, Save, and Publish for all six
-collections; Create for Works, Journal, Exhibitions, Artists, and News; and
-reviewed Rename and content-only Delete for those five non-singleton
-collections. Home remains an intentional singleton without Create, Rename, or
-Delete.
+The local Editor has seven registered targets: Works, Journal, Exhibitions,
+Artists, News, Home, and About. All support Preview, Save, and Publish subject
+to their collection-owned validation. Create, reviewed Rename, and content-only
+Delete are available for the five non-singleton collections. Home and About
+are singletons without Create, Rename, or Delete.
+
+Each canonical Content Unit consists of `index.yaml`, `ja.md`, and `en.md` in
+its Content ID directory. About's Editor lifecycle is implemented independently
+of formal public-locale approval: Save and Git Publish do not themselves approve
+hours or localized copy. At baseline `19c22839b238127068005aeccf378403222db6b5`,
+About hours and both locale statuses are `approved`, and JA/EN public routes are
+implemented. Pending/review/placeholder states remain supported validation
+states, not a description of that baseline's current content.
 
 Destructive content operations require reviewed plans and explicit
 confirmation. Delete additionally requires an exact verified backup and keeps
-assets unchanged. Batch Replace, non-Works asset management, storage migration,
-cross-collection ownership, and derivatives remain deferred.
+assets unchanged. Works asset management and managed Hero upload for Journal,
+Artists, and Exhibitions are implemented; Batch Replace, storage migration,
+cross-collection ownership, and derivatives remain deferred. Home's legacy path
+input UI remains a known pending UI task.
 
 Read [Editor v1 Operations](docs/operations/editor-v1-operations.md) before
-operating Save, Publish, or asset lifecycle recovery. Architecture authority
-and reading order are listed there. The current completion decision is recorded
-in [Editor Final Completion Audit](docs/architecture/editor-final-completion-audit-2026-08-09.md).
+operating Save, Publish, or asset lifecycle recovery. Use the
+[architecture index](docs/architecture/README.md) for current authorities and
+reading order. The
+[Editor Final Completion Audit](docs/architecture/editor-final-completion-audit-2026-08-09.md)
+is historical completion evidence; its earlier topology and scope statements do
+not override the current implementation or collection-specific authorities.
