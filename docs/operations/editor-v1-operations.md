@@ -268,6 +268,8 @@ hashes.
 ## Documentation reading order
 
 1. This operations guide, then the [architecture index](../architecture/README.md).
+   For contract-to-test mappings and coverage limits, use the
+   [Editor Contract and Verification Index](../architecture/editor-v1-contract-verification-current.md).
 2. Current collection authorities: [Journal](../architecture/journal-architecture-current.md),
    [Works](../architecture/works-localization-architecture-2026-08-12.md),
    [Artists](../architecture/artists-architecture-current.md),

@@ -101,17 +101,11 @@ evidence, not live inventories.
 
 ## Implementation and verification references
 
-These references locate the contracts behind this index; they do not claim a
-new test run or replace the collection-specific validation rules.
-
-| Boundary                                         | Implementation / contract evidence                                                                                                                                                                                                                                |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Seven Editor targets; singleton Create exclusion | [Registry](../../src/editor/collection-registry.ts), [registry tests](../../src/editor/collection-registry.test.ts)                                                                                                                                               |
-| Exact three-file Save and recovery               | Collection-owned `*-save.ts` services and tests under `src/editor/`; [Works transaction tests](../../src/editor/works-transaction-core.test.ts), [About Save tests](../../src/editor/about-save.test.ts)                                                          |
-| Rename and content-only Delete                   | Collection-owned `*-rename.ts` / `*-delete.ts` services and tests; [shared Delete contracts](../../src/editor/delete-safety-contracts.ts), [News Rename tests](../../src/editor/news-rename.test.ts), [Works Delete tests](../../src/editor/works-delete.test.ts) |
-| About validation versus formal public capability | [Draft validation](../../src/editor/about-draft-state.ts), [state tests](../../src/editor/about-state.test.ts), [Production facade](../../src/content-boundaries/about-production.ts)                                                                             |
-| Public locale availability                       | [Route families](../../src/content-boundaries/public-route-families.ts), [EN singleton routes](../../src/pages/en/[...singleton].astro)                                                                                                                           |
-| Browser lifecycle and Cancel evidence            | [Browser specs](../../tests/browser/), [isolated runner](../../tests/browser/run-browser-tests.mjs); use `npm run editor:test:browser`                                                                                                                            |
+Use the [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md)
+for the seven-target capability matrix, focused service/browser evidence,
+coverage limits, approval gates, known pending work, and baseline-specific audit
+provenance. It links to current architecture and operations without duplicating
+their detailed specifications. Its historical PASS report is not a new test run.
 
 ---
 
