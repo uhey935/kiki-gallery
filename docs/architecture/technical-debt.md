@@ -2,10 +2,10 @@
 
 ## Current Status (2026-11-18)
 
-This inventory reflects the read-only audit performed on 2026-11-18 against
-baseline `90c20bc`. It separates completed items, confirmed findings, and work
-that still needs current verification. The audit did not modify application
-code or dependencies, and it did not run a build or test suite.
+This inventory records the 2026-11-18 audit snapshot and subsequent confirmed
+resolutions. The snapshot against baseline `90c20bc` remains below as historical
+evidence. It did not include a build or test run; later verification is recorded
+with the item it resolved.
 
 ## Completed
 
@@ -15,43 +15,51 @@ The migration is complete. The current [package manifest](../../package.json)
 declares Astro `^7.2.0`, and the [lockfile](../../package-lock.json) resolves
 Astro 7.2.0. The [Dependency & Astro Upgrade Audit (2026-08-07)](./dependency-and-astro-upgrade-audit-2026-08-07.md)
 records the migration and its milestone verification, including a successful
-build at that time. That historical build result is not a build performed by
-the 2026-11-18 audit.
+build at that time. That historical build result is not a build performed by the
+2026-11-18 audit or the Zod URL API change.
 
 ### Unused variables and imports
 
-No unused variables or imports were reported in the 2026-11-18 checks. The
-`astro check` covered 468 files and reported 0 errors and 8 hints; it also
-emitted 3 deprecated-API diagnostics, listed below. A TypeScript check with
-`noUnusedLocals` and `noUnusedParameters` also completed without diagnostics.
-These checks support treating this cleanup item as complete for the audited
-codebase.
+No unused variables or imports were reported in the 2026-11-18 audit checks. A
+TypeScript check with `noUnusedLocals` and `noUnusedParameters` also completed
+without diagnostics. The project does not currently enable these options as
+persistent compiler settings; enabling them remains an optional quality
+improvement, separate from a detected unused variable or import.
 
-The project does not currently enable `noUnusedLocals` or
-`noUnusedParameters` as persistent compiler options. Enabling those checks is
-an optional quality improvement, separate from a currently detected unused
-variable or import.
+### Deprecated Zod URL validation API
 
-## Confirmed technical debt
-
-### Deprecated Zod URL validation method
-
-The current lockfile resolves Zod 4.3.6 through Astro. In the 2026-11-18
-`astro check`, the deprecated `.string().url()` method produced diagnostics at
-these three locations:
+Resolved in commit `c2bd543`. The three deprecated `z.string().url()` calls
+were replaced with `z.url()` in:
 
 - [Home content schema](../../src/content-schemas/home.ts)
 - [News content schema](../../src/content-schemas/news.ts)
 - [Works content schema](../../src/content-schemas/work.ts)
 
-Zod 4 provides `z.url()` as the replacement candidate. Before changing these
-schemas, verify that accepted and rejected URL values remain appropriate and
-that the existing HTTP/HTTPS restrictions continue to hold. Do not treat
-standard `new URL()` usage as deprecated; no such deprecation was found.
+The new [URL validation regression tests](../../src/content-schemas/url-validation.test.ts)
+passed 15/15 against the old API before replacement and 15/15 after
+replacement. The Editor suite passed 407 tests, Home localization 8, News 26,
+and Works localization 7.
 
-The earlier inventory listed “deprecated z API” and “deprecated URL validation
-API” separately. The current audit found both descriptions refer to the same
-three deprecated Zod URL-method usages, so they are consolidated here.
+`astro check` reported 0 errors, 0 warnings, and 5 hints after the change. The
+Zod deprecation diagnostics were no longer present. The existing HTTP/HTTPS
+refinements in Home and News, Works' existing scheme acceptance, and the
+existing internal-path union behavior were preserved. No URL normalization or
+new scheme allowlist was introduced.
+
+## Historical audit snapshot (2026-11-18; baseline `90c20bc`)
+
+This read-only audit did not modify application code or dependencies, and it
+did not run a build or test suite.
+
+At that baseline, the lockfile resolved Zod 4.3.6 through Astro. The audit's
+`astro check` covered 468 files and reported 0 errors and 8 hints, including 3
+deprecated `.string().url()` diagnostics in the schema files linked above. The
+TypeScript check with `noUnusedLocals` and `noUnusedParameters` completed
+without diagnostics. `z.url()` was recorded as the replacement candidate,
+subject to verifying accepted URL values and preserving the HTTP/HTTPS
+refinements. The two earlier inventory descriptions, “deprecated z API” and
+“deprecated URL validation API,” were found to refer to those same usages.
+Standard `new URL()` usage was not found to be deprecated.
 
 ## Requires current verification
 
