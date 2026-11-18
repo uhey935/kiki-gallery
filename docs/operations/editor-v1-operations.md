@@ -1,6 +1,9 @@
 # Editor v1 Operations
 
-Reconciled against baseline `19c22839b238127068005aeccf378403222db6b5`.
+Historical contract reconciliation baseline:
+`19c22839b238127068005aeccf378403222db6b5`. This records the source baseline
+used for the prior reconciliation; it does not claim that tests were rerun for
+this guide or on a later checkout.
 
 ## Supported targets and canonical units
 
@@ -64,8 +67,9 @@ Delete capability. Its workspace edits independent Shared, JA, and EN state;
 JA and EN Preview availability follows current validation, and Save/Publish
 preserve the exact three-file unit. Formal Production capability separately
 checks content, assets, and required locale destinations. Both JA and EN public
-route implementations exist at the audited baseline. The legacy Home path
-input UI remains a known pending UI task.
+route implementations existed at the prior contract reconciliation baseline
+`19c22839b238127068005aeccf378403222db6b5`. The legacy Home path input UI
+remains a known pending UI task.
 
 Saved workspaces expose reviewed Rename and content-only Delete for
 Works, Journal, Exhibitions, Artists, and News. Rename may update only the
@@ -82,8 +86,9 @@ About Save and Git Publish accept structurally valid pending/review/placeholder
 work. Preview requires the selected locale to be review or approved and to pass
 validation; a placeholder locale cannot Preview. Formal public capability is a
 separate gate requiring approved hours and localized content, valid assets,
-and an available route. At the audited baseline, hours and both content statuses
-are approved and `/about/` and `/en/about/` are implemented. The older
+and an available route. At the prior contract reconciliation baseline
+`19c22839b238127068005aeccf378403222db6b5`, hours and both content statuses
+were recorded as approved and `/about/` and `/en/about/` were implemented. The older
 architecture document's pending-hours/EN-placeholder snapshot is historical;
 future content in those states still requires approval before formal exposure.
 An Editor Save or Git Publish does not itself supply that approval.

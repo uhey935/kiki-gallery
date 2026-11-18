@@ -1,6 +1,9 @@
 # Editor v1.x — Current Contract and Verification Index
 
-Documentation baseline: `296d827b1e7d67f69c17c3d0db0654b7221dc2d8` (Phase 1).
+Docs整理 Phase 1 documentation-work baseline:
+`296d827b1e7d67f69c17c3d0db0654b7221dc2d8`. This identifies the Phase 1
+starting point for the index, not a test-execution baseline or a claim that
+current code was verified at that commit.
 This is a compact index of implemented contracts and their verification sources,
 not a replacement specification or a new test execution report. Read
 [Editor v1 Operations](../operations/editor-v1-operations.md) for procedures and

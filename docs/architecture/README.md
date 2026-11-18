@@ -22,11 +22,13 @@ Read Backup & Recovery and Asset Lifecycle v2 before recovery or asset-lifecycle
 operations. Dated completion, readiness, prototype, and flat-runtime acceptance
 records are historical evidence, not the authority for current topology.
 
-This index is reconciled against baseline
-`19c22839b238127068005aeccf378403222db6b5`. Some linked architecture documents
-still contain earlier runtime snapshots. For current behavior, resolve those
-snapshots against the implementation and contract tests; do not treat a former
-pending milestone as an unimplemented Editor feature.
+The prior contract and implementation reconciliation for this index used
+baseline `19c22839b238127068005aeccf378403222db6b5`. This is a historical
+source-state reference, not a claim that tests were rerun on a later checkout.
+Some linked architecture documents still contain earlier runtime snapshots.
+For current behavior, resolve those snapshots against the implementation and
+contract tests; do not treat a former pending milestone as an unimplemented
+Editor feature.
 
 For Journal, read [Journal Architecture — Current](./journal-architecture-current.md)
 for read/Production boundaries and the operations guide for Editor workflows.
@@ -60,22 +62,30 @@ evidence and are superseded for topology and lifecycle details.
 For Home localization, read
 [Home Localization Architecture](./home-localization-architecture-2026-08-12.md)
 as the current implemented authority. Home uses the exact three-file singleton,
-localized Production loader/facade, and Shared/JA/EN Editor lifecycle. At the audited baseline, JA and EN routes are implemented and use formal
+localized Production loader/facade, and Shared/JA/EN Editor lifecycle. At the
+prior `19c2283` reconciliation baseline, JA and EN routes were implemented and use formal
 capability evaluation; the earlier temporary-copy/EN-placeholder snapshot is
-historical. The JA page retains its explicit development projection fallback. The earlier Editor Phase 2 Home document
-is historical flat-runtime evidence. The frozen Home migration manifest records
-source, three target hashes, asset invariance, and rollback evidence.
+historical. The Home JA page requires `formal("ja")` and cannot render when
+formal capability fails. About's JA page prefers its formal entry and falls
+back to `developmentJa()` only when formal capability fails. The JA locale
+counterpart projection is a separate routing responsibility and does not
+provide a Home page rendering fallback. The earlier Editor Phase 2 Home
+document is historical flat-runtime evidence. The frozen Home migration
+manifest records source, three target hashes, asset invariance, and rollback
+evidence.
 
 For About localization, read
 [About Localization Architecture](./about-localization-architecture-2026-08-18.md)
 for singleton topology, structured-hours approval, localized ownership, and
 migration evidence. Its provisional runtime and Editor-unregistered statements
 are historical: Load, locale-isolated Preview, atomic three-file Save, and
-exact-path Git Publish are implemented. At the audited baseline, Shared hours
-and JA/EN content statuses are `approved`; `/about/` and `/en/about/` have public
-implementations. Formal capability still checks content approval, hours, assets,
-and route availability. Save/Publish do not grant approval. Future pending,
-review, or placeholder content must satisfy those gates separately.
+exact-path Git Publish are implemented. At the prior `19c2283` reconciliation
+baseline, Shared hours and JA/EN content statuses were recorded as `approved`;
+`/about/` and `/en/about/` had public implementations. These are historical
+source-state observations, not a new test result or editorial approval. Formal
+capability still checks content approval, hours, assets, and route availability.
+Save/Publish do not grant approval. Future pending, review, or placeholder
+content must satisfy those gates separately.
 
 | Current entry point                                                                     | Responsibility                                                                                                                                                               |
 | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

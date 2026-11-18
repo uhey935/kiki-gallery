@@ -1,6 +1,8 @@
 # Home Localization Architecture
 
-> **Current implementation status (verified at documentation baseline `9289b7c`):**
+> **Historical source-state confirmation baseline:** `9289b7c`. The following
+> implementation-status facts were confirmed at that baseline; this is not a
+> test-execution result for a later commit.
 > The localized Home Editor lifecycle (Load, locale Preview, exact-three-file
 > Save, and Publish) is implemented. Both the JA `/` and EN `/en/` public route
 > implementations exist. The legacy Home path input UI remains a known pending
@@ -350,15 +352,18 @@ as false. Its `realMigrationAllowed` value is true while
 
 ## 17. Formal capability wiring
 
-The implementation-status details below are retained as evidence from the
-2026-08-12 migration period. The frozen manifest records the state at that time;
-its approval values are not a current content inventory. Current route and
-Editor status is summarized at the top of this document.
-
-The Production boundary now exposes independent `formal(locale)` and
-`developmentJa()` projections. The JA page selects formal first and falls back
-explicitly to development only while JA remains temporary. Approval therefore
-retires the development path without another page edit.
+The frozen manifest and migration approval values below record the
+2026-08-12 state; they are not a current content inventory. The current Home
+Production facade exposes formal capability, and the JA page
+([`src/pages/index.astro`](../../src/pages/index.astro)) renders only
+`homeFacade.formal("ja")`. If that result is absent, the page throws and cannot
+render. Home has no `developmentJa()` page fallback. About's JA page
+([`src/pages/about.astro`](../../src/pages/about.astro)) is different: it
+prefers `formal("ja")` and falls back to `developmentJa()` when formal
+capability is not satisfied. The locale counterpart projector
+([`src/content-boundaries/locale-routes.ts`](../../src/content-boundaries/locale-routes.ts))
+has separate JA Home/About behavior; it does not supply page content or bypass
+Home's formal render requirement.
 
 Formal capability validates canonical Shared image references, approved locale
 copy, the Artists destination, and the same-locale About destination. Home

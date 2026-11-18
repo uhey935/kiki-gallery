@@ -1,6 +1,8 @@
 # About Localization Architecture
 
-> **Current implementation status (verified at documentation baseline `9289b7c`):**
+> **Historical source-state confirmation baseline:** `9289b7c`. The following
+> implementation-status facts were confirmed at that baseline; this is not a
+> test-execution result for a later commit.
 > The About Editor lifecycle is implemented: Load, locale-isolated Preview,
 > atomic three-file Save, and exact-path Git Publish. The canonical Shared hours
 > and JA/EN content statuses are `approved`, and public JA `/about/` and EN
