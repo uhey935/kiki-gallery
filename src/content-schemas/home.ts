@@ -8,7 +8,6 @@ const nonEmpty = z.string().trim().min(1);
 const imagePath = nonEmpty.startsWith("/");
 const internalPath = nonEmpty.startsWith("/");
 const httpUrl = z
-  .string()
   .url()
   .refine(
     (value) => /^https?:\/\//.test(value),

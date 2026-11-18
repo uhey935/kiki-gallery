@@ -5,7 +5,6 @@ export const NEWS_TYPES = ["exhibition", "artist", "general"] as const;
 const nonEmpty = z.string().min(1);
 const internalPath = z.string().startsWith("/");
 const httpUrl = z
-  .string()
   .url()
   .refine(
     (value) => /^https?:\/\//.test(value),

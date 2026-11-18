@@ -2,7 +2,7 @@ import { z } from "astro/zod";
 
 const nonEmptyStringSchema = z.string().min(1);
 const internalPathSchema = z.string().startsWith("/");
-const linkSchema = z.union([z.string().url(), internalPathSchema]);
+const linkSchema = z.union([z.url(), internalPathSchema]);
 
 const workArtistReferenceValueSchema = z.object({
   id: z.string().min(1),
