@@ -1,5 +1,16 @@
 # Editor v1 Finalization Audit
 
+> **Historical audit (2026-08-07):** Records the six-target Editor v1
+> implementation and verification state at this finalization milestone. Its
+> in-document authority designation, scope, and follow-up classifications
+> describe that milestone, not the current seven-target contract. See [Editor v1 Operations](../operations/editor-v1-operations.md),
+> the [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md),
+> and the current [Works](./works-localization-architecture-2026-08-12.md),
+> [Journal](./journal-architecture-current.md), [Artists](./artists-architecture-current.md),
+> [Exhibitions](./exhibitions-localization-architecture-2026-08-12.md),
+> [News](./news-write-layer-migration-2026-08-10.md), and
+> [Home](./home-localization-architecture-2026-08-12.md) authorities.
+
 | Property      | Value                                                       |
 | ------------- | ----------------------------------------------------------- |
 | Status        | Complete                                                    |

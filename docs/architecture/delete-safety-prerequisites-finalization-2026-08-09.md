@@ -1,5 +1,16 @@
 # Delete Safety Prerequisites Finalization
 
+> **Historical implementation-readiness record (2026-08-09; baseline
+> `6399b3a`):** This milestone finalized shared Delete prerequisites before
+> collection Delete execution was implemented. Its “unimplemented” and
+> “readiness” statements describe that stage. For current procedures and
+> coverage, see [Editor v1 Operations](../operations/editor-v1-operations.md)
+> and the [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md);
+> current collection authorities: [Works](./works-localization-architecture-2026-08-12.md),
+> [Journal](./journal-architecture-current.md), [Artists](./artists-architecture-current.md),
+> [Exhibitions](./exhibitions-localization-architecture-2026-08-12.md), and
+> [News](./news-write-layer-migration-2026-08-10.md).
+
 | Property  | Value                                                                               |
 | --------- | ----------------------------------------------------------------------------------- |
 | Status    | Shared contracts finalized; collection Delete remains unimplemented                 |

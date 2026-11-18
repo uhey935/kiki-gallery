@@ -1,5 +1,14 @@
 # Collection Framework Audit
 
+> **Historical architecture audit (2026-08-07):** Records the framework
+> assessment after the Journal Editor and the Works read-only/flat-Markdown
+> implementation stages. Flat Works paths, “current” findings, and deferred
+> decisions below are evidence from that point in development. For current
+> behavior, see [Editor v1 Operations](../operations/editor-v1-operations.md),
+> the [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md),
+> [Works Localization Architecture](./works-localization-architecture-2026-08-12.md),
+> and [Journal Architecture — Current](./journal-architecture-current.md).
+
 | Property      | Value                                        |
 | ------------- | -------------------------------------------- |
 | Status        | Works Editor v1 finalization complete        |

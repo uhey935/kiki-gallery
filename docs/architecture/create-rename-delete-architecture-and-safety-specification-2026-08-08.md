@@ -1,5 +1,15 @@
 # Create / Rename / Delete Architecture & Safety Specification
 
+> **Historical design and implementation-stage record (2026-08-08):** The
+> status and milestone boundaries below describe the Create/Rename completion
+> and Delete-readiness stage recorded on that date; they are not current
+> operation instructions. See [Editor v1 Operations](../operations/editor-v1-operations.md),
+> the [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md),
+> and current authorities for [Works](./works-localization-architecture-2026-08-12.md),
+> [Journal](./journal-architecture-current.md), [Artists](./artists-architecture-current.md),
+> [Exhibitions](./exhibitions-localization-architecture-2026-08-12.md), and
+> [News](./news-write-layer-migration-2026-08-10.md).
+
 | Property      | Value                                                                 |
 | ------------- | --------------------------------------------------------------------- |
 | Status        | Create/Rename complete; Delete readiness audited, implementation held |

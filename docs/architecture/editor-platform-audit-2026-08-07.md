@@ -1,5 +1,13 @@
 # Editor Platform Audit
 
+> **Historical platform audit (2026-08-07):** Assesses the Editor platform
+> after Works and Journal implementation, before later collection expansion
+> and localization migrations. Its two-collection scope and follow-up list are
+> milestone evidence, not the current Editor contract. See [Editor v1 Operations](../operations/editor-v1-operations.md),
+> the [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md),
+> [Works Localization Architecture](./works-localization-architecture-2026-08-12.md),
+> and [Journal Architecture — Current](./journal-architecture-current.md).
+
 | Property      | Value                                  |
 | ------------- | -------------------------------------- |
 | Status        | Complete                               |
