@@ -1,5 +1,16 @@
 # About Localization Architecture
 
+> **Current implementation status (verified at documentation baseline `9289b7c`):**
+> The About Editor lifecycle is implemented: Load, locale-isolated Preview,
+> atomic three-file Save, and exact-path Git Publish. The canonical Shared hours
+> and JA/EN content statuses are `approved`, and public JA `/about/` and EN
+> `/en/about/` route implementations exist. Formal public capability remains
+> governed separately by approval, asset, and route checks; Editor Save or Git
+> Publish does not grant editorial approval. See [Editor v1 Operations](../operations/editor-v1-operations.md)
+> and the [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md).
+
+## Historical runtime snapshot (2026-08-18)
+
 > Runtime status (2026-08-18): the provisional exact three-file unit is live at
 > `/about/` as a JA review-only development projection. Shared hours remain
 > pending, EN remains placeholder, and `/en/about/` is intentionally absent.
@@ -23,19 +34,26 @@ Provisional cutover status: implemented. The exact canonical unit now exists at
 `src/content/about/about/{index.yaml,ja.md,en.md}`. JA is explicitly `review`,
 EN is `placeholder`, and Shared hours are `pending`; formal JA and EN
 capability are both false. `/about/` uses the documented JA development
-projection, while `/en/about/` remains absent. This is current runtime authority
-for the provisional state, not approval of its editorial or factual values.
+projection, while `/en/about/` remains absent. At that time, this described the
+provisional runtime; it was not approval of editorial or factual values.
+
+The preceding status statements preserve the implementation state observed on
+2026-08-18. They do not describe the current canonical statuses or route
+availability; use the current status above and the linked Operations and
+Contract Verification Index for those.
 
 ## 1. Scope and authority
 
-This document defines the implemented structural target and current provisional
-runtime for the About singleton. `src/pages/about.astro` is now presentation
-only and reads canonical content through the About Production facade. It
-publishes the JA review projection at `/about/`; `/en/about/` is absent.
+This document defines the implemented structural target and records the
+provisional About runtime observed on 2026-08-18. At that time,
+`src/pages/about.astro` was presentation-only and published the JA review
+projection at `/about/`; `/en/about/` was absent. Those runtime details are
+historical; the current status is summarized above.
 
-The completed provisional migration did not authorize asset changes, formal
-locale publication, Editor implementation, Header implementation, staging,
-committing, or pushing.
+At the 2026-08-18 provisional-migration stage, the migration did not authorize
+asset changes, formal locale publication, Editor implementation, Header
+implementation, staging, committing, or pushing. This is historical phase
+scope; the Editor lifecycle and public route implementations now exist.
 
 The legacy `GALLERY crossing` statement is historical source evidence. It is
 not canonical target copy and must not be migrated as the current KiKi Gallery
@@ -128,6 +146,10 @@ Rules:
   does; `...`, `#`, generic service home pages, and known placeholder account
   tokens are not accepted canonical URLs.
 - No phone or generic social array is introduced.
+
+> **Historical snapshot (2026-08-18):** The unresolved-hours assessment below
+> records the source conflict observed during this design phase; it is not the
+> current canonical status.
 
 The factual hours conflict in current repository sources is deliberately not
 resolved here. Human-approved hours are required to move the discriminant from
@@ -264,6 +286,10 @@ must not expose raw reserved TODO markers or create a public route. No general
 JA development Production projection is approved; the current `/about/`
 remains unchanged until formal JA cutover.
 
+> **Historical implementation snapshot (2026-08-18):** The JA development
+> projection and pre-cutover status described immediately above record the
+> implementation state at that time.
+
 ## 8. Routes and consumers
 
 The route registry owns projection from canonical identity and locale:
@@ -312,7 +338,11 @@ editorial copy and must not derive it from, fall back to, or duplicate the About
 statement. About capability alone does not make EN Home capable; every existing
 Home requirement still applies.
 
-## 10. Header dependency
+## 10. Header dependency (design recorded 2026-08-18)
+
+The implementation-authorization statements below describe the separate
+dependency boundary at the document date. The current public route projection
+is described by the linked current references.
 
 The future site-wide locale projection consumes the About registry:
 
@@ -325,7 +355,11 @@ The future site-wide locale projection consumes the About registry:
 Header implementation is a separate dependency and is not authorized by this
 architecture phase.
 
-## 11. Editor target
+## 11. Editor target (design recorded 2026-08-18)
+
+The lifecycle requirements below record the target and implementation plan at
+the time of this architecture. The lifecycle is now implemented as summarized
+above; current operator behavior and verification sources are linked there.
 
 About Editor is a singleton workspace with Shared, JA, and EN draft scopes. It
 reuses generic Home singleton primitives only where their contracts are truly
@@ -440,7 +474,11 @@ Organization/LocalBusiness structured data and a fully structured address are
 future enhancements. About Localization must not invent them as part of this
 slice.
 
-## 16. Human gates and implementation order
+## 16. Human gates and implementation order (design recorded 2026-08-18)
+
+The sequence below preserves the implementation plan at the document date.
+Human approval and capability requirements remain relevant; the listed
+implementation work has since been completed as summarized above.
 
 Architecture is ready now. Subsequent gates are distinct:
 
@@ -462,10 +500,16 @@ Architecture is ready now. Subsequent gates are distinct:
    `/en/about/` remains unavailable until both its page family and formal EN
    capability exist.
 
+> **Historical snapshot (2026-08-18):** The `/en/about/` availability statement
+> in item 6 records the route state at the time of this implementation plan.
+
 Unresolved real copy, address, hours, contact links, and alts block migration or
 locale cutover as stated; they do not block approval of this architecture.
 
-## 17. Verification target
+## 17. Verification target (design recorded 2026-08-18)
+
+The checks below record the original verification target. Current service and
+browser evidence is mapped in the [Contract Verification Index](./editor-v1-contract-verification-current.md).
 
 Implementation verification must eventually cover strict schema ownership,
 exact topology, symlink/non-regular rejection, hours invariants, image-slot
@@ -478,7 +522,11 @@ JA/EN rendering.
 This architecture phase itself requires documentation formatting and
 `git diff --check` only. Production sources and assets must remain unchanged.
 
-## 18. Formal capability wiring
+## 18. Formal capability wiring (implementation snapshot, 2026-08-18)
+
+The route-state statements below are the implementation snapshot recorded on
+the document date. The formal capability rules remain relevant; the current
+statuses and route implementations are summarized at the top of this document.
 
 The Production boundary exposes independent `formal(locale)` and
 `developmentJa()` projections. `/about/` selects formal JA first and uses the
@@ -494,5 +542,5 @@ not format evidence. Optional SEO and contact fields remain non-blocking.
 
 The EN implementation shares the conditional singleton route. Its source file
 establishes implementation availability, but static paths emit `/en/about/`
-only after formal capability succeeds. Current placeholder content and pending
-hours therefore leave the Production route absent.
+only after formal capability succeeds. At the 2026-08-18 snapshot, placeholder
+content and pending hours therefore left the Production route absent.

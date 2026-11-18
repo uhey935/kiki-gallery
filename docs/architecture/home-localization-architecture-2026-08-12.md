@@ -1,8 +1,17 @@
 # Home Localization Architecture
 
+> **Current implementation status (verified at documentation baseline `9289b7c`):**
+> The localized Home Editor lifecycle (Load, locale Preview, exact-three-file
+> Save, and Publish) is implemented. Both the JA `/` and EN `/en/` public route
+> implementations exist. The legacy Home path input UI remains a known pending
+> UI task; it does not mean the lifecycle is unimplemented. See [Editor v1 Operations](../operations/editor-v1-operations.md)
+> and the [Editor v1.x Contract and Verification Index](./editor-v1-contract-verification-current.md).
+
 **Status:** Implemented Production architecture
 
 **Date:** 2026-08-12
+
+## Historical runtime snapshot (2026-08-12)
 
 **Runtime status:** Migrated and Production-cutover; localized Editor implemented; JA temporary-copy bridge; EN placeholder and route absent
 
@@ -14,6 +23,10 @@ the explicit temporary-copy development projection and is not formally
 copy-capable; EN is placeholder-blocked, non-capable, and absent.
 
 ## 1. Scope and invariants
+
+The route-state statements in this section describe the 2026-08-12 design
+snapshot. They preserve the original migration constraints and are not a report
+of current route availability.
 
 - Canonical Content ID is `home`; Home remains a singleton composition layer.
 - Home is not generalized into a multi-entry collection.
@@ -128,6 +141,10 @@ silently promoted to OGP. Global default OGP correction is a separate follow-up.
 
 ## 7. Locale capability and route publication
 
+The statements below about route absence and future Astro implementation are
+the design-time state recorded on 2026-08-12. Current JA/EN route availability
+and Editor behavior are summarized above and in the linked current references.
+
 JA Home is capable only when all are true:
 
 1. Shared state is valid.
@@ -151,6 +168,10 @@ Home is non-capable and `/en/` remains absent. The About section cannot be
 omitted to force publication and must never link from EN Home to JA `/about/`.
 
 ## 8. Destination and site-wide locale projection
+
+The descriptions below of work that “must” or “may” be implemented record the
+design-time dependency state on 2026-08-12. The site-wide locale projection and
+JA/EN route implementations now exist.
 
 Shared Home stores logical identities. Projection owns URLs:
 
@@ -276,6 +297,11 @@ placeholder marker. No AI translation or generated copy is accepted.
 
 ## 13. Dependencies and release gates
 
+The following dependency and release-gate statements are retained as the
+2026-08-12 implementation plan. Later implementation status is summarized at
+the top of this document and in the current Operations and Contract
+Verification Index.
+
 About Localization is not a blocker for this architecture, migration tooling,
 or necessarily a JA-only migration. It is a blocker for EN Production cutover
 because `/en/about/` is required. It should be completed as a separate phase
@@ -303,7 +329,7 @@ absent. It does not publish `/en/` or change Home capability. Human content gate
 
 These do not expand the present implementation contract.
 
-## 15. Implementation verdict
+## 15. Historical implementation verdict (2026-08-12)
 
 The architecture is **implemented**. Migration, Production three-file cutover,
 and the localized singleton Editor lifecycle are complete. Temporary JA and
@@ -323,6 +349,11 @@ as false. Its `realMigrationAllowed` value is true while
 `productionCutoverAllowed` remains false.
 
 ## 17. Formal capability wiring
+
+The implementation-status details below are retained as evidence from the
+2026-08-12 migration period. The frozen manifest records the state at that time;
+its approval values are not a current content inventory. Current route and
+Editor status is summarized at the top of this document.
 
 The Production boundary now exposes independent `formal(locale)` and
 `developmentJa()` projections. The JA page selects formal first and falls back
