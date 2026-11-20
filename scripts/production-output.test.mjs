@@ -170,3 +170,84 @@ for (const name of ["_worker.js", "functions/api.js", "server/entry.mjs"]) {
     await assert.rejects(f.run(), /Unclassified output/);
   });
 }
+
+const noindexHeaders = "/*\n  X-Robots-Tag: noindex\n";
+
+test("audited noindex headers retain public HTML and assets while excluding Editor", async (t) => {
+  const f = await fixture(t, {
+    _headers: noindexHeaders,
+    "works/example/index.html": "<p>Public work</p>",
+  });
+  await writeFile(path.join(f.pub, "_headers"), noindexHeaders);
+  const home = await readFile(path.join(f.root, "index.html"));
+  assert.deepEqual(await f.run(), {
+    editorPagesRemoved: 1,
+    assetsRemoved: 2,
+    publicPages: 2,
+    assetsRetained: 5,
+    publicFilesRetained: 1,
+  });
+  assert.equal(
+    await readFile(path.join(f.root, "_headers"), "utf8"),
+    noindexHeaders,
+  );
+  assert.deepEqual(await readFile(path.join(f.root, "index.html")), home);
+  assert.equal(
+    await readFile(path.join(f.root, "works/example/index.html"), "utf8"),
+    "<p>Public work</p>",
+  );
+  assert.equal((await readdir(f.root)).includes("editor"), false);
+  assert.deepEqual((await readdir(path.join(f.root, "_astro"))).sort(), [
+    "image.hash.webp",
+    "island.hash.js",
+    "lazy.hash.js",
+    "shared.hash.js",
+    "site.hash.css",
+  ]);
+});
+
+for (const [label, value] of [
+  ["empty", ""],
+  ["different path", "/private/*\n  X-Robots-Tag: noindex\n"],
+  ["index allowed", "/*\n  X-Robots-Tag: index\n"],
+  ["extra header", noindexHeaders + "  X-Private: secret\n"],
+  ["extra rule", noindexHeaders + "/public/*\n  X-Robots-Tag: index\n"],
+  ["private comment", noindexHeaders + "# /editor/api/home secret\n"],
+  [
+    "invalid bytes",
+    Buffer.concat([Buffer.from(noindexHeaders), Buffer.from([0xff])]),
+  ],
+  ["missing final newline", noindexHeaders.trimEnd()],
+]) {
+  test(`rejects headers before deletion: ${label}`, async (t) => {
+    const f = await fixture(t, { _headers: value });
+    await writeFile(path.join(f.pub, "_headers"), value);
+    await assert.rejects(f.run(), /Invalid headers configuration/);
+    await readFile(path.join(f.root, "editor/index.html"));
+    await readFile(path.join(f.root, "_astro/draft.hash.js"));
+  });
+}
+
+for (const mode of [
+  "missing output",
+  "different source",
+  "unclassified output",
+]) {
+  test(`rejects headers copy: ${mode}`, async (t) => {
+    const f = await fixture(
+      t,
+      mode === "missing output" ? {} : { _headers: noindexHeaders },
+    );
+    if (mode !== "unclassified output")
+      await writeFile(
+        path.join(f.pub, "_headers"),
+        mode === "different source" ? "secret" : noindexHeaders,
+      );
+    await assert.rejects(
+      f.run(),
+      /Invalid headers configuration|Public copy differs or is missing|Unclassified output/,
+    );
+    await readFile(path.join(f.root, "editor/index.html"));
+    await readFile(path.join(f.root, "_astro/draft.hash.js"));
+  });
+}

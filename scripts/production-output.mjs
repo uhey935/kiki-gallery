@@ -67,10 +67,17 @@ export async function stripEditor(root, publicRoot) {
       name,
     );
     if (
-      (!media && !discovery) ||
+      (!media && !discovery && name !== "_headers") ||
       /(?:^|\/)(?:\.[^/]+|editor|drafts?|preview)(?:\/|\.|$)/i.test(name)
     )
       throw new Error(`Unaudited public file: ${name}`);
+    // Temporary pre-launch policy: only this exact audited configuration is allowed.
+    // Remove or revise this policy and public/_headers before the public launch.
+    if (
+      name === "_headers" &&
+      !buffers.get(name)?.equals(Buffer.from("/*\n  X-Robots-Tag: noindex\n"))
+    )
+      throw new Error(`Invalid headers configuration: ${name}`);
     if (discovery) {
       const source = buffers.get(name)?.toString("utf8") ?? "";
       if (name === "robots.txt") {
