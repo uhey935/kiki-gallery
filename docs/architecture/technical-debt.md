@@ -1,14 +1,17 @@
 # Technical Debt
 
-## Current Status (2026-11-19)
+## Current Status (2026-11-20)
 
 This inventory distinguishes historical audit evidence, completed remediation,
-and confirmed residual technical debt. The 2026-11-18 historical audit snapshot
+and current advisory status. The 2026-11-18 historical audit snapshot
 against `90c20bc` is preserved below.
 
 The current dependency update was committed as `8f2e0e8` on
-`security/dependency-update-2026-11-18`. The remaining npm audit findings
-are tracked as confirmed technical debt, not as resolved vulnerabilities.
+`security/dependency-update-2026-11-18`. At baseline
+`8f5d2c495a65f9cbc10258fea531261e1a324588`, the 2026-11-20 audit reports
+0 vulnerabilities. The previously remaining picomatch advisory was withdrawn;
+this is not a package-update remediation. The 21 → 13 → 0 audit history and
+its distinct causes are retained below.
 
 ## Completed
 
@@ -73,9 +76,9 @@ refinements. The two earlier inventory descriptions, “deprecated z API” and
 “deprecated URL validation API,” were found to refer to those same usages.
 Standard `new URL()` usage was not found to be deprecated.
 
-## Confirmed technical debt
+## Dependency audit history and current status
 
-### Residual picomatch ReDoS advisory
+### picomatch ReDoS advisory (withdrawn)
 
 The [Dependency & Astro Upgrade Audit (2026-08-07)](./dependency-and-astro-upgrade-audit-2026-08-07.md)
 recorded 0 vulnerabilities at that historical milestone.
@@ -90,16 +93,40 @@ With the dependency versions subsequently committed as `8f2e0e8`,
 `npm audit --omit=dev --json` reported 11 high findings.
 All 13 full-audit package findings trace to one advisory:
 [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf),
-a picomatch regular-expression denial-of-service (ReDoS) issue
-involving repeated extglobs.
+a reported picomatch regular-expression denial-of-service (ReDoS) issue
+involving repeated extglobs, subsequently withdrawn as described below.
 
 Installed picomatch versions include 4.0.7 and 2.3.2 under
-`anymatch`. The advisory identifies versions `<=4.0.7` as affected
+`anymatch`. The advisory originally identified versions `<=4.0.7` as affected
 and listed no patched version when checked on 2026-11-18.
 The 13 findings represent affected dependency packages, not
 13 independently established vulnerabilities.
 
-#### Reachability assessment (2026-11-18)
+#### Reverification and withdrawal (2026-11-20)
+
+At baseline `8f5d2c495a65f9cbc10258fea531261e1a324588` on `main`, with
+working tree and index clean before this documentation edit,
+`npm audit --audit-level=high` reproduced `found 0 vulnerabilities`
+(exit code 0; Node.js 20.11.0, npm 10.2.4). The initial restricted-network
+attempt failed with `ENOTFOUND registry.npmjs.org`; the subsequent
+registry-connected retry succeeded. This audit-only runtime is below the
+project's Node.js requirement and does not establish application compatibility.
+
+The [official GitHub advisory](https://github.com/advisories/GHSA-fc5q-39xc-vjpf),
+checked on 2026-11-20, records withdrawal on 2026-11-18 because the report
+was determined not to be a security issue. Its last-updated date is
+2026-11-19, distinct from the withdrawal date. The earlier 13 High findings
+are retained as historical registry responses, not current unresolved findings.
+
+`npm ls picomatch` confirms that `picomatch@4.0.7` and nested
+`picomatch@2.3.2` through `anymatch` remain installed. No package or lockfile
+was updated for this verification. The transition from 13 High to 0 reflects
+the advisory withdrawal, not a fix delivered by upgrading these packages;
+the earlier 21-to-13 transition followed the dependency update above.
+Zero audit findings reflect the registry's known advisory data at that time
+and do not guarantee the absence of unknown vulnerabilities.
+
+#### Reachability assessment (2026-11-18; historical)
 
 A read-only static code audit of the Editor HTTP routes, Content ID
 validation, image uploads, Save/Publish operations, content loaders,
@@ -115,17 +142,17 @@ than used to construct them. The inspected watcher uses
 are fixed or source-defined.
 
 This is a scoped static reachability assessment, not proof that
-every possible runtime path is unreachable. The vulnerable
-dependency versions remain installed.
+every possible runtime path is unreachable. The dependency versions
+originally flagged by the now-withdrawn advisory remain installed.
 
-#### Cloudflare Pages deployment assessment (2026-11-18)
+#### Cloudflare Pages deployment assessment (2026-11-18; historical)
 
-The existing Pages project `kiki-gallery` uses Git integration,
+At that time, the inspected Pages project `kiki-gallery` used Git integration,
 Production branch `main`, automatic deployment, build command
 `npm run build`, and output directory `dist`.
 
 The inspected Production deployment was built on 2026-09-01
-from commit `19c2283`, not from the current security-update
+from commit `19c2283`, not from the then-current security-update
 commit. Its build log recorded Node.js 22.16.0, 122 generated
 pages, no Wrangler configuration file, and
 `No functions dir at /functions found. Skipping.`
@@ -146,8 +173,10 @@ in the next deployment build log.
 
 #### Risk treatment and re-evaluation
 
-Status: unresolved upstream dependency vulnerability;
-scoped reachability reviewed, with conditional risk acceptance.
+Status as of 2026-11-20: advisory withdrawn; no current npm audit findings.
+The earlier unresolved-vulnerability classification and conditional risk
+acceptance are superseded by the withdrawal, not by a dependency patch.
+The historical reachability assessment remains useful scoped evidence.
 
 Maintain strict Content ID and filename validation; do not
 interpret user-controlled values as glob patterns.
@@ -155,31 +184,35 @@ Keep the development-only Editor API and development server
 unexposed to the public internet, and preserve static-only
 production deployment assumptions.
 
-Reassess when a patched picomatch release becomes available,
-when Editor inputs or glob-handling code change, when dependencies
-or plugins change the relevant call paths, or when deployment
-configuration changes. Update both the 4.0.7 and nested 2.3.2
-dependency paths as applicable, and repeat audit and regression
-verification.
+Reassess when new or revised advisories appear, when Editor inputs or
+glob-handling code change, when dependencies or plugins change the relevant
+call paths, or when deployment configuration changes. Continue monitoring
+both the 4.0.7 and nested 2.3.2 dependency paths, and repeat audit and
+appropriate regression verification for future dependency updates.
 
 ## Requires current verification
 
-### Deployment and residual dependency verification
+### Deployment and ongoing dependency verification
 
 The earlier 2026-11-18 `npm audit` attempt with Node.js 22.22.1
 and npm 10.9.4 failed with `ENOTFOUND registry.npmjs.org`.
 That failed attempt is superseded by the successful registry-backed
-audits described under Confirmed technical debt.
+audits described under Dependency audit history and current status, including
+the 2026-11-20 verification above.
 
-Before deploying the security-update commit, verify that both
+The task owner reports that baseline
+`8f5d2c495a65f9cbc10258fea531261e1a324588` is already deployed to
+Cloudflare Pages production. That deployment was not independently inspected
+in this documentation-only verification; the 2026-11-18 assessment above
+is historical. Verify from deployment evidence that both
 Production and Preview use Node.js 22.23.4 or later.
 Production was configured with `NODE_VERSION=22.23.5`;
 the Preview setting requires independent confirmation.
-Verify the actual runtime version in the next build log.
+Verify the actual runtime version in the applicable deployment build logs.
 
 Confirm that the deployed output remains static, without
 unexpected Pages Functions, `_worker.js`, or external Worker
-routing. Re-run npm audit when patched dependencies become
-available and record the outcome. Browser acceptance and
+routing. Re-run npm audit periodically and when dependencies or advisory
+data change, and record the outcome. Browser acceptance and
 deployment verification remain separate from the completed
 local regression tests.
