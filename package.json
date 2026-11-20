@@ -7,7 +7,8 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/production-output.mjs",
+    "build:test": "node --experimental-strip-types --test scripts/production-output.test.mjs tests/editor-collection-output.test.ts",
     "check": "astro check",
     "preview": "astro preview",
     "astro": "astro",

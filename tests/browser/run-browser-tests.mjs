@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
+import { once } from "node:events";
 import {
   mkdtemp,
   mkdir,
@@ -34,11 +35,56 @@ const port = await new Promise((resolve, reject) => {
   });
 });
 let server;
+let activeCommand;
+const interruption = new AbortController();
+const onInterrupt = () => interrupt("SIGINT", 130);
+const onTerminate = () => interrupt("SIGTERM", 143);
+function interrupt(signal, exitCode) {
+  process.exitCode = exitCode;
+  interruption.abort(new Error(`Browser test runner interrupted by ${signal}`));
+}
+process.on("SIGINT", onInterrupt);
+process.on("SIGTERM", onTerminate);
 
-function run(command, args, options = {}) {
-  const result = spawnSync(command, args, { stdio: "inherit", ...options });
-  if (result.status !== 0)
-    throw new Error(`${command} ${args.join(" ")} failed (${result.status})`);
+// Async children let signal handlers reach finally even during Playwright.
+async function run(command, args, options = {}) {
+  interruption.signal.throwIfAborted();
+  activeCommand = spawn(command, args, { stdio: "inherit", ...options });
+  const [code, signal] = await once(activeCommand, "close", {
+    signal: interruption.signal,
+  });
+  activeCommand = undefined;
+  if (code !== 0)
+    throw new Error(`${command} ${args.join(" ")} failed (${signal ?? code})`);
+}
+
+async function stopChild(child) {
+  if (!child?.pid || child.exitCode !== null || child.signalCode !== null)
+    return;
+  const stopped = once(child, "close");
+  for (const [signal, timeout] of [
+    ["SIGTERM", 10_000],
+    ["SIGKILL", 5_000],
+  ]) {
+    child.kill(signal);
+    let timer;
+    try {
+      const exited = await Promise.race([
+        stopped.then(() => true),
+        new Promise((resolve) => {
+          timer = setTimeout(() => resolve(false), timeout);
+        }),
+      ]);
+      if (exited) return;
+    } finally {
+      clearTimeout(timer);
+    }
+    console.error(`Timed out stopping test child ${child.pid} with ${signal}`);
+    process.exitCode ||= 1;
+  }
+  throw new Error(
+    `Test child ${child.pid} did not stop; preserving ${sandboxRoot}`,
+  );
 }
 
 function materializeWorkingTree() {
@@ -78,8 +124,11 @@ async function closeBrowserFixtureReferenceGraph(directory) {
 async function waitForServer() {
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
+    interruption.signal.throwIfAborted();
     try {
-      const response = await fetch(`http://127.0.0.1:${port}/editor/`);
+      const response = await fetch(`http://127.0.0.1:${port}/editor/`, {
+        signal: AbortSignal.timeout(2_000),
+      });
       if (response.ok) return;
     } catch {}
     await new Promise((resolve) => setTimeout(resolve, 250));
@@ -88,7 +137,7 @@ async function waitForServer() {
 }
 
 try {
-  run("git", ["clone", "--no-hardlinks", sourceRoot, repositoryRoot]);
+  await run("git", ["clone", "--no-hardlinks", sourceRoot, repositoryRoot]);
   for (const relative of materializeWorkingTree()) {
     const destination = path.join(repositoryRoot, relative);
     await mkdir(path.dirname(destination), { recursive: true });
@@ -98,26 +147,32 @@ try {
     path.join(repositoryRoot, "src/content"),
   );
   if (normalizedFixtureFiles > 0) {
-    run("git", ["add", "src/content"], { cwd: repositoryRoot });
-    run("git", ["commit", "-m", "test: close browser fixture references"], {
-      cwd: repositoryRoot,
-    });
+    await run("git", ["add", "src/content"], { cwd: repositoryRoot });
+    await run(
+      "git",
+      ["commit", "-m", "test: close browser fixture references"],
+      {
+        cwd: repositoryRoot,
+      },
+    );
   }
-  run("git", ["init", "--bare", remoteRoot]);
-  run("git", ["remote", "set-url", "origin", remoteRoot], {
+  await run("git", ["init", "--bare", remoteRoot]);
+  await run("git", ["remote", "set-url", "origin", remoteRoot], {
     cwd: repositoryRoot,
   });
-  run("git", ["push", "-u", "origin", "main"], { cwd: repositoryRoot });
+  await run("git", ["push", "-u", "origin", "main"], { cwd: repositoryRoot });
   await symlink(
     path.join(sourceRoot, "node_modules"),
     path.join(repositoryRoot, "node_modules"),
   );
 
+  interruption.signal.throwIfAborted();
   server = spawn(
     process.execPath,
     [
       path.join(sourceRoot, "node_modules/astro/bin/astro.mjs"),
       "dev",
+      "--ignore-lock",
       "--host",
       "127.0.0.1",
       "--port",
@@ -125,16 +180,21 @@ try {
     ],
     { cwd: repositoryRoot, stdio: "inherit" },
   );
+  console.log(
+    `Owned test server pid=${server.pid} port=${port} root=${sandboxRoot}`,
+  );
   await waitForServer();
 
-  run(
+  await run(
     process.execPath,
     [
       path.join(sourceRoot, "node_modules/@playwright/test/cli.js"),
       "test",
       "--config",
       path.join(sourceRoot, "playwright.config.ts"),
-      ...(process.env.KIKI_BROWSER_GREP ? ["--grep", process.env.KIKI_BROWSER_GREP] : []),
+      ...(process.env.KIKI_BROWSER_GREP
+        ? ["--grep", process.env.KIKI_BROWSER_GREP]
+        : []),
     ],
     {
       cwd: sourceRoot,
@@ -146,6 +206,24 @@ try {
     },
   );
 } finally {
-  server?.kill("SIGTERM");
-  await rm(sandboxRoot, { recursive: true, force: true });
+  // Never delete a watched tree until both owned children have stopped.
+  const errors = [];
+  for (const child of [activeCommand, server]) {
+    try {
+      await stopChild(child);
+    } catch (error) {
+      errors.push(error);
+    }
+  }
+  if (errors.length)
+    throw new AggregateError(errors, "Browser test cleanup failed");
+  await rm(sandboxRoot, {
+    recursive: true,
+    force: true,
+    maxRetries: 3,
+    retryDelay: 100,
+  });
+  process.off("SIGINT", onInterrupt);
+  process.off("SIGTERM", onTerminate);
+  console.log(`Browser test cleanup complete: ${sandboxRoot}`);
 }
